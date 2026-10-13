@@ -9,10 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/system")
 public final class SystemController {
 
-    @GetMapping("/test-error")
-    public void testError() {
-        throw new IllegalStateException(
-                "Simulated unexpected exception"
-        );
+    @GetMapping("/ping")
+    public ApiResponse<String> ping() {
+        return ApiResponse.<String>builder()
+                .message("pong")
+                .result("pong")
+                .build();
     }
 }
