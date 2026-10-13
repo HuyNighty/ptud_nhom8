@@ -40,7 +40,6 @@ public final class DesktopLauncher {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(WindowEvent e) {
-                    // Closing the desktop must also stop the embedded HTTP server.
                     new Thread(applicationContext::close, "n08-context-shutdown").start();
                 }
             });

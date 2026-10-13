@@ -7,7 +7,6 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
-/** Minimal UI shell. Real role-based screens will be implemented in later milestones. */
 public final class MainFrame extends JFrame {
     public MainFrame() {
         super("N08 - Quan ly phong kham nha khoa");
