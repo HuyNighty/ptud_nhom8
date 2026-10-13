@@ -1,0 +1,25 @@
+spring:
+  config:
+    import: "optional:file:./.env[.properties]"
+  application:
+    name: ptud-nhom08
+
+  datasource:
+    url: "jdbc:sqlserver://127.0.0.1:${DB_PORT:14333};databaseName=N08Dental;encrypt=true;trustServerCertificate=true"
+    username: sa
+    password: ${DB_SA_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+server:
+  address: ${N08_SERVER_ADDRESS:127.0.0.1}
+  port: ${N08_SERVER_PORT:8080}
+  servlet:
+    context-path: /manage-dentistry
+
+n08:
+  desktop:
+    enabled: ${N08_DESKTOP_ENABLED:true}
