@@ -1,4 +1,4 @@
-package com.quan_ly_nha_khoa;
+package com.quanlynhakhoa;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

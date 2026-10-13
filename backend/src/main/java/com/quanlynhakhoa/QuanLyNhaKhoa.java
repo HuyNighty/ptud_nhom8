@@ -1,4 +1,4 @@
-package com.quan_ly_nha_khoa;
+package com.quanlynhakhoa;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
