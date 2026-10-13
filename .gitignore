@@ -14,7 +14,7 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -32,4 +32,11 @@ build/
 ### VS Code ###
 .vscode/
 
-/.env/
+# Local configuration/secrets (never commit real credentials)
+.env
+.env.*
+!.env.example
+
+# Runtime artifacts
+logs/
+out/

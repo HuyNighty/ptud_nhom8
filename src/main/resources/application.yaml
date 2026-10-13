@@ -1,3 +1,12 @@
 spring:
   application:
-    name: demo
+    name: ptud-nhom08
+
+server:
+  # Desktop's embedded API should not be reachable from the local network by default.
+  address: ${N08_SERVER_ADDRESS:127.0.0.1}
+  port: ${N08_SERVER_PORT:8080}
+
+n08:
+  desktop:
+    enabled: ${N08_DESKTOP_ENABLED:true}
