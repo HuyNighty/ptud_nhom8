@@ -1,3 +1,11 @@
+> **M1 — New project foundation (Spring Boot 4.1.1 + Java 25).** The guide below is legacy
+> documentation for the old Swing/JDBC prototype; its build/database instructions are not
+> valid for the new skeleton. See [M1 setup and verification](docs/M1_CONFIGURATION.md).
+>
+> Business modules and database access have **not** been migrated yet.
+
+---
+
 # N08 — Quản lý phòng khám nha khoa (Giai đoạn 2)
 
 Ứng dụng desktop **Java Swing + JDBC + Microsoft SQL Server**, xây dựng từ prototype Admin v0.3 đã duyệt
