@@ -1,0 +1,10 @@
+# Cấu hình chứa mật khẩu thật — không commit
+config/db.properties
+# Kết quả build / log
+target/
+out/
+logs/
+*.class
+# Driver tải về thủ công (xem lib/README.md)
+lib/*.jar
+derby.log
