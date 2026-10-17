@@ -14,7 +14,7 @@ import com.quanlynhakhoa.features.inventory.dto.response.StockInDetailResponse;
 import com.quanlynhakhoa.features.inventory.dto.response.StockInSummaryResponse;
 import com.quanlynhakhoa.features.inventory.entity.StockLot;
 import com.quanlynhakhoa.features.inventory.enums.InventoryItemType;
-import com.quanlynhakhoa.features.inventory.enums.StockInStatus;
+import com.quanlynhakhoa.features.inventory.enums.VoucherStatus;
 import com.quanlynhakhoa.features.inventory.exception.InventoryValidationException;
 import com.quanlynhakhoa.features.inventory.support.InventoryTestFixture;
 import java.math.BigDecimal;
@@ -72,7 +72,7 @@ class StockInServiceTest {
     void createKeepsReceiptPendingAndDoesNotTouchStock() {
         StockInDetailResponse r = create(thuoc("A1", 10, 12_000), vatTu("G1", 5, 50_000));
         assertEquals("PN0001", r.maPhieu());
-        assertEquals(StockInStatus.CHO_XU_LY, r.trangThai());
+        assertEquals(VoucherStatus.CHO_XU_LY, r.trangThai());
         assertEquals(new BigDecimal("370000"), r.tongTien());
         assertEquals("Nguyễn Văn Trí", r.nguoiLap());
         assertEquals("Dược phẩm Hoàng Gia", r.tenNhaCungCap());
@@ -87,7 +87,7 @@ class StockInServiceTest {
         String second = create(thuoc("a1", 7, 1)).maPhieu();
         StockInDetailResponse done = fx.stockInService.complete(ACTOR, second, NOW);
 
-        assertEquals(StockInStatus.DA_HOAN_THANH, done.trangThai());
+        assertEquals(VoucherStatus.DA_HOAN_THANH, done.trangThai());
         assertEquals("Nguyễn Văn Trí", done.nguoiNhapKho());
         List<StockLot> lots = fx.lots.all();
         assertEquals(1, lots.size(), "Cùng mặt hàng + cùng số lô thì cộng dồn");
@@ -123,7 +123,7 @@ class StockInServiceTest {
         String ma = create(vatTu("G1", 5, 1)).maPhieu();
         assertThrows(InventoryValidationException.class, () -> fx.stockInService.cancel(ACTOR, ma, "  "));
         StockInDetailResponse cancelled = fx.stockInService.cancel(ACTOR, ma, "Nhà cung cấp giao sai hàng");
-        assertEquals(StockInStatus.DA_HUY, cancelled.trangThai());
+        assertEquals(VoucherStatus.DA_HUY, cancelled.trangThai());
         assertEquals("Nhà cung cấp giao sai hàng", cancelled.lyDoHuy());
         assertEquals(1, cancelled.dong().size());
         assertThrows(InventoryValidationException.class, () -> fx.stockInService.updateNote(ACTOR, ma, "x"));

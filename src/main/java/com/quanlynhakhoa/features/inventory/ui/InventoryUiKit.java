@@ -98,7 +98,7 @@ final class InventoryUiKit {
         }
     }
 
-    enum ButtonKind { PRIMARY, OUTLINE, CHIP, MENU, PAGE, PAGE_SELECTED }
+    enum ButtonKind { PRIMARY, OUTLINE, CHIP, MENU, PAGE, PAGE_SELECTED, TAB }
 
     static JButton createButton(String text, ButtonKind kind) {
         JButton btn = new JButton(text);
@@ -148,6 +148,15 @@ final class InventoryUiKit {
                     g2.fillRoundRect(0, 0, w, h, 10, 10);
                     g2.setColor(BORDER);
                     g2.drawRoundRect(0, 0, w, h, 10, 10);
+                }
+                case TAB -> {
+                    if (selected) {
+                        g2.setColor(PRIMARY);
+                        g2.fillRect(0, h - 2, w + 1, 3);
+                    } else if (hover) {
+                        g2.setColor(BORDER_STRONG);
+                        g2.fillRect(0, h - 1, w + 1, 2);
+                    }
                 }
                 case PAGE, PAGE_SELECTED -> {
                     boolean on = kind == ButtonKind.PAGE_SELECTED;
@@ -594,5 +603,29 @@ final class InventoryUiKit {
             }
         }
         return true;
+    }
+
+    /** Tab gạch chân (Tất cả / Chờ xử lý / Đã hoàn thành). */
+    static JToggleButton createTab(String text) {
+        JToggleButton tglTab = new JToggleButton(text);
+        styleButton(tglTab, ButtonKind.TAB);
+        tglTab.setFont(font(Font.PLAIN, 16));
+        tglTab.setBorder(BorderFactory.createEmptyBorder(8, 16, 12, 16));
+        tglTab.addChangeListener(e -> tglTab.setForeground(tglTab.isSelected() ? PRIMARY : TEXT));
+        return tglTab;
+    }
+
+    /** Hàng tab có đường kẻ mảnh phía dưới; chọn sẵn tab {@code selected}. */
+    static JPanel createTabBar(JToggleButton selected, JToggleButton... tabs) {
+        JPanel pnlTabs = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        pnlTabs.setOpaque(false);
+        pnlTabs.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER));
+        javax.swing.ButtonGroup grpTabs = new javax.swing.ButtonGroup();
+        for (JToggleButton tglTab : tabs) {
+            grpTabs.add(tglTab);
+            pnlTabs.add(tglTab);
+        }
+        selected.setSelected(true);
+        return pnlTabs;
     }
 }

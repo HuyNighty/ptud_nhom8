@@ -63,7 +63,7 @@ class InventoryOverviewServiceTest {
         assertEquals(1, r.soLoCanXuLyGap());
         assertEquals(1, r.soPhieuChoXuLy());
         assertEquals(1, r.hoatDongHomNay().nhapKho());
-        assertEquals(null, r.hoatDongHomNay().xuatKho(), "Chưa có chức năng xuất kho");
+        assertEquals(0, r.hoatDongHomNay().xuatKho(), "Đã có xuất kho: hôm nay chưa xuất phiếu nào");
     }
 
     @Test

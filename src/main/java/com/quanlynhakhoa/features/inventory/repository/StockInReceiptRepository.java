@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.features.inventory.repository;
 
 import com.quanlynhakhoa.features.inventory.entity.StockInReceipt;
-import com.quanlynhakhoa.features.inventory.enums.StockInStatus;
+import com.quanlynhakhoa.features.inventory.enums.VoucherStatus;
 import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -28,7 +28,7 @@ public interface StockInReceiptRepository extends Repository<StockInReceipt, Str
             """)
     List<StockInReceipt> findAllWithLines();
 
-    long countByTrangThai(StockInStatus trangThai);
+    long countByTrangThai(VoucherStatus trangThai);
 
     long countByThoiDiemNhapKhoBetween(LocalDateTime from, LocalDateTime to);
 

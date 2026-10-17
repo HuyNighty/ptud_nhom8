@@ -7,6 +7,7 @@ import com.quanlynhakhoa.features.inventory.service.InventoryActor;
 import com.quanlynhakhoa.features.inventory.service.InventoryItemService;
 import com.quanlynhakhoa.features.inventory.service.InventoryOverviewService;
 import com.quanlynhakhoa.features.inventory.service.StockInService;
+import com.quanlynhakhoa.features.inventory.service.StockOutService;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -44,6 +45,7 @@ public final class InventoryWorkspacePanel extends JPanel {
     private final transient InventoryOverviewService overviewService;
     private final transient InventoryItemService itemService;
     private final transient StockInService stockInService;
+    private final transient StockOutService stockOutService;
     private final transient Supplier<InventoryActor> session;
     private final transient Supplier<Set<Role>> sessionRoles;
 
@@ -57,11 +59,13 @@ public final class InventoryWorkspacePanel extends JPanel {
      * @param session người dùng của phiên đăng nhập hiện tại (do shell/Login cung cấp)
      */
     public InventoryWorkspacePanel(InventoryOverviewService overviewService, InventoryItemService itemService,
-                                   StockInService stockInService, Supplier<InventoryActor> session) {
+                                   StockInService stockInService, StockOutService stockOutService,
+                                   Supplier<InventoryActor> session) {
         super(new BorderLayout());
         this.overviewService = Objects.requireNonNull(overviewService);
         this.itemService = Objects.requireNonNull(itemService);
         this.stockInService = Objects.requireNonNull(stockInService);
+        this.stockOutService = Objects.requireNonNull(stockOutService);
         this.session = Objects.requireNonNull(session);
         this.sessionRoles = () -> session.get().roles();
         String displayName = session.get().hoTen();
@@ -94,6 +98,8 @@ public final class InventoryWorkspacePanel extends JPanel {
             pnlItems.reload();
         } else if (view instanceof StockInPanel pnlStockIn) {
             pnlStockIn.reload();
+        } else if (view instanceof StockOutPanel pnlStockOut) {
+            pnlStockOut.reload();
         }
         contentCards.show(pnlContent, screen.name());
     }
@@ -107,6 +113,7 @@ public final class InventoryWorkspacePanel extends JPanel {
             }
             case ITEMS -> new InventoryItemPanel(itemService, sessionRoles);
             case STOCK_IN -> new StockInPanel(stockInService, itemService, session);
+            case STOCK_OUT -> new StockOutPanel(stockOutService, itemService, session);
             default -> new InventoryPlaceholderPanel(screen);
         };
     }

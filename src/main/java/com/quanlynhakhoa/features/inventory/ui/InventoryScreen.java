@@ -8,8 +8,7 @@ public enum InventoryScreen {
 
     ITEMS("KHO", "Vật tư & thuốc", MenuGlyph.BOX, true, null),
     STOCK_IN("KHO", "Nhập kho", MenuGlyph.BOX, true, null),
-    STOCK_OUT("KHO", "Xuất kho", MenuGlyph.BOX, false,
-            "Xuất theo gợi ý FEFO, không cho phép âm tồn (UC31)."),
+    STOCK_OUT("KHO", "Xuất kho", MenuGlyph.BOX, true, null),
     RETURN("KHO", "Hoàn trả kho", MenuGlyph.BOX, false,
             "Nhập lại hàng đã xuất, gắn với phiếu xuất gốc (UC32)."),
     STOCKTAKE("KHO", "Kiểm kê", MenuGlyph.BOX, false,

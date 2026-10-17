@@ -63,6 +63,17 @@ public class StockLot {
         soLuongTon = Math.addExact(soLuongTon, soLuong);
     }
 
+    /** Trừ tồn khi xuất kho; không cho phép âm tồn. */
+    public void issue(int soLuong) {
+        if (soLuong <= 0) {
+            throw new IllegalArgumentException("Số lượng xuất phải lớn hơn 0");
+        }
+        if (soLuong > soLuongTon) {
+            throw new IllegalStateException("Lô " + soLo + " chỉ còn " + soLuongTon);
+        }
+        soLuongTon -= soLuong;
+    }
+
     /** Mã mặt hàng (thuốc hoặc vật tư) của lô. */
     public String maMatHang() {
         return maThuoc != null ? maThuoc : maVatTu;

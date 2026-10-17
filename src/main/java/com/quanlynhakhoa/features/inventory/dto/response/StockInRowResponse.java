@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.features.inventory.dto.response;
 
-import com.quanlynhakhoa.features.inventory.enums.StockInStatus;
+import com.quanlynhakhoa.features.inventory.enums.VoucherStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -12,5 +12,5 @@ public record StockInRowResponse(
         String tenNhaCungCap,
         String nguoiLap,
         BigDecimal tongTien,
-        StockInStatus trangThai) {
+        VoucherStatus trangThai) {
 }

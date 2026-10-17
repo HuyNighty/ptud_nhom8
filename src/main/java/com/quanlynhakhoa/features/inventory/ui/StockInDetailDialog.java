@@ -4,7 +4,7 @@ import static com.quanlynhakhoa.features.inventory.ui.InventoryUiKit.*;
 
 import com.quanlynhakhoa.features.inventory.dto.response.StockInDetailResponse;
 import com.quanlynhakhoa.features.inventory.dto.response.StockInLineResponse;
-import com.quanlynhakhoa.features.inventory.enums.StockInStatus;
+import com.quanlynhakhoa.features.inventory.enums.VoucherStatus;
 import com.quanlynhakhoa.features.inventory.service.InventoryActor;
 import com.quanlynhakhoa.features.inventory.service.StockInService;
 import java.awt.BorderLayout;
@@ -89,9 +89,9 @@ final class StockInDetailDialog extends JDialog {
         info(pnlInfo, 0, 0, "Ngày nhập", InventoryFormat.date(d.ngayNhap()));
         info(pnlInfo, 0, 2, "Nhà cung cấp", d.tenNhaCungCap());
         info(pnlInfo, 1, 0, "Người lập", d.nguoiLap() + " · " + InventoryFormat.dateTime(d.thoiDiemLap()));
-        if (d.trangThai() == StockInStatus.DA_HOAN_THANH) {
+        if (d.trangThai() == VoucherStatus.DA_HOAN_THANH) {
             info(pnlInfo, 1, 2, "Người nhập kho", d.nguoiNhapKho() + " · " + InventoryFormat.dateTime(d.thoiDiemNhapKho()));
-        } else if (d.trangThai() == StockInStatus.DA_HUY) {
+        } else if (d.trangThai() == VoucherStatus.DA_HUY) {
             info(pnlInfo, 1, 2, "Người hủy", d.nguoiHuy() + " · " + InventoryFormat.dateTime(d.thoiDiemHuy()));
             info(pnlInfo, 2, 0, "Lý do hủy", d.lyDoHuy());
         }
@@ -125,10 +125,10 @@ final class StockInDetailDialog extends JDialog {
         JButton btnPrint = createButton("In phiếu", ButtonKind.OUTLINE);
         btnPrint.addActionListener(e -> StockInPrinter.print(this, detail));
         pnlButtons.add(btnClose);
-        if (d.trangThai() != StockInStatus.DA_HUY) {
+        if (d.trangThai() != VoucherStatus.DA_HUY) {
             pnlButtons.add(btnPrint);
         }
-        if (d.trangThai() == StockInStatus.CHO_XU_LY) {
+        if (d.trangThai() == VoucherStatus.CHO_XU_LY) {
             JButton btnCancelReceipt = createButton("Hủy phiếu", ButtonKind.OUTLINE);
             btnCancelReceipt.setForeground(RED);
             btnCancelReceipt.addActionListener(e -> cancelReceipt());
@@ -143,7 +143,7 @@ final class StockInDetailDialog extends JDialog {
             pnlButtons.add(btnCancelReceipt);
             pnlButtons.add(btnEdit);
             pnlButtons.add(btnReceive);
-        } else if (d.trangThai() == StockInStatus.DA_HOAN_THANH) {
+        } else if (d.trangThai() == VoucherStatus.DA_HOAN_THANH) {
             JButton btnNote = createButton("Sửa ghi chú", ButtonKind.OUTLINE);
             btnNote.addActionListener(e -> editNote());
             pnlButtons.add(btnNote);

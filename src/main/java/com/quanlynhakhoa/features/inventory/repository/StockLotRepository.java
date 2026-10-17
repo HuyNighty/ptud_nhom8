@@ -18,5 +18,18 @@ public interface StockLotRepository extends Repository<StockLot, Integer> {
 
     List<StockLot> findBySoLuongTonGreaterThan(int soLuong);
 
+    Optional<StockLot> findById(Integer maLo);
+
+    List<StockLot> findByMaLoIn(java.util.Collection<Integer> maLo);
+
+    /** Khóa dòng lô trước khi trừ tồn (xuất kho). */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select l from LoHangJpaEntity l where l.maLo = :maLo")
+    Optional<StockLot> findForUpdate(@org.springframework.data.repository.query.Param("maLo") Integer maLo);
+
+    List<StockLot> findByMaThuocAndSoLuongTonGreaterThan(String maThuoc, int soLuong);
+
+    List<StockLot> findByMaVatTuAndSoLuongTonGreaterThan(String maVatTu, int soLuong);
+
     StockLot saveAndFlush(StockLot lot);
 }

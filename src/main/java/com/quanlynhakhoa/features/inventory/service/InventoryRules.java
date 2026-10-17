@@ -58,6 +58,12 @@ final class InventoryRules {
         return hanSuDung == null || !hanSuDung.isBefore(today);
     }
 
+    /** Thứ tự FEFO: hạn sớm nhất trước (lô không có hạn xếp cuối), rồi lô nhập trước, rồi mã lô. */
+    static final java.util.Comparator<StockLot> FEFO = java.util.Comparator
+            .comparing(StockLot::getHanSuDung, java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder()))
+            .thenComparing(StockLot::getNgayNhapDau)
+            .thenComparing(StockLot::getMaLo);
+
     /** Tồn khả dụng và hạn gần nhất của một mặt hàng. */
     record StockSnapshot(int tonKho, LocalDate hanGanNhat) {
         static final StockSnapshot EMPTY = new StockSnapshot(0, null);

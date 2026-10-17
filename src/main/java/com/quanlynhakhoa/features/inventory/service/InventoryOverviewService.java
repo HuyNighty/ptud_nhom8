@@ -13,12 +13,13 @@ import com.quanlynhakhoa.features.inventory.entity.Medicine;
 import com.quanlynhakhoa.features.inventory.entity.StockLot;
 import com.quanlynhakhoa.features.inventory.enums.ExpiryLevel;
 import com.quanlynhakhoa.features.inventory.enums.NoticeSeverity;
-import com.quanlynhakhoa.features.inventory.enums.StockInStatus;
+import com.quanlynhakhoa.features.inventory.enums.VoucherStatus;
 import com.quanlynhakhoa.features.inventory.enums.StockLevel;
 import com.quanlynhakhoa.features.inventory.repository.MedicalSupplyRepository;
 import com.quanlynhakhoa.features.inventory.repository.MedicineRepository;
 import com.quanlynhakhoa.features.inventory.repository.StockInReceiptRepository;
 import com.quanlynhakhoa.features.inventory.repository.StockLotRepository;
+import com.quanlynhakhoa.features.inventory.repository.StockOutReceiptRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -32,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tổng quan kho cho INVENTORY_MANAGER (SYSTEM_ADMIN dùng chung). Mọi số liệu lấy từ SQL Server:
- * danh mục, lô hàng (tồn, hạn dùng) và phiếu nhập. Xuất kho/hoàn trả/hủy chưa có nên trả null.
+ * danh mục, lô hàng (tồn, hạn dùng), phiếu nhập và phiếu xuất. Hoàn trả/hủy chưa có nên trả null.
  */
 @Service
 public class InventoryOverviewService {
@@ -42,17 +43,20 @@ public class InventoryOverviewService {
     private final MedicalSupplyRepository supplyRepository;
     private final StockLotRepository lotRepository;
     private final StockInReceiptRepository receiptRepository;
+    private final StockOutReceiptRepository stockOutRepository;
 
     public InventoryOverviewService(AuthorizationService authorizationService,
                                     MedicineRepository medicineRepository,
                                     MedicalSupplyRepository supplyRepository,
                                     StockLotRepository lotRepository,
-                                    StockInReceiptRepository receiptRepository) {
+                                    StockInReceiptRepository receiptRepository,
+                                    StockOutReceiptRepository stockOutRepository) {
         this.authorizationService = Objects.requireNonNull(authorizationService);
         this.medicineRepository = Objects.requireNonNull(medicineRepository);
         this.supplyRepository = Objects.requireNonNull(supplyRepository);
         this.lotRepository = Objects.requireNonNull(lotRepository);
         this.receiptRepository = Objects.requireNonNull(receiptRepository);
+        this.stockOutRepository = Objects.requireNonNull(stockOutRepository);
     }
 
     /**
@@ -102,9 +106,13 @@ public class InventoryOverviewService {
         int urgent = (int) lots.stream().filter(l -> l.mucCanhBao() == ExpiryLevel.DA_HET_HAN
                 || l.mucCanhBao() == ExpiryLevel.CON_TOI_DA_7_NGAY).count();
 
-        long pending = receiptRepository.countByTrangThai(StockInStatus.CHO_XU_LY);
-        int receivedToday = (int) receiptRepository.countByThoiDiemNhapKhoBetween(
-                today.atStartOfDay(), today.plusDays(1).atStartOfDay().minusSeconds(1));
+        long pendingIn = receiptRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
+        long pendingOut = stockOutRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
+        long pending = pendingIn + pendingOut;
+        java.time.LocalDateTime dayStart = today.atStartOfDay();
+        java.time.LocalDateTime dayEnd = today.plusDays(1).atStartOfDay().minusSeconds(1);
+        int receivedToday = (int) receiptRepository.countByThoiDiemNhapKhoBetween(dayStart, dayEnd);
+        int issuedToday = (int) stockOutRepository.countByThoiDiemXuatKhoBetween(dayStart, dayEnd);
 
         List<AttentionNoticeResponse> notices = new ArrayList<>();
         if (medicines.isEmpty() && supplies.isEmpty()) {
@@ -124,9 +132,13 @@ public class InventoryOverviewService {
             notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
                     "Có " + soKiemSoat + " thuốc kiểm soát đặc biệt cần theo dõi sổ KSĐB"));
         }
-        if (pending > 0) {
+        if (pendingIn > 0) {
             notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
-                    "Có " + pending + " phiếu nhập đang chờ nhập kho"));
+                    "Có " + pendingIn + " phiếu nhập đang chờ nhập kho"));
+        }
+        if (pendingOut > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
+                    "Có " + pendingOut + " phiếu xuất đang chờ xuất kho"));
         }
 
         return new InventoryOverviewResponse(
@@ -141,7 +153,7 @@ public class InventoryOverviewService {
                 (int) pending,
                 lowStock,
                 lots,
-                new InventoryActivityResponse(receivedToday, null, null, null),
+                new InventoryActivityResponse(receivedToday, issuedToday, null, null),
                 notices);
     }
 

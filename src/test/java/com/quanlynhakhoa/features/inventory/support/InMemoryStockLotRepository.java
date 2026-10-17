@@ -29,6 +29,31 @@ public final class InMemoryStockLotRepository implements StockLotRepository {
     }
 
     @Override
+    public Optional<StockLot> findById(Integer maLo) {
+        return rows.stream().filter(l -> l.getMaLo().equals(maLo)).findFirst();
+    }
+
+    @Override
+    public List<StockLot> findByMaLoIn(java.util.Collection<Integer> maLo) {
+        return rows.stream().filter(l -> maLo.contains(l.getMaLo())).toList();
+    }
+
+    @Override
+    public Optional<StockLot> findForUpdate(Integer maLo) {
+        return findById(maLo);
+    }
+
+    @Override
+    public List<StockLot> findByMaThuocAndSoLuongTonGreaterThan(String maThuoc, int soLuong) {
+        return rows.stream().filter(l -> Objects.equals(l.getMaThuoc(), maThuoc) && l.getSoLuongTon() > soLuong).toList();
+    }
+
+    @Override
+    public List<StockLot> findByMaVatTuAndSoLuongTonGreaterThan(String maVatTu, int soLuong) {
+        return rows.stream().filter(l -> Objects.equals(l.getMaVatTu(), maVatTu) && l.getSoLuongTon() > soLuong).toList();
+    }
+
+    @Override
     public StockLot saveAndFlush(StockLot lot) {
         if (lot.getMaLo() == null) {
             setField(lot, "maLo", nextId++);

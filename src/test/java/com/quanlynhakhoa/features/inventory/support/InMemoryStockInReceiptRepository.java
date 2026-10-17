@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.features.inventory.support;
 
 import com.quanlynhakhoa.features.inventory.entity.StockInReceipt;
-import com.quanlynhakhoa.features.inventory.enums.StockInStatus;
+import com.quanlynhakhoa.features.inventory.enums.VoucherStatus;
 import com.quanlynhakhoa.features.inventory.repository.StockInReceiptRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public final class InMemoryStockInReceiptRepository implements StockInReceiptRep
     }
 
     @Override
-    public long countByTrangThai(StockInStatus trangThai) {
+    public long countByTrangThai(VoucherStatus trangThai) {
         return rows.values().stream().filter(r -> r.getTrangThai() == trangThai).count();
     }
 

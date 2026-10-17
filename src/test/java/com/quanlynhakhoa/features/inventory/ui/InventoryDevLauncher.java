@@ -6,6 +6,7 @@ import com.quanlynhakhoa.features.inventory.service.InventoryActor;
 import com.quanlynhakhoa.features.inventory.service.InventoryItemService;
 import com.quanlynhakhoa.features.inventory.service.InventoryOverviewService;
 import com.quanlynhakhoa.features.inventory.service.StockInService;
+import com.quanlynhakhoa.features.inventory.service.StockOutService;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.Connection;
@@ -52,10 +53,12 @@ public final class InventoryDevLauncher {
         InventoryItemService itemService = context.getBean(InventoryItemService.class);
         InventoryOverviewService overviewService = context.getBean(InventoryOverviewService.class);
         StockInService stockInService = context.getBean(StockInService.class);
+        StockOutService stockOutService = context.getBean(StockOutService.class);
 
         SwingUtilities.invokeLater(() -> {
             InventoryWorkspacePanel pnlWorkspace =
-                    new InventoryWorkspacePanel(overviewService, itemService, stockInService, () -> actor);
+                    new InventoryWorkspacePanel(overviewService, itemService, stockInService, stockOutService,
+                            () -> actor);
             JFrame winDev = new JFrame("DEV — Kho (SQL Server thật · " + actor.hoTen() + " · Role tạm SYSTEM_ADMIN)");
             winDev.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             winDev.setContentPane(pnlWorkspace);

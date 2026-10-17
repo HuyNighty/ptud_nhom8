@@ -12,7 +12,7 @@ import com.quanlynhakhoa.features.inventory.dto.request.SupplierRequest;
 import com.quanlynhakhoa.features.inventory.dto.response.InventoryItemResponse;
 import com.quanlynhakhoa.features.inventory.dto.response.StockInDetailResponse;
 import com.quanlynhakhoa.features.inventory.enums.InventoryItemType;
-import com.quanlynhakhoa.features.inventory.enums.StockInStatus;
+import com.quanlynhakhoa.features.inventory.enums.VoucherStatus;
 import com.quanlynhakhoa.features.inventory.exception.InventoryValidationException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -80,7 +80,7 @@ class StockInServiceIT {
         assertTrue(stockIn.list(ADMIN).stream().anyMatch(r -> r.maPhieu().equals(first.maPhieu())));
 
         StockInDetailResponse done = stockIn.complete(actor, first.maPhieu());
-        assertEquals(StockInStatus.DA_HOAN_THANH, done.trangThai());
+        assertEquals(VoucherStatus.DA_HOAN_THANH, done.trangThai());
         assertEquals(2, stockIn.getDetail(ADMIN, first.maPhieu()).dong().size());
 
         InventoryItemResponse medicine = items.search(ADMIN, "TH90001", null).get(0);
@@ -103,7 +103,7 @@ class StockInServiceIT {
     void cancelStoresReasonAndPassesDatabaseCheck() {
         String ma = create("IT-L3", 1).maPhieu();
         StockInDetailResponse cancelled = stockIn.cancel(actor, ma, "Giao sai hàng");
-        assertEquals(StockInStatus.DA_HUY, cancelled.trangThai());
+        assertEquals(VoucherStatus.DA_HUY, cancelled.trangThai());
         assertEquals("Giao sai hàng", stockIn.getDetail(ADMIN, ma).lyDoHuy());
     }
 }

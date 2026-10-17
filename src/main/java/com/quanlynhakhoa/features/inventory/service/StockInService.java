@@ -18,7 +18,7 @@ import com.quanlynhakhoa.features.inventory.entity.StockInReceipt;
 import com.quanlynhakhoa.features.inventory.entity.StockLot;
 import com.quanlynhakhoa.features.inventory.entity.Supplier;
 import com.quanlynhakhoa.features.inventory.enums.InventoryItemType;
-import com.quanlynhakhoa.features.inventory.enums.StockInStatus;
+import com.quanlynhakhoa.features.inventory.enums.VoucherStatus;
 import com.quanlynhakhoa.features.inventory.enums.SupplierStatus;
 import com.quanlynhakhoa.features.inventory.exception.InventoryValidationException;
 import com.quanlynhakhoa.features.inventory.repository.MedicalSupplyRepository;
@@ -200,7 +200,7 @@ public class StockInService {
     public StockInDetailResponse update(InventoryActor actor, String maPhieu, StockInRequest request) {
         requireManager(actor);
         StockInReceipt receipt = lockReceipt(maPhieu);
-        if (receipt.getTrangThai() != StockInStatus.CHO_XU_LY) {
+        if (receipt.getTrangThai() != VoucherStatus.CHO_XU_LY) {
             throw new InventoryValidationException("Chỉ sửa được phiếu đang chờ xử lý. Phiếu đã nhập kho "
                     + "hoặc đã hủy chỉ được sửa ghi chú.");
         }
@@ -214,7 +214,7 @@ public class StockInService {
     public StockInDetailResponse updateNote(InventoryActor actor, String maPhieu, String ghiChu) {
         requireManager(actor);
         StockInReceipt receipt = lockReceipt(maPhieu);
-        if (receipt.getTrangThai() == StockInStatus.DA_HUY) {
+        if (receipt.getTrangThai() == VoucherStatus.DA_HUY) {
             throw new InventoryValidationException("Phiếu đã hủy không được sửa.");
         }
         receipt.updateNote(optional(ghiChu, "Ghi chú", 300));
@@ -231,7 +231,7 @@ public class StockInService {
     StockInDetailResponse complete(InventoryActor actor, String maPhieu, LocalDateTime now) {
         requireManager(actor);
         StockInReceipt receipt = lockReceipt(maPhieu);
-        if (receipt.getTrangThai() != StockInStatus.CHO_XU_LY) {
+        if (receipt.getTrangThai() != VoucherStatus.CHO_XU_LY) {
             throw new InventoryValidationException("Phiếu " + receipt.getMaPhieuNhap() + " không còn ở trạng thái "
                     + "chờ xử lý (" + receipt.getTrangThai().label() + ").");
         }
@@ -267,7 +267,7 @@ public class StockInService {
         requireManager(actor);
         String reason = required(lyDo, "Lý do hủy", 300);
         StockInReceipt receipt = lockReceipt(maPhieu);
-        if (receipt.getTrangThai() != StockInStatus.CHO_XU_LY) {
+        if (receipt.getTrangThai() != VoucherStatus.CHO_XU_LY) {
             throw new InventoryValidationException("Chỉ hủy được phiếu đang chờ xử lý. Phiếu đã nhập kho cần "
                     + "điều chỉnh bằng phiếu xuất/hủy để giữ lịch sử tồn.");
         }

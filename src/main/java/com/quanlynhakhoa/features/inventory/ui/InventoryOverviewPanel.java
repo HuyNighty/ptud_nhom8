@@ -262,7 +262,7 @@ public final class InventoryOverviewPanel extends JPanel {
         pnlStats.add(statCard("Sắp hết hạn", stock ? String.valueOf(data.soLoCanXuLyGap()) : NO_DATA,
                 RED, stock ? "Cần xử lý gấp" : NO_STOCK_CAPTION));
         pnlStats.add(statCard("Phiếu cần xử lý", stock ? String.valueOf(data.soPhieuChoXuLy()) : NO_DATA,
-                GREEN, stock ? "Phiếu nhập chờ nhập kho" : "Chưa có chức năng phiếu kho"));
+                GREEN, stock ? "Phiếu nhập / xuất chờ xử lý" : "Chưa có chức năng phiếu kho"));
         return pnlStats;
     }
 

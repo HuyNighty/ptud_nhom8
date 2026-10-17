@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.features.inventory.ui;
 
-import com.quanlynhakhoa.features.inventory.enums.StockInStatus;
+import com.quanlynhakhoa.features.inventory.enums.VoucherStatus;
 import java.awt.Color;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -61,7 +61,7 @@ final class InventoryFormat {
         return new BigDecimal(digits);
     }
 
-    static Color statusDot(StockInStatus status) {
+    static Color statusDot(VoucherStatus status) {
         return switch (status) {
             case CHO_XU_LY -> new Color(0xE5B300);
             case DA_HOAN_THANH -> InventoryUiKit.GREEN;
@@ -69,7 +69,7 @@ final class InventoryFormat {
         };
     }
 
-    static Color statusFill(StockInStatus status) {
+    static Color statusFill(VoucherStatus status) {
         return switch (status) {
             case CHO_XU_LY -> new Color(0xFFF4CC);
             case DA_HOAN_THANH -> new Color(0xDDF3E4);
@@ -77,7 +77,7 @@ final class InventoryFormat {
         };
     }
 
-    static Color statusText(StockInStatus status) {
+    static Color statusText(VoucherStatus status) {
         return switch (status) {
             case CHO_XU_LY -> new Color(0x8A6A00);
             case DA_HOAN_THANH -> new Color(0x1E6B34);

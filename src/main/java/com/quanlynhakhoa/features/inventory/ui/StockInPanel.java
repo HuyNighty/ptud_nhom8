@@ -6,10 +6,17 @@ import com.quanlynhakhoa.features.inventory.dto.response.StockInDetailResponse;
 import com.quanlynhakhoa.features.inventory.dto.response.StockInRowResponse;
 import com.quanlynhakhoa.features.inventory.dto.response.StockInSummaryResponse;
 import com.quanlynhakhoa.features.inventory.dto.response.SupplierResponse;
-import com.quanlynhakhoa.features.inventory.enums.StockInStatus;
+import com.quanlynhakhoa.features.inventory.enums.VoucherStatus;
 import com.quanlynhakhoa.features.inventory.service.InventoryActor;
 import com.quanlynhakhoa.features.inventory.service.InventoryItemService;
 import com.quanlynhakhoa.features.inventory.service.StockInService;
+import com.quanlynhakhoa.features.inventory.ui.VoucherTable.ActionCell;
+import com.quanlynhakhoa.features.inventory.ui.VoucherTable.CellRenderer;
+import com.quanlynhakhoa.features.inventory.ui.VoucherTable.HeaderRenderer;
+import com.quanlynhakhoa.features.inventory.ui.VoucherTable.RowAction;
+import com.quanlynhakhoa.features.inventory.ui.VoucherTable.ScrollablePage;
+import com.quanlynhakhoa.features.inventory.ui.VoucherTable.StatusRenderer;
+import com.quanlynhakhoa.features.inventory.ui.VoucherTable.TimeRange;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -79,59 +86,6 @@ public final class StockInPanel extends JPanel {
     private static final Color AMBER = new Color(0xD9A300);
     private static final String ALL_SUPPLIERS = "Nhà cung cấp";
 
-    /** Khoảng thời gian lọc theo ngày nhập. */
-    enum TimeRange {
-        ALL("Thời gian"),
-        TODAY("Hôm nay"),
-        LAST_7("7 ngày qua"),
-        LAST_30("30 ngày qua"),
-        THIS_MONTH("Tháng này"),
-        LAST_MONTH("Tháng trước"),
-        THIS_YEAR("Năm nay");
-
-        final String label;
-
-        TimeRange(String label) {
-            this.label = label;
-        }
-
-        boolean contains(LocalDate date, LocalDate today) {
-            return switch (this) {
-                case ALL -> true;
-                case TODAY -> date.equals(today);
-                case LAST_7 -> !date.isBefore(today.minusDays(6)) && !date.isAfter(today);
-                case LAST_30 -> !date.isBefore(today.minusDays(29)) && !date.isAfter(today);
-                case THIS_MONTH -> YearMonth.from(date).equals(YearMonth.from(today));
-                case LAST_MONTH -> YearMonth.from(date).equals(YearMonth.from(today).minusMonths(1));
-                case THIS_YEAR -> date.getYear() == today.getYear();
-            };
-        }
-
-        @Override
-        public String toString() {
-            return label;
-        }
-    }
-
-    /** Thao tác trên một dòng; hiển thị theo trạng thái phiếu. */
-    enum RowAction {
-        VIEW("Xem"), PRINT("In"), EDIT("Sửa"), RECEIVE("Nhập kho");
-
-        final String label;
-
-        RowAction(String label) {
-            this.label = label;
-        }
-
-        static List<RowAction> forStatus(StockInStatus status) {
-            return switch (status) {
-                case DA_HOAN_THANH -> List.of(VIEW, PRINT, EDIT);
-                case CHO_XU_LY -> List.of(VIEW, RECEIVE);
-                case DA_HUY -> List.of(VIEW);
-            };
-        }
-    }
-
     private final transient StockInService service;
     private final transient InventoryItemService itemService;
     private final transient Supplier<InventoryActor> session;
@@ -155,7 +109,7 @@ public final class StockInPanel extends JPanel {
 
     private final ReceiptTableModel tableModel = new ReceiptTableModel();
     private final JTable tblReceipts = new JTable(tableModel);
-    private final ActionCell actionCell = new ActionCell();
+    private final ActionCell actionCell = new ActionCell("Nhập kho", COL_STATUS);
     private final JLabel lblPageInfo = new JLabel(" ");
     private final Pager pnlPager = new Pager();
 
@@ -527,9 +481,9 @@ public final class StockInPanel extends JPanel {
         if (tglThisMonth.isSelected()) {
             segment = r -> TimeRange.THIS_MONTH.contains(r.ngayNhap(), today);
         } else if (tglPending.isSelected()) {
-            segment = r -> r.trangThai() == StockInStatus.CHO_XU_LY;
+            segment = r -> r.trangThai() == VoucherStatus.CHO_XU_LY;
         } else if (tglCompleted.isSelected()) {
-            segment = r -> r.trangThai() == StockInStatus.DA_HOAN_THANH;
+            segment = r -> r.trangThai() == VoucherStatus.DA_HOAN_THANH;
         }
         List<StockInRowResponse> result = new ArrayList<>();
         for (StockInRowResponse r : allRows) {
@@ -569,7 +523,7 @@ public final class StockInPanel extends JPanel {
             case VIEW -> openDetail(row.maPhieu());
             case PRINT -> printReceipt(row.maPhieu());
             case EDIT -> editNote(row.maPhieu());
-            case RECEIVE -> receive(row.maPhieu());
+            case PROCESS -> receive(row.maPhieu());
         }
     }
 
@@ -743,7 +697,7 @@ public final class StockInPanel extends JPanel {
         for (StockInRowResponse r : rows) {
             data.add(List.of(stt++, r.maPhieu(), r.ngayNhap(), r.tenNhaCungCap(), r.nguoiLap(), r.tongTien(),
                     r.trangThai().label()));
-            if (r.trangThai() == StockInStatus.DA_HOAN_THANH) {
+            if (r.trangThai() == VoucherStatus.DA_HOAN_THANH) {
                 total = total.add(r.tongTien());
             }
         }
@@ -797,147 +751,6 @@ public final class StockInPanel extends JPanel {
                 case 5 -> InventoryFormat.money(r.tongTien());
                 default -> r.trangThai();
             };
-        }
-    }
-
-    private static final class CellRenderer extends DefaultTableCellRenderer {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public Component getTableCellRendererComponent(JTable tbl, Object value, boolean selected,
-                                                       boolean focused, int row, int column) {
-            JLabel lblCell = (JLabel) super.getTableCellRendererComponent(tbl, value, false, false, row, column);
-            lblCell.setBorder(BorderFactory.createEmptyBorder(0, 16, 0, 8));
-            lblCell.setForeground(TEXT);
-            return lblCell;
-        }
-    }
-
-    private static final class StatusRenderer implements TableCellRenderer {
-        private final StatusPill lblStatus = new StatusPill();
-        private final JPanel pnlCell = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 13));
-
-        StatusRenderer() {
-            pnlCell.setBackground(SURFACE);
-            pnlCell.add(lblStatus);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable tbl, Object value, boolean selected,
-                                                       boolean focused, int row, int column) {
-            StockInStatus status = (StockInStatus) value;
-            lblStatus.apply(status.label(), InventoryFormat.statusDot(status), InventoryFormat.statusFill(status),
-                    InventoryFormat.statusText(status));
-            return pnlCell;
-        }
-    }
-
-    /** Ô "Thao tác": vẽ các liên kết theo trạng thái; {@link #hitTest} dùng cùng bố cục để bắt click. */
-    private static final class ActionCell extends JComponent implements TableCellRenderer {
-        private static final long serialVersionUID = 1L;
-        private static final int PADDING = 16;
-        private static final int GAP = 26;
-        private static final int PILL_PAD = 12;
-        private StockInStatus status = StockInStatus.DA_HUY;
-
-        ActionCell() {
-            setFont(font(Font.PLAIN, 15));
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable tbl, Object value, boolean selected,
-                                                       boolean focused, int row, int column) {
-            status = (StockInStatus) tbl.getModel().getValueAt(row, COL_STATUS);
-            return this;
-        }
-
-        RowAction hitTest(StockInStatus rowStatus, int x, FontMetrics fm) {
-            int cursor = PADDING;
-            for (RowAction action : RowAction.forStatus(rowStatus)) {
-                int width = fm.stringWidth(action.label) + (action == RowAction.RECEIVE ? 2 * PILL_PAD : 0);
-                int start = action == RowAction.RECEIVE ? cursor - 6 : cursor;
-                if (x >= start - 4 && x <= start + width + 4) {
-                    return action;
-                }
-                cursor = start + width + (action == RowAction.RECEIVE ? 0 : GAP);
-            }
-            return null;
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            antialias(g2);
-            g2.setColor(SURFACE);
-            g2.fillRect(0, 0, getWidth(), getHeight());
-            g2.setFont(getFont());
-            FontMetrics fm = g2.getFontMetrics();
-            int baseline = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
-            int cursor = PADDING;
-            for (RowAction action : RowAction.forStatus(status)) {
-                int textWidth = fm.stringWidth(action.label);
-                if (action == RowAction.RECEIVE) {
-                    int start = cursor - 6;
-                    int width = textWidth + 2 * PILL_PAD;
-                    g2.setColor(PRIMARY);
-                    g2.fillRoundRect(start, (getHeight() - 36) / 2, width, 36, 8, 8);
-                    g2.setColor(Color.WHITE);
-                    g2.drawString(action.label, start + PILL_PAD, baseline);
-                    cursor = start + width;
-                } else {
-                    g2.setColor(new Color(0x2F5BD3));
-                    g2.drawString(action.label, cursor, baseline);
-                    cursor += textWidth + GAP;
-                }
-            }
-            g2.dispose();
-        }
-    }
-
-    private static final class HeaderRenderer extends DefaultTableCellRenderer {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public Component getTableCellRendererComponent(JTable tbl, Object value, boolean selected,
-                                                       boolean focused, int row, int column) {
-            JLabel lblHeaderCell = (JLabel) super.getTableCellRendererComponent(tbl, value, false, false, row, column);
-            lblHeaderCell.setFont(font(Font.BOLD, 15));
-            lblHeaderCell.setForeground(TEXT);
-            lblHeaderCell.setBackground(HEADER_ROW);
-            lblHeaderCell.setOpaque(true);
-            lblHeaderCell.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER),
-                    BorderFactory.createEmptyBorder(0, 16, 0, 8)));
-            return lblHeaderCell;
-        }
-    }
-
-    private static final class ScrollablePage extends JPanel implements javax.swing.Scrollable {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public Dimension getPreferredScrollableViewportSize() {
-            return getPreferredSize();
-        }
-
-        @Override
-        public int getScrollableUnitIncrement(Rectangle visible, int orientation, int direction) {
-            return 18;
-        }
-
-        @Override
-        public int getScrollableBlockIncrement(Rectangle visible, int orientation, int direction) {
-            return Math.max(visible.height - 40, 18);
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportWidth() {
-            return true;
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportHeight() {
-            return false;
         }
     }
 }
