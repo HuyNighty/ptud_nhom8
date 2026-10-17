@@ -23,7 +23,8 @@ public final class InventoryWorkspacePreview {
             fx.receipts.addEmployee("NV9999", "Người dùng");
             InventoryActor actor = new InventoryActor(Set.of(Role.SYSTEM_ADMIN), "NV9999", "Người dùng");
             InventoryWorkspacePanel pnlWorkspace = new InventoryWorkspacePanel(
-                    fx.overviewService, fx.itemService, fx.stockInService, fx.stockOutService, () -> actor);
+                    fx.overviewService, fx.itemService, fx.stockInService, fx.stockOutService,
+                    fx.stockReturnService, () -> actor);
 
             JFrame winPreview = new JFrame("PREVIEW — Kho N08 (dữ liệu trong bộ nhớ)");
             winPreview.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

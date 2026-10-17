@@ -73,6 +73,8 @@ final class InventoryUiKit {
     /** Thẻ nền trắng bo góc có viền mảnh. */
     static final class Card extends JPanel {
         private final int arc;
+        private Color fill = SURFACE;
+        private Color stroke = BORDER;
 
         Card(LayoutManager layout, int padding) {
             this(layout, padding, 14);
@@ -85,13 +87,21 @@ final class InventoryUiKit {
             setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
         }
 
+        /** Thẻ có nền màu nhạt (vd. thẻ thống kê "Chờ kiểm duyệt" cam, "Đã hoàn thành" xanh). */
+        Card tint(Color background, Color border) {
+            this.fill = background;
+            this.stroke = border;
+            repaint();
+            return this;
+        }
+
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             antialias(g2);
-            g2.setColor(SURFACE);
+            g2.setColor(fill);
             g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc, arc);
-            g2.setColor(BORDER);
+            g2.setColor(stroke);
             g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc, arc);
             g2.dispose();
             super.paintComponent(g);

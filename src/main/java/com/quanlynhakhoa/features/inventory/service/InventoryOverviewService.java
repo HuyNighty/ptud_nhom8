@@ -20,6 +20,7 @@ import com.quanlynhakhoa.features.inventory.repository.MedicineRepository;
 import com.quanlynhakhoa.features.inventory.repository.StockInReceiptRepository;
 import com.quanlynhakhoa.features.inventory.repository.StockLotRepository;
 import com.quanlynhakhoa.features.inventory.repository.StockOutReceiptRepository;
+import com.quanlynhakhoa.features.inventory.repository.StockReturnReceiptRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tổng quan kho cho INVENTORY_MANAGER (SYSTEM_ADMIN dùng chung). Mọi số liệu lấy từ SQL Server:
- * danh mục, lô hàng (tồn, hạn dùng), phiếu nhập và phiếu xuất. Hoàn trả/hủy chưa có nên trả null.
+ * danh mục, lô hàng (tồn, hạn dùng), phiếu nhập, xuất và hoàn trả. Hủy/hao hụt chưa có nên trả null.
  */
 @Service
 public class InventoryOverviewService {
@@ -44,19 +45,22 @@ public class InventoryOverviewService {
     private final StockLotRepository lotRepository;
     private final StockInReceiptRepository receiptRepository;
     private final StockOutReceiptRepository stockOutRepository;
+    private final StockReturnReceiptRepository returnRepository;
 
     public InventoryOverviewService(AuthorizationService authorizationService,
                                     MedicineRepository medicineRepository,
                                     MedicalSupplyRepository supplyRepository,
                                     StockLotRepository lotRepository,
                                     StockInReceiptRepository receiptRepository,
-                                    StockOutReceiptRepository stockOutRepository) {
+                                    StockOutReceiptRepository stockOutRepository,
+                                    StockReturnReceiptRepository returnRepository) {
         this.authorizationService = Objects.requireNonNull(authorizationService);
         this.medicineRepository = Objects.requireNonNull(medicineRepository);
         this.supplyRepository = Objects.requireNonNull(supplyRepository);
         this.lotRepository = Objects.requireNonNull(lotRepository);
         this.receiptRepository = Objects.requireNonNull(receiptRepository);
         this.stockOutRepository = Objects.requireNonNull(stockOutRepository);
+        this.returnRepository = Objects.requireNonNull(returnRepository);
     }
 
     /**
@@ -108,11 +112,13 @@ public class InventoryOverviewService {
 
         long pendingIn = receiptRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
         long pendingOut = stockOutRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
-        long pending = pendingIn + pendingOut;
+        long pendingReturn = returnRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
+        long pending = pendingIn + pendingOut + pendingReturn;
         java.time.LocalDateTime dayStart = today.atStartOfDay();
         java.time.LocalDateTime dayEnd = today.plusDays(1).atStartOfDay().minusSeconds(1);
         int receivedToday = (int) receiptRepository.countByThoiDiemNhapKhoBetween(dayStart, dayEnd);
         int issuedToday = (int) stockOutRepository.countByThoiDiemXuatKhoBetween(dayStart, dayEnd);
+        int returnedToday = (int) returnRepository.countByThoiDiemDuyetBetween(dayStart, dayEnd);
 
         List<AttentionNoticeResponse> notices = new ArrayList<>();
         if (medicines.isEmpty() && supplies.isEmpty()) {
@@ -140,6 +146,10 @@ public class InventoryOverviewService {
             notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
                     "Có " + pendingOut + " phiếu xuất đang chờ xuất kho"));
         }
+        if (pendingReturn > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
+                    "Có " + pendingReturn + " phiếu hoàn trả đang chờ kiểm duyệt"));
+        }
 
         return new InventoryOverviewResponse(
                 today,
@@ -153,7 +163,7 @@ public class InventoryOverviewService {
                 (int) pending,
                 lowStock,
                 lots,
-                new InventoryActivityResponse(receivedToday, issuedToday, null, null),
+                new InventoryActivityResponse(receivedToday, issuedToday, returnedToday, null),
                 notices);
     }
 
