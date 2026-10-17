@@ -267,12 +267,105 @@ final class VoucherTable {
         }
     }
 
+    /**
+     * Ô "Thao tác" dạng liên kết cách nhau dấu phẩy, căn giữa (Figma Kiểm kê):
+     * đang xử lý → Xem, Sửa, {processLabel}; đã hoàn thành → Xem, Sửa; đã hủy → Xem (mờ).
+     */
+    static final class LinkActionCell extends JComponent implements TableCellRenderer {
+        private static final long serialVersionUID = 1L;
+        private static final String SEPARATOR = ", ";
+        private final String processLabel;
+        private final int statusColumn;
+        private VoucherStatus status = VoucherStatus.DA_HUY;
+
+        LinkActionCell(String processLabel, int statusColumn) {
+            this.processLabel = processLabel;
+            this.statusColumn = statusColumn;
+            setFont(font(Font.PLAIN, 15));
+        }
+
+        static List<RowAction> actions(VoucherStatus status) {
+            return switch (status) {
+                case CHO_XU_LY -> List.of(RowAction.VIEW, RowAction.EDIT, RowAction.PROCESS);
+                case DA_HOAN_THANH -> List.of(RowAction.VIEW, RowAction.EDIT);
+                case DA_HUY -> List.of(RowAction.VIEW);
+            };
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable tbl, Object value, boolean selected,
+                                                       boolean focused, int row, int column) {
+            status = (VoucherStatus) tbl.getModel().getValueAt(row, statusColumn);
+            return this;
+        }
+
+        private String label(RowAction action) {
+            return action == RowAction.PROCESS ? processLabel : action.label;
+        }
+
+        private int start(List<RowAction> actions, int cellWidth, FontMetrics fm) {
+            int total = 0;
+            for (int i = 0; i < actions.size(); i++) {
+                total += fm.stringWidth(label(actions.get(i))) + (i > 0 ? fm.stringWidth(SEPARATOR) : 0);
+            }
+            return Math.max(8, (cellWidth - total) / 2);
+        }
+
+        RowAction hitTest(VoucherStatus rowStatus, int x, int cellWidth, FontMetrics fm) {
+            List<RowAction> actions = actions(rowStatus);
+            int cursor = start(actions, cellWidth, fm);
+            for (int i = 0; i < actions.size(); i++) {
+                if (i > 0) {
+                    cursor += fm.stringWidth(SEPARATOR);
+                }
+                int width = fm.stringWidth(label(actions.get(i)));
+                if (x >= cursor - 3 && x <= cursor + width + 3) {
+                    return actions.get(i);
+                }
+                cursor += width;
+            }
+            return null;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            antialias(g2);
+            g2.setColor(SURFACE);
+            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.setFont(getFont());
+            FontMetrics fm = g2.getFontMetrics();
+            int baseline = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+            List<RowAction> actions = actions(status);
+            int cursor = start(actions, getWidth(), fm);
+            for (int i = 0; i < actions.size(); i++) {
+                if (i > 0) {
+                    g2.setColor(TEXT);
+                    g2.drawString(SEPARATOR, cursor, baseline);
+                    cursor += fm.stringWidth(SEPARATOR);
+                }
+                String text = label(actions.get(i));
+                g2.setColor(status == VoucherStatus.DA_HUY ? TEXT_MUTED : LINK);
+                g2.drawString(text, cursor, baseline);
+                cursor += fm.stringWidth(text);
+            }
+            g2.dispose();
+        }
+    }
+
     /** Nhãn trạng thái dạng viên thuốc màu. */
     static final class StatusRenderer implements TableCellRenderer {
         private final StatusPill lblStatus = new StatusPill();
         private final JPanel pnlCell = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 13));
+        private final String pendingLabel;
 
         StatusRenderer() {
+            this(null);
+        }
+
+        /** @param pendingLabel nhãn thay cho "Chờ xử lý" (vd. "Đang kiểm kê"); null = giữ nguyên */
+        StatusRenderer(String pendingLabel) {
+            this.pendingLabel = pendingLabel;
             pnlCell.setBackground(SURFACE);
             pnlCell.add(lblStatus);
         }
@@ -281,7 +374,8 @@ final class VoucherTable {
         public Component getTableCellRendererComponent(JTable tbl, Object value, boolean selected,
                                                        boolean focused, int row, int column) {
             VoucherStatus status = (VoucherStatus) value;
-            lblStatus.apply(status.label(), InventoryFormat.statusDot(status), InventoryFormat.statusFill(status),
+            String text = status == VoucherStatus.CHO_XU_LY && pendingLabel != null ? pendingLabel : status.label();
+            lblStatus.apply(text, InventoryFormat.statusDot(status), InventoryFormat.statusFill(status),
                     InventoryFormat.statusText(status));
             return pnlCell;
         }

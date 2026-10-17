@@ -21,6 +21,7 @@ import com.quanlynhakhoa.features.inventory.repository.StockInReceiptRepository;
 import com.quanlynhakhoa.features.inventory.repository.StockLotRepository;
 import com.quanlynhakhoa.features.inventory.repository.StockOutReceiptRepository;
 import com.quanlynhakhoa.features.inventory.repository.StockReturnReceiptRepository;
+import com.quanlynhakhoa.features.inventory.repository.StocktakeRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -34,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tổng quan kho cho INVENTORY_MANAGER (SYSTEM_ADMIN dùng chung). Mọi số liệu lấy từ SQL Server:
- * danh mục, lô hàng (tồn, hạn dùng), phiếu nhập, xuất và hoàn trả. Hủy/hao hụt chưa có nên trả null.
+ * danh mục, lô hàng (tồn, hạn dùng), phiếu nhập, xuất, hoàn trả và kiểm kê. Hủy/hao hụt chưa có nên trả null.
  */
 @Service
 public class InventoryOverviewService {
@@ -46,6 +47,7 @@ public class InventoryOverviewService {
     private final StockInReceiptRepository receiptRepository;
     private final StockOutReceiptRepository stockOutRepository;
     private final StockReturnReceiptRepository returnRepository;
+    private final StocktakeRepository stocktakeRepository;
 
     public InventoryOverviewService(AuthorizationService authorizationService,
                                     MedicineRepository medicineRepository,
@@ -53,7 +55,8 @@ public class InventoryOverviewService {
                                     StockLotRepository lotRepository,
                                     StockInReceiptRepository receiptRepository,
                                     StockOutReceiptRepository stockOutRepository,
-                                    StockReturnReceiptRepository returnRepository) {
+                                    StockReturnReceiptRepository returnRepository,
+                                    StocktakeRepository stocktakeRepository) {
         this.authorizationService = Objects.requireNonNull(authorizationService);
         this.medicineRepository = Objects.requireNonNull(medicineRepository);
         this.supplyRepository = Objects.requireNonNull(supplyRepository);
@@ -61,6 +64,7 @@ public class InventoryOverviewService {
         this.receiptRepository = Objects.requireNonNull(receiptRepository);
         this.stockOutRepository = Objects.requireNonNull(stockOutRepository);
         this.returnRepository = Objects.requireNonNull(returnRepository);
+        this.stocktakeRepository = Objects.requireNonNull(stocktakeRepository);
     }
 
     /**
@@ -149,6 +153,10 @@ public class InventoryOverviewService {
         if (pendingReturn > 0) {
             notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
                     "Có " + pendingReturn + " phiếu hoàn trả đang chờ kiểm duyệt"));
+        }
+        if (stocktakeRepository.countByTrangThai(VoucherStatus.CHO_XU_LY) > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.INFO,
+                    "Có đợt kiểm kê đang thực hiện — cần người khác người lập hoàn tất"));
         }
 
         return new InventoryOverviewResponse(

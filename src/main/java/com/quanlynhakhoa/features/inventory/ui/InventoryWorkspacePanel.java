@@ -9,6 +9,7 @@ import com.quanlynhakhoa.features.inventory.service.InventoryOverviewService;
 import com.quanlynhakhoa.features.inventory.service.StockInService;
 import com.quanlynhakhoa.features.inventory.service.StockOutService;
 import com.quanlynhakhoa.features.inventory.service.StockReturnService;
+import com.quanlynhakhoa.features.inventory.service.StocktakeService;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -48,6 +49,7 @@ public final class InventoryWorkspacePanel extends JPanel {
     private final transient StockInService stockInService;
     private final transient StockOutService stockOutService;
     private final transient StockReturnService stockReturnService;
+    private final transient StocktakeService stocktakeService;
     private final transient Supplier<InventoryActor> session;
     private final transient Supplier<Set<Role>> sessionRoles;
 
@@ -62,7 +64,7 @@ public final class InventoryWorkspacePanel extends JPanel {
      */
     public InventoryWorkspacePanel(InventoryOverviewService overviewService, InventoryItemService itemService,
                                    StockInService stockInService, StockOutService stockOutService,
-                                   StockReturnService stockReturnService,
+                                   StockReturnService stockReturnService, StocktakeService stocktakeService,
                                    Supplier<InventoryActor> session) {
         super(new BorderLayout());
         this.overviewService = Objects.requireNonNull(overviewService);
@@ -70,6 +72,7 @@ public final class InventoryWorkspacePanel extends JPanel {
         this.stockInService = Objects.requireNonNull(stockInService);
         this.stockOutService = Objects.requireNonNull(stockOutService);
         this.stockReturnService = Objects.requireNonNull(stockReturnService);
+        this.stocktakeService = Objects.requireNonNull(stocktakeService);
         this.session = Objects.requireNonNull(session);
         this.sessionRoles = () -> session.get().roles();
         String displayName = session.get().hoTen();
@@ -106,6 +109,8 @@ public final class InventoryWorkspacePanel extends JPanel {
             pnlStockOut.reload();
         } else if (view instanceof StockReturnPanel pnlReturn) {
             pnlReturn.reload();
+        } else if (view instanceof StocktakePanel pnlStocktake) {
+            pnlStocktake.reload();
         }
         contentCards.show(pnlContent, screen.name());
     }
@@ -121,6 +126,7 @@ public final class InventoryWorkspacePanel extends JPanel {
             case STOCK_IN -> new StockInPanel(stockInService, itemService, session);
             case STOCK_OUT -> new StockOutPanel(stockOutService, itemService, session);
             case RETURN -> new StockReturnPanel(stockReturnService, session);
+            case STOCKTAKE -> new StocktakePanel(stocktakeService, session);
             default -> new InventoryPlaceholderPanel(screen);
         };
     }

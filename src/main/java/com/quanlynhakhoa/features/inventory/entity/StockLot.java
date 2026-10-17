@@ -74,6 +74,15 @@ public class StockLot {
         soLuongTon -= soLuong;
     }
 
+    /** Điều chỉnh tồn theo kết quả kiểm kê (delta có thể âm); không cho phép âm tồn. */
+    public void adjust(int delta) {
+        long result = (long) soLuongTon + delta;
+        if (result < 0) {
+            throw new IllegalStateException("Lô " + soLo + " chỉ còn " + soLuongTon + ", không thể giảm " + (-delta));
+        }
+        soLuongTon = Math.toIntExact(result);
+    }
+
     /** Mã mặt hàng (thuốc hoặc vật tư) của lô. */
     public String maMatHang() {
         return maThuoc != null ? maThuoc : maVatTu;
