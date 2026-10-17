@@ -42,20 +42,17 @@ public class InventoryOverviewService {
     private final MedicalSupplyRepository supplyRepository;
     private final StockLotRepository lotRepository;
     private final StockInReceiptRepository receiptRepository;
-    private final InventoryItemService itemService;
 
     public InventoryOverviewService(AuthorizationService authorizationService,
                                     MedicineRepository medicineRepository,
                                     MedicalSupplyRepository supplyRepository,
                                     StockLotRepository lotRepository,
-                                    StockInReceiptRepository receiptRepository,
-                                    InventoryItemService itemService) {
+                                    StockInReceiptRepository receiptRepository) {
         this.authorizationService = Objects.requireNonNull(authorizationService);
         this.medicineRepository = Objects.requireNonNull(medicineRepository);
         this.supplyRepository = Objects.requireNonNull(supplyRepository);
         this.lotRepository = Objects.requireNonNull(lotRepository);
         this.receiptRepository = Objects.requireNonNull(receiptRepository);
-        this.itemService = Objects.requireNonNull(itemService);
     }
 
     /**
@@ -71,7 +68,8 @@ public class InventoryOverviewService {
         authorizationService.require(authenticatedRoles, Permission.INVENTORY_READ);
         List<Medicine> medicines = medicineRepository.search("");
         List<MedicalSupply> supplies = supplyRepository.search("");
-        Map<String, InventoryItemService.StockSnapshot> stock = itemService.stockByItem(today);
+        List<StockLot> lotsInStock = lotRepository.findBySoLuongTonGreaterThan(0);
+        Map<String, InventoryRules.StockSnapshot> stock = InventoryRules.stockByItem(lotsInStock, today);
         Map<String, String[]> names = new HashMap<>();
 
         List<LowStockItemResponse> lowStock = new ArrayList<>();
@@ -90,7 +88,7 @@ public class InventoryOverviewService {
         lowStock.sort(Comparator.comparing(LowStockItemResponse::mucTon).thenComparing(LowStockItemResponse::maMatHang));
 
         List<ExpiringLotResponse> lots = new ArrayList<>();
-        for (StockLot lot : lotRepository.findBySoLuongTonGreaterThan(0)) {
+        for (StockLot lot : lotsInStock) {
             ExpiryLevel level = InventoryRules.classifyExpiry(lot.getHanSuDung(), today);
             if (level == ExpiryLevel.CON_HAN) {
                 continue;
@@ -106,7 +104,7 @@ public class InventoryOverviewService {
 
         long pending = receiptRepository.countByTrangThai(StockInStatus.CHO_XU_LY);
         int receivedToday = (int) receiptRepository.countByThoiDiemNhapKhoBetween(
-                today.atStartOfDay(), today.plusDays(1).atStartOfDay());
+                today.atStartOfDay(), today.plusDays(1).atStartOfDay().minusSeconds(1));
 
         List<AttentionNoticeResponse> notices = new ArrayList<>();
         if (medicines.isEmpty() && supplies.isEmpty()) {
@@ -148,8 +146,8 @@ public class InventoryOverviewService {
     }
 
     private static void addIfLow(List<LowStockItemResponse> target, String ma, String ten, int dinhMuc,
-                                 Map<String, InventoryItemService.StockSnapshot> stock) {
-        int ton = stock.getOrDefault(ma, InventoryItemService.StockSnapshot.EMPTY).tonKho();
+                                 Map<String, InventoryRules.StockSnapshot> stock) {
+        int ton = stock.getOrDefault(ma, InventoryRules.StockSnapshot.EMPTY).tonKho();
         StockLevel level = InventoryRules.classifyStock(ton, dinhMuc);
         if (level != StockLevel.DU) {
             target.add(new LowStockItemResponse(ma, ten, ton, dinhMuc, level));

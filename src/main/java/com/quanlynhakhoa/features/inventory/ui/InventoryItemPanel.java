@@ -61,6 +61,7 @@ import javax.swing.table.JTableHeader;
  */
 public final class InventoryItemPanel extends JPanel {
     private static final long serialVersionUID = 1L;
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(InventoryItemPanel.class);
     static final int PAGE_SIZE = 10;
     private static final String NO_DATA = "—";
     private static final Color PURPLE = new Color(0x6A3DB0);
@@ -551,6 +552,7 @@ public final class InventoryItemPanel extends JPanel {
         return tglSupply.isSelected() ? InventoryItemType.VAT_TU : null;
     }
 
+    /** Thông báo lỗi cho người dùng; lỗi ngoài dự kiến được ghi log đầy đủ để tra cứu. */
     static String describe(Throwable cause) {
         if (cause instanceof PermissionDeniedException) {
             return "Tài khoản hiện tại không có quyền thực hiện thao tác này.";
@@ -558,7 +560,16 @@ public final class InventoryItemPanel extends JPanel {
         if (cause instanceof InventoryValidationException) {
             return cause.getMessage();
         }
-        return "Không kết nối được cơ sở dữ liệu. Vui lòng thử lại.";
+        LOG.error("Lỗi khi xử lý dữ liệu kho", cause);
+        if (cause instanceof org.springframework.dao.PessimisticLockingFailureException
+                || cause instanceof org.springframework.dao.ConcurrencyFailureException) {
+            return "Dữ liệu đang được người khác cập nhật. Vui lòng thử lại sau giây lát.";
+        }
+        if (cause instanceof org.springframework.dao.DataAccessResourceFailureException
+                || cause instanceof org.springframework.transaction.CannotCreateTransactionException) {
+            return "Không kết nối được cơ sở dữ liệu. Kiểm tra SQL Server rồi thử lại.";
+        }
+        return "Không thực hiện được thao tác (lỗi hệ thống, chi tiết đã ghi vào log).";
     }
 
     // ------------------------------------------------------------------- table

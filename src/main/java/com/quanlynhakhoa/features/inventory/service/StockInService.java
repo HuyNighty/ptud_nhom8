@@ -238,7 +238,11 @@ public class StockInService {
         if (receipt.getLines().isEmpty()) {
             throw new InventoryValidationException("Phiếu chưa có dòng hàng nào.");
         }
-        for (StockInLine line : receipt.getLines()) {
+        // Khóa lô theo thứ tự cố định (mã hàng, số lô) để hai phiếu cùng lô không khóa chéo nhau (deadlock).
+        List<StockInLine> ordered = receipt.getLines().stream()
+                .sorted(java.util.Comparator.comparing(StockInLine::maMatHang).thenComparing(StockInLine::getSoLo))
+                .toList();
+        for (StockInLine line : ordered) {
             StockLot lot = (line.getMaThuoc() != null
                     ? lotRepository.findByMaThuocAndSoLo(line.getMaThuoc(), line.getSoLo())
                     : lotRepository.findByMaVatTuAndSoLo(line.getMaVatTu(), line.getSoLo()))

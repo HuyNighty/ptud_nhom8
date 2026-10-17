@@ -13,10 +13,9 @@ import com.quanlynhakhoa.features.inventory.exception.InventoryValidationExcepti
 import com.quanlynhakhoa.features.inventory.repository.MedicalSupplyRepository;
 import com.quanlynhakhoa.features.inventory.repository.MedicineRepository;
 import com.quanlynhakhoa.features.inventory.repository.StockLotRepository;
-import com.quanlynhakhoa.features.inventory.entity.StockLot;
+import com.quanlynhakhoa.features.inventory.service.InventoryRules.StockSnapshot;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Locale;
@@ -58,25 +57,8 @@ public class InventoryItemService {
         this.lotRepository = Objects.requireNonNull(lotRepository);
     }
 
-    /** Tồn khả dụng và hạn gần nhất của một mặt hàng, tính từ các lô còn tồn. */
-    record StockSnapshot(int tonKho, LocalDate hanGanNhat) {
-        static final StockSnapshot EMPTY = new StockSnapshot(0, null);
-    }
-
-    Map<String, StockSnapshot> stockByItem(LocalDate today) {
-        Map<String, StockSnapshot> result = new HashMap<>();
-        for (StockLot lot : lotRepository.findBySoLuongTonGreaterThan(0)) {
-            if (!InventoryRules.usable(lot.getHanSuDung(), today)) {
-                continue;
-            }
-            StockSnapshot current = result.getOrDefault(lot.maMatHang(), StockSnapshot.EMPTY);
-            LocalDate nearest = current.hanGanNhat();
-            if (lot.getHanSuDung() != null && (nearest == null || lot.getHanSuDung().isBefore(nearest))) {
-                nearest = lot.getHanSuDung();
-            }
-            result.put(lot.maMatHang(), new StockSnapshot(current.tonKho() + lot.getSoLuongTon(), nearest));
-        }
-        return result;
+    private Map<String, StockSnapshot> stockByItem(LocalDate today) {
+        return InventoryRules.stockByItem(lotRepository.findBySoLuongTonGreaterThan(0), today);
     }
 
     /**

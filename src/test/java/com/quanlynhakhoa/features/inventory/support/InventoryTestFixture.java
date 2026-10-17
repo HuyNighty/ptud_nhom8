@@ -17,7 +17,7 @@ public final class InventoryTestFixture {
     public final InventoryItemService itemService =
             new InventoryItemService(authorization, medicines, supplies, lots);
     public final InventoryOverviewService overviewService =
-            new InventoryOverviewService(authorization, medicines, supplies, lots, receipts, itemService);
+            new InventoryOverviewService(authorization, medicines, supplies, lots, receipts);
     public final StockInService stockInService =
             new StockInService(authorization, receipts, suppliers, lots, medicines, supplies);
 }

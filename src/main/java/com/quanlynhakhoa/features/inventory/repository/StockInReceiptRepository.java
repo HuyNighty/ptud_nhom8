@@ -14,7 +14,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface StockInReceiptRepository extends Repository<StockInReceipt, String> {
 
-    @Query("select distinct r from PhieuNhapKhoJpaEntity r left join fetch r.lines where r.maPhieuNhap = :ma")
+    @Query("select r from PhieuNhapKhoJpaEntity r left join fetch r.lines where r.maPhieuNhap = :ma")
     Optional<StockInReceipt> findWithLines(@Param("ma") String maPhieuNhap);
 
     /** Khóa phiếu khi đổi trạng thái để hai người không cùng "Nhập kho" một phiếu. */
@@ -23,7 +23,7 @@ public interface StockInReceiptRepository extends Repository<StockInReceipt, Str
     Optional<StockInReceipt> findForUpdate(@Param("ma") String maPhieuNhap);
 
     @Query("""
-            select distinct r from PhieuNhapKhoJpaEntity r left join fetch r.lines
+            select r from PhieuNhapKhoJpaEntity r left join fetch r.lines
             order by r.ngayNhap desc, r.maPhieuNhap desc
             """)
     List<StockInReceipt> findAllWithLines();

@@ -2,8 +2,12 @@ package com.quanlynhakhoa.features.inventory.service;
 
 import com.quanlynhakhoa.features.inventory.enums.ExpiryLevel;
 import com.quanlynhakhoa.features.inventory.enums.StockLevel;
+import com.quanlynhakhoa.features.inventory.entity.StockLot;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /** Quy tắc phân loại tồn và hạn dùng, dùng chung cho các màn kho. */
@@ -52,5 +56,30 @@ final class InventoryRules {
     /** Lô còn dùng được (tính vào tồn khả dụng): chưa hết hạn hoặc không có hạn. */
     static boolean usable(LocalDate hanSuDung, LocalDate today) {
         return hanSuDung == null || !hanSuDung.isBefore(today);
+    }
+
+    /** Tồn khả dụng và hạn gần nhất của một mặt hàng. */
+    record StockSnapshot(int tonKho, LocalDate hanGanNhat) {
+        static final StockSnapshot EMPTY = new StockSnapshot(0, null);
+    }
+
+    /**
+     * Gộp các lô còn tồn theo mã mặt hàng: tồn khả dụng = tổng tồn các lô chưa hết hạn,
+     * hạn gần nhất = hạn sớm nhất trong các lô đó.
+     */
+    static Map<String, StockSnapshot> stockByItem(List<StockLot> lots, LocalDate today) {
+        Map<String, StockSnapshot> result = new HashMap<>();
+        for (StockLot lot : lots) {
+            if (lot.getSoLuongTon() <= 0 || !usable(lot.getHanSuDung(), today)) {
+                continue;
+            }
+            StockSnapshot current = result.getOrDefault(lot.maMatHang(), StockSnapshot.EMPTY);
+            LocalDate nearest = current.hanGanNhat();
+            if (lot.getHanSuDung() != null && (nearest == null || lot.getHanSuDung().isBefore(nearest))) {
+                nearest = lot.getHanSuDung();
+            }
+            result.put(lot.maMatHang(), new StockSnapshot(current.tonKho() + lot.getSoLuongTon(), nearest));
+        }
+        return result;
     }
 }

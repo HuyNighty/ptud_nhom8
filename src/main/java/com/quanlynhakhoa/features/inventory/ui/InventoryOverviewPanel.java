@@ -389,7 +389,7 @@ public final class InventoryOverviewPanel extends JPanel {
                 public Object getValueAt(int row, int col) {
                     ExpiringLotResponse l = rows.get(row);
                     return switch (col) {
-                        case 0 -> l.maLo();
+                        case 0 -> l.soLo();
                         case 1 -> l.tenSanPham();
                         case 2 -> DATE.format(l.hanSuDung());
                         case 3 -> l.soLuong() + " " + l.donViTinh();

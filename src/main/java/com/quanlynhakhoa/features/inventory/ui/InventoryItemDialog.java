@@ -284,6 +284,9 @@ final class InventoryItemDialog extends JDialog {
     }
 
     private void save() {
+        if (!commitSpinners(lblError, spnMinStock)) {
+            return;
+        }
         InventoryItemRequest request = new InventoryItemRequest(
                 selectedType(), txtCode.getText(), txtName.getText(), txtUnit.getText(),
                 ((Number) spnMinStock.getValue()).intValue(),

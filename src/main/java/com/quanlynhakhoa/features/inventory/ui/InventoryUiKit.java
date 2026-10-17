@@ -574,4 +574,25 @@ final class InventoryUiKit {
         scrTable.setCorner(javax.swing.ScrollPaneConstants.UPPER_RIGHT_CORNER, pnlCorner);
         return scrTable;
     }
+
+    /**
+     * Chốt giá trị người dùng vừa gõ trong JSpinner (khi chưa rời ô thì giá trị chưa được ghi nhận).
+     *
+     * @return false nếu có ô gõ sai định dạng — khi đó trả về giá trị cũ và báo lỗi
+     */
+    static boolean commitSpinners(JLabel lblError, javax.swing.JSpinner... spinners) {
+        for (javax.swing.JSpinner spinner : spinners) {
+            try {
+                spinner.commitEdit();
+            } catch (java.text.ParseException e) {
+                if (spinner.getEditor() instanceof javax.swing.JSpinner.DefaultEditor editor) {
+                    editor.getTextField().setValue(spinner.getValue());
+                }
+                lblError.setText("Giá trị \"" + (spinner.getEditor() instanceof javax.swing.JSpinner.DefaultEditor ed
+                        ? ed.getTextField().getText() : "") + "\" không hợp lệ — đã trả lại giá trị cũ, kiểm tra lại ô số/ngày.");
+                return false;
+            }
+        }
+        return true;
+    }
 }

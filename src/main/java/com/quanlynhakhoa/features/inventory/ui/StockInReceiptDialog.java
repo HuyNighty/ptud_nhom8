@@ -325,6 +325,9 @@ final class StockInReceiptDialog extends JDialog {
 
     private void addLine() {
         lblError.setText(" ");
+        if (!commitSpinners(lblError, spnQuantity)) {
+            return;
+        }
         InventoryItemResponse item = (InventoryItemResponse) cmbItem.getSelectedItem();
         if (item == null) {
             lblError.setText("Chưa chọn mặt hàng.");
@@ -400,6 +403,9 @@ final class StockInReceiptDialog extends JDialog {
     }
 
     private void save() {
+        if (!commitSpinners(lblError, spnDate)) {
+            return;
+        }
         SupplierResponse supplier = (SupplierResponse) cmbSupplier.getSelectedItem();
         List<StockInLineRequest> lines = new ArrayList<>();
         for (DraftLine d : lineModel.rows) {

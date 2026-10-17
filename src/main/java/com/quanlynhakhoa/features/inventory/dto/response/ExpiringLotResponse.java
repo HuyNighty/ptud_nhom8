@@ -4,7 +4,7 @@ import com.quanlynhakhoa.features.inventory.enums.ExpiryLevel;
 import java.time.LocalDate;
 
 public record ExpiringLotResponse(
-        String maLo,
+        String soLo,
         String tenSanPham,
         LocalDate hanSuDung,
         int soLuong,
