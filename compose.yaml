@@ -1,0 +1,43 @@
+
+name: n08-dental
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      MSSQL_SA_PASSWORD: ${DB_SA_PASSWORD:?Set DB_SA_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${DB_PORT:-14333}:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -b -Q "SELECT 1" > /dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      MSSQL_SA_PASSWORD: ${DB_SA_PASSWORD:?Set DB_SA_PASSWORD in .env}
+    entrypoint: ["/bin/bash", "-ec"]
+    command:
+      - |
+        /opt/mssql-tools18/bin/sqlcmd \
+          -S sqlserver \
+          -U sa \
+          -P "$$MSSQL_SA_PASSWORD" \
+          -C -b \
+          -Q "IF DB_ID(N'N08Dental') IS NULL CREATE DATABASE [N08Dental]"
+    restart: "no"
+
+volumes:
+  sqlserver_data:
