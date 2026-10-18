@@ -1,6 +1,7 @@
 
 package com.quanlynhakhoa.configuration.web;
 
+import com.quanlynhakhoa.shared.exception.BusinessException;
 import com.quanlynhakhoa.shared.exception.ErrorCode;
 import com.quanlynhakhoa.shared.response.ApiResponse;
 import org.slf4j.Logger;
@@ -45,6 +46,29 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(
+            BusinessException ex
+    ) {
+        ErrorCode error = ex.getErrorCode();
+
+        String message = messageSource.getMessage(
+                error.getMessageKey(),
+                ex.getArgs(),
+                "Yêu cầu không thể được thực hiện.",
+                LocaleContextHolder.getLocale()
+        );
+
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .code(error.getErrorCode())
+                .message(message)
+                .build();
+
+        return ResponseEntity
+                .status(error.getHttpStatus().getValue())
                 .body(response);
     }
 }
