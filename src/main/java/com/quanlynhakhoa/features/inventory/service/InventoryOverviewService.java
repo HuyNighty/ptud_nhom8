@@ -22,6 +22,7 @@ import com.quanlynhakhoa.features.inventory.repository.StockLotRepository;
 import com.quanlynhakhoa.features.inventory.repository.StockOutReceiptRepository;
 import com.quanlynhakhoa.features.inventory.repository.StockReturnReceiptRepository;
 import com.quanlynhakhoa.features.inventory.repository.StocktakeRepository;
+import com.quanlynhakhoa.features.inventory.repository.DisposalRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -35,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tổng quan kho cho INVENTORY_MANAGER (SYSTEM_ADMIN dùng chung). Mọi số liệu lấy từ SQL Server:
- * danh mục, lô hàng (tồn, hạn dùng), phiếu nhập, xuất, hoàn trả và kiểm kê. Hủy/hao hụt chưa có nên trả null.
+ * danh mục, lô hàng (tồn, hạn dùng), phiếu nhập, xuất, hoàn trả, kiểm kê và hủy / hao hụt.
  */
 @Service
 public class InventoryOverviewService {
@@ -48,6 +49,7 @@ public class InventoryOverviewService {
     private final StockOutReceiptRepository stockOutRepository;
     private final StockReturnReceiptRepository returnRepository;
     private final StocktakeRepository stocktakeRepository;
+    private final DisposalRepository disposalRepository;
 
     public InventoryOverviewService(AuthorizationService authorizationService,
                                     MedicineRepository medicineRepository,
@@ -56,7 +58,8 @@ public class InventoryOverviewService {
                                     StockInReceiptRepository receiptRepository,
                                     StockOutReceiptRepository stockOutRepository,
                                     StockReturnReceiptRepository returnRepository,
-                                    StocktakeRepository stocktakeRepository) {
+                                    StocktakeRepository stocktakeRepository,
+                                    DisposalRepository disposalRepository) {
         this.authorizationService = Objects.requireNonNull(authorizationService);
         this.medicineRepository = Objects.requireNonNull(medicineRepository);
         this.supplyRepository = Objects.requireNonNull(supplyRepository);
@@ -65,6 +68,7 @@ public class InventoryOverviewService {
         this.stockOutRepository = Objects.requireNonNull(stockOutRepository);
         this.returnRepository = Objects.requireNonNull(returnRepository);
         this.stocktakeRepository = Objects.requireNonNull(stocktakeRepository);
+        this.disposalRepository = Objects.requireNonNull(disposalRepository);
     }
 
     /**
@@ -117,12 +121,14 @@ public class InventoryOverviewService {
         long pendingIn = receiptRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
         long pendingOut = stockOutRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
         long pendingReturn = returnRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
-        long pending = pendingIn + pendingOut + pendingReturn;
+        long pendingDisposal = disposalRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
+        long pending = pendingIn + pendingOut + pendingReturn + pendingDisposal;
         java.time.LocalDateTime dayStart = today.atStartOfDay();
         java.time.LocalDateTime dayEnd = today.plusDays(1).atStartOfDay().minusSeconds(1);
         int receivedToday = (int) receiptRepository.countByThoiDiemNhapKhoBetween(dayStart, dayEnd);
         int issuedToday = (int) stockOutRepository.countByThoiDiemXuatKhoBetween(dayStart, dayEnd);
         int returnedToday = (int) returnRepository.countByThoiDiemDuyetBetween(dayStart, dayEnd);
+        int disposedToday = (int) disposalRepository.countByThoiDiemDuyetBetween(dayStart, dayEnd);
 
         List<AttentionNoticeResponse> notices = new ArrayList<>();
         if (medicines.isEmpty() && supplies.isEmpty()) {
@@ -154,6 +160,10 @@ public class InventoryOverviewService {
             notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
                     "Có " + pendingReturn + " phiếu hoàn trả đang chờ kiểm duyệt"));
         }
+        if (pendingDisposal > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
+                    "Có " + pendingDisposal + " phiếu hủy / hao hụt đang chờ duyệt"));
+        }
         if (stocktakeRepository.countByTrangThai(VoucherStatus.CHO_XU_LY) > 0) {
             notices.add(new AttentionNoticeResponse(NoticeSeverity.INFO,
                     "Có đợt kiểm kê đang thực hiện — cần người khác người lập hoàn tất"));
@@ -171,7 +181,7 @@ public class InventoryOverviewService {
                 (int) pending,
                 lowStock,
                 lots,
-                new InventoryActivityResponse(receivedToday, issuedToday, returnedToday, null),
+                new InventoryActivityResponse(receivedToday, issuedToday, returnedToday, disposedToday),
                 notices);
     }
 

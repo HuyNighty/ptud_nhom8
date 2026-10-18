@@ -8,6 +8,7 @@ import com.quanlynhakhoa.features.inventory.service.StockInService;
 import com.quanlynhakhoa.features.inventory.service.StockOutService;
 import com.quanlynhakhoa.features.inventory.service.StockReturnService;
 import com.quanlynhakhoa.features.inventory.service.StocktakeService;
+import com.quanlynhakhoa.features.inventory.service.DisposalService;
 
 /** TEST-ONLY: ghép các Service kho với repository trong bộ nhớ (unit test và bản xem trước). */
 public final class InventoryTestFixture {
@@ -19,13 +20,14 @@ public final class InventoryTestFixture {
     public final InMemoryStockOutReceiptRepository stockOuts = new InMemoryStockOutReceiptRepository();
     public final InMemoryStockReturnReceiptRepository returns = new InMemoryStockReturnReceiptRepository();
     public final InMemoryStocktakeRepository stocktakes = new InMemoryStocktakeRepository();
+    public final InMemoryDisposalRepository disposals = new InMemoryDisposalRepository();
     public final InMemoryStockInLineRepository stockInLines = new InMemoryStockInLineRepository(receipts);
     public final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
     public final InventoryItemService itemService =
             new InventoryItemService(authorization, medicines, supplies, lots);
     public final InventoryOverviewService overviewService =
             new InventoryOverviewService(authorization, medicines, supplies, lots, receipts, stockOuts, returns,
-                    stocktakes);
+                    stocktakes, disposals);
     public final StockInService stockInService =
             new StockInService(authorization, receipts, suppliers, lots, medicines, supplies);
     public final StockOutService stockOutService =
@@ -34,4 +36,6 @@ public final class InventoryTestFixture {
             new StockReturnService(authorization, returns, stockOuts, lots, receipts, medicines, supplies);
     public final StocktakeService stocktakeService =
             new StocktakeService(authorization, stocktakes, lots, receipts, medicines, supplies);
+    public final DisposalService disposalService =
+            new DisposalService(authorization, disposals, lots, stockInLines, receipts, medicines, supplies);
 }

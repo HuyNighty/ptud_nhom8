@@ -108,12 +108,21 @@ final class InventoryUiKit {
         }
     }
 
-    enum ButtonKind { PRIMARY, OUTLINE, CHIP, MENU, PAGE, PAGE_SELECTED, TAB }
+    enum ButtonKind { PRIMARY, OUTLINE, CHIP, MENU, PAGE, PAGE_SELECTED, TAB, PILL }
 
     static JButton createButton(String text, ButtonKind kind) {
         JButton btn = new JButton(text);
         styleButton(btn, kind);
         return btn;
+    }
+
+    /** Nút lọc bo tròn hoàn toàn ("Tất cả (36)", "Chờ duyệt (2)" — Figma Hủy / hao hụt). */
+    static JToggleButton createPill(String text) {
+        JToggleButton tgl = new JToggleButton(text);
+        styleButton(tgl, ButtonKind.PILL);
+        tgl.setFont(font(Font.PLAIN, 15));
+        tgl.setBorder(BorderFactory.createEmptyBorder(9, 18, 9, 18));
+        return tgl;
     }
 
     static JToggleButton createToggle(String text) {
@@ -181,6 +190,13 @@ final class InventoryUiKit {
                         g2.setColor(selected ? MENU_SELECTED : HEADER_ROW);
                         g2.fillRoundRect(0, 0, w, h, 12, 12);
                     }
+                }
+                case PILL -> {
+                    g2.setColor(selected ? SELECTED_FILL : (hover ? HEADER_ROW : SURFACE));
+                    g2.fillRoundRect(0, 0, w, h, h, h);
+                    g2.setColor(selected ? PRIMARY : BORDER_STRONG);
+                    g2.setStroke(new BasicStroke(selected ? 1.6f : 1f));
+                    g2.drawRoundRect(0, 0, w, h, h, h);
                 }
                 case CHIP -> {
                     g2.setColor(selected ? SELECTED_FILL : (hover ? HEADER_ROW : SURFACE));

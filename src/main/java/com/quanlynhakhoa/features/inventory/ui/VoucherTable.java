@@ -175,15 +175,23 @@ final class VoucherTable {
         private final int statusColumn;
         private VoucherStatus status = VoucherStatus.DA_HUY;
 
+        private final RowAction doneAction;
+
         ButtonActionCell(String processLabel, int statusColumn) {
+            this(processLabel, statusColumn, RowAction.EDIT);
+        }
+
+        /** @param doneAction nút thứ hai của phiếu đã hoàn thành ("Sửa" hoặc "In") */
+        ButtonActionCell(String processLabel, int statusColumn, RowAction doneAction) {
             this.processLabel = processLabel;
             this.statusColumn = statusColumn;
+            this.doneAction = doneAction;
             setFont(font(Font.PLAIN, 15));
         }
 
-        static List<RowAction> actions(VoucherStatus status) {
+        List<RowAction> actions(VoucherStatus status) {
             return switch (status) {
-                case DA_HOAN_THANH -> List.of(RowAction.VIEW, RowAction.EDIT);
+                case DA_HOAN_THANH -> List.of(RowAction.VIEW, doneAction);
                 case CHO_XU_LY -> List.of(RowAction.VIEW, RowAction.PROCESS);
                 case DA_HUY -> List.of(RowAction.VIEW);
             };
@@ -394,7 +402,7 @@ final class VoucherTable {
         }
     }
 
-    static final class HeaderRenderer extends DefaultTableCellRenderer {
+    static class HeaderRenderer extends DefaultTableCellRenderer {
         private static final long serialVersionUID = 1L;
 
         @Override
