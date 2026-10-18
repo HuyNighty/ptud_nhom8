@@ -1,0 +1,196 @@
+package com.quanlynhakhoa.features.inventory.service;
+
+import com.quanlynhakhoa.features.auth.enums.Permission;
+import com.quanlynhakhoa.features.auth.enums.Role;
+import com.quanlynhakhoa.features.auth.service.AuthorizationService;
+import com.quanlynhakhoa.features.inventory.dto.response.AttentionNoticeResponse;
+import com.quanlynhakhoa.features.inventory.dto.response.ExpiringLotResponse;
+import com.quanlynhakhoa.features.inventory.dto.response.InventoryActivityResponse;
+import com.quanlynhakhoa.features.inventory.dto.response.InventoryOverviewResponse;
+import com.quanlynhakhoa.features.inventory.dto.response.LowStockItemResponse;
+import com.quanlynhakhoa.features.inventory.entity.MedicalSupply;
+import com.quanlynhakhoa.features.inventory.entity.Medicine;
+import com.quanlynhakhoa.features.inventory.entity.StockLot;
+import com.quanlynhakhoa.features.inventory.enums.ExpiryLevel;
+import com.quanlynhakhoa.features.inventory.enums.NoticeSeverity;
+import com.quanlynhakhoa.features.inventory.enums.VoucherStatus;
+import com.quanlynhakhoa.features.inventory.enums.StockLevel;
+import com.quanlynhakhoa.features.inventory.repository.MedicalSupplyRepository;
+import com.quanlynhakhoa.features.inventory.repository.MedicineRepository;
+import com.quanlynhakhoa.features.inventory.repository.StockInReceiptRepository;
+import com.quanlynhakhoa.features.inventory.repository.StockLotRepository;
+import com.quanlynhakhoa.features.inventory.repository.StockOutReceiptRepository;
+import com.quanlynhakhoa.features.inventory.repository.StockReturnReceiptRepository;
+import com.quanlynhakhoa.features.inventory.repository.StocktakeRepository;
+import com.quanlynhakhoa.features.inventory.repository.DisposalRepository;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Tổng quan kho cho INVENTORY_MANAGER (SYSTEM_ADMIN dùng chung). Mọi số liệu lấy từ SQL Server:
+ * danh mục, lô hàng (tồn, hạn dùng), phiếu nhập, xuất, hoàn trả, kiểm kê và hủy / hao hụt.
+ */
+@Service
+public class InventoryOverviewService {
+
+    private final AuthorizationService authorizationService;
+    private final MedicineRepository medicineRepository;
+    private final MedicalSupplyRepository supplyRepository;
+    private final StockLotRepository lotRepository;
+    private final StockInReceiptRepository receiptRepository;
+    private final StockOutReceiptRepository stockOutRepository;
+    private final StockReturnReceiptRepository returnRepository;
+    private final StocktakeRepository stocktakeRepository;
+    private final DisposalRepository disposalRepository;
+
+    public InventoryOverviewService(AuthorizationService authorizationService,
+                                    MedicineRepository medicineRepository,
+                                    MedicalSupplyRepository supplyRepository,
+                                    StockLotRepository lotRepository,
+                                    StockInReceiptRepository receiptRepository,
+                                    StockOutReceiptRepository stockOutRepository,
+                                    StockReturnReceiptRepository returnRepository,
+                                    StocktakeRepository stocktakeRepository,
+                                    DisposalRepository disposalRepository) {
+        this.authorizationService = Objects.requireNonNull(authorizationService);
+        this.medicineRepository = Objects.requireNonNull(medicineRepository);
+        this.supplyRepository = Objects.requireNonNull(supplyRepository);
+        this.lotRepository = Objects.requireNonNull(lotRepository);
+        this.receiptRepository = Objects.requireNonNull(receiptRepository);
+        this.stockOutRepository = Objects.requireNonNull(stockOutRepository);
+        this.returnRepository = Objects.requireNonNull(returnRepository);
+        this.stocktakeRepository = Objects.requireNonNull(stocktakeRepository);
+        this.disposalRepository = Objects.requireNonNull(disposalRepository);
+    }
+
+    /**
+     * @param authenticatedRoles Role lấy từ phiên đăng nhập hợp lệ, không lấy từ UI.
+     */
+    @Transactional(readOnly = true)
+    public InventoryOverviewResponse getOverview(Set<Role> authenticatedRoles) {
+        return getOverview(authenticatedRoles, LocalDate.now());
+    }
+
+    @Transactional(readOnly = true)
+    InventoryOverviewResponse getOverview(Set<Role> authenticatedRoles, LocalDate today) {
+        authorizationService.require(authenticatedRoles, Permission.INVENTORY_READ);
+        List<Medicine> medicines = medicineRepository.search("");
+        List<MedicalSupply> supplies = supplyRepository.search("");
+        List<StockLot> lotsInStock = lotRepository.findBySoLuongTonGreaterThan(0);
+        Map<String, InventoryRules.StockSnapshot> stock = InventoryRules.stockByItem(lotsInStock, today);
+        Map<String, String[]> names = new HashMap<>();
+
+        List<LowStockItemResponse> lowStock = new ArrayList<>();
+        long soKiemSoat = 0;
+        for (Medicine m : medicines) {
+            names.put(m.getMaThuoc(), new String[] {m.getTenThuoc(), m.getDonViTinh()});
+            addIfLow(lowStock, m.getMaThuoc(), m.getTenThuoc(), m.getDinhMucToiThieu(), stock);
+            if (m.isKiemSoatDacBiet()) {
+                soKiemSoat++;
+            }
+        }
+        for (MedicalSupply v : supplies) {
+            names.put(v.getMaVatTu(), new String[] {v.getTenVatTu(), v.getDonViTinh()});
+            addIfLow(lowStock, v.getMaVatTu(), v.getTenVatTu(), v.getDinhMucToiThieu(), stock);
+        }
+        lowStock.sort(Comparator.comparing(LowStockItemResponse::mucTon).thenComparing(LowStockItemResponse::maMatHang));
+
+        List<ExpiringLotResponse> lots = new ArrayList<>();
+        for (StockLot lot : lotsInStock) {
+            ExpiryLevel level = InventoryRules.classifyExpiry(lot.getHanSuDung(), today);
+            if (level == ExpiryLevel.CON_HAN) {
+                continue;
+            }
+            String[] info = names.getOrDefault(lot.maMatHang(), new String[] {lot.maMatHang(), ""});
+            lots.add(new ExpiringLotResponse(lot.getSoLo(), info[0], lot.getHanSuDung(), lot.getSoLuongTon(),
+                    info[1], level));
+        }
+        lots.sort(Comparator.comparing(ExpiringLotResponse::hanSuDung));
+        long expired = lots.stream().filter(l -> l.mucCanhBao() == ExpiryLevel.DA_HET_HAN).count();
+        int urgent = (int) lots.stream().filter(l -> l.mucCanhBao() == ExpiryLevel.DA_HET_HAN
+                || l.mucCanhBao() == ExpiryLevel.CON_TOI_DA_7_NGAY).count();
+
+        long pendingIn = receiptRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
+        long pendingOut = stockOutRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
+        long pendingReturn = returnRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
+        long pendingDisposal = disposalRepository.countByTrangThai(VoucherStatus.CHO_XU_LY);
+        long pending = pendingIn + pendingOut + pendingReturn + pendingDisposal;
+        java.time.LocalDateTime dayStart = today.atStartOfDay();
+        java.time.LocalDateTime dayEnd = today.plusDays(1).atStartOfDay().minusSeconds(1);
+        int receivedToday = (int) receiptRepository.countByThoiDiemNhapKhoBetween(dayStart, dayEnd);
+        int issuedToday = (int) stockOutRepository.countByThoiDiemXuatKhoBetween(dayStart, dayEnd);
+        int returnedToday = (int) returnRepository.countByThoiDiemDuyetBetween(dayStart, dayEnd);
+        int disposedToday = (int) disposalRepository.countByThoiDiemDuyetBetween(dayStart, dayEnd);
+
+        List<AttentionNoticeResponse> notices = new ArrayList<>();
+        if (medicines.isEmpty() && supplies.isEmpty()) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
+                    "Danh mục chưa có mặt hàng nào — thêm tại mục Vật tư & thuốc"));
+        }
+        if (expired > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.CRITICAL,
+                    "Có " + expired + " lô đã hết hạn còn trong kho"));
+        }
+        long belowMin = lowStock.stream().filter(i -> i.soLuongTon() < i.dinhMucToiThieu()).count();
+        if (belowMin > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.CRITICAL,
+                    "Có " + belowMin + " mặt hàng dưới định mức cần đặt hàng"));
+        }
+        if (soKiemSoat > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
+                    "Có " + soKiemSoat + " thuốc kiểm soát đặc biệt cần theo dõi sổ KSĐB"));
+        }
+        if (pendingIn > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
+                    "Có " + pendingIn + " phiếu nhập đang chờ nhập kho"));
+        }
+        if (pendingOut > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
+                    "Có " + pendingOut + " phiếu xuất đang chờ xuất kho"));
+        }
+        if (pendingReturn > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
+                    "Có " + pendingReturn + " phiếu hoàn trả đang chờ kiểm duyệt"));
+        }
+        if (pendingDisposal > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.WARNING,
+                    "Có " + pendingDisposal + " phiếu hủy / hao hụt đang chờ duyệt"));
+        }
+        if (stocktakeRepository.countByTrangThai(VoucherStatus.CHO_XU_LY) > 0) {
+            notices.add(new AttentionNoticeResponse(NoticeSeverity.INFO,
+                    "Có đợt kiểm kê đang thực hiện — cần người khác người lập hoàn tất"));
+        }
+
+        return new InventoryOverviewResponse(
+                today,
+                medicines.size() + supplies.size(),
+                medicines.size(),
+                supplies.size(),
+                soKiemSoat,
+                true,
+                lowStock.size(),
+                urgent,
+                (int) pending,
+                lowStock,
+                lots,
+                new InventoryActivityResponse(receivedToday, issuedToday, returnedToday, disposedToday),
+                notices);
+    }
+
+    private static void addIfLow(List<LowStockItemResponse> target, String ma, String ten, int dinhMuc,
+                                 Map<String, InventoryRules.StockSnapshot> stock) {
+        int ton = stock.getOrDefault(ma, InventoryRules.StockSnapshot.EMPTY).tonKho();
+        StockLevel level = InventoryRules.classifyStock(ton, dinhMuc);
+        if (level != StockLevel.DU) {
+            target.add(new LowStockItemResponse(ma, ten, ton, dinhMuc, level));
+        }
+    }
+}
