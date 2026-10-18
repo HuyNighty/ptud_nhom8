@@ -1,6 +1,9 @@
 package com.quanlynhakhoa.features.inventory.entity;
 
+import com.quanlynhakhoa.features.inventory.enums.ControlledDrugGroup;
 import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.PostLoad;
@@ -49,6 +52,11 @@ public class Medicine implements Persistable<String> {
     @Column(name = "daDatHang", nullable = false)
     private boolean daDatHang;
 
+    /** Nhóm kiểm soát (V11); chỉ có khi kiemSoatDacBiet = true, null = chưa phân loại. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "nhomKiemSoat", length = 20)
+    private ControlledDrugGroup nhomKiemSoat;
+
     /** Mã do người dùng nhập: buộc INSERT, không để save() âm thầm UPDATE dòng trùng mã. */
     @Transient
     @Getter(AccessLevel.NONE)
@@ -70,6 +78,17 @@ public class Medicine implements Persistable<String> {
         this.hamLuong = hamLuong;
         this.hoatChat = hoatChat;
         this.dinhMucToiThieu = dinhMucToiThieu;
+        if (!kiemSoatDacBiet) {
+            this.nhomKiemSoat = null;
+        }
+    }
+
+    /** Phân loại nhóm kiểm soát; chỉ áp dụng cho thuốc kiểm soát đặc biệt. */
+    public void classify(ControlledDrugGroup group) {
+        if (!kiemSoatDacBiet && group != null) {
+            throw new IllegalStateException("Thuốc " + maThuoc + " không thuộc diện kiểm soát đặc biệt");
+        }
+        this.nhomKiemSoat = group;
     }
 
     @Override

@@ -12,8 +12,7 @@ public enum InventoryScreen {
     RETURN("KHO", "Hoàn trả kho", MenuGlyph.BOX, true, null),
     STOCKTAKE("KHO", "Kiểm kê", MenuGlyph.BOX, true, null),
     DISPOSAL("KHO", "Hủy / hao hụt", MenuGlyph.BOX, true, null),
-    CONTROLLED_DRUGS("KHO", "Thuốc kiểm soát đặc biệt", MenuGlyph.BOX, false,
-            "Sổ theo dõi thuốc kiểm soát đặc biệt, bắt buộc người nhận khi xuất (UC33)."),
+    CONTROLLED_DRUGS("KHO", "Thuốc kiểm soát đặc biệt", MenuGlyph.BOX, true, null),
     EMERGENCY_KIT("KHO", "Hộp thuốc cấp cứu", MenuGlyph.BOX, false,
             "Danh mục hộp cấp cứu và lịch sử từng lần kiểm tra (UC34)."),
 

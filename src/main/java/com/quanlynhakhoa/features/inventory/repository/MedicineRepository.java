@@ -19,6 +19,8 @@ public interface MedicineRepository extends Repository<Medicine, String> {
 
     long countByKiemSoatDacBietTrue();
 
+    List<Medicine> findByKiemSoatDacBietTrueOrderByMaThuoc();
+
     /** {@code keyword} đã ở dạng chữ thường, rỗng nghĩa là lấy tất cả. */
     @Query("""
             select m from ThuocJpaEntity m

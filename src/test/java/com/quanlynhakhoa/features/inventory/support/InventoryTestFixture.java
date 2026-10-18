@@ -9,6 +9,7 @@ import com.quanlynhakhoa.features.inventory.service.StockOutService;
 import com.quanlynhakhoa.features.inventory.service.StockReturnService;
 import com.quanlynhakhoa.features.inventory.service.StocktakeService;
 import com.quanlynhakhoa.features.inventory.service.DisposalService;
+import com.quanlynhakhoa.features.inventory.service.ControlledDrugService;
 
 /** TEST-ONLY: ghép các Service kho với repository trong bộ nhớ (unit test và bản xem trước). */
 public final class InventoryTestFixture {
@@ -38,4 +39,6 @@ public final class InventoryTestFixture {
             new StocktakeService(authorization, stocktakes, lots, receipts, medicines, supplies);
     public final DisposalService disposalService =
             new DisposalService(authorization, disposals, lots, stockInLines, receipts, medicines, supplies);
+    public final ControlledDrugService controlledDrugService = new ControlledDrugService(authorization, medicines,
+            lots, receipts, suppliers, stockOuts, returns, stocktakes, disposals);
 }

@@ -53,4 +53,9 @@ public final class InMemoryMedicineRepository implements MedicineRepository {
     static boolean contains(String value, String keyword) {
         return value != null && value.toLowerCase(Locale.ROOT).contains(keyword);
     }
+
+    @Override
+    public List<Medicine> findByKiemSoatDacBietTrueOrderByMaThuoc() {
+        return rows.values().stream().filter(Medicine::isKiemSoatDacBiet).toList();
+    }
 }

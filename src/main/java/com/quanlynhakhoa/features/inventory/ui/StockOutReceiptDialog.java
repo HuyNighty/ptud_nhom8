@@ -86,11 +86,19 @@ final class StockOutReceiptDialog extends JDialog {
     private final JButton btnCancel = createButton("Hủy", ButtonKind.OUTLINE);
 
     private transient StockOutDetailResponse savedReceipt;
+    /** true = chỉ cho chọn thuốc kiểm soát đặc biệt (mở từ màn Thuốc KSĐB). */
+    private final boolean onlyControlled;
 
     StockOutReceiptDialog(Window owner, StockOutService service, InventoryItemService itemService,
                           Supplier<InventoryActor> session, StockOutDetailResponse existing) {
-        super(owner, existing == null ? "Tạo phiếu xuất kho" : "Sửa phiếu xuất " + existing.maPhieu(),
-                ModalityType.APPLICATION_MODAL);
+        this(owner, service, itemService, session, existing, false);
+    }
+
+    StockOutReceiptDialog(Window owner, StockOutService service, InventoryItemService itemService,
+                          Supplier<InventoryActor> session, StockOutDetailResponse existing, boolean onlyControlled) {
+        super(owner, existing == null ? (onlyControlled ? "Tạo phiếu xuất thuốc kiểm soát đặc biệt" : "Tạo phiếu xuất kho")
+                : "Sửa phiếu xuất " + existing.maPhieu(), ModalityType.APPLICATION_MODAL);
+        this.onlyControlled = onlyControlled;
         this.service = Objects.requireNonNull(service);
         this.itemService = Objects.requireNonNull(itemService);
         this.session = Objects.requireNonNull(session);
@@ -259,12 +267,13 @@ final class StockOutReceiptDialog extends JDialog {
                 try {
                     cmbItem.removeAllItems();
                     for (InventoryItemResponse item : get()) {
-                        if (item.tonKho() > 0) {
+                        if (item.tonKho() > 0 && (!onlyControlled || item.kiemSoatDacBiet())) {
                             cmbItem.addItem(item);
                         }
                     }
                     if (cmbItem.getItemCount() == 0) {
-                        lblError.setText("Kho chưa có mặt hàng nào còn tồn khả dụng — nhập kho trước khi xuất.");
+                        lblError.setText(onlyControlled ? "Không có thuốc kiểm soát đặc biệt nào còn tồn khả dụng."
+                                : "Kho chưa có mặt hàng nào còn tồn khả dụng — nhập kho trước khi xuất.");
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -315,7 +324,7 @@ final class StockOutReceiptDialog extends JDialog {
     private void refreshSummary() {
         long special = lineModel.rows.stream().filter(StockOutLineResponse::kiemSoatDacBiet).count();
         lblSummary.setText(lineModel.rows.size() + " dòng · " + lineModel.totalQuantity() + " đơn vị"
-                + (special > 0 ? " · có thuốc kiểm soát đặc biệt" : ""));
+                + (special > 0 ? " · có thuốc KSĐB — người khác người lập mới được bấm Xuất kho" : ""));
         lblSummary.setForeground(special > 0 ? ORANGE : TEXT);
     }
 

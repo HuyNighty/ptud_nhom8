@@ -240,6 +240,10 @@ public class StockOutService {
             throw new InventoryValidationException("Phiếu chưa có dòng hàng nào.");
         }
         LocalDate today = now.toLocalDate();
+        if (actor.maNhanVien().equals(receipt.getMaNhanVienLap()) && containsControlledDrug(receipt)) {
+            throw new InventoryValidationException("Phiếu " + receipt.getMaPhieuXuat() + " có thuốc kiểm soát đặc biệt — "
+                    + "cần phê duyệt kép: người xuất kho phải khác người lập phiếu (UC33).");
+        }
         // Khóa lô theo mã tăng dần để các phiếu xuất cùng lô không khóa chéo nhau.
         List<StockOutLine> ordered = receipt.getLines().stream()
                 .sorted(Comparator.comparing(StockOutLine::getMaLo)).toList();
@@ -262,6 +266,21 @@ public class StockOutService {
         }
         receipt.markCompleted(actor.maNhanVien(), now.truncatedTo(ChronoUnit.SECONDS));
         return toDetail(receiptRepository.saveAndFlush(receipt));
+    }
+
+    /** Phiếu có ít nhất một lô thuộc thuốc kiểm soát đặc biệt. */
+    boolean containsControlledDrug(StockOutReceipt receipt) {
+        List<Integer> ids = receipt.getLines().stream().map(StockOutLine::getMaLo).toList();
+        if (ids.isEmpty()) {
+            return false;
+        }
+        for (StockLot lot : lotRepository.findByMaLoIn(ids)) {
+            if (lot.getMaThuoc() != null && medicineRepository.findById(lot.getMaThuoc())
+                    .map(Medicine::isKiemSoatDacBiet).orElse(false)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Transactional

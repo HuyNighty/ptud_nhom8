@@ -25,7 +25,7 @@ public final class InventoryWorkspacePreview {
             InventoryWorkspacePanel pnlWorkspace = new InventoryWorkspacePanel(
                     fx.overviewService, fx.itemService, fx.stockInService, fx.stockOutService,
                     fx.stockReturnService, fx.stocktakeService,
-                    fx.disposalService, () -> actor);
+                    fx.disposalService, fx.controlledDrugService, () -> actor);
 
             JFrame winPreview = new JFrame("PREVIEW — Kho N08 (dữ liệu trong bộ nhớ)");
             winPreview.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
