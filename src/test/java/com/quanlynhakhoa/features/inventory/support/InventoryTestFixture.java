@@ -10,6 +10,8 @@ import com.quanlynhakhoa.features.inventory.service.StockReturnService;
 import com.quanlynhakhoa.features.inventory.service.StocktakeService;
 import com.quanlynhakhoa.features.inventory.service.DisposalService;
 import com.quanlynhakhoa.features.inventory.service.ControlledDrugService;
+import com.quanlynhakhoa.features.inventory.service.EmergencyKitService;
+import com.quanlynhakhoa.features.inventory.service.StockMonitorService;
 
 /** TEST-ONLY: ghép các Service kho với repository trong bộ nhớ (unit test và bản xem trước). */
 public final class InventoryTestFixture {
@@ -22,6 +24,8 @@ public final class InventoryTestFixture {
     public final InMemoryStockReturnReceiptRepository returns = new InMemoryStockReturnReceiptRepository();
     public final InMemoryStocktakeRepository stocktakes = new InMemoryStocktakeRepository();
     public final InMemoryDisposalRepository disposals = new InMemoryDisposalRepository();
+    public final InMemoryEmergencyKitRepository kits = new InMemoryEmergencyKitRepository();
+    public final InMemoryEmergencyKitLogRepository kitLogs = new InMemoryEmergencyKitLogRepository();
     public final InMemoryStockInLineRepository stockInLines = new InMemoryStockInLineRepository(receipts);
     public final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
     public final InventoryItemService itemService =
@@ -40,5 +44,9 @@ public final class InventoryTestFixture {
     public final DisposalService disposalService =
             new DisposalService(authorization, disposals, lots, stockInLines, receipts, medicines, supplies);
     public final ControlledDrugService controlledDrugService = new ControlledDrugService(authorization, medicines,
+            lots, receipts, suppliers, stockOuts, returns, stocktakes, disposals);
+    public final EmergencyKitService emergencyKitService = new EmergencyKitService(authorization, kits, kitLogs,
+            lots, medicines, supplies, receipts, stockOutService);
+    public final StockMonitorService stockMonitorService = new StockMonitorService(authorization, medicines, supplies,
             lots, receipts, suppliers, stockOuts, returns, stocktakes, disposals);
 }
