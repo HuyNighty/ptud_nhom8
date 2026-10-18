@@ -8,18 +8,9 @@ import com.quanlynhakhoa.features.inventory.dto.response.ControlledDrugRowRespon
 import com.quanlynhakhoa.features.inventory.dto.response.ControlledDrugSummaryResponse;
 import com.quanlynhakhoa.features.inventory.dto.response.ControlledLedgerEntry;
 import com.quanlynhakhoa.features.inventory.dto.response.ControlledLotResponse;
-import com.quanlynhakhoa.features.inventory.entity.Disposal;
-import com.quanlynhakhoa.features.inventory.entity.DisposalLine;
 import com.quanlynhakhoa.features.inventory.entity.Medicine;
-import com.quanlynhakhoa.features.inventory.entity.StockInLine;
-import com.quanlynhakhoa.features.inventory.entity.StockInReceipt;
 import com.quanlynhakhoa.features.inventory.entity.StockLot;
-import com.quanlynhakhoa.features.inventory.entity.StockOutLine;
 import com.quanlynhakhoa.features.inventory.entity.StockOutReceipt;
-import com.quanlynhakhoa.features.inventory.entity.StockReturnLine;
-import com.quanlynhakhoa.features.inventory.entity.StockReturnReceipt;
-import com.quanlynhakhoa.features.inventory.entity.Stocktake;
-import com.quanlynhakhoa.features.inventory.entity.StocktakeLine;
 import com.quanlynhakhoa.features.inventory.enums.ControlledDrugGroup;
 import com.quanlynhakhoa.features.inventory.enums.ExpiryLevel;
 import com.quanlynhakhoa.features.inventory.enums.NoticeSeverity;
@@ -35,9 +26,7 @@ import com.quanlynhakhoa.features.inventory.repository.StockReturnReceiptReposit
 import com.quanlynhakhoa.features.inventory.repository.StocktakeRepository;
 import com.quanlynhakhoa.features.inventory.repository.SupplierRepository;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -168,91 +157,18 @@ public class ControlledDrugService {
         if (only != null && !drugs.containsKey(only)) {
             throw new InventoryValidationException("Thuốc " + only + " không thuộc danh mục kiểm soát đặc biệt.");
         }
-        Map<Integer, StockLot> lots = allLots();
-        List<Raw> raw = new ArrayList<>();
+        List<StockLedger.Movement> raw = new StockLedger(stockInRepository, supplierRepository, stockOutRepository,
+                returnRepository, stocktakeRepository, disposalRepository, lotRepository).collect(drugs::containsKey);
         Set<String> employeeIds = new HashSet<>();
-
-        for (StockInReceipt r : stockInRepository.findAllWithLines()) {
-            if (r.getTrangThai() != VoucherStatus.DA_HOAN_THANH) {
-                continue;
-            }
-            String supplier = supplierRepository.findById(r.getMaNhaCungCap())
-                    .map(s -> s.getTenNhaCungCap()).orElse(r.getMaNhaCungCap());
-            for (StockInLine l : r.getLines()) {
-                if (l.getMaThuoc() != null && drugs.containsKey(l.getMaThuoc())) {
-                    raw.add(new Raw(r.getThoiDiemNhapKho(), r.getMaPhieuNhap(), "Nhập kho", l.getMaThuoc(), l.getSoLo(),
-                            l.getSoLuong(), "NCC: " + supplier, r.getMaNhanVienNhapKho()));
-                    employeeIds.add(r.getMaNhanVienNhapKho());
-                }
-            }
-        }
-        for (StockOutReceipt r : stockOutRepository.findAllWithLines()) {
-            if (r.getTrangThai() != VoucherStatus.DA_HOAN_THANH) {
-                continue;
-            }
-            for (StockOutLine l : r.getLines()) {
-                StockLot lot = lots.get(l.getMaLo());
-                if (drugs.containsKey(drugOf(lot))) {
-                    raw.add(new Raw(r.getThoiDiemXuatKho(), r.getMaPhieuXuat(), "Xuất kho", lot.getMaThuoc(),
-                            lot.getSoLo(), -l.getSoLuong(), "Nhận: " + r.getNguoiNhan() + " (" + r.getLyDoXuat().shortLabel()
-                            + ")", r.getMaNhanVienXuatKho()));
-                    employeeIds.add(r.getMaNhanVienXuatKho());
-                }
-            }
-        }
-        for (StockReturnReceipt r : returnRepository.findAllWithLines()) {
-            if (r.getTrangThai() != VoucherStatus.DA_HOAN_THANH || !r.getLyDo().restock()) {
-                continue;
-            }
-            for (StockReturnLine l : r.getLines()) {
-                StockLot lot = lots.get(l.getMaLo());
-                if (drugs.containsKey(drugOf(lot))) {
-                    raw.add(new Raw(r.getThoiDiemDuyet(), r.getMaPhieuHoanTra(), "Hoàn trả", lot.getMaThuoc(),
-                            lot.getSoLo(), l.getSoLuong(), "Trả: " + r.getNguoiHoanTra() + " · gốc " + r.getMaPhieuXuat(),
-                            r.getMaNhanVienDuyet()));
-                    employeeIds.add(r.getMaNhanVienDuyet());
-                }
-            }
-        }
-        for (Stocktake s : stocktakeRepository.findAllWithLines()) {
-            if (s.getTrangThai() != VoucherStatus.DA_HOAN_THANH) {
-                continue;
-            }
-            for (StocktakeLine l : s.getLines()) {
-                StockLot lot = lots.get(l.getMaLo());
-                Integer diff = l.chenhLech();
-                if (diff != null && diff != 0 && drugs.containsKey(drugOf(lot))) {
-                    raw.add(new Raw(s.getThoiDiemDuyet(), s.getMaKiemKe(), "Kiểm kê", lot.getMaThuoc(), lot.getSoLo(),
-                            diff, "Lệch: " + l.getGhiChu(), s.getMaNhanVienDuyet()));
-                    employeeIds.add(s.getMaNhanVienDuyet());
-                }
-            }
-        }
-        for (Disposal d : disposalRepository.findAllWithLines()) {
-            if (d.getTrangThai() != VoucherStatus.DA_HOAN_THANH) {
-                continue;
-            }
-            for (DisposalLine l : d.getLines()) {
-                StockLot lot = lots.get(l.getMaLo());
-                if (drugs.containsKey(drugOf(lot))) {
-                    raw.add(new Raw(d.getThoiDiemDuyet(), d.getMaPhieuHuy(), "Hủy", lot.getMaThuoc(), lot.getSoLo(),
-                            -l.getSoLuong(), "Lý do: " + (d.getMoTa() == null ? d.getLyDo().label() : d.getMoTa()),
-                            d.getMaNhanVienDuyet()));
-                    employeeIds.add(d.getMaNhanVienDuyet());
-                }
-            }
-        }
-
-        raw.sort(Comparator.comparing(Raw::time, Comparator.nullsFirst(Comparator.naturalOrder()))
-                .thenComparing(Raw::code));
+        raw.forEach(m -> employeeIds.add(m.employee()));
         Map<String, String> names = employeeNames(employeeIds);
         Map<String, Integer> balance = new HashMap<>();
         List<ControlledLedgerEntry> result = new ArrayList<>();
-        for (Raw e : raw) {
-            int after = balance.merge(e.drug(), e.delta(), Integer::sum);
-            if (only == null || only.equals(e.drug())) {
-                Medicine m = drugs.get(e.drug());
-                result.add(new ControlledLedgerEntry(e.time(), e.code(), e.type(), e.drug(),
+        for (StockLedger.Movement e : raw) {
+            int after = balance.merge(e.item(), e.delta(), Integer::sum);
+            if (only == null || only.equals(e.item())) {
+                Medicine m = drugs.get(e.item());
+                result.add(new ControlledLedgerEntry(e.time(), e.code(), e.type(), e.item(),
                         m.getTenThuoc() + (m.getHamLuong() == null ? "" : " " + m.getHamLuong()), e.lot(),
                         Math.max(e.delta(), 0), Math.max(-e.delta(), 0), after, e.party(),
                         e.employee() == null ? "—" : names.getOrDefault(e.employee(), e.employee())));
@@ -261,9 +177,6 @@ public class ControlledDrugService {
         return List.copyOf(result);
     }
 
-    private record Raw(LocalDateTime time, String code, String type, String drug, String lot, int delta, String party,
-                       String employee) {
-    }
 
     // ----------------------------------------------------------- trạng thái
 
