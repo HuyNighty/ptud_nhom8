@@ -34,6 +34,9 @@ import org.springframework.context.ConfigurableApplicationContext;
  * <p>Chưa có phiên đăng nhập nên launcher tạm dùng Role SYSTEM_ADMIN và một nhân viên
  * đang làm việc có sẵn trong dbo.NhanVien (ưu tiên chức danh KHO) để ghi người lập phiếu.
  * Bản thật lấy cả hai từ phiên đăng nhập do MainFrame cấp.</p>
+ *
+ * <p>Muốn đóng vai nhân viên khác (để thử phê duyệt kép: người duyệt/xuất kho khác người lập),
+ * thêm Program argument {@code --nv=NV0002}.</p>
  */
 public final class InventoryDevLauncher {
     private InventoryDevLauncher() {
@@ -45,7 +48,13 @@ public final class InventoryDevLauncher {
                 .web(WebApplicationType.NONE)
                 .properties("n08.desktop.enabled=false")
                 .run(args);
-        InventoryActor actor = findDevActor(context.getBean(DataSource.class));
+        String wanted = null;
+        for (String arg : args) {
+            if (arg.startsWith("--nv=")) {
+                wanted = arg.substring(5).trim();
+            }
+        }
+        InventoryActor actor = findDevActor(context.getBean(DataSource.class), wanted);
         if (actor == null) {
             JOptionPane.showMessageDialog(null,
                     "dbo.NhanVien chưa có nhân viên nào đang làm việc.\n"
@@ -83,16 +92,21 @@ public final class InventoryDevLauncher {
         });
     }
 
-    private static InventoryActor findDevActor(DataSource dataSource) throws SQLException {
+    /** @param maNhanVien null = tự chọn (ưu tiên chức danh KHO) */
+    private static InventoryActor findDevActor(DataSource dataSource, String maNhanVien) throws SQLException {
         String sql = "SELECT TOP 1 maNhanVien, hoTen FROM dbo.NhanVien WHERE trangThai = 'DANG_LAM_VIEC' "
+                + "AND (? IS NULL OR maNhanVien = ?) "
                 + "ORDER BY CASE chucDanh WHEN 'KHO' THEN 0 WHEN 'AD' THEN 1 ELSE 2 END, maNhanVien";
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet rs = statement.executeQuery()) {
-            if (!rs.next()) {
-                return null;
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, maNhanVien);
+            statement.setString(2, maNhanVien);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+                return new InventoryActor(Set.of(Role.SYSTEM_ADMIN), rs.getString(1), rs.getNString(2));
             }
-            return new InventoryActor(Set.of(Role.SYSTEM_ADMIN), rs.getString(1), rs.getNString(2));
         }
     }
 }
