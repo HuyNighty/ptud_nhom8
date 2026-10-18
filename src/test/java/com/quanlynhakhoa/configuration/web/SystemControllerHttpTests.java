@@ -21,7 +21,7 @@ class SystemControllerHttpTests {
     @Test
     void respondsToRealHttpRequest() throws Exception {
         var request = HttpRequest.newBuilder()
-                .uri(URI.create("http://127.0.0.1:" + port + "/api/v1/system/ping"))
+                .uri(URI.create("http://127.0.0.1:" + port + "/manage-dentistry/api/v1/system/ping"))
                 .timeout(Duration.ofSeconds(10))
                 .GET()
                 .build();
