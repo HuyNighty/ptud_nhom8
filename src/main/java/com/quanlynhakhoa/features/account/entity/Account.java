@@ -4,6 +4,8 @@ package com.quanlynhakhoa.features.account.entity;
 import com.quanlynhakhoa.features.account.enums.AccountStatus;
 import com.quanlynhakhoa.features.account.enums.LockSource;
 import com.quanlynhakhoa.features.auth.enums.Role;
+import com.quanlynhakhoa.shared.exception.BusinessException;
+import com.quanlynhakhoa.shared.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -80,4 +82,77 @@ public class Account {
 
     @Column(name = "lyDoVoHieu", length = 300)
     private String lyDoVoHieu;
+
+    public void recordFailedPasswordAttempt(LocalDateTime nowUtc) {
+
+        if (trangThai != AccountStatus.HOAT_DONG) {
+            throw new BusinessException(ErrorCode.ACCOUNT_INVALID_STATE);
+        }
+
+        if (lanSaiDau == null ||
+                !nowUtc.isBefore(lanSaiDau.plusMinutes(15))) {
+
+            soLanSai = 1;
+            lanSaiDau = nowUtc;
+
+        } else {
+            soLanSai++;
+        }
+
+        if (soLanSai >= 5) {
+            trangThai = AccountStatus.BI_KHOA;
+
+            khoaLuc = nowUtc;
+            khoaDen = nowUtc.plusMinutes(15);
+
+            nguonKhoa = LockSource.FAILED_LOGIN;
+            lyDoKhoa = "Khóa tự động do đăng nhập sai 5 lần";
+        }
+
+        capNhatLuc = nowUtc;
+    }
+
+    public boolean unlockExpiredAutomaticLock(LocalDateTime nowUtc) {
+
+        if (trangThai != AccountStatus.BI_KHOA) {
+            return false;
+        }
+
+        if (nguonKhoa != LockSource.FAILED_LOGIN) {
+            return false;
+        }
+
+        if (khoaDen == null || nowUtc.isBefore(khoaDen)) {
+            return false;
+        }
+
+        trangThai = AccountStatus.HOAT_DONG;
+
+        soLanSai = 0;
+        lanSaiDau = null;
+
+        khoaLuc = null;
+        khoaDen = null;
+        nguonKhoa = null;
+        lyDoKhoa = null;
+
+        capNhatLuc = nowUtc;
+
+        return true;
+    }
+
+    public void recordSuccessfulLogin(LocalDateTime nowUtc) {
+
+        if (trangThai != AccountStatus.HOAT_DONG) {
+            throw new BusinessException(
+                    ErrorCode.ACCOUNT_INVALID_STATE
+            );
+        }
+
+        soLanSai = 0;
+        lanSaiDau = null;
+
+        lanDangNhapCuoi = nowUtc;
+        capNhatLuc = nowUtc;
+    }
 }
