@@ -13,11 +13,9 @@ public enum InventoryScreen {
     STOCKTAKE("KHO", "Kiểm kê", MenuGlyph.BOX, true, null),
     DISPOSAL("KHO", "Hủy / hao hụt", MenuGlyph.BOX, true, null),
     CONTROLLED_DRUGS("KHO", "Thuốc kiểm soát đặc biệt", MenuGlyph.BOX, true, null),
-    EMERGENCY_KIT("KHO", "Hộp thuốc cấp cứu", MenuGlyph.BOX, false,
-            "Danh mục hộp cấp cứu và lịch sử từng lần kiểm tra (UC34)."),
+    EMERGENCY_KIT("KHO", "Hộp thuốc cấp cứu", MenuGlyph.CLINIC, true, null),
 
-    STOCK_LEVEL("THEO DÕI", "Tồn kho", MenuGlyph.BOX, false,
-            "Tồn theo mặt hàng và theo lô, cảnh báo dưới định mức (UC36)."),
+    STOCK_LEVEL("THEO DÕI", "Tồn kho", MenuGlyph.BOX, true, null),
     EXPIRY("THEO DÕI", "Hạn sử dụng", MenuGlyph.BOX, false,
             "Lô đã hết hạn, còn ≤ 7 ngày và ≤ 30 ngày (UC37)."),
 

@@ -44,6 +44,7 @@ final class InventoryUiKit {
     static final Color MENU_SELECTED = new Color(0xE4E9F7);
     static final Color ROLE_CHIP = new Color(0xDDF3F1);
     static final Color ROLE_CHIP_TEXT = new Color(0x1F6E68);
+    static final Color DARK_FILL = new Color(0x111B33);
 
     private static final String FAMILY = pickFamily();
 
@@ -108,7 +109,7 @@ final class InventoryUiKit {
         }
     }
 
-    enum ButtonKind { PRIMARY, OUTLINE, CHIP, MENU, PAGE, PAGE_SELECTED, TAB, PILL }
+    enum ButtonKind { PRIMARY, OUTLINE, CHIP, MENU, PAGE, PAGE_SELECTED, TAB, PILL, DARK_CHIP }
 
     static JButton createButton(String text, ButtonKind kind) {
         JButton btn = new JButton(text);
@@ -122,6 +123,16 @@ final class InventoryUiKit {
         styleButton(tgl, ButtonKind.PILL);
         tgl.setFont(font(Font.PLAIN, 15));
         tgl.setBorder(BorderFactory.createEmptyBorder(9, 18, 9, 18));
+        return tgl;
+    }
+
+    /** Nút lọc bo góc, khi chọn tô nền xanh đậm chữ trắng ("Tất cả (158)" — Figma Tồn kho). */
+    static JToggleButton createDarkChip(String text) {
+        JToggleButton tgl = new JToggleButton(text);
+        styleButton(tgl, ButtonKind.DARK_CHIP);
+        tgl.setFont(font(Font.PLAIN, 15));
+        tgl.setBorder(BorderFactory.createEmptyBorder(9, 18, 9, 18));
+        tgl.addChangeListener(e -> tgl.setForeground(tgl.isSelected() ? Color.WHITE : TEXT));
         return tgl;
     }
 
@@ -198,6 +209,14 @@ final class InventoryUiKit {
                     g2.setStroke(new BasicStroke(selected ? 1.6f : 1f));
                     g2.drawRoundRect(0, 0, w, h, h, h);
                 }
+                case DARK_CHIP -> {
+                    g2.setColor(selected ? DARK_FILL : (hover ? HEADER_ROW : SURFACE));
+                    g2.fillRoundRect(0, 0, w, h, 12, 12);
+                    if (!selected) {
+                        g2.setColor(BORDER_STRONG);
+                        g2.drawRoundRect(0, 0, w, h, 12, 12);
+                    }
+                }
                 case CHIP -> {
                     g2.setColor(selected ? SELECTED_FILL : (hover ? HEADER_ROW : SURFACE));
                     g2.fillRoundRect(0, 0, w, h, 10, 10);
@@ -266,7 +285,10 @@ final class InventoryUiKit {
     }
 
     /** Icon vẽ bằng Java2D, không cần file ảnh. */
-    enum MenuGlyph { HOME, BOX, CALENDAR, CLINIC, CHEVRON_DOWN, CHEVRON_LEFT, CHEVRON_RIGHT, SEARCH, UPLOAD, DOWNLOAD, PLUS }
+    enum MenuGlyph {
+        HOME, BOX, CALENDAR, CLINIC, CHEVRON_DOWN, CHEVRON_LEFT, CHEVRON_RIGHT, SEARCH, UPLOAD, DOWNLOAD, PLUS,
+        SLIDERS, GEAR, WARNING, CLIPBOARD
+    }
 
     record GlyphIcon(MenuGlyph glyph, int size, Color color) implements Icon {
         @Override
@@ -323,6 +345,35 @@ final class InventoryUiKit {
                 case PLUS -> {
                     g2.drawLine(10, 4, 10, 16);
                     g2.drawLine(4, 10, 16, 10);
+                }
+                case SLIDERS -> {
+                    g2.drawLine(3, 5, 17, 5);
+                    g2.drawLine(3, 10, 17, 10);
+                    g2.drawLine(3, 15, 17, 15);
+                    g2.fillOval(5, 3, 4, 4);
+                    g2.fillOval(11, 8, 4, 4);
+                    g2.fillOval(7, 13, 4, 4);
+                }
+                case GEAR -> {
+                    g2.drawOval(7, 7, 6, 6);
+                    for (int i = 0; i < 8; i++) {
+                        double a = Math.PI / 4 * i;
+                        g2.drawLine((int) Math.round(10 + 5.5 * Math.cos(a)), (int) Math.round(10 + 5.5 * Math.sin(a)),
+                                (int) Math.round(10 + 8 * Math.cos(a)), (int) Math.round(10 + 8 * Math.sin(a)));
+                    }
+                    g2.drawOval(4, 4, 12, 12);
+                }
+                case WARNING -> {
+                    g2.drawPolygon(new int[] {10, 18, 2}, new int[] {2, 17, 17}, 3);
+                    g2.drawLine(10, 7, 10, 12);
+                    g2.fillOval(9, 14, 2, 2);
+                }
+                case CLIPBOARD -> {
+                    g2.drawRoundRect(4, 3, 12, 15, 3, 3);
+                    g2.drawLine(7, 8, 13, 8);
+                    g2.drawLine(7, 11, 13, 11);
+                    g2.drawLine(7, 14, 11, 14);
+                    g2.drawLine(8, 2, 12, 2);
                 }
             }
             g2.dispose();

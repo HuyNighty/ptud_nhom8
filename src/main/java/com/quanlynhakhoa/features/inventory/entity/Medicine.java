@@ -52,6 +52,11 @@ public class Medicine implements Persistable<String> {
     @Column(name = "daDatHang", nullable = false)
     private boolean daDatHang;
 
+    /** Vị trí lưu trữ trong kho (V12), vd. "Kệ A-01"; null = chưa xếp vị trí. */
+    @Nationalized
+    @Column(name = "viTriLuuTru", length = 50)
+    private String viTriLuuTru;
+
     /** Nhóm kiểm soát (V11); chỉ có khi kiemSoatDacBiet = true, null = chưa phân loại. */
     @Enumerated(EnumType.STRING)
     @Column(name = "nhomKiemSoat", length = 20)
@@ -89,6 +94,19 @@ public class Medicine implements Persistable<String> {
             throw new IllegalStateException("Thuốc " + maThuoc + " không thuộc diện kiểm soát đặc biệt");
         }
         this.nhomKiemSoat = group;
+    }
+
+    /**
+     * Điều chỉnh nhanh thông tin theo dõi tồn (UC36): định mức tối thiểu, vị trí lưu trữ, cờ đã đặt hàng.
+     * Không đổi số tồn — tồn chỉ đổi qua chứng từ kho.
+     */
+    public void updateMonitoring(int dinhMucToiThieu, String viTriLuuTru, boolean daDatHang) {
+        if (dinhMucToiThieu < 0) {
+            throw new IllegalArgumentException("Định mức không được âm");
+        }
+        this.dinhMucToiThieu = dinhMucToiThieu;
+        this.viTriLuuTru = viTriLuuTru;
+        this.daDatHang = daDatHang;
     }
 
     @Override

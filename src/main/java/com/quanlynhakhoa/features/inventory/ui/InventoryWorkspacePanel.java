@@ -12,6 +12,8 @@ import com.quanlynhakhoa.features.inventory.service.StockReturnService;
 import com.quanlynhakhoa.features.inventory.service.StocktakeService;
 import com.quanlynhakhoa.features.inventory.service.DisposalService;
 import com.quanlynhakhoa.features.inventory.service.ControlledDrugService;
+import com.quanlynhakhoa.features.inventory.service.EmergencyKitService;
+import com.quanlynhakhoa.features.inventory.service.StockMonitorService;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -54,6 +56,8 @@ public final class InventoryWorkspacePanel extends JPanel {
     private final transient StocktakeService stocktakeService;
     private final transient DisposalService disposalService;
     private final transient ControlledDrugService controlledDrugService;
+    private final transient EmergencyKitService emergencyKitService;
+    private final transient StockMonitorService stockMonitorService;
     private final transient Supplier<InventoryActor> session;
     private final transient Supplier<Set<Role>> sessionRoles;
 
@@ -70,6 +74,7 @@ public final class InventoryWorkspacePanel extends JPanel {
                                    StockInService stockInService, StockOutService stockOutService,
                                    StockReturnService stockReturnService, StocktakeService stocktakeService,
                                    DisposalService disposalService, ControlledDrugService controlledDrugService,
+                                   EmergencyKitService emergencyKitService, StockMonitorService stockMonitorService,
                                    Supplier<InventoryActor> session) {
         super(new BorderLayout());
         this.overviewService = Objects.requireNonNull(overviewService);
@@ -80,6 +85,8 @@ public final class InventoryWorkspacePanel extends JPanel {
         this.stocktakeService = Objects.requireNonNull(stocktakeService);
         this.disposalService = Objects.requireNonNull(disposalService);
         this.controlledDrugService = Objects.requireNonNull(controlledDrugService);
+        this.emergencyKitService = Objects.requireNonNull(emergencyKitService);
+        this.stockMonitorService = Objects.requireNonNull(stockMonitorService);
         this.session = Objects.requireNonNull(session);
         this.sessionRoles = () -> session.get().roles();
         String displayName = session.get().hoTen();
@@ -122,6 +129,10 @@ public final class InventoryWorkspacePanel extends JPanel {
             pnlDisposal.reload();
         } else if (view instanceof ControlledDrugPanel pnlControlled) {
             pnlControlled.reload();
+        } else if (view instanceof EmergencyKitPanel pnlKits) {
+            pnlKits.reload();
+        } else if (view instanceof StockMonitorPanel pnlStock) {
+            pnlStock.reload();
         }
         contentCards.show(pnlContent, screen.name());
     }
@@ -140,6 +151,8 @@ public final class InventoryWorkspacePanel extends JPanel {
             case STOCKTAKE -> new StocktakePanel(stocktakeService, session);
             case DISPOSAL -> new DisposalPanel(disposalService, session);
             case CONTROLLED_DRUGS -> new ControlledDrugPanel(controlledDrugService, stockOutService, itemService, session);
+            case EMERGENCY_KIT -> new EmergencyKitPanel(emergencyKitService, itemService, session);
+            case STOCK_LEVEL -> new StockMonitorPanel(stockMonitorService, session);
             default -> new InventoryPlaceholderPanel(screen);
         };
     }
