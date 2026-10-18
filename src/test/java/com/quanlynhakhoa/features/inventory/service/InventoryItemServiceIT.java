@@ -19,7 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 /** Service → JPA → SQL Server thật (kiểm tra JPQL, mapping Unicode, chặn trùng mã). Rollback sau mỗi test. */
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        properties = "n08.desktop.enabled=false"
+        properties = {
+                "n08.desktop.enabled=false",
+                "spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl"
+        }
 )
 @Transactional
 class InventoryItemServiceIT {

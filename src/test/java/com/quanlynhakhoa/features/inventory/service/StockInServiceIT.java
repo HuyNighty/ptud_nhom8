@@ -32,7 +32,10 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        properties = "n08.desktop.enabled=false"
+        properties = {
+                "n08.desktop.enabled=false",
+                "spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl"
+        }
 )
 @Transactional
 class StockInServiceIT {

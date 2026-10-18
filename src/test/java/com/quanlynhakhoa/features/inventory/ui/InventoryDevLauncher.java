@@ -46,7 +46,9 @@ public final class InventoryDevLauncher {
         ConfigurableApplicationContext context = new SpringApplicationBuilder(QuanLyNhaKhoa.class)
                 .headless(false)
                 .web(WebApplicationType.NONE)
-                .properties("n08.desktop.enabled=false")
+                .properties("n08.desktop.enabled=false",
+                        // Bảng dùng tên camelCase (maThuoc); chặn Spring đổi sang ma_thuoc cho tới khi application.yaml có cấu hình này.
+                        "spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl")
                 .run(args);
         String wanted = null;
         for (String arg : args) {

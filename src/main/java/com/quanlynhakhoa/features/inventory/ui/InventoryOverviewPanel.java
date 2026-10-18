@@ -59,6 +59,8 @@ import javax.swing.table.TableColumnModel;
  * Role lấy từ {@code sessionRoles} do shell cung cấp từ phiên đăng nhập.</p>
  */
 public final class InventoryOverviewPanel extends JPanel {
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(InventoryOverviewPanel.class);
+
 
     private static final String CARD_LOADING = "loading";
     private static final String CARD_ERROR = "error";
@@ -177,6 +179,9 @@ public final class InventoryOverviewPanel extends JPanel {
     }
 
     private void showError(Throwable cause) {
+        if (!(cause instanceof PermissionDeniedException)) {
+            LOG.error("Không tải được tổng quan kho", cause);
+        }
         String message = cause instanceof PermissionDeniedException
                 ? "Tài khoản hiện tại không có quyền xem kho (INVENTORY_READ)."
                 : "Không tải được dữ liệu kho. Vui lòng thử lại.";
