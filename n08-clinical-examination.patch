@@ -1,0 +1,1157 @@
+diff --git a/src/main/resources/db/migration/V5__create_dich_vu_catalog.sql b/src/main/resources/db/migration/V5__create_dich_vu_catalog.sql
+new file mode 100644
+--- /dev/null
++++ b/src/main/resources/db/migration/V5__create_dich_vu_catalog.sql
+@@ -0,0 +1,30 @@
++-- N08 - Flyway V5
++-- Clinical examination feature: independent service catalog.
++-- V1-V4 are already applied and must remain unchanged.
++
++CREATE TABLE dbo.DichVu (
++    maDichVu VARCHAR(10) COLLATE Latin1_General_100_BIN2 NOT NULL,
++    tenDichVu NVARCHAR(100) NOT NULL,
++    moTa NVARCHAR(500) NULL,
++    donGia DECIMAL(12,2) NOT NULL,
++    laCanLamSang BIT NOT NULL
++        CONSTRAINT DF_DichVu_LaCanLamSang DEFAULT 0,
++    dangApDung BIT NOT NULL
++        CONSTRAINT DF_DichVu_DangApDung DEFAULT 1,
++    taoLuc DATETIME2(3) NOT NULL
++        CONSTRAINT DF_DichVu_TaoLuc DEFAULT SYSUTCDATETIME(),
++    capNhatLuc DATETIME2(3) NOT NULL
++        CONSTRAINT DF_DichVu_CapNhatLuc DEFAULT SYSUTCDATETIME(),
++
++    CONSTRAINT PK_DichVu PRIMARY KEY (maDichVu),
++    CONSTRAINT UQ_DichVu_TenDichVu UNIQUE (tenDichVu),
++    CONSTRAINT CK_DichVu_MaDichVu_NotBlank
++        CHECK (LEN(TRIM(maDichVu)) > 0),
++    CONSTRAINT CK_DichVu_TenDichVu_NotBlank
++        CHECK (LEN(TRIM(tenDichVu)) > 0),
++    CONSTRAINT CK_DichVu_DonGia_NonNegative
++        CHECK (donGia >= 0)
++);
++
++CREATE INDEX IX_DichVu_DangApDung_TenDichVu
++ON dbo.DichVu (dangApDung, tenDichVu);
+
+diff --git a/src/main/java/com/quanlynhakhoa/features/examination/entity/DichVu.java b/src/main/java/com/quanlynhakhoa/features/examination/entity/DichVu.java
+new file mode 100644
+--- /dev/null
++++ b/src/main/java/com/quanlynhakhoa/features/examination/entity/DichVu.java
+@@ -0,0 +1,93 @@
++package com.quanlynhakhoa.features.examination.entity;
++
++import jakarta.persistence.Column;
++import jakarta.persistence.Entity;
++import jakarta.persistence.Id;
++import jakarta.persistence.Table;
++import jakarta.persistence.UniqueConstraint;
++import lombok.AccessLevel;
++import lombok.Getter;
++import lombok.NoArgsConstructor;
++import org.hibernate.annotations.Nationalized;
++
++import java.math.BigDecimal;
++import java.time.LocalDateTime;
++import java.util.Objects;
++
++@Entity(name = "DichVuJpaEntity")
++@Table(
++        name = "DichVu",
++        schema = "dbo",
++        uniqueConstraints = @UniqueConstraint(
++                name = "UQ_DichVu_TenDichVu",
++                columnNames = "tenDichVu"
++        )
++)
++@Getter
++@NoArgsConstructor(access = AccessLevel.PROTECTED)
++public class DichVu {
++
++    @Id
++    @Column(name = "maDichVu", length = 10, nullable = false)
++    private String maDichVu;
++
++    @Nationalized
++    @Column(name = "tenDichVu", length = 100, nullable = false)
++    private String tenDichVu;
++
++    @Nationalized
++    @Column(name = "moTa", length = 500)
++    private String moTa;
++
++    @Column(name = "donGia", precision = 12, scale = 2, nullable = false)
++    private BigDecimal donGia;
++
++    @Column(name = "laCanLamSang", nullable = false)
++    private boolean laCanLamSang;
++
++    @Column(name = "dangApDung", nullable = false)
++    private boolean dangApDung;
++
++    @Column(name = "taoLuc", nullable = false)
++    private LocalDateTime taoLuc;
++
++    @Column(name = "capNhatLuc", nullable = false)
++    private LocalDateTime capNhatLuc;
++
++    public DichVu(
++            String maDichVu,
++            String tenDichVu,
++            String moTa,
++            BigDecimal donGia,
++            boolean laCanLamSang,
++            LocalDateTime nowUtc
++    ) {
++        this.maDichVu = Objects.requireNonNull(maDichVu, "maDichVu");
++        this.tenDichVu = Objects.requireNonNull(tenDichVu, "tenDichVu");
++        this.moTa = moTa;
++        this.donGia = Objects.requireNonNull(donGia, "donGia");
++        this.laCanLamSang = laCanLamSang;
++        this.dangApDung = true;
++        this.taoLuc = Objects.requireNonNull(nowUtc, "nowUtc");
++        this.capNhatLuc = nowUtc;
++    }
++
++    public void capNhatThongTin(
++            String tenDichVu,
++            String moTa,
++            BigDecimal donGia,
++            boolean laCanLamSang,
++            LocalDateTime nowUtc
++    ) {
++        this.tenDichVu = Objects.requireNonNull(tenDichVu, "tenDichVu");
++        this.moTa = moTa;
++        this.donGia = Objects.requireNonNull(donGia, "donGia");
++        this.laCanLamSang = laCanLamSang;
++        this.capNhatLuc = Objects.requireNonNull(nowUtc, "nowUtc");
++    }
++
++    public void capNhatTrangThai(boolean dangApDung, LocalDateTime nowUtc) {
++        this.dangApDung = dangApDung;
++        this.capNhatLuc = Objects.requireNonNull(nowUtc, "nowUtc");
++    }
++}
+
+diff --git a/src/main/java/com/quanlynhakhoa/features/examination/repository/DichVuRepository.java b/src/main/java/com/quanlynhakhoa/features/examination/repository/DichVuRepository.java
+new file mode 100644
+--- /dev/null
++++ b/src/main/java/com/quanlynhakhoa/features/examination/repository/DichVuRepository.java
+@@ -0,0 +1,18 @@
++package com.quanlynhakhoa.features.examination.repository;
++
++import com.quanlynhakhoa.features.examination.entity.DichVu;
++import org.springframework.data.jpa.repository.JpaRepository;
++
++import java.util.List;
++
++public interface DichVuRepository extends JpaRepository<DichVu, String> {
++
++    List<DichVu> findAllByOrderByTenDichVuAsc();
++
++    boolean existsByTenDichVuIgnoreCase(String tenDichVu);
++
++    boolean existsByTenDichVuIgnoreCaseAndMaDichVuNot(
++            String tenDichVu,
++            String maDichVu
++    );
++}
+
+diff --git a/src/main/java/com/quanlynhakhoa/features/examination/dto/request/DichVuCreateRequest.java b/src/main/java/com/quanlynhakhoa/features/examination/dto/request/DichVuCreateRequest.java
+new file mode 100644
+--- /dev/null
++++ b/src/main/java/com/quanlynhakhoa/features/examination/dto/request/DichVuCreateRequest.java
+@@ -0,0 +1,19 @@
++package com.quanlynhakhoa.features.examination.dto.request;
++
++import jakarta.validation.constraints.DecimalMin;
++import jakarta.validation.constraints.Digits;
++import jakarta.validation.constraints.NotBlank;
++import jakarta.validation.constraints.NotNull;
++import jakarta.validation.constraints.Size;
++
++import java.math.BigDecimal;
++
++public record DichVuCreateRequest(
++        @NotBlank @Size(max = 10) String maDichVu,
++        @NotBlank @Size(max = 100) String tenDichVu,
++        @Size(max = 500) String moTa,
++        @NotNull @DecimalMin("0.00") @Digits(integer = 10, fraction = 2)
++        BigDecimal donGia,
++        @NotNull Boolean laCanLamSang
++) {
++}
+
+diff --git a/src/main/java/com/quanlynhakhoa/features/examination/dto/request/DichVuUpdateRequest.java b/src/main/java/com/quanlynhakhoa/features/examination/dto/request/DichVuUpdateRequest.java
+new file mode 100644
+--- /dev/null
++++ b/src/main/java/com/quanlynhakhoa/features/examination/dto/request/DichVuUpdateRequest.java
+@@ -0,0 +1,18 @@
++package com.quanlynhakhoa.features.examination.dto.request;
++
++import jakarta.validation.constraints.DecimalMin;
++import jakarta.validation.constraints.Digits;
++import jakarta.validation.constraints.NotBlank;
++import jakarta.validation.constraints.NotNull;
++import jakarta.validation.constraints.Size;
++
++import java.math.BigDecimal;
++
++public record DichVuUpdateRequest(
++        @NotBlank @Size(max = 100) String tenDichVu,
++        @Size(max = 500) String moTa,
++        @NotNull @DecimalMin("0.00") @Digits(integer = 10, fraction = 2)
++        BigDecimal donGia,
++        @NotNull Boolean laCanLamSang
++) {
++}
+
+diff --git a/src/main/java/com/quanlynhakhoa/features/examination/dto/response/DichVuResponse.java b/src/main/java/com/quanlynhakhoa/features/examination/dto/response/DichVuResponse.java
+new file mode 100644
+--- /dev/null
++++ b/src/main/java/com/quanlynhakhoa/features/examination/dto/response/DichVuResponse.java
+@@ -0,0 +1,16 @@
++package com.quanlynhakhoa.features.examination.dto.response;
++
++import java.math.BigDecimal;
++import java.time.LocalDateTime;
++
++public record DichVuResponse(
++        String maDichVu,
++        String tenDichVu,
++        String moTa,
++        BigDecimal donGia,
++        boolean laCanLamSang,
++        boolean dangApDung,
++        LocalDateTime taoLuc,
++        LocalDateTime capNhatLuc
++) {
++}
+
+diff --git a/src/main/java/com/quanlynhakhoa/features/examination/service/DichVuException.java b/src/main/java/com/quanlynhakhoa/features/examination/service/DichVuException.java
+new file mode 100644
+--- /dev/null
++++ b/src/main/java/com/quanlynhakhoa/features/examination/service/DichVuException.java
+@@ -0,0 +1,22 @@
++package com.quanlynhakhoa.features.examination.service;
++
++public final class DichVuException extends RuntimeException {
++
++    public enum Code {
++        INVALID_DATA,
++        CODE_ALREADY_EXISTS,
++        NAME_ALREADY_EXISTS,
++        NOT_FOUND
++    }
++
++    private final Code code;
++
++    public DichVuException(Code code, String message) {
++        super(message);
++        this.code = code;
++    }
++
++    public Code getCode() {
++        return code;
++    }
++}
+
+diff --git a/src/main/java/com/quanlynhakhoa/features/examination/service/DichVuAccessPolicy.java b/src/main/java/com/quanlynhakhoa/features/examination/service/DichVuAccessPolicy.java
+new file mode 100644
+--- /dev/null
++++ b/src/main/java/com/quanlynhakhoa/features/examination/service/DichVuAccessPolicy.java
+@@ -0,0 +1,40 @@
++package com.quanlynhakhoa.features.examination.service;
++
++import org.springframework.security.access.AccessDeniedException;
++import org.springframework.security.authentication.AnonymousAuthenticationToken;
++import org.springframework.security.core.Authentication;
++import org.springframework.security.core.context.SecurityContextHolder;
++import org.springframework.stereotype.Component;
++
++@Component
++public final class DichVuAccessPolicy {
++
++    public static final String SERVICE_READ = "SERVICE_READ";
++    public static final String SERVICE_MANAGE = "SERVICE_MANAGE";
++
++    public void requireRead() {
++        requireAuthority(SERVICE_READ, "Bạn không có quyền xem danh mục dịch vụ.");
++    }
++
++    public void requireManage() {
++        requireAuthority(SERVICE_MANAGE, "Bạn không có quyền quản lý danh mục dịch vụ.");
++    }
++
++    private void requireAuthority(String authority, String message) {
++        Authentication authentication =
++                SecurityContextHolder.getContext().getAuthentication();
++
++        if (authentication == null
++                || !authentication.isAuthenticated()
++                || authentication instanceof AnonymousAuthenticationToken) {
++            throw new AccessDeniedException("Bạn cần đăng nhập để thực hiện thao tác này.");
++        }
++
++        boolean granted = authentication.getAuthorities().stream()
++                .anyMatch(item -> authority.equals(item.getAuthority()));
++
++        if (!granted) {
++            throw new AccessDeniedException(message);
++        }
++    }
++}
+
+diff --git a/src/main/java/com/quanlynhakhoa/features/examination/service/DichVuService.java b/src/main/java/com/quanlynhakhoa/features/examination/service/DichVuService.java
+new file mode 100644
+--- /dev/null
++++ b/src/main/java/com/quanlynhakhoa/features/examination/service/DichVuService.java
+@@ -0,0 +1,200 @@
++package com.quanlynhakhoa.features.examination.service;
++
++import com.quanlynhakhoa.features.examination.dto.request.DichVuCreateRequest;
++import com.quanlynhakhoa.features.examination.dto.request.DichVuUpdateRequest;
++import com.quanlynhakhoa.features.examination.dto.response.DichVuResponse;
++import com.quanlynhakhoa.features.examination.entity.DichVu;
++import com.quanlynhakhoa.features.examination.repository.DichVuRepository;
++import org.springframework.stereotype.Service;
++import org.springframework.transaction.annotation.Transactional;
++
++import java.math.BigDecimal;
++import java.math.RoundingMode;
++import java.time.Clock;
++import java.time.LocalDateTime;
++import java.time.ZoneOffset;
++import java.time.temporal.ChronoUnit;
++import java.util.List;
++import java.util.Locale;
++import java.util.Objects;
++
++@Service
++public class DichVuService {
++
++    private final DichVuRepository repository;
++    private final DichVuAccessPolicy accessPolicy;
++    private final Clock clock;
++
++    public DichVuService(
++            DichVuRepository repository,
++            DichVuAccessPolicy accessPolicy,
++            Clock clock
++    ) {
++        this.repository = Objects.requireNonNull(repository, "repository");
++        this.accessPolicy = Objects.requireNonNull(accessPolicy, "accessPolicy");
++        this.clock = Objects.requireNonNull(clock, "clock");
++    }
++
++    @Transactional(readOnly = true)
++    public List<DichVuResponse> timKiem(String tuKhoa, Boolean dangApDung) {
++        accessPolicy.requireRead();
++        String keyword = tuKhoa == null ? "" : tuKhoa.strip().toLowerCase(Locale.ROOT);
++
++        return repository.findAllByOrderByTenDichVuAsc().stream()
++                .filter(item -> dangApDung == null || item.isDangApDung() == dangApDung)
++                .filter(item -> keyword.isEmpty()
++                        || item.getMaDichVu().toLowerCase(Locale.ROOT).contains(keyword)
++                        || item.getTenDichVu().toLowerCase(Locale.ROOT).contains(keyword))
++                .map(this::toResponse)
++                .toList();
++    }
++
++    @Transactional
++    public DichVuResponse taoMoi(DichVuCreateRequest request) {
++        accessPolicy.requireManage();
++        if (request == null) {
++            throw invalid("Dữ liệu dịch vụ không được để trống.");
++        }
++
++        String code = normalizedCode(request.maDichVu());
++        String name = normalizedRequired(request.tenDichVu(), 100, "Tên dịch vụ");
++        String description = normalizedOptional(request.moTa(), 500, "Mô tả");
++        BigDecimal price = normalizedPrice(request.donGia());
++        boolean clinicalLab = requireBoolean(request.laCanLamSang());
++
++        if (repository.existsById(code)) {
++            throw new DichVuException(
++                    DichVuException.Code.CODE_ALREADY_EXISTS,
++                    "Mã dịch vụ đã tồn tại: " + code
++            );
++        }
++        if (repository.existsByTenDichVuIgnoreCase(name)) {
++            throw new DichVuException(
++                    DichVuException.Code.NAME_ALREADY_EXISTS,
++                    "Tên dịch vụ đã tồn tại: " + name
++            );
++        }
++
++        DichVu entity = new DichVu(code, name, description, price, clinicalLab, nowUtc());
++        return toResponse(repository.save(entity));
++    }
++
++    @Transactional
++    public DichVuResponse capNhat(String maDichVu, DichVuUpdateRequest request) {
++        accessPolicy.requireManage();
++        String code = normalizedCode(maDichVu);
++        if (request == null) {
++            throw invalid("Dữ liệu dịch vụ không được để trống.");
++        }
++
++        DichVu entity = repository.findById(code)
++                .orElseThrow(() -> new DichVuException(
++                        DichVuException.Code.NOT_FOUND,
++                        "Không tìm thấy dịch vụ: " + code
++                ));
++
++        String name = normalizedRequired(request.tenDichVu(), 100, "Tên dịch vụ");
++        String description = normalizedOptional(request.moTa(), 500, "Mô tả");
++        BigDecimal price = normalizedPrice(request.donGia());
++        boolean clinicalLab = requireBoolean(request.laCanLamSang());
++
++        if (repository.existsByTenDichVuIgnoreCaseAndMaDichVuNot(name, code)) {
++            throw new DichVuException(
++                    DichVuException.Code.NAME_ALREADY_EXISTS,
++                    "Tên dịch vụ đã được dùng bởi dịch vụ khác: " + name
++            );
++        }
++
++        entity.capNhatThongTin(name, description, price, clinicalLab, nowUtc());
++        return toResponse(repository.save(entity));
++    }
++
++    @Transactional
++    public DichVuResponse doiTrangThai(String maDichVu, boolean dangApDung) {
++        accessPolicy.requireManage();
++        String code = normalizedCode(maDichVu);
++        DichVu entity = repository.findById(code)
++                .orElseThrow(() -> new DichVuException(
++                        DichVuException.Code.NOT_FOUND,
++                        "Không tìm thấy dịch vụ: " + code
++                ));
++
++        entity.capNhatTrangThai(dangApDung, nowUtc());
++        return toResponse(repository.save(entity));
++    }
++
++    private DichVuResponse toResponse(DichVu item) {
++        return new DichVuResponse(
++                item.getMaDichVu(),
++                item.getTenDichVu(),
++                item.getMoTa(),
++                item.getDonGia(),
++                item.isLaCanLamSang(),
++                item.isDangApDung(),
++                item.getTaoLuc(),
++                item.getCapNhatLuc()
++        );
++    }
++
++    private LocalDateTime nowUtc() {
++        return LocalDateTime.ofInstant(
++                clock.instant().truncatedTo(ChronoUnit.MILLIS), ZoneOffset.UTC
++        );
++    }
++
++    private static String normalizedCode(String value) {
++        return normalizedRequired(value, 10, "Mã dịch vụ").toUpperCase(Locale.ROOT);
++    }
++
++    private static String normalizedRequired(String value, int maxLength, String label) {
++        if (value == null || value.isBlank()) {
++            throw invalid(label + " không được để trống.");
++        }
++        String normalized = value.strip();
++        if (normalized.length() > maxLength) {
++            throw invalid(label + " không được vượt quá " + maxLength + " ký tự.");
++        }
++        return normalized;
++    }
++
++    private static String normalizedOptional(String value, int maxLength, String label) {
++        if (value == null || value.isBlank()) {
++            return null;
++        }
++        String normalized = value.strip();
++        if (normalized.length() > maxLength) {
++            throw invalid(label + " không được vượt quá " + maxLength + " ký tự.");
++        }
++        return normalized;
++    }
++
++    private static BigDecimal normalizedPrice(BigDecimal value) {
++        if (value == null) {
++            throw invalid("Đơn giá không được để trống.");
++        }
++        BigDecimal price;
++        try {
++            price = value.setScale(2, RoundingMode.UNNECESSARY);
++        } catch (ArithmeticException ex) {
++            throw invalid("Đơn giá chỉ được có tối đa 2 chữ số thập phân.");
++        }
++        if (price.signum() < 0) {
++            throw invalid("Đơn giá không được âm.");
++        }
++        if (Math.max(0, price.precision() - price.scale()) > 10) {
++            throw invalid("Đơn giá vượt quá giới hạn DECIMAL(12,2).");
++        }
++        return price;
++    }
++
++    private static boolean requireBoolean(Boolean value) {
++        if (value == null) {
++            throw invalid("Vui lòng xác định dịch vụ có phải cận lâm sàng hay không.");
++        }
++        return value;
++    }
++
++    private static DichVuException invalid(String message) {
++        return new DichVuException(DichVuException.Code.INVALID_DATA, message);
++    }
++}
+
+diff --git a/src/main/java/com/quanlynhakhoa/features/examination/ui/ServicePanel.java b/src/main/java/com/quanlynhakhoa/features/examination/ui/ServicePanel.java
+new file mode 100644
+--- /dev/null
++++ b/src/main/java/com/quanlynhakhoa/features/examination/ui/ServicePanel.java
+@@ -0,0 +1,324 @@
++package com.quanlynhakhoa.features.examination.ui;
++
++import com.quanlynhakhoa.features.examination.dto.request.DichVuCreateRequest;
++import com.quanlynhakhoa.features.examination.dto.request.DichVuUpdateRequest;
++import com.quanlynhakhoa.features.examination.dto.response.DichVuResponse;
++import com.quanlynhakhoa.features.examination.service.DichVuService;
++import org.springframework.security.core.context.SecurityContext;
++import org.springframework.security.core.context.SecurityContextHolder;
++import org.springframework.context.annotation.Lazy;
++import org.springframework.stereotype.Component;
++
++import javax.swing.BorderFactory;
++import javax.swing.Box;
++import javax.swing.BoxLayout;
++import javax.swing.JButton;
++import javax.swing.JCheckBox;
++import javax.swing.JComboBox;
++import javax.swing.JComponent;
++import javax.swing.JDialog;
++import javax.swing.JLabel;
++import javax.swing.JOptionPane;
++import javax.swing.JPanel;
++import javax.swing.JScrollPane;
++import javax.swing.JTable;
++import javax.swing.JTextField;
++import javax.swing.SwingWorker;
++import javax.swing.table.DefaultTableModel;
++import java.awt.BorderLayout;
++import java.awt.Component;
++import java.awt.Dialog;
++import java.awt.Dimension;
++import java.awt.FlowLayout;
++import java.awt.Window;
++import java.math.BigDecimal;
++import java.util.List;
++import java.util.concurrent.Callable;
++import java.util.concurrent.ExecutionException;
++import java.util.function.Consumer;
++
++@Component
++@Lazy
++public final class ServicePanel extends JPanel {
++
++    private final DichVuService dichVuService;
++    private final JTextField keywordField = new JTextField(22);
++    private final JComboBox<String> statusFilter = new JComboBox<>(
++            new String[]{"Tất cả trạng thái", "Đang áp dụng", "Ngừng áp dụng"}
++    );
++    private final DefaultTableModel tableModel = new DefaultTableModel(
++            new Object[]{"Mã dịch vụ", "Tên dịch vụ", "Đơn giá", "Cận lâm sàng", "Trạng thái"}, 0
++    ) {
++        @Override
++        public boolean isCellEditable(int row, int column) {
++            return false;
++        }
++    };
++    private final JTable table = new JTable(tableModel);
++    private final JLabel statusLabel = new JLabel("Danh mục dịch vụ khám");
++    private List<DichVuResponse> visibleServices = List.of();
++
++    public ServicePanel(DichVuService dichVuService) {
++        this.dichVuService = dichVuService;
++        buildUi();
++    }
++
++    private void buildUi() {
++        setLayout(new BorderLayout(8, 8));
++        setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
++
++        JPanel top = new JPanel();
++        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
++        JLabel title = new JLabel("DANH MỤC DỊCH VỤ KHÁM");
++        title.setAlignmentX(Component.LEFT_ALIGNMENT);
++        top.add(title);
++        top.add(Box.createVerticalStrut(8));
++
++        JPanel searchRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
++        searchRow.add(new JLabel("Tìm kiếm:"));
++        searchRow.add(keywordField);
++        searchRow.add(new JLabel("Trạng thái:"));
++        searchRow.add(statusFilter);
++        JButton refreshButton = new JButton("Làm mới");
++        refreshButton.addActionListener(event -> refreshAsync());
++        searchRow.add(refreshButton);
++        top.add(searchRow);
++        add(top, BorderLayout.NORTH);
++
++        table.setFillsViewportHeight(true);
++        table.setRowHeight(26);
++        add(new JScrollPane(table), BorderLayout.CENTER);
++
++        JPanel bottom = new JPanel(new BorderLayout());
++        bottom.add(statusLabel, BorderLayout.CENTER);
++        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
++        JButton addButton = new JButton("Thêm dịch vụ");
++        JButton editButton = new JButton("Sửa dịch vụ");
++        JButton statusButton = new JButton("Đổi trạng thái");
++        addButton.addActionListener(event -> showEditorDialog(null));
++        editButton.addActionListener(event -> {
++            DichVuResponse selected = selectedService();
++            if (selected != null) {
++                showEditorDialog(selected);
++            }
++        });
++        statusButton.addActionListener(event -> toggleSelectedStatus());
++        actions.add(addButton);
++        actions.add(editButton);
++        actions.add(statusButton);
++        bottom.add(actions, BorderLayout.SOUTH);
++        add(bottom, BorderLayout.SOUTH);
++
++        statusFilter.addActionListener(event -> refreshAsync());
++    }
++
++    private void refreshAsync() {
++        String keyword = keywordField.getText();
++        Boolean active = switch (statusFilter.getSelectedIndex()) {
++            case 1 -> Boolean.TRUE;
++            case 2 -> Boolean.FALSE;
++            default -> null;
++        };
++        runAsync(
++                () -> dichVuService.timKiem(keyword, active),
++                items -> {
++                    visibleServices = items;
++                    tableModel.setRowCount(0);
++                    for (DichVuResponse item : items) {
++                        tableModel.addRow(new Object[]{
++                                item.maDichVu(),
++                                item.tenDichVu(),
++                                item.donGia().toPlainString(),
++                                item.laCanLamSang() ? "Có" : "Không",
++                                item.dangApDung() ? "Đang áp dụng" : "Ngừng áp dụng"
++                        });
++                    }
++                    statusLabel.setText("Số dịch vụ: " + items.size());
++                }
++        );
++    }
++
++    private void showEditorDialog(DichVuResponse current) {
++        boolean creating = current == null;
++        Window owner = javax.swing.SwingUtilities.getWindowAncestor(this);
++        JDialog dialog = new JDialog(
++                owner,
++                creating ? "Thêm dịch vụ" : "Cập nhật dịch vụ",
++                Dialog.ModalityType.APPLICATION_MODAL
++        );
++        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
++
++        JPanel form = new JPanel();
++        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
++        form.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
++        JTextField codeField = new JTextField(creating ? "" : current.maDichVu(), 20);
++        codeField.setEnabled(creating);
++        JTextField nameField = new JTextField(creating ? "" : current.tenDichVu(), 24);
++        JTextField descriptionField = new JTextField(
++                creating || current.moTa() == null ? "" : current.moTa(), 24
++        );
++        JTextField priceField = new JTextField(
++                creating ? "0.00" : current.donGia().toPlainString(), 24
++        );
++        JCheckBox clinicalLabCheck = new JCheckBox(
++                "Là dịch vụ cận lâm sàng", !creating && current.laCanLamSang()
++        );
++        addFormRow(form, "Mã dịch vụ:", codeField);
++        addFormRow(form, "Tên dịch vụ:", nameField);
++        addFormRow(form, "Mô tả:", descriptionField);
++        addFormRow(form, "Đơn giá:", priceField);
++        form.add(clinicalLabCheck);
++
++        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
++        JButton saveButton = new JButton("Lưu");
++        JButton cancelButton = new JButton("Hủy");
++        buttons.add(saveButton);
++        buttons.add(cancelButton);
++        cancelButton.addActionListener(event -> dialog.dispose());
++        saveButton.addActionListener(event -> {
++            final BigDecimal price;
++            try {
++                price = new BigDecimal(priceField.getText().strip());
++            } catch (NumberFormatException ex) {
++                showError(new IllegalArgumentException("Đơn giá không hợp lệ."));
++                return;
++            }
++
++            saveButton.setEnabled(false);
++            if (creating) {
++                DichVuCreateRequest request = new DichVuCreateRequest(
++                        codeField.getText(), nameField.getText(), descriptionField.getText(),
++                        price, clinicalLabCheck.isSelected()
++                );
++                runAsync(() -> dichVuService.taoMoi(request), saved -> {
++                    dialog.dispose();
++                    showMessage("Đã thêm dịch vụ " + saved.maDichVu() + ".");
++                    refreshAsync();
++                }, error -> {
++                    saveButton.setEnabled(true);
++                    showError(error);
++                });
++            } else {
++                DichVuUpdateRequest request = new DichVuUpdateRequest(
++                        nameField.getText(), descriptionField.getText(), price,
++                        clinicalLabCheck.isSelected()
++                );
++                runAsync(() -> dichVuService.capNhat(current.maDichVu(), request), saved -> {
++                    dialog.dispose();
++                    showMessage("Đã cập nhật dịch vụ " + saved.maDichVu() + ".");
++                    refreshAsync();
++                }, error -> {
++                    saveButton.setEnabled(true);
++                    showError(error);
++                });
++            }
++        });
++
++        dialog.getContentPane().setLayout(new BorderLayout());
++        dialog.getContentPane().add(form, BorderLayout.CENTER);
++        dialog.getContentPane().add(buttons, BorderLayout.SOUTH);
++        dialog.pack();
++        dialog.setMinimumSize(new Dimension(460, dialog.getHeight()));
++        dialog.setLocationRelativeTo(this);
++        dialog.setVisible(true);
++    }
++
++    private void toggleSelectedStatus() {
++        DichVuResponse selected = selectedService();
++        if (selected == null) {
++            showMessage("Vui lòng chọn một dịch vụ.");
++            return;
++        }
++        boolean newStatus = !selected.dangApDung();
++        String action = newStatus ? "kích hoạt lại" : "ngừng áp dụng";
++        int confirm = JOptionPane.showConfirmDialog(
++                this,
++                "Bạn có muốn " + action + " dịch vụ '" + selected.tenDichVu() + "'?",
++                "Xác nhận thay đổi trạng thái",
++                JOptionPane.YES_NO_OPTION
++        );
++        if (confirm != JOptionPane.YES_OPTION) {
++            return;
++        }
++        runAsync(() -> dichVuService.doiTrangThai(selected.maDichVu(), newStatus), saved -> {
++            showMessage("Đã cập nhật trạng thái dịch vụ " + saved.maDichVu() + ".");
++            refreshAsync();
++        });
++    }
++
++    private DichVuResponse selectedService() {
++        int row = table.getSelectedRow();
++        if (row < 0) {
++            showMessage("Vui lòng chọn một dịch vụ.");
++            return null;
++        }
++        int modelRow = table.convertRowIndexToModel(row);
++        if (modelRow < 0 || modelRow >= visibleServices.size()) {
++            return null;
++        }
++        return visibleServices.get(modelRow);
++    }
++
++    private static void addFormRow(JPanel parent, String label, JComponent field) {
++        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
++        JLabel caption = new JLabel(label);
++        caption.setPreferredSize(new Dimension(105, 26));
++        row.add(caption);
++        row.add(field);
++        row.setAlignmentX(Component.LEFT_ALIGNMENT);
++        parent.add(row);
++        parent.add(Box.createVerticalStrut(4));
++    }
++
++    private <T> void runAsync(Callable<T> work, Consumer<T> onSuccess) {
++        runAsync(work, onSuccess, this::showError);
++    }
++
++    private <T> void runAsync(
++            Callable<T> work,
++            Consumer<T> onSuccess,
++            Consumer<Throwable> onFailure
++    ) {
++        SecurityContext capturedContext = SecurityContextHolder.createEmptyContext();
++        capturedContext.setAuthentication(
++                SecurityContextHolder.getContext().getAuthentication()
++        );
++
++        new SwingWorker<T, Void>() {
++            @Override
++            protected T doInBackground() throws Exception {
++                SecurityContext previousContext = SecurityContextHolder.getContext();
++                SecurityContextHolder.setContext(capturedContext);
++                try {
++                    return work.call();
++                } finally {
++                    SecurityContextHolder.setContext(previousContext);
++                }
++            }
++
++            @Override
++            protected void done() {
++                try {
++                    onSuccess.accept(get());
++                } catch (InterruptedException ex) {
++                    Thread.currentThread().interrupt();
++                    onFailure.accept(ex);
++                } catch (ExecutionException ex) {
++                    onFailure.accept(ex.getCause() == null ? ex : ex.getCause());
++                }
++            }
++        }.execute();
++    }
++
++    private void showMessage(String message) {
++        JOptionPane.showMessageDialog(this, message);
++    }
++
++    private void showError(Throwable error) {
++        String message = error.getMessage();
++        if (message == null || message.isBlank()) {
++            message = "Không thể hoàn thành thao tác.";
++        }
++        JOptionPane.showMessageDialog(this, message, "Có lỗi", JOptionPane.ERROR_MESSAGE);
++    }
++}
+
+diff --git a/src/test/java/com/quanlynhakhoa/features/examination/service/DichVuServiceTest.java b/src/test/java/com/quanlynhakhoa/features/examination/service/DichVuServiceTest.java
+new file mode 100644
+--- /dev/null
++++ b/src/test/java/com/quanlynhakhoa/features/examination/service/DichVuServiceTest.java
+@@ -0,0 +1,157 @@
++package com.quanlynhakhoa.features.examination.service;
++
++import com.quanlynhakhoa.features.examination.dto.request.DichVuCreateRequest;
++import com.quanlynhakhoa.features.examination.dto.request.DichVuUpdateRequest;
++import com.quanlynhakhoa.features.examination.dto.response.DichVuResponse;
++import com.quanlynhakhoa.features.examination.entity.DichVu;
++import com.quanlynhakhoa.features.examination.repository.DichVuRepository;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import org.springframework.security.access.AccessDeniedException;
++import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
++import org.springframework.security.core.authority.SimpleGrantedAuthority;
++import org.springframework.security.core.context.SecurityContext;
++import org.springframework.security.core.context.SecurityContextHolder;
++
++import java.math.BigDecimal;
++import java.time.Clock;
++import java.time.Instant;
++import java.time.ZoneOffset;
++import java.util.List;
++import java.util.Optional;
++
++import static org.junit.jupiter.api.Assertions.*;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.Mockito.*;
++
++class DichVuServiceTest {
++
++    private final DichVuRepository repository = mock(DichVuRepository.class);
++    private final DichVuAccessPolicy accessPolicy = new DichVuAccessPolicy();
++    private final Clock clock = Clock.fixed(
++            Instant.parse("2026-10-18T12:00:00Z"), ZoneOffset.UTC
++    );
++    private final DichVuService service = new DichVuService(repository, accessPolicy, clock);
++
++    @BeforeEach
++    void allowCatalogManagement() {
++        setAuthorities(DichVuAccessPolicy.SERVICE_READ, DichVuAccessPolicy.SERVICE_MANAGE);
++    }
++
++    @AfterEach
++    void clearSecurityContext() {
++        SecurityContextHolder.clearContext();
++    }
++
++    @Test
++    void createsCatalogEntryAndNormalizesTextAndPrice() {
++        when(repository.existsById("DV0001")).thenReturn(false);
++        when(repository.existsByTenDichVuIgnoreCase("Khám tổng quát")).thenReturn(false);
++        when(repository.save(any(DichVu.class)))
++                .thenAnswer(invocation -> invocation.getArgument(0));
++
++        DichVuResponse response = service.taoMoi(new DichVuCreateRequest(
++                " DV0001 ", " Khám tổng quát ", " Mô tả ",
++                new BigDecimal("250000"), false
++        ));
++
++        assertEquals("DV0001", response.maDichVu());
++        assertEquals("Khám tổng quát", response.tenDichVu());
++        assertEquals("Mô tả", response.moTa());
++        assertEquals(new BigDecimal("250000.00"), response.donGia());
++        assertTrue(response.dangApDung());
++        assertEquals(clock.instant(), response.taoLuc().toInstant(ZoneOffset.UTC));
++        verify(repository).save(any(DichVu.class));
++    }
++
++    @Test
++    void doesNotAllowDuplicateServiceName() {
++        when(repository.existsById("DV0002")).thenReturn(false);
++        when(repository.existsByTenDichVuIgnoreCase("Khám tổng quát")).thenReturn(true);
++
++        DichVuException exception = assertThrows(DichVuException.class, () -> service.taoMoi(
++                new DichVuCreateRequest("DV0002", "Khám tổng quát", null,
++                        new BigDecimal("100000"), false)
++        ));
++
++        assertEquals(DichVuException.Code.NAME_ALREADY_EXISTS, exception.getCode());
++        verify(repository, never()).save(any(DichVu.class));
++    }
++
++    @Test
++    void rejectsNegativePrice() {
++        when(repository.existsById("DV0003")).thenReturn(false);
++        when(repository.existsByTenDichVuIgnoreCase("Tẩy trắng")).thenReturn(false);
++
++        assertEquals(DichVuException.Code.INVALID_DATA,
++                assertThrows(DichVuException.class, () -> service.taoMoi(
++                        new DichVuCreateRequest("DV0003", "Tẩy trắng", null,
++                                new BigDecimal("-1"), false)
++                )).getCode());
++        verify(repository, never()).save(any(DichVu.class));
++    }
++
++    @Test
++    void filtersByKeywordAndActiveStatus() {
++        DichVu active = new DichVu("DV0001", "Khám tổng quát", null,
++                new BigDecimal("100000.00"), false, clock.instant().atOffset(ZoneOffset.UTC).toLocalDateTime());
++        DichVu inactive = new DichVu("DV0002", "Khám chuyên sâu", null,
++                new BigDecimal("200000.00"), true, clock.instant().atOffset(ZoneOffset.UTC).toLocalDateTime());
++        inactive.capNhatTrangThai(false, clock.instant().atOffset(ZoneOffset.UTC).toLocalDateTime());
++        when(repository.findAllByOrderByTenDichVuAsc()).thenReturn(List.of(active, inactive));
++
++        List<DichVuResponse> result = service.timKiem("KHÁM", true);
++
++        assertEquals(1, result.size());
++        assertEquals("DV0001", result.getFirst().maDichVu());
++    }
++
++    @Test
++    void updateChecksDuplicateNameAndCanChangeStatus() {
++        DichVu entity = new DichVu("DV0001", "Khám tổng quát", null,
++                new BigDecimal("100000.00"), false, clock.instant().atOffset(ZoneOffset.UTC).toLocalDateTime());
++        when(repository.findById("DV0001")).thenReturn(Optional.of(entity));
++        when(repository.existsByTenDichVuIgnoreCaseAndMaDichVuNot("Khám chuyên sâu", "DV0001"))
++                .thenReturn(false);
++        when(repository.save(any(DichVu.class))).thenAnswer(invocation -> invocation.getArgument(0));
++
++        DichVuResponse updated = service.capNhat("DV0001", new DichVuUpdateRequest(
++                "Khám chuyên sâu", null, new BigDecimal("120000.00"), true
++        ));
++        DichVuResponse inactive = service.doiTrangThai("DV0001", false);
++
++        assertEquals("Khám chuyên sâu", updated.tenDichVu());
++        assertEquals(new BigDecimal("120000.00"), updated.donGia());
++        assertFalse(inactive.dangApDung());
++    }
++
++    @Test
++    void readOnlyAuthorityCannotCreateOrModifyServices() {
++        setAuthorities(DichVuAccessPolicy.SERVICE_READ);
++
++        assertThrows(AccessDeniedException.class, () -> service.taoMoi(
++                new DichVuCreateRequest("DV0001", "Khám tổng quát", null,
++                        new BigDecimal("100000"), false)
++        ));
++        verifyNoInteractions(repository);
++    }
++
++    @Test
++    void anonymousUserCannotReadCatalog() {
++        SecurityContextHolder.clearContext();
++        assertThrows(AccessDeniedException.class, () -> service.timKiem("", null));
++        verifyNoInteractions(repository);
++    }
++
++    private static void setAuthorities(String... authorities) {
++        List<SimpleGrantedAuthority> granted = java.util.Arrays.stream(authorities)
++                .map(SimpleGrantedAuthority::new)
++                .toList();
++        SecurityContext context = SecurityContextHolder.createEmptyContext();
++        context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
++                "test-account", "N/A", granted
++        ));
++        SecurityContextHolder.setContext(context);
++    }
++}
+
+diff --git a/src/test/java/com/quanlynhakhoa/features/examination/service/DichVuServiceSqlServerIT.java b/src/test/java/com/quanlynhakhoa/features/examination/service/DichVuServiceSqlServerIT.java
+new file mode 100644
+--- /dev/null
++++ b/src/test/java/com/quanlynhakhoa/features/examination/service/DichVuServiceSqlServerIT.java
+@@ -0,0 +1,92 @@
++package com.quanlynhakhoa.features.examination.service;
++
++import com.quanlynhakhoa.features.examination.dto.request.DichVuCreateRequest;
++import com.quanlynhakhoa.features.examination.dto.request.DichVuUpdateRequest;
++import com.quanlynhakhoa.features.examination.dto.response.DichVuResponse;
++import com.quanlynhakhoa.features.examination.repository.DichVuRepository;
++import jakarta.persistence.EntityManager;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.Test;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.boot.test.context.SpringBootTest;
++import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
++import org.springframework.security.core.authority.SimpleGrantedAuthority;
++import org.springframework.security.core.context.SecurityContext;
++import org.springframework.security.core.context.SecurityContextHolder;
++import org.springframework.transaction.annotation.Transactional;
++
++import java.math.BigDecimal;
++import java.util.List;
++import java.util.UUID;
++
++import static org.junit.jupiter.api.Assertions.*;
++
++/**
++ * Explicit SQL Server integration test. It is named *IT so it is not run by
++ * Surefire's default test-name patterns; invoke it explicitly after SQL Server
++ * and the application's required environment variables are configured.
++ */
++@SpringBootTest(
++        webEnvironment = SpringBootTest.WebEnvironment.NONE,
++        properties = {
++                "n08.desktop.enabled=false",
++                "n08.security.jwt.secret-base64=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
++        }
++)
++class DichVuServiceSqlServerIT {
++
++    @Autowired
++    private DichVuService service;
++
++    @Autowired
++    private DichVuRepository repository;
++
++    @Autowired
++    private EntityManager entityManager;
++
++    @AfterEach
++    void clearSecurityContext() {
++        SecurityContextHolder.clearContext();
++    }
++
++    @Test
++    @Transactional
++    void servicePersistsUpdateAndSoftDisableOnSqlServer() {
++        setManageAuthority();
++        String code = "IT" + UUID.randomUUID().toString().replace("-", "")
++                .substring(0, 8).toUpperCase();
++        String name = "Kiểm thử dịch vụ " + code;
++
++        DichVuResponse created = service.taoMoi(new DichVuCreateRequest(
++                code, name, "Tạo bởi integration test", new BigDecimal("123456.50"), true
++        ));
++        entityManager.flush();
++        assertTrue(repository.findById(code).isPresent());
++        assertEquals(new BigDecimal("123456.50"), created.donGia());
++
++        DichVuResponse updated = service.capNhat(code, new DichVuUpdateRequest(
++                name + " đã sửa", "Mô tả đã sửa", new BigDecimal("200000"), false
++        ));
++        entityManager.flush();
++        assertEquals("Mô tả đã sửa", updated.moTa());
++        assertFalse(updated.laCanLamSang());
++
++        DichVuResponse disabled = service.doiTrangThai(code, false);
++        entityManager.flush();
++        assertFalse(disabled.dangApDung());
++        assertTrue(repository.findById(code).isPresent(), "Ngừng áp dụng không được xóa dữ liệu");
++    }
++
++    private static void setManageAuthority() {
++        SecurityContext context = SecurityContextHolder.createEmptyContext();
++        context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
++                "integration-test-account",
++                "N/A",
++                List.of(
++                        new SimpleGrantedAuthority(DichVuAccessPolicy.SERVICE_READ),
++                        new SimpleGrantedAuthority(DichVuAccessPolicy.SERVICE_MANAGE)
++                )
++        ));
++        SecurityContextHolder.setContext(context);
++    }
++}
+
+diff --git a/APPLY_INSTRUCTIONS.md b/APPLY_INSTRUCTIONS.md
+new file mode 100644
+--- /dev/null
++++ b/APPLY_INSTRUCTIONS.md
+@@ -0,0 +1,51 @@
++# N08 clinical-examination — M1 service catalog patch
++
++## Scope
++
++This patch adds the independent `DichVu` catalog under `features/examination`, a new Flyway V5 migration, request/response DTOs, a secured feature Service, a Swing `ServicePanel`, unit tests, and an opt-in SQL Server integration test.
++
++It intentionally does **not** modify `MainFrame`, `Permission`, `RolePermissionPolicy`, `SecurityConfig`, `GlobalExceptionHandler`, V1–V4, Maven dependencies, or SQL Server volumes.
++
++## Important security boundary
++
++`DichVuAccessPolicy` checks authorities from Spring Security's authenticated `SecurityContext`, never a role or account ID from a form or HTTP payload. It fails closed unless the trusted context contains `SERVICE_READ` or `SERVICE_MANAGE`.
++
++The current `main` does not yet map declared roles through the centralized `AuthorizationService` / `RolePermissionPolicy` to these authorities and does not have the complete Swing login flow. Therefore this patch alone does not make the panel usable by end users. This feature-local guard is intentionally fail-closed; do not bypass it to demo CRUD. A separately approved change to the shared permission enum/policy is required before the panel is wired into the main navigation or a REST controller is exposed.
++
++The DTOs define the input/output contract that can be used by a later REST controller. No controller is added in this slice because the permission mapping and login/token issuance are not complete; exposing an endpoint now would give a misleading impression of an end-to-end authenticated workflow.
++
++## Apply on a fresh feature branch
++
++From the repository root after updating `main`:
++
++```powershell
++git switch main
++git pull origin main
++git switch -c feature/clinical-examination
++git apply .\n08-clinical-examination.patch
++```
++
++Place the downloaded patch file in the repository root before running `git apply`.
++
++## Verification
++
++1. Compile and run unit tests (JDK 25, Maven Wrapper, environment configured as the main project requires):
++
++   ```powershell
++   .\mvnw.cmd test
++   ```
++
++2. The SQL Server test is intentionally named `*IT` and is not selected by Surefire's default patterns. With SQL Server 2022 running and the required `DB_SA_PASSWORD` / `N08_JWT_SIGNING_KEY_BASE64` environment configured, run it explicitly:
++
++   ```powershell
++   .\mvnw.cmd '-Dtest=DichVuServiceSqlServerIT' test
++   ```
++
++3. Review schema migration with the actual database, then inspect `git diff --check`.
++
++## Known incomplete integration
++
++- No REST controller has been added yet.
++- `ServicePanel` is a Spring component but remains unmounted from `MainFrame`, as agreed in option A.
++- Service catalog permissions need a separate change to the shared permission enum/policy; access is denied until trusted authorities are issued.
++- SQL Server integration and desktop end-to-end tests have **not** been run in this environment. Do not report them as PASS.

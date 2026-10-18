@@ -39,6 +39,11 @@ public class SecurityConfig {
                                 "/api/v1/auth/login"
                         ).permitAll()
 
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/system/ping"
+                        ).permitAll()
+
                         .anyRequest().authenticated()
                 )
 
