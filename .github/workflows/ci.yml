@@ -1,0 +1,113 @@
+name: N08 CI — Java 25 and SQL Server
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n08-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile-and-unit:
+    name: Compile and domain unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      # mvnw is currently stored as non-executable (100644) in the repository.
+      - name: Compile and package without integration services
+        run: bash ./mvnw -B -ntp clean package -DskipTests
+
+      - name: Run database-independent authorization unit tests
+        run: bash ./mvnw -B -ntp -Dtest=AuthorizationServiceTest test
+
+  sqlserver-tests:
+    name: Spring tests and SQL Server schema integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      N08_DESKTOP_ENABLED: 'false'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      # Credentials below are ephemeral and used only by the CI runner.
+      # No repository or organization secrets are required for testing.
+      - name: Prepare isolated test credentials
+        shell: bash
+        run: |
+          echo "DB_SA_PASSWORD=N08Ci!$(openssl rand -hex 16)" >> "$GITHUB_ENV"
+          echo "N08_JWT_SIGNING_KEY_BASE64=$(openssl rand -base64 32 | tr -d '\n')" >> "$GITHUB_ENV"
+
+      - name: Start SQL Server 2022 and initialize N08Dental
+        id: database
+        run: |
+          docker compose up -d --wait sqlserver
+          docker compose run --rm db-init
+
+      # The repository's regular Surefire tests include Spring context and HTTP tests.
+      # We do not silently filter out currently failing baseline tests.
+      - name: Run full standard Maven test suite
+        id: standard-tests
+        continue-on-error: true
+        run: bash ./mvnw -B -ntp clean verify
+
+      # Maven Surefire does not select *IT classes by default, so invoke them explicitly.
+      - name: Run SQL Server integration tests (*IT)
+        id: integration-tests
+        if: ${{ !cancelled() && steps.database.outcome == 'success' }}
+        continue-on-error: true
+        run: bash ./mvnw -B -ntp '-Dtest=*IT' test
+
+      - name: Enforce both test suites
+        if: ${{ !cancelled() && steps.database.outcome == 'success' }}
+        shell: bash
+        run: |
+          echo "Standard Maven suite: ${{ steps.standard-tests.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "SQL Server *IT suite: ${{ steps.integration-tests.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          if [[ '${{ steps.standard-tests.outcome }}' != 'success' || '${{ steps.integration-tests.outcome }}' != 'success' ]]; then
+            echo 'One or more test suites failed. Inspect Surefire reports.' >&2
+            exit 1
+          fi
+
+      - name: Show SQL Server diagnostics on failure
+        if: failure()
+        run: |
+          docker compose ps || true
+          docker compose logs --tail=100 sqlserver || true
+
+      - name: Upload Maven test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: n08-surefire-reports
+          path: target/surefire-reports/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Remove temporary database containers and volumes
+        if: always()
+        run: docker compose down --volumes --remove-orphans
