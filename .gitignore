@@ -40,3 +40,8 @@ build/
 # Runtime artifacts
 logs/
 /out/
+
+# Java desktop local outputs
+/out/
+/lib/
+/config/db.properties
