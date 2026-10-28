@@ -156,6 +156,7 @@ public final class DevSetup {
                                 + "VALUES ('MAINTENANCE', 'LOCAL_DEV_SETUP', 'BOOTSTRAP', "
                                 + "'CREATE_SYNTHETIC_ACCOUNT', 'SUCCESS')");
                     }
+                    TeamM1Permissions.grant(dev, sqlUser);
                     dev.commit();
                 } catch (Exception e) {
                     dev.rollback();
