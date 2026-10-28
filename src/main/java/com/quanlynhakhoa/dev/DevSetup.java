@@ -101,7 +101,7 @@ public final class DevSetup {
                 }
             }
 
-            stage = "install V1-V4 schema";
+            stage = "install V1-V5 schema";
             try (Connection dev = DriverManager.getConnection(devUrl, adminUser, adminPassword)) {
                 dev.setAutoCommit(false);
                 try {
@@ -109,7 +109,8 @@ public final class DevSetup {
                             "V1__create_workforce_identity.sql",
                             "V2__create_auth_sessions.sql",
                             "V3__harden_account_lock_constraints.sql",
-                            "V4__create_audit_log.sql"
+                            "V4__create_audit_log.sql",
+                            "V5__create_team_feature_schema.sql"
                     };
                     for (String name : scripts) {
                         String sql = Files.readString(root.resolve("sql/bootstrap").resolve(name),
