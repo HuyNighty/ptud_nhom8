@@ -45,3 +45,6 @@ logs/
 /out/
 /lib/
 /config/db.properties
+
+# One-time local SQL developer credentials; NEVER COMMIT
+.n08-dev.local.properties

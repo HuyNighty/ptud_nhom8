@@ -5,7 +5,7 @@ import com.quanlynhakhoa.config.DbInspector;
 import com.quanlynhakhoa.auth.BCryptPasswordVerifier;
 import com.quanlynhakhoa.auth.JdbcAuthService;
 import com.quanlynhakhoa.auth.LoginPolicy;
-import com.quanlynhakhoa.auth.SandboxLoginConnection;
+import com.quanlynhakhoa.dev.TeamDevConnection;
 import com.quanlynhakhoa.view.LoginFrame;
 import java.time.Clock;
 import javax.swing.SwingUtilities;
@@ -36,8 +36,18 @@ public final class App {
             }
             return;
         }
+        if (args.length > 0 && "--team-db".equals(args[0])) {
+            try (java.sql.Connection ignored = TeamDevConnection.open()) {
+                System.out.println("PASS: N08 team local JDBC connected");
+            } catch (java.sql.SQLException failure) {
+                System.err.println("TEAM DB CHECK FAILED: SQLState=" + failure.getSQLState()
+                        + ", code=" + failure.getErrorCode());
+                System.exit(4);
+            }
+            return;
+        }
         SwingUtilities.invokeLater(() -> new LoginFrame(
-                new JdbcAuthService(SandboxLoginConnection::open,
+                new JdbcAuthService(TeamDevConnection::open,
                         new LoginPolicy(new BCryptPasswordVerifier()), Clock.systemUTC()))
                 .setVisible(true));
     }
