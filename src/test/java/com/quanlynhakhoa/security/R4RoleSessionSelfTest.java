@@ -31,20 +31,35 @@ public final class R4RoleSessionSelfTest {
         AuthorizationService service = new AuthorizationService(roles);
         NavigationPolicy nav = new NavigationPolicy(service);
         check(Role.values().length == 6, "Unexpected new role requires policy review");
-        check(Permission.values().length == 16, "Unexpected new permission requires policy review");
+        check(Permission.values().length == 24, "Unexpected new permission requires policy review");
         check(Module.values().length == 10, "Unexpected module requires policy review");
 
-        Set<Permission> receptionist = Set.of(Permission.PATIENT_READ, Permission.PATIENT_CREATE,
-                Permission.PATIENT_UPDATE);
-        Set<Permission> doctor = Set.of(Permission.PATIENT_READ,
-                Permission.MEDICAL_RECORD_READ, Permission.MEDICAL_RECORD_UPDATE);
+        Set<Permission> receptionist = Set.of(
+                Permission.PATIENT_READ, Permission.PATIENT_CREATE, Permission.PATIENT_UPDATE,
+                Permission.PATIENT_CHECK_IN, Permission.APPOINTMENT_READ, Permission.APPOINTMENT_MANAGE,
+                Permission.BILLING_READ, Permission.BILLING_MANAGE, Permission.INVOICE_CANCEL_REQUEST,
+                Permission.SCHEDULE_SELF_READ);
+        Set<Permission> doctor = Set.of(
+                Permission.PATIENT_READ, Permission.MEDICAL_RECORD_READ, Permission.MEDICAL_RECORD_UPDATE,
+                Permission.REEXAM_SCHEDULE, Permission.SUPPLY_REQUEST, Permission.SCHEDULE_SELF_READ);
+        Set<Permission> nurse = Set.of(
+                Permission.SUPPLY_REQUEST, Permission.EMERGENCY_KIT_CHECK, Permission.SCHEDULE_SELF_READ);
+        Set<Permission> manager = Set.of(
+                Permission.BILLING_READ, Permission.WORKFORCE_READ, Permission.WORKFORCE_MANAGE,
+                Permission.ACCOUNT_MANAGE, Permission.ROLE_MANAGE, Permission.AUDIT_READ,
+                Permission.SERVICE_CATALOG_MANAGE, Permission.INVOICE_CANCEL_APPROVE,
+                Permission.SCHEDULE_SELF_READ);
+        Set<Permission> inventory = Set.of(
+                Permission.INVENTORY_READ, Permission.INVENTORY_MANAGE, Permission.SCHEDULE_SELF_READ);
         for (Role role : Role.values()) {
             for (Permission permission : Permission.values()) {
                 boolean expected = switch (role) {
                     case RECEPTIONIST -> receptionist.contains(permission);
                     case DOCTOR -> doctor.contains(permission);
+                    case NURSE -> nurse.contains(permission);
+                    case CLINIC_MANAGER -> manager.contains(permission);
+                    case INVENTORY_MANAGER -> inventory.contains(permission);
                     case SYSTEM_ADMIN -> true;
-                    default -> false;
                 };
                 check(roles.isAllowed(role, permission) == expected,
                         "Grant mismatch: " + role + "/" + permission);
@@ -56,6 +71,9 @@ public final class R4RoleSessionSelfTest {
                 "All admin permissions");
         check(roles.permissionsFor(Role.RECEPTIONIST).equals(receptionist), "Reception permissions");
         check(roles.permissionsFor(Role.DOCTOR).equals(doctor), "Doctor permissions");
+        check(roles.permissionsFor(Role.NURSE).equals(nurse), "Nurse permissions");
+        check(roles.permissionsFor(Role.CLINIC_MANAGER).equals(manager), "Manager permissions");
+        check(roles.permissionsFor(Role.INVENTORY_MANAGER).equals(inventory), "Inventory permissions");
         try {
             roles.permissionsFor(Role.DOCTOR).clear();
             throw new AssertionError("Grant set must be immutable");
@@ -108,12 +126,17 @@ public final class R4RoleSessionSelfTest {
         denied(() -> service.require(null, Permission.PATIENT_READ));
 
         check(nav.visibleModules(session(Role.RECEPTIONIST)).equals(
-                List.of(Module.HOME, Module.PATIENTS)), "Receptionist only home/patients");
+                List.of(Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING)),
+                "Receptionist allowed modules");
         check(nav.visibleModules(session(Role.DOCTOR)).equals(
                 List.of(Module.HOME, Module.PATIENTS, Module.MEDICAL_RECORDS)), "Doctor safe list");
-        check(nav.visibleModules(session(Role.NURSE)).equals(List.of(Module.HOME)), "Nurse pending policy");
-        check(nav.visibleModules(session(Role.CLINIC_MANAGER)).equals(List.of(Module.HOME)), "Manager pending policy");
-        check(nav.visibleModules(session(Role.INVENTORY_MANAGER)).equals(List.of(Module.HOME)), "Inventory pending policy");
+        check(nav.visibleModules(session(Role.NURSE)).equals(List.of(Module.HOME)),
+                "Nurse needs separate fine-grained UI destinations");
+        check(nav.visibleModules(session(Role.CLINIC_MANAGER)).equals(
+                List.of(Module.HOME, Module.BILLING, Module.WORKFORCE,
+                        Module.ACCOUNTS, Module.ROLES, Module.AUDIT)), "Manager allowed modules");
+        check(nav.visibleModules(session(Role.INVENTORY_MANAGER)).equals(
+                List.of(Module.HOME, Module.INVENTORY)), "Inventory allowed modules");
         check(nav.visibleModules(session(Role.SYSTEM_ADMIN)).size() == Module.values().length,
                 "Admin navigation covers all modules");
 

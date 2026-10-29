@@ -39,12 +39,15 @@ public final class R4MainNavigationSelfTest {
         denied(() -> admin.select(Module.PATIENTS));
 
         MainNavigationModel reception = new MainNavigationModel(session(Role.RECEPTIONIST));
-        check(reception.availableModules().equals(List.of(Module.HOME, Module.PATIENTS)));
+        check(reception.availableModules().equals(List.of(
+                Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING)));
         reception.select(Module.PATIENTS);
         check(reception.selected() == Module.PATIENTS);
-        denied(() -> reception.select(Module.BILLING));
-        check(reception.selected() == Module.PATIENTS);
-        denied(() -> reception.select(Module.APPOINTMENTS));
+        reception.select(Module.BILLING);
+        check(reception.selected() == Module.BILLING);
+        reception.select(Module.APPOINTMENTS);
+        check(reception.selected() == Module.APPOINTMENTS);
+        denied(() -> reception.select(Module.INVENTORY));
         reception.logout();
         denied(() -> reception.select(Module.PATIENTS));
 
@@ -54,13 +57,21 @@ public final class R4MainNavigationSelfTest {
         check(doctor.selected() == Module.MEDICAL_RECORDS);
         denied(() -> doctor.select(Module.WORKFORCE));
 
-        for (Role role : new Role[]{Role.NURSE, Role.CLINIC_MANAGER, Role.INVENTORY_MANAGER}) {
-            MainNavigationModel restricted = new MainNavigationModel(session(role));
-            check(restricted.availableModules().equals(List.of(Module.HOME)));
-            for (Module module : Module.values()) {
-                if (module != Module.HOME) denied(() -> restricted.select(module));
-            }
+        MainNavigationModel nurse = new MainNavigationModel(session(Role.NURSE));
+        check(nurse.availableModules().equals(List.of(Module.HOME)));
+        for (Module module : Module.values()) {
+            if (module != Module.HOME) denied(() -> nurse.select(module));
         }
+        MainNavigationModel manager = new MainNavigationModel(session(Role.CLINIC_MANAGER));
+        check(manager.availableModules().equals(List.of(
+                Module.HOME, Module.BILLING, Module.WORKFORCE,
+                Module.ACCOUNTS, Module.ROLES, Module.AUDIT)));
+        manager.select(Module.WORKFORCE);
+        denied(() -> manager.select(Module.INVENTORY));
+        MainNavigationModel inventory = new MainNavigationModel(session(Role.INVENTORY_MANAGER));
+        check(inventory.availableModules().equals(List.of(Module.HOME, Module.INVENTORY)));
+        inventory.select(Module.INVENTORY);
+        denied(() -> inventory.select(Module.BILLING));
         boolean nullRejected = false;
         try { new MainNavigationModel(null); } catch (NullPointerException expected) { nullRejected = true; }
         check(nullRejected);

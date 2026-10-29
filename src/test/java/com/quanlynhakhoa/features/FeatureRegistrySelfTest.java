@@ -50,7 +50,7 @@ public final class FeatureRegistrySelfTest {
         DesktopSession receptionist = session(Role.RECEPTIONIST);
         check(registry.create(receptionist, Module.PATIENTS) != null, "permitted panel created");
         check(created.get() == 1, "factory called only when requested");
-        reject(AccessDeniedException.class, () -> registry.create(receptionist, Module.BILLING));
+        reject(AccessDeniedException.class, () -> registry.create(receptionist, Module.INVENTORY));
         check(created.get() == 1, "forbidden navigation cannot run factory");
         reject(IllegalArgumentException.class, () -> registry.create(receptionist, Module.HOME));
         receptionist.logout();
