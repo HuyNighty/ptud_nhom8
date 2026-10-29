@@ -30,16 +30,28 @@ public final class R4FinalShellSelfTest {
     private static boolean granted(Role role, Permission p) {
         return switch (role) {
             case SYSTEM_ADMIN -> true;
-            case RECEPTIONIST -> Set.of(Permission.PATIENT_READ,
-                    Permission.PATIENT_CREATE, Permission.PATIENT_UPDATE).contains(p);
-            case DOCTOR -> Set.of(Permission.PATIENT_READ,
-                    Permission.MEDICAL_RECORD_READ, Permission.MEDICAL_RECORD_UPDATE).contains(p);
-            default -> false; // No invented privileges for other roles.
+            case RECEPTIONIST -> Set.of(
+                    Permission.PATIENT_READ, Permission.PATIENT_CREATE, Permission.PATIENT_UPDATE,
+                    Permission.PATIENT_CHECK_IN, Permission.APPOINTMENT_READ, Permission.APPOINTMENT_MANAGE,
+                    Permission.BILLING_READ, Permission.BILLING_MANAGE, Permission.INVOICE_CANCEL_REQUEST,
+                    Permission.SCHEDULE_SELF_READ).contains(p);
+            case DOCTOR -> Set.of(
+                    Permission.PATIENT_READ, Permission.MEDICAL_RECORD_READ, Permission.MEDICAL_RECORD_UPDATE,
+                    Permission.REEXAM_SCHEDULE, Permission.SUPPLY_REQUEST, Permission.SCHEDULE_SELF_READ).contains(p);
+            case NURSE -> Set.of(
+                    Permission.SUPPLY_REQUEST, Permission.EMERGENCY_KIT_CHECK, Permission.SCHEDULE_SELF_READ).contains(p);
+            case CLINIC_MANAGER -> Set.of(
+                    Permission.BILLING_READ, Permission.WORKFORCE_READ, Permission.WORKFORCE_MANAGE,
+                    Permission.ACCOUNT_MANAGE, Permission.ROLE_MANAGE, Permission.AUDIT_READ,
+                    Permission.SERVICE_CATALOG_MANAGE, Permission.INVOICE_CANCEL_APPROVE,
+                    Permission.SCHEDULE_SELF_READ).contains(p);
+            case INVENTORY_MANAGER -> Set.of(
+                    Permission.INVENTORY_READ, Permission.INVENTORY_MANAGE, Permission.SCHEDULE_SELF_READ).contains(p);
         };
     }
     public static void main(String[] args) {
         check(Role.values().length == 6, "unreviewed role added");
-        check(Permission.values().length == 16, "unreviewed permission added");
+        check(Permission.values().length == 24, "unreviewed permission added");
         check(Module.values().length == 10, "unreviewed navigation destination added");
         AuthorizationService auth = new AuthorizationService(new RolePermissionPolicy());
         AuthorizedActionGate actions = new AuthorizedActionGate(auth);
