@@ -1,108 +1,108 @@
 package com.quanlynhakhoa.benhnhan.controller;
 
-import com.quanlynhakhoa.benhnhan.dao.BenhNhanDao;
 import com.quanlynhakhoa.benhnhan.model.BenhNhan;
-import com.quanlynhakhoa.benhnhan.model.GioiTinh;
 import com.quanlynhakhoa.benhnhan.service.BenhNhanService;
 import com.quanlynhakhoa.benhnhan.view.BenhNhanPanel;
 import com.quanlynhakhoa.security.AccessDeniedException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.SQLException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import javax.swing.SwingWorker;
+import java.util.ArrayList;
 
-/**
- * Điều phối màn hình Bệnh nhân:
- * Panel (sự kiện) → Controller → Service (chạy nền bằng SwingWorker) → Controller → Panel (hiển thị).
- * Controller không viết SQL và không tự kiểm tra quyền (Service làm việc đó).
- */
-public final class BenhNhanController {
-    private final BenhNhanService benhNhanService;
-    private BenhNhanPanel panel;
-    private boolean dangTai;
+// Controller: nhận sự kiện từ View → gọi Service → đưa kết quả về View
+public class BenhNhanController implements ActionListener, MouseListener {
+    private BenhNhanPanel view;
+    private BenhNhanService service;
 
-    public BenhNhanController(BenhNhanService benhNhanService) {
-        this.benhNhanService = Objects.requireNonNull(benhNhanService, "benhNhanService");
+    public BenhNhanController(BenhNhanPanel view, BenhNhanService service) {
+        this.view = view;
+        this.service = service;
+
+        // Gắn sự kiện cho các nút và ô tìm kiếm (nhấn Enter)
+        view.getBtnLoc().addActionListener(this);
+        view.getBtnXoaLoc().addActionListener(this);
+        view.getBtnTaiLai().addActionListener(this);
+        view.getTxtTimKiem().addActionListener(this);
+        // Gắn sự kiện click chuột vào bảng
+        view.getTblBenhNhan().addMouseListener(this);
+
+        // Mở màn hình là đọc dữ liệu từ database vào bảng luôn
+        docDuLieuVaoTable();
     }
 
-    /** Panel gọi một lần ngay sau khi dựng xong giao diện. */
-    public void ganPanel(BenhNhanPanel panel) {
-        this.panel = Objects.requireNonNull(panel, "panel");
+    // Xử lý khi bấm nút hoặc nhấn Enter
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Object o = e.getSource();
+        if (o.equals(view.getBtnLoc()) || o.equals(view.getTxtTimKiem())) {
+            docDuLieuVaoTable();
+        }
+        if (o.equals(view.getBtnXoaLoc())) {
+            view.xoaTrang();
+            docDuLieuVaoTable();
+        }
+        if (o.equals(view.getBtnTaiLai())) {
+            docDuLieuVaoTable();
+        }
     }
 
-    public BenhNhanService service() {
-        return benhNhanService;
-    }
-
-    /** Nút Lọc / Tải lại / Enter trong ô tìm kiếm. */
-    public void taiDanhSach(String tuKhoa, GioiTinh gioiTinh) {
-        if (dangTai) return;
-        dangTai = true;
-        panel.hienDangTai(true, "Đang tải danh sách bệnh nhân…");
-        new SwingWorker<BenhNhanDao.KetQuaTimKiem, Void>() {
-            @Override
-            protected BenhNhanDao.KetQuaTimKiem doInBackground() throws Exception {
-                return benhNhanService.timKiem(tuKhoa, gioiTinh);
-            }
-
-            @Override
-            protected void done() {
-                dangTai = false;
-                panel.hienDangTai(false, null);
-                try {
-                    panel.hienDanhSach(get());
-                } catch (Exception loi) {
-                    panel.hienLoi(thongDiepLoi(loi));
-                }
-            }
-        }.execute();
-    }
-
-    /** Chọn một dòng trong bảng → đọc lại chi tiết từ database. */
-    public void chonBenhNhan(String maBenhNhan) {
-        if (maBenhNhan == null) {
-            panel.hienChiTiet(null);
+    // Click 1 dòng trong bảng → đọc lại bệnh nhân từ database → hiện ở khung bên phải
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        int row = view.getTblBenhNhan().getSelectedRow();
+        if (row < 0) {
             return;
         }
-        new SwingWorker<Optional<BenhNhan>, Void>() {
-            @Override
-            protected Optional<BenhNhan> doInBackground() throws Exception {
-                return benhNhanService.xemChiTiet(maBenhNhan);
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    Optional<BenhNhan> ketQua = get();
-                    if (ketQua.isEmpty()) {
-                        panel.hienLoi("Không tìm thấy bệnh nhân " + maBenhNhan + ".");
-                    }
-                    panel.hienChiTiet(ketQua.orElse(null));
-                } catch (Exception loi) {
-                    panel.hienLoi(thongDiepLoi(loi));
-                }
-            }
-        }.execute();
+        String maBenhNhan = view.getTblBenhNhan().getValueAt(row, 0).toString();
+        try {
+            BenhNhan bn = service.xemChiTiet(maBenhNhan);
+            view.hienChiTiet(bn);
+        } catch (Exception ex) {
+            view.hienLoi(thongBaoLoi(ex));
+        }
     }
 
-    /** Đổi lỗi kỹ thuật thành câu tiếng Việt; không hiển thị câu SQL hay mật khẩu. */
-    public static String thongDiepLoi(Throwable loi) {
-        Throwable goc = loi;
-        if (goc instanceof ExecutionException && goc.getCause() != null) goc = goc.getCause();
-        if (goc instanceof AccessDeniedException) {
-            return "Tài khoản không có quyền thực hiện thao tác này.";
+    @Override
+    public void mousePressed(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+    }
+
+    // Lấy điều kiện lọc trên View → gọi Service → đổ kết quả vào bảng
+    private void docDuLieuVaoTable() {
+        try {
+            String tuKhoa = view.getTxtTimKiem().getText();
+            String gioiTinh = view.layGioiTinhDangChon();
+            ArrayList<BenhNhan> dsBenhNhan = service.timKiem(tuKhoa, gioiTinh);
+            view.docDuLieuVaoTable(dsBenhNhan);
+        } catch (Exception ex) {
+            view.hienLoi(thongBaoLoi(ex));
         }
-        if (goc instanceof IllegalArgumentException || goc instanceof IllegalStateException) {
-            return goc.getMessage();
+    }
+
+    // Đổi lỗi thành câu dễ hiểu (không hiện câu SQL ra màn hình)
+    private String thongBaoLoi(Exception ex) {
+        if (ex instanceof AccessDeniedException) {
+            return "Tài khoản không có quyền xem bệnh nhân.";
         }
-        if (goc instanceof SQLException sql) {
-            return "Lỗi cơ sở dữ liệu (SQLState " + sql.getSQLState()
-                    + ", mã " + sql.getErrorCode() + "). Kiểm tra kết nối rồi thử lại.";
+        if (ex instanceof IllegalArgumentException) {
+            return ex.getMessage();
         }
-        if (goc instanceof InterruptedException) {
-            Thread.currentThread().interrupt();
+        if (ex instanceof SQLException) {
+            return "Không đọc được dữ liệu từ SQL Server. Kiểm tra kết nối rồi thử lại.";
         }
-        return "Thao tác không thành công. Vui lòng thử lại.";
+        return "Có lỗi xảy ra, vui lòng thử lại.";
     }
 }

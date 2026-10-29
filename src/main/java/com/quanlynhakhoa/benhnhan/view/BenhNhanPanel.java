@@ -1,323 +1,312 @@
 package com.quanlynhakhoa.benhnhan.view;
 
 import com.quanlynhakhoa.benhnhan.controller.BenhNhanController;
-import com.quanlynhakhoa.benhnhan.dao.BenhNhanDao;
 import com.quanlynhakhoa.benhnhan.model.BenhNhan;
-import com.quanlynhakhoa.benhnhan.model.GioiTinh;
 import com.quanlynhakhoa.benhnhan.service.BenhNhanService;
-import com.quanlynhakhoa.benhnhan.service.KetNoiCsdl;
-import com.quanlynhakhoa.dev.TeamDevConnection;
 import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 
-/**
- * Màn hình Danh sách bệnh nhân. Panel gốc dùng BorderLayout, chia vùng theo HƯỚNG:
- *
- *   ┌──────────────── pnlNorth ────────────────┐
- *   │ lblTieuDe / lblMoTa / pnlNorthSouth (lọc)│
- *   ├────────── pnlCenter ─────────┬ pnlEast ──┤
- *   │ scrDanhSach → tblBenhNhan    │ chi tiết  │
- *   ├────────────── pnlSouth ──────┴───────────┤
- *   │ lblDemSoDong      lblTrangThai           │
- *   └──────────────────────────────────────────┘
- *   (WEST không dùng)
- *
- * Panel chỉ hiển thị và chuyển sự kiện cho BenhNhanController; không gọi SQL.
- */
-public final class BenhNhanPanel extends JPanel {
-    // Màu và font lấy theo AccountPanel / DashboardPanel hiện có.
+// View: chỉ tạo giao diện và hiển thị dữ liệu. Sự kiện do BenhNhanController xử lý.
+//
+//  ┌────────────── pnlNorth ──────────────┐
+//  │ tiêu đề + ô tìm kiếm + các nút       │
+//  ├──────── pnlCenter ──────┬─ pnlEast ──┤
+//  │ bảng bệnh nhân          │ thông tin  │
+//  ├────────────── pnlSouth ─┴────────────┤
+//  │ dòng trạng thái                      │
+//  └──────────────────────────────────────┘
+public class BenhNhanPanel extends JPanel {
+    // Màu giống AccountPanel / DashboardPanel có sẵn
     private static final Color NAVY = new Color(29, 61, 102);
-    private static final Color MUTED = new Color(97, 115, 137);
-    private static final Color BORDER = new Color(220, 231, 242);
-    private static final Color BACKGROUND = new Color(245, 248, 252);
-    private static final Color ERROR = new Color(176, 32, 32);
+    private static final Color XAM = new Color(97, 115, 137);
+    private static final Color VIEN = new Color(220, 231, 242);
+    private static final Color NEN = new Color(245, 248, 252);
+    private static final DateTimeFormatter NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter NGAY_GIO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    private final BenhNhanController controller;
+    // ----- NORTH -----
+    private JPanel pnlNorth;
+    private JLabel lblTieuDe;
+    private JTextField txtTimKiem;
+    private JComboBox<String> cmbGioiTinh;
+    private JButton btnLoc;
+    private JButton btnXoaLoc;
+    private JButton btnTaiLai;
 
-    // ===== NORTH: tiêu đề + hàng lọc =====
-    private final JPanel pnlNorth = new JPanel(new BorderLayout(0, 7));
-    private final JLabel lblTieuDe = new JLabel("Hồ sơ bệnh nhân");
-    private final JLabel lblMoTa = new JLabel("Tìm theo SĐT, mã BN hoặc họ tên · chọn một dòng để xem chi tiết");
-    private final JPanel pnlNorthSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
-    private final JTextField txtTimKiem = new JTextField(24);
-    private final JComboBox<GioiTinh> cmbLocGioiTinh = new JComboBox<>();
-    private final JButton btnLoc = new JButton("Tìm kiếm");
-    private final JButton btnXoaLoc = new JButton("Xóa lọc");
-    private final JButton btnTaiLai = new JButton("Làm mới");
+    // ----- CENTER -----
+    private JPanel pnlCenter;
+    private DefaultTableModel tableModel;
+    private JTable tblBenhNhan;
+    private JScrollPane scrBenhNhan;
 
-    // ===== CENTER: bảng danh sách =====
-    private final JPanel pnlCenter = new JPanel(new BorderLayout());
-    private final BenhNhanTableModel mdlBenhNhan = new BenhNhanTableModel();
-    private final JTable tblBenhNhan = new JTable(mdlBenhNhan);
-    private final JScrollPane scrDanhSach = new JScrollPane(tblBenhNhan);
+    // ----- EAST -----
+    private JPanel pnlEast;
+    private JLabel lblTenBenhNhan;
+    private JLabel lblMaBenhNhan;
+    private JLabel lblNgaySinh;
+    private JLabel lblGioiTinh;
+    private JLabel lblSoDienThoai;
+    private JLabel lblDiaChi;
+    private JLabel lblNguoiLienHe;
+    private JLabel lblNgayTao;
 
-    // ===== EAST: chi tiết bệnh nhân đang chọn =====
-    private final JPanel pnlEast = new JPanel(new BorderLayout());
-    private final JPanel pnlEastNorth = new JPanel(new BorderLayout(0, 4));
-    private final JLabel lblTenBenhNhan = new JLabel();
-    private final JLabel lblMaBenhNhan = new JLabel();
-    private final JTabbedPane tabChiTiet = new JTabbedPane();
-    private final JPanel pnlThongTin = new JPanel(new GridLayout(0, 2, 8, 10));
-    private final JLabel lblNgaySinh = new JLabel();
-    private final JLabel lblGioiTinh = new JLabel();
-    private final JLabel lblSoDienThoai = new JLabel();
-    private final JLabel lblDiaChi = new JLabel();
-    private final JLabel lblNguoiLienHe = new JLabel();
-    private final JLabel lblNgayTao = new JLabel();
+    // ----- SOUTH -----
+    private JPanel pnlSouth;
+    private JLabel lblTrangThai;
 
-    // ===== SOUTH: số dòng + trạng thái =====
-    private final JPanel pnlSouth = new JPanel(new BorderLayout(16, 0));
-    private final JLabel lblDemSoDong = new JLabel(" ");
-    private final JLabel lblTrangThai = new JLabel("Chưa tải dữ liệu.");
-
-    private BenhNhan benhNhanDangChon;
-
-    /** Dùng khi Core gắn vào menu: .register(Module.PATIENTS, BenhNhanPanel::new) */
+    // Hàm khởi tạo: Core gắn vào menu bằng .register(Module.PATIENTS, BenhNhanPanel::new)
     public BenhNhanPanel(DesktopSession phien) {
-        this(phien, TeamDevConnection::open, TeamDevConnection.hasLocalConfig());
-    }
-
-    /** Dùng cho chạy thử / kiểm thử với nguồn kết nối khác. */
-    public BenhNhanPanel(DesktopSession phien, KetNoiCsdl ketNoiCsdl) {
-        this(phien, ketNoiCsdl, true);
-    }
-
-    private BenhNhanPanel(DesktopSession phien, KetNoiCsdl ketNoiCsdl, boolean daCauHinh) {
-        this.controller = new BenhNhanController(new BenhNhanService(
-                Objects.requireNonNull(phien, "phien"), Objects.requireNonNull(ketNoiCsdl, "ketNoiCsdl")));
         setLayout(new BorderLayout(14, 14));
-        setBackground(BACKGROUND);
+        setBackground(NEN);
         setBorder(new EmptyBorder(24, 26, 24, 26));
 
-        add(taoNorth(), BorderLayout.NORTH);
-        add(taoCenter(), BorderLayout.CENTER);
-        add(taoEast(), BorderLayout.EAST);
-        add(taoSouth(), BorderLayout.SOUTH);
+        taoNorth();
+        taoCenter();
+        taoEast();
+        taoSouth();
 
-        ganSuKien();
-        controller.ganPanel(this);
-        hienChiTiet(null);
+        add(pnlNorth, BorderLayout.NORTH);
+        add(pnlCenter, BorderLayout.CENTER);
+        add(pnlEast, BorderLayout.EAST);
+        add(pnlSouth, BorderLayout.SOUTH);
 
-        if (daCauHinh) {
-            // Tải sau khi panel dựng xong; SQL chạy trong SwingWorker của Controller.
-            SwingUtilities.invokeLater(this::locDanhSach);
-        } else {
-            btnLoc.setEnabled(false);
-            btnTaiLai.setEnabled(false);
-            btnXoaLoc.setEnabled(false);
-            lblTrangThai.setText("Chưa có cấu hình SQL Server development trong worktree.");
-        }
+        // Tạo Service và Controller, Controller sẽ gắn sự kiện cho các nút
+        BenhNhanService service = new BenhNhanService(phien);
+        new BenhNhanController(this, service);
     }
 
-    // =====================================================================
-    // Dựng từng vùng
-    // =====================================================================
+    // ===================== Tạo 4 vùng =====================
 
-    private JPanel taoNorth() {
+    private void taoNorth() {
+        pnlNorth = new JPanel(new BorderLayout(0, 10));
         pnlNorth.setOpaque(false);
+
+        lblTieuDe = new JLabel("Danh sách bệnh nhân");
         lblTieuDe.setFont(new Font("SansSerif", Font.BOLD, 23));
         lblTieuDe.setForeground(NAVY);
-        lblMoTa.setForeground(MUTED);
 
+        txtTimKiem = new JTextField(24);
+        cmbGioiTinh = new JComboBox<>(new String[]{"Tất cả", "Nam", "Nữ", "Khác"});
+        btnLoc = new JButton("Tìm kiếm");
+        btnXoaLoc = new JButton("Xóa lọc");
+        btnTaiLai = new JButton("Làm mới");
+
+        // Hàng tìm kiếm nằm ở phía dưới (SOUTH) của pnlNorth
+        JPanel pnlNorthSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
         pnlNorthSouth.setBackground(Color.WHITE);
-        pnlNorthSouth.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(BORDER), new EmptyBorder(7, 10, 7, 10)));
-        cmbLocGioiTinh.addItem(null);
-        for (GioiTinh gt : GioiTinh.values()) cmbLocGioiTinh.addItem(gt);
-        cmbLocGioiTinh.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public java.awt.Component getListCellRendererComponent(JList<?> list, Object value,
-                    int index, boolean selected, boolean focus) {
-                super.getListCellRendererComponent(list, value, index, selected, focus);
-                setText(value == null ? "Tất cả giới tính" : ((GioiTinh) value).tenHienThi());
-                return this;
-            }
-        });
-        pnlNorthSouth.add(new JLabel("Tìm:"));
+        pnlNorthSouth.setBorder(BorderFactory.createLineBorder(VIEN));
+        pnlNorthSouth.add(new JLabel("Tìm (SĐT, mã BN, họ tên):"));
         pnlNorthSouth.add(txtTimKiem);
-        pnlNorthSouth.add(cmbLocGioiTinh);
+        pnlNorthSouth.add(new JLabel("Giới tính:"));
+        pnlNorthSouth.add(cmbGioiTinh);
         pnlNorthSouth.add(btnLoc);
         pnlNorthSouth.add(btnXoaLoc);
         pnlNorthSouth.add(btnTaiLai);
 
         pnlNorth.add(lblTieuDe, BorderLayout.NORTH);
-        pnlNorth.add(lblMoTa, BorderLayout.CENTER);
         pnlNorth.add(pnlNorthSouth, BorderLayout.SOUTH);
-        return pnlNorth;
     }
 
-    private JPanel taoCenter() {
+    private void taoCenter() {
+        pnlCenter = new JPanel(new BorderLayout());
         pnlCenter.setOpaque(false);
+
+        String[] headers = "Mã BN;Họ tên;Ngày sinh;Giới tính;SĐT".split(";");
+        tableModel = new DefaultTableModel(headers, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // bảng chỉ để xem, không sửa trực tiếp
+            }
+        };
+        tblBenhNhan = new JTable(tableModel);
         tblBenhNhan.setRowHeight(30);
-        tblBenhNhan.setAutoCreateRowSorter(true);
         tblBenhNhan.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tblBenhNhan.setFillsViewportHeight(true);
         tblBenhNhan.getTableHeader().setReorderingAllowed(false);
-        tblBenhNhan.getColumnModel().getColumn(0).setPreferredWidth(90);
-        tblBenhNhan.getColumnModel().getColumn(1).setPreferredWidth(210);
-        scrDanhSach.setBorder(BorderFactory.createLineBorder(BORDER));
-        pnlCenter.add(scrDanhSach, BorderLayout.CENTER);
-        return pnlCenter;
+        tblBenhNhan.setFillsViewportHeight(true); // phần trống của bảng cũng nền trắng
+
+        scrBenhNhan = new JScrollPane(tblBenhNhan);
+        scrBenhNhan.setBorder(BorderFactory.createLineBorder(VIEN));
+        pnlCenter.add(scrBenhNhan, BorderLayout.CENTER);
     }
 
-    private JPanel taoEast() {
+    private void taoEast() {
+        pnlEast = new JPanel(new BorderLayout());
         pnlEast.setBackground(Color.WHITE);
-        pnlEast.setBorder(BorderFactory.createLineBorder(BORDER));
-        pnlEast.setPreferredSize(new Dimension(360, 10));
+        pnlEast.setBorder(BorderFactory.createLineBorder(VIEN));
+        pnlEast.setPreferredSize(new Dimension(340, 0));
 
-        // EAST → NORTH: tên + mã bệnh nhân
-        pnlEastNorth.setOpaque(false);
-        pnlEastNorth.setBorder(new EmptyBorder(16, 16, 10, 16));
+        // Box dọc chứa các dòng thông tin, mỗi dòng là 1 Box ngang (giống code cũ)
+        Box boxThongTin = Box.createVerticalBox();
+        boxThongTin.setBorder(new EmptyBorder(16, 16, 16, 16));
+
+        lblTenBenhNhan = new JLabel("Chưa chọn bệnh nhân");
         lblTenBenhNhan.setFont(new Font("SansSerif", Font.BOLD, 17));
         lblTenBenhNhan.setForeground(NAVY);
-        lblMaBenhNhan.setForeground(MUTED);
-        pnlEastNorth.add(lblTenBenhNhan, BorderLayout.NORTH);
-        pnlEastNorth.add(lblMaBenhNhan, BorderLayout.SOUTH);
+        lblMaBenhNhan = new JLabel("Chọn một dòng trong bảng");
+        lblMaBenhNhan.setForeground(XAM);
 
-        // EAST → CENTER: tab "Thông tin"
-        pnlThongTin.setBackground(Color.WHITE);
-        pnlThongTin.setBorder(new EmptyBorder(12, 14, 12, 14));
-        themDong("Ngày sinh", lblNgaySinh);
-        themDong("Giới tính", lblGioiTinh);
-        themDong("Số điện thoại", lblSoDienThoai);
-        themDong("Địa chỉ", lblDiaChi);
-        themDong("Người liên hệ", lblNguoiLienHe);
-        themDong("Ngày tạo", lblNgayTao);
-        JPanel pnlThongTinNorth = new JPanel(new BorderLayout());
-        pnlThongTinNorth.setBackground(Color.WHITE);
-        pnlThongTinNorth.add(pnlThongTin, BorderLayout.NORTH); // giữ các dòng sát phía trên
-        tabChiTiet.addTab("Thông tin", pnlThongTinNorth);
+        Box boxTen = Box.createHorizontalBox();
+        boxTen.add(lblTenBenhNhan);
+        boxTen.add(Box.createHorizontalGlue());
+        Box boxMa = Box.createHorizontalBox();
+        boxMa.add(lblMaBenhNhan);
+        boxMa.add(Box.createHorizontalGlue());
+        boxThongTin.add(boxTen);
+        boxThongTin.add(Box.createVerticalStrut(4));
+        boxThongTin.add(boxMa);
+        boxThongTin.add(Box.createVerticalStrut(18));
 
-        pnlEast.add(pnlEastNorth, BorderLayout.NORTH);
-        pnlEast.add(tabChiTiet, BorderLayout.CENTER);
-        return pnlEast;
+        // Nhãn bên trái (lblNhan...) và giá trị bên phải (lbl...)
+        JLabel lblNhanNgaySinh = taoNhan("Ngày sinh:");
+        JLabel lblNhanGioiTinh = taoNhan("Giới tính:");
+        JLabel lblNhanSoDienThoai = taoNhan("Số điện thoại:");
+        JLabel lblNhanDiaChi = taoNhan("Địa chỉ:");
+        JLabel lblNhanNguoiLienHe = taoNhan("Người liên hệ:");
+        JLabel lblNhanNgayTao = taoNhan("Ngày tạo:");
+
+        lblNgaySinh = taoGiaTri();
+        lblGioiTinh = taoGiaTri();
+        lblSoDienThoai = taoGiaTri();
+        lblDiaChi = taoGiaTri();
+        lblNguoiLienHe = taoGiaTri();
+        lblNgayTao = taoGiaTri();
+
+        // Cho các nhãn rộng bằng nhau để giá trị thẳng cột (giống code cũ)
+        lblNhanNgaySinh.setPreferredSize(lblNhanNguoiLienHe.getPreferredSize());
+        lblNhanGioiTinh.setPreferredSize(lblNhanNguoiLienHe.getPreferredSize());
+        lblNhanSoDienThoai.setPreferredSize(lblNhanNguoiLienHe.getPreferredSize());
+        lblNhanDiaChi.setPreferredSize(lblNhanNguoiLienHe.getPreferredSize());
+        lblNhanNgayTao.setPreferredSize(lblNhanNguoiLienHe.getPreferredSize());
+
+        themDong(boxThongTin, lblNhanNgaySinh, lblNgaySinh);
+        themDong(boxThongTin, lblNhanGioiTinh, lblGioiTinh);
+        themDong(boxThongTin, lblNhanSoDienThoai, lblSoDienThoai);
+        themDong(boxThongTin, lblNhanDiaChi, lblDiaChi);
+        themDong(boxThongTin, lblNhanNguoiLienHe, lblNguoiLienHe);
+        themDong(boxThongTin, lblNhanNgayTao, lblNgayTao);
+
+        pnlEast.add(boxThongTin, BorderLayout.NORTH); // NORTH để các dòng nằm sát phía trên
     }
 
-    private void themDong(String nhan, JLabel lblGiaTri) {
-        JLabel lblNhan = new JLabel(nhan);
-        lblNhan.setForeground(MUTED);
-        lblGiaTri.setForeground(NAVY);
-        lblGiaTri.setFont(new Font("SansSerif", Font.BOLD, 13));
-        pnlThongTin.add(lblNhan);
-        pnlThongTin.add(lblGiaTri);
+    // Thêm 1 dòng "nhãn : giá trị" vào Box dọc
+    private void themDong(Box boxThongTin, JLabel lblNhan, JLabel lblGiaTri) {
+        Box boxDong = Box.createHorizontalBox();
+        boxDong.add(lblNhan);
+        boxDong.add(Box.createHorizontalStrut(10));
+        boxDong.add(lblGiaTri);
+        boxDong.add(Box.createHorizontalGlue());
+        boxThongTin.add(boxDong);
+        boxThongTin.add(Box.createVerticalStrut(12));
     }
 
-    private JPanel taoSouth() {
+    private JLabel taoNhan(String chu) {
+        JLabel lbl = new JLabel(chu);
+        lbl.setForeground(XAM);
+        return lbl;
+    }
+
+    private JLabel taoGiaTri() {
+        JLabel lbl = new JLabel("—");
+        lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lbl.setForeground(NAVY);
+        return lbl;
+    }
+
+    private void taoSouth() {
+        pnlSouth = new JPanel(new BorderLayout());
         pnlSouth.setOpaque(false);
-        lblDemSoDong.setForeground(NAVY);
-        lblDemSoDong.setFont(new Font("SansSerif", Font.BOLD, 12));
-        lblTrangThai.setForeground(MUTED);
-        pnlSouth.add(lblDemSoDong, BorderLayout.WEST);
+        lblTrangThai = new JLabel("Chưa tải dữ liệu.");
+        lblTrangThai.setForeground(XAM);
         pnlSouth.add(lblTrangThai, BorderLayout.CENTER);
-        return pnlSouth;
     }
 
-    // =====================================================================
-    // Sự kiện → Controller
-    // =====================================================================
+    // ===================== Hàm hiển thị (Controller gọi) =====================
 
-    private void ganSuKien() {
-        btnLoc.addActionListener(e -> locDanhSach());
-        txtTimKiem.addActionListener(e -> locDanhSach());
-        btnTaiLai.addActionListener(e -> locDanhSach());
-        btnXoaLoc.addActionListener(e -> {
-            txtTimKiem.setText("");
-            cmbLocGioiTinh.setSelectedIndex(0);
-            locDanhSach();
-        });
-        tblBenhNhan.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) return;
-            int dongXem = tblBenhNhan.getSelectedRow();
-            BenhNhan bn = dongXem < 0 ? null
-                    : mdlBenhNhan.layDong(tblBenhNhan.convertRowIndexToModel(dongXem));
-            controller.chonBenhNhan(bn == null ? null : bn.maBenhNhan());
-        });
-    }
-
-    private void locDanhSach() {
-        controller.taiDanhSach(txtTimKiem.getText(), (GioiTinh) cmbLocGioiTinh.getSelectedItem());
-    }
-
-    // =====================================================================
-    // Controller gọi để hiển thị (luôn trên luồng giao diện)
-    // =====================================================================
-
-    public void hienDangTai(boolean dangTai, String thongBao) {
-        btnLoc.setEnabled(!dangTai);
-        btnTaiLai.setEnabled(!dangTai);
-        btnXoaLoc.setEnabled(!dangTai);
-        if (thongBao != null) {
-            lblTrangThai.setForeground(MUTED);
-            lblTrangThai.setText(thongBao);
+    // Đổ danh sách bệnh nhân vào bảng
+    public void docDuLieuVaoTable(ArrayList<BenhNhan> dsBenhNhan) {
+        tableModel.setRowCount(0); // xóa các dòng cũ trên bảng
+        for (BenhNhan bn : dsBenhNhan) {
+            tableModel.addRow(new Object[]{
+                    bn.getMaBenhNhan(),
+                    bn.getHoTen(),
+                    bn.getNgaySinh().format(NGAY),
+                    bn.getGioiTinhHienThi(),
+                    bn.getSoDienThoai()
+            });
         }
+        lblTrangThai.setForeground(XAM);
+        lblTrangThai.setText("Có " + dsBenhNhan.size() + " bệnh nhân.");
+        hienChiTiet(null);
     }
 
-    public void hienDanhSach(BenhNhanDao.KetQuaTimKiem ketQua) {
-        String maDangChon = benhNhanDangChon == null ? null : benhNhanDangChon.maBenhNhan();
-        mdlBenhNhan.datDuLieu(ketQua.danhSach());
-        lblDemSoDong.setText(ketQua.danhSach().size() + " bệnh nhân");
-        lblTrangThai.setForeground(MUTED);
-        lblTrangThai.setText(ketQua.biCatBot()
-                ? "Chỉ hiển thị " + BenhNhanDao.GIOI_HAN_DONG + " dòng đầu — hãy nhập từ khóa cụ thể hơn."
-                : "Đọc từ SQL Server · hồ sơ bệnh nhân không bị xóa.");
-        int dong = maDangChon == null ? -1 : mdlBenhNhan.timDong(maDangChon);
-        if (dong >= 0) {
-            int dongXem = tblBenhNhan.convertRowIndexToView(dong);
-            tblBenhNhan.setRowSelectionInterval(dongXem, dongXem);
-        } else {
-            hienChiTiet(null);
-        }
-    }
-
+    // Hiện thông tin 1 bệnh nhân ở khung bên phải (null = chưa chọn)
     public void hienChiTiet(BenhNhan bn) {
-        benhNhanDangChon = bn;
         if (bn == null) {
             lblTenBenhNhan.setText("Chưa chọn bệnh nhân");
-            lblMaBenhNhan.setText("Chọn một dòng trong danh sách.");
-            for (JLabel lbl : new JLabel[]{lblNgaySinh, lblGioiTinh, lblSoDienThoai,
-                    lblDiaChi, lblNguoiLienHe, lblNgayTao}) {
-                lbl.setText("—");
-            }
+            lblMaBenhNhan.setText("Chọn một dòng trong bảng");
+            lblNgaySinh.setText("—");
+            lblGioiTinh.setText("—");
+            lblSoDienThoai.setText("—");
+            lblDiaChi.setText("—");
+            lblNguoiLienHe.setText("—");
+            lblNgayTao.setText("—");
             return;
         }
-        lblTenBenhNhan.setText(bn.hoTen());
-        lblMaBenhNhan.setText("Mã bệnh nhân: " + bn.maBenhNhan());
-        lblNgaySinh.setText(bn.ngaySinh() == null ? "—" : BenhNhanTableModel.NGAY.format(bn.ngaySinh()));
-        lblGioiTinh.setText(bn.gioiTinh().tenHienThi());
-        lblSoDienThoai.setText(BenhNhanTableModel.dinhDangSoDienThoai(bn.soDienThoai()));
-        lblDiaChi.setText(hien(bn.diaChi()));
-        lblNguoiLienHe.setText(hien(bn.nguoiLienHe()));
-        lblNgayTao.setText(bn.ngayTao() == null ? "—" : NGAY_GIO.format(bn.ngayTao()));
+        lblTenBenhNhan.setText(bn.getHoTen());
+        lblMaBenhNhan.setText("Mã bệnh nhân: " + bn.getMaBenhNhan());
+        lblNgaySinh.setText(bn.getNgaySinh().format(NGAY));
+        lblGioiTinh.setText(bn.getGioiTinhHienThi());
+        lblSoDienThoai.setText(bn.getSoDienThoai());
+        lblDiaChi.setText(bn.getDiaChi() == null ? "—" : bn.getDiaChi());
+        lblNguoiLienHe.setText(bn.getNguoiLienHe() == null ? "—" : bn.getNguoiLienHe());
+        lblNgayTao.setText(bn.getNgayTao() == null ? "—" : bn.getNgayTao().format(NGAY_GIO));
     }
 
     public void hienLoi(String thongBao) {
-        lblTrangThai.setForeground(ERROR);
+        lblTrangThai.setForeground(new Color(176, 32, 32));
         lblTrangThai.setText(thongBao);
     }
 
-    private static String hien(String s) {
-        return s == null || s.isBlank() ? "—" : s;
+    // Xóa trắng ô tìm kiếm và đưa giới tính về "Tất cả"
+    public void xoaTrang() {
+        txtTimKiem.setText("");
+        cmbGioiTinh.setSelectedIndex(0);
+        txtTimKiem.requestFocus();
     }
+
+    // Đổi lựa chọn trong combo sang mã lưu trong database ("" = tất cả)
+    public String layGioiTinhDangChon() {
+        String chon = (String) cmbGioiTinh.getSelectedItem();
+        if ("Nam".equals(chon)) return "NAM";
+        if ("Nữ".equals(chon)) return "NU";
+        if ("Khác".equals(chon)) return "KHAC";
+        return "";
+    }
+
+    // ===================== Getter cho Controller =====================
+
+    public JTextField getTxtTimKiem() { return txtTimKiem; }
+    public JComboBox<String> getCmbGioiTinh() { return cmbGioiTinh; }
+    public JButton getBtnLoc() { return btnLoc; }
+    public JButton getBtnXoaLoc() { return btnXoaLoc; }
+    public JButton getBtnTaiLai() { return btnTaiLai; }
+    public JTable getTblBenhNhan() { return tblBenhNhan; }
 }
