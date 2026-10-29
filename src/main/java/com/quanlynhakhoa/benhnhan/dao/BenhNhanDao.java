@@ -77,6 +77,125 @@ public class BenhNhanDao {
         return null;
     }
 
+    // ===================== Phần THÊM / SỬA =====================
+    // Các hàm dưới đây nhận Connection từ Service, vì Service mở 1 transaction
+    // cho nhiều câu lệnh (thêm bệnh nhân + thêm hồ sơ + ghi nhật ký).
+
+    // Tìm hồ sơ nghi trùng: cùng SĐT, hoặc cùng họ tên + ngày sinh
+    // boQuaMa: mã của chính bệnh nhân đang sửa (để không tự báo trùng với mình), null khi thêm mới
+    public ArrayList<BenhNhan> timNghiTrung(String soDienThoai, String hoTen,
+                                            java.time.LocalDate ngaySinh, String boQuaMa) throws SQLException {
+        ArrayList<BenhNhan> dsTrung = new ArrayList<>();
+        String sql = "SELECT TOP 10 " + COT
+                + "FROM dbo.BenhNhan "
+                + "WHERE (soDienThoai = ? OR (hoTen = ? AND ngaySinh = ?)) "
+                + "AND (? IS NULL OR maBenhNhan <> ?)";
+
+        try (Connection con = TeamDevConnection.open();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, soDienThoai);
+            stmt.setNString(2, hoTen);
+            stmt.setDate(3, java.sql.Date.valueOf(ngaySinh));
+            stmt.setString(4, boQuaMa);
+            stmt.setString(5, boQuaMa);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    dsTrung.add(docMotDong(rs));
+                }
+            }
+        }
+        return dsTrung;
+    }
+
+    // Sinh mã bệnh nhân mới: BN + 6 chữ số (BN000001, BN000002, ...)
+    // UPDLOCK, HOLDLOCK: khóa lại để 2 người bấm Lưu cùng lúc không bị trùng mã
+    public String taoMaBenhNhanMoi(Connection con) throws SQLException {
+        String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(maBenhNhan, 3, 6) AS INT)), 0) + 1 "
+                + "FROM dbo.BenhNhan WITH (UPDLOCK, HOLDLOCK) "
+                + "WHERE maBenhNhan LIKE 'BN[0-9][0-9][0-9][0-9][0-9][0-9]'";
+        return taoMa(con, sql, "BN");
+    }
+
+    // Sinh mã hồ sơ bệnh án mới: HS + 6 chữ số (HS000001, ...)
+    public String taoMaHoSoMoi(Connection con) throws SQLException {
+        String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(maHoSo, 3, 6) AS INT)), 0) + 1 "
+                + "FROM dbo.HoSoBenhAn WITH (UPDLOCK, HOLDLOCK) "
+                + "WHERE maHoSo LIKE 'HS[0-9][0-9][0-9][0-9][0-9][0-9]'";
+        return taoMa(con, sql, "HS");
+    }
+
+    private String taoMa(Connection con, String sql, String tienTo) throws SQLException {
+        try (PreparedStatement stmt = con.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            rs.next();
+            int soTiepTheo = rs.getInt(1);
+            if (soTiepTheo > 999999) {
+                throw new SQLException("Đã hết mã " + tienTo);
+            }
+            return tienTo + String.format("%06d", soTiepTheo); // ví dụ 7 → BN000007
+        }
+    }
+
+    // Thêm 1 dòng vào bảng BenhNhan
+    public void themBenhNhan(Connection con, BenhNhan bn, String maTaiKhoanTao) throws SQLException {
+        String sql = "INSERT INTO dbo.BenhNhan "
+                + "(maBenhNhan, hoTen, ngaySinh, gioiTinh, soDienThoai, diaChi, nguoiLienHe, maTaiKhoanTao) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, bn.getMaBenhNhan());
+            stmt.setNString(2, bn.getHoTen());
+            stmt.setDate(3, java.sql.Date.valueOf(bn.getNgaySinh()));
+            stmt.setString(4, bn.getGioiTinh());
+            stmt.setString(5, bn.getSoDienThoai());
+            stmt.setNString(6, bn.getDiaChi());
+            stmt.setNString(7, bn.getNguoiLienHe());
+            stmt.setString(8, maTaiKhoanTao);
+            stmt.executeUpdate();
+        }
+    }
+
+    // Thêm hồ sơ bệnh án trống cho bệnh nhân mới (mỗi bệnh nhân có đúng 1 hồ sơ)
+    public void themHoSoBenhAn(Connection con, String maHoSo, String maBenhNhan) throws SQLException {
+        String sql = "INSERT INTO dbo.HoSoBenhAn (maHoSo, maBenhNhan, ngayLap) "
+                + "VALUES (?, ?, CAST(GETDATE() AS DATE))";
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, maHoSo);
+            stmt.setString(2, maBenhNhan);
+            stmt.executeUpdate();
+        }
+    }
+
+    // Cập nhật thông tin bệnh nhân, trả về true nếu có dòng được sửa
+    public boolean capNhatBenhNhan(Connection con, BenhNhan bn) throws SQLException {
+        String sql = "UPDATE dbo.BenhNhan SET hoTen = ?, ngaySinh = ?, gioiTinh = ?, "
+                + "soDienThoai = ?, diaChi = ?, nguoiLienHe = ? "
+                + "WHERE maBenhNhan = ?";
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setNString(1, bn.getHoTen());
+            stmt.setDate(2, java.sql.Date.valueOf(bn.getNgaySinh()));
+            stmt.setString(3, bn.getGioiTinh());
+            stmt.setString(4, bn.getSoDienThoai());
+            stmt.setNString(5, bn.getDiaChi());
+            stmt.setNString(6, bn.getNguoiLienHe());
+            stmt.setString(7, bn.getMaBenhNhan());
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Ghi nhật ký thao tác (không ghi họ tên / SĐT bệnh nhân vào nhật ký)
+    public void ghiNhatKy(Connection con, String maTaiKhoan, String hanhDong, String maBenhNhan)
+            throws SQLException {
+        String sql = "INSERT INTO dbo.NhatKyThaoTac "
+                + "(loaiTacNhan, maTaiKhoan, chucNang, hanhDong, ketQua, doiTuong, maDoiTuong) "
+                + "VALUES ('ACCOUNT', ?, N'BenhNhan', ?, 'SUCCESS', 'BenhNhan', ?)";
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, maTaiKhoan);
+            stmt.setNString(2, hanhDong);
+            stmt.setString(3, maBenhNhan);
+            stmt.executeUpdate();
+        }
+    }
+
     // Đọc 1 dòng kết quả thành 1 đối tượng BenhNhan (thứ tự cột giống hằng COT ở trên)
     private BenhNhan docMotDong(ResultSet rs) throws SQLException {
         String maBenhNhan = rs.getString(1);

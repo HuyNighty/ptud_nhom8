@@ -8,7 +8,7 @@ public class BenhNhan {
     private String maBenhNhan;
     private String hoTen;
     private LocalDate ngaySinh;
-    private String gioiTinh;      // NAM, NU hoặc KHAC (giống trong database)
+    private String gioiTinh;      // NAM hoặc NU
     private String soDienThoai;
     private String diaChi;
     private String nguoiLienHe;
@@ -104,6 +104,6 @@ public class BenhNhan {
     public String getGioiTinhHienThi() {
         if ("NAM".equals(gioiTinh)) return "Nam";
         if ("NU".equals(gioiTinh)) return "Nữ";
-        return "Khác";
+        return "Khác";   // chỉ gặp với dữ liệu cũ trong database (ứng dụng không cho chọn nữa)
     }
 }

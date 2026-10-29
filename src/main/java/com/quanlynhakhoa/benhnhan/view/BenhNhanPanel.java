@@ -50,6 +50,7 @@ public class BenhNhanPanel extends JPanel {
     private JButton btnLoc;
     private JButton btnXoaLoc;
     private JButton btnTaiLai;
+    private JButton btnThem;
 
     // ----- CENTER -----
     private JPanel pnlCenter;
@@ -67,6 +68,9 @@ public class BenhNhanPanel extends JPanel {
     private JLabel lblDiaChi;
     private JLabel lblNguoiLienHe;
     private JLabel lblNgayTao;
+    private JButton btnSua;
+    private BenhNhan bnDangXem;     // bệnh nhân đang hiện ở khung bên phải
+    private boolean duocSua;        // người đăng nhập có quyền sửa không
 
     // ----- SOUTH -----
     private JPanel pnlSouth;
@@ -104,10 +108,13 @@ public class BenhNhanPanel extends JPanel {
         lblTieuDe.setForeground(NAVY);
 
         txtTimKiem = new JTextField(24);
-        cmbGioiTinh = new JComboBox<>(new String[]{"Tất cả", "Nam", "Nữ", "Khác"});
+        cmbGioiTinh = new JComboBox<>(new String[]{"Tất cả", "Nam", "Nữ"});
         btnLoc = new JButton("Tìm kiếm");
         btnXoaLoc = new JButton("Xóa lọc");
         btnTaiLai = new JButton("Làm mới");
+        btnLoc.setIcon(new BieuTuong(BieuTuong.TIM_KIEM));     // hình kính lúp
+        btnTaiLai.setIcon(new BieuTuong(BieuTuong.LAM_MOI));   // hình mũi tên vòng tròn
+        btnThem = new JButton("+ Thêm bệnh nhân");
 
         // Hàng tìm kiếm nằm ở phía dưới (SOUTH) của pnlNorth
         JPanel pnlNorthSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
@@ -120,6 +127,7 @@ public class BenhNhanPanel extends JPanel {
         pnlNorthSouth.add(btnLoc);
         pnlNorthSouth.add(btnXoaLoc);
         pnlNorthSouth.add(btnTaiLai);
+        pnlNorthSouth.add(btnThem);
 
         pnlNorth.add(lblTieuDe, BorderLayout.NORTH);
         pnlNorth.add(pnlNorthSouth, BorderLayout.SOUTH);
@@ -204,6 +212,14 @@ public class BenhNhanPanel extends JPanel {
         themDong(boxThongTin, lblNhanNgayTao, lblNgayTao);
 
         pnlEast.add(boxThongTin, BorderLayout.NORTH); // NORTH để các dòng nằm sát phía trên
+
+        // SOUTH của pnlEast: nút Sửa (thao tác trên bệnh nhân đang chọn)
+        btnSua = new JButton("Sửa thông tin...");
+        btnSua.setEnabled(false);
+        JPanel pnlEastSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 12));
+        pnlEastSouth.setOpaque(false);
+        pnlEastSouth.add(btnSua);
+        pnlEast.add(pnlEastSouth, BorderLayout.SOUTH);
     }
 
     // Thêm 1 dòng "nhãn : giá trị" vào Box dọc
@@ -259,6 +275,8 @@ public class BenhNhanPanel extends JPanel {
 
     // Hiện thông tin 1 bệnh nhân ở khung bên phải (null = chưa chọn)
     public void hienChiTiet(BenhNhan bn) {
+        bnDangXem = bn;
+        btnSua.setEnabled(bn != null && duocSua); // chưa chọn ai hoặc không có quyền → làm mờ
         if (bn == null) {
             lblTenBenhNhan.setText("Chưa chọn bệnh nhân");
             lblMaBenhNhan.setText("Chọn một dòng trong bảng");
@@ -280,10 +298,44 @@ public class BenhNhanPanel extends JPanel {
         lblNgayTao.setText(bn.getNgayTao() == null ? "—" : bn.getNgayTao().format(NGAY_GIO));
     }
 
+    // Đang đọc database: làm mờ các nút tìm/làm mới để không bấm chồng, hiện chữ "Đang tải..."
+    public void datDangTai(boolean dangTai) {
+        btnLoc.setEnabled(!dangTai);
+        btnXoaLoc.setEnabled(!dangTai);
+        btnTaiLai.setEnabled(!dangTai);
+        if (dangTai) {
+            lblTrangThai.setForeground(XAM);
+            lblTrangThai.setText("Đang tải dữ liệu...");
+        }
+    }
+
+    // Hiện lỗi: dòng chữ đỏ ở SOUTH + hộp thông báo giữa màn hình
     public void hienLoi(String thongBao) {
         lblTrangThai.setForeground(new Color(176, 32, 32));
         lblTrangThai.setText(thongBao);
+        javax.swing.JOptionPane.showMessageDialog(this, thongBao, "Thông báo lỗi",
+                javax.swing.JOptionPane.ERROR_MESSAGE);
     }
+
+    // Bật/tắt nút theo quyền của người đăng nhập (Controller gọi 1 lần khi mở màn hình)
+    public void datQuyen(boolean duocThem, boolean duocSua) {
+        this.duocSua = duocSua;
+        btnThem.setEnabled(duocThem);
+        btnSua.setEnabled(bnDangXem != null && duocSua);
+    }
+
+    // Chọn dòng có mã bệnh nhân này trong bảng (dùng sau khi lưu xong)
+    public void chonDongTheoMa(String maBenhNhan) {
+        for (int row = 0; row < tableModel.getRowCount(); row++) {
+            if (tableModel.getValueAt(row, 0).equals(maBenhNhan)) {
+                tblBenhNhan.setRowSelectionInterval(row, row);
+                tblBenhNhan.scrollRectToVisible(tblBenhNhan.getCellRect(row, 0, true));
+                return;
+            }
+        }
+    }
+
+    public BenhNhan getBnDangXem() { return bnDangXem; }
 
     // Xóa trắng ô tìm kiếm và đưa giới tính về "Tất cả"
     public void xoaTrang() {
@@ -297,7 +349,6 @@ public class BenhNhanPanel extends JPanel {
         String chon = (String) cmbGioiTinh.getSelectedItem();
         if ("Nam".equals(chon)) return "NAM";
         if ("Nữ".equals(chon)) return "NU";
-        if ("Khác".equals(chon)) return "KHAC";
         return "";
     }
 
@@ -309,4 +360,6 @@ public class BenhNhanPanel extends JPanel {
     public JButton getBtnXoaLoc() { return btnXoaLoc; }
     public JButton getBtnTaiLai() { return btnTaiLai; }
     public JTable getTblBenhNhan() { return tblBenhNhan; }
+    public JButton getBtnThem() { return btnThem; }
+    public JButton getBtnSua() { return btnSua; }
 }
