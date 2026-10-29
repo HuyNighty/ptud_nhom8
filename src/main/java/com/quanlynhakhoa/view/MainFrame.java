@@ -146,28 +146,37 @@ public final class MainFrame extends JFrame {
         pending(appointments, "Đặt lịch hẹn");
         addIfNotEmpty(bar, appointments);
 
-        if (allowed.contains(Module.MEDICAL_RECORDS)) {
-            JMenu clinical = menu("Khám & điều trị");
-            pending(clinical, "Phiếu khám");
+        JMenu clinical = menu("Khám & điều trị");
+        item(clinical, "Phiếu khám", Module.EXAMINATIONS);
+        if (allowed.contains(Module.EXAMINATIONS)) {
             pending(clinical, "Kế hoạch điều trị");
-            pending(clinical, "Dịch vụ khám");
-            bar.add(clinical);
         }
+        addIfNotEmpty(bar, clinical);
 
         JMenu billing = menu("Hóa đơn");
         item(billing, "Danh sách hóa đơn", Module.BILLING);
-        pending(billing, "Thanh toán");
-        pending(billing, "Công nợ");
+        item(billing, "Bảng giá dịch vụ", Module.SERVICE_CATALOG);
+        if (allowed.contains(Module.BILLING)) {
+            pending(billing, "Thanh toán");
+            pending(billing, "Công nợ");
+        }
         addIfNotEmpty(bar, billing);
 
         JMenu inventory = menu("Kho vật tư");
         item(inventory, "Danh mục thuốc & vật tư", Module.INVENTORY);
-        pending(inventory, "Nhập / xuất kho");
+        item(inventory, "Yêu cầu cấp phát", Module.SUPPLY_REQUESTS);
+        item(inventory, "Kiểm tra hộp cấp cứu", Module.EMERGENCY_KIT);
+        if (allowed.contains(Module.INVENTORY)) {
+            pending(inventory, "Nhập / xuất kho");
+        }
         addIfNotEmpty(bar, inventory);
 
         JMenu workforce = menu("Nhân viên");
         item(workforce, "Danh sách nhân viên", Module.WORKFORCE);
-        pending(workforce, "Phân công ca");
+        item(workforce, "Lịch làm việc của tôi", Module.MY_SCHEDULE);
+        if (allowed.contains(Module.WORKFORCE)) {
+            pending(workforce, "Phân công ca");
+        }
         addIfNotEmpty(bar, workforce);
 
         JMenu system = menu("Hệ thống");
@@ -290,6 +299,11 @@ public final class MainFrame extends JFrame {
             case ACCOUNTS -> "Tài khoản";
             case ROLES -> "Vai trò";
             case AUDIT -> "Nhật ký thao tác";
+            case EXAMINATIONS -> "Phiếu khám";
+            case SERVICE_CATALOG -> "Bảng giá dịch vụ";
+            case SUPPLY_REQUESTS -> "Yêu cầu cấp phát";
+            case MY_SCHEDULE -> "Lịch làm việc của tôi";
+            case EMERGENCY_KIT -> "Kiểm tra hộp cấp cứu";
         };
     }
 
