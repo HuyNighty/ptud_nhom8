@@ -40,7 +40,8 @@ public final class R4MainNavigationSelfTest {
 
         MainNavigationModel reception = new MainNavigationModel(session(Role.RECEPTIONIST));
         check(reception.availableModules().equals(List.of(
-                Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING)));
+                Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING,
+                Module.MY_SCHEDULE)));
         reception.select(Module.PATIENTS);
         check(reception.selected() == Module.PATIENTS);
         reception.select(Module.BILLING);
@@ -52,24 +53,28 @@ public final class R4MainNavigationSelfTest {
         denied(() -> reception.select(Module.PATIENTS));
 
         MainNavigationModel doctor = new MainNavigationModel(session(Role.DOCTOR));
-        check(doctor.availableModules().equals(List.of(Module.HOME, Module.PATIENTS, Module.MEDICAL_RECORDS)));
+        check(doctor.availableModules().equals(List.of(
+                Module.HOME, Module.PATIENTS, Module.MEDICAL_RECORDS,
+                Module.EXAMINATIONS, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE)));
         doctor.select(Module.MEDICAL_RECORDS);
         check(doctor.selected() == Module.MEDICAL_RECORDS);
         denied(() -> doctor.select(Module.WORKFORCE));
 
         MainNavigationModel nurse = new MainNavigationModel(session(Role.NURSE));
-        check(nurse.availableModules().equals(List.of(Module.HOME)));
+        check(nurse.availableModules().equals(List.of(
+                Module.HOME, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE, Module.EMERGENCY_KIT)));
         for (Module module : Module.values()) {
-            if (module != Module.HOME) denied(() -> nurse.select(module));
+            if (!nurse.availableModules().contains(module)) denied(() -> nurse.select(module));
         }
         MainNavigationModel manager = new MainNavigationModel(session(Role.CLINIC_MANAGER));
         check(manager.availableModules().equals(List.of(
                 Module.HOME, Module.BILLING, Module.WORKFORCE,
-                Module.ACCOUNTS, Module.ROLES, Module.AUDIT)));
+                Module.ACCOUNTS, Module.ROLES, Module.AUDIT,
+                Module.SERVICE_CATALOG, Module.MY_SCHEDULE)));
         manager.select(Module.WORKFORCE);
         denied(() -> manager.select(Module.INVENTORY));
         MainNavigationModel inventory = new MainNavigationModel(session(Role.INVENTORY_MANAGER));
-        check(inventory.availableModules().equals(List.of(Module.HOME, Module.INVENTORY)));
+        check(inventory.availableModules().equals(List.of(Module.HOME, Module.INVENTORY, Module.MY_SCHEDULE)));
         inventory.select(Module.INVENTORY);
         denied(() -> inventory.select(Module.BILLING));
         boolean nullRejected = false;

@@ -32,7 +32,7 @@ public final class R4RoleSessionSelfTest {
         NavigationPolicy nav = new NavigationPolicy(service);
         check(Role.values().length == 6, "Unexpected new role requires policy review");
         check(Permission.values().length == 24, "Unexpected new permission requires policy review");
-        check(Module.values().length == 10, "Unexpected module requires policy review");
+        check(Module.values().length == 15, "Unexpected module requires policy review");
 
         Set<Permission> receptionist = Set.of(
                 Permission.PATIENT_READ, Permission.PATIENT_CREATE, Permission.PATIENT_UPDATE,
@@ -126,17 +126,21 @@ public final class R4RoleSessionSelfTest {
         denied(() -> service.require(null, Permission.PATIENT_READ));
 
         check(nav.visibleModules(session(Role.RECEPTIONIST)).equals(
-                List.of(Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING)),
+                List.of(Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING,
+                        Module.MY_SCHEDULE)),
                 "Receptionist allowed modules");
         check(nav.visibleModules(session(Role.DOCTOR)).equals(
-                List.of(Module.HOME, Module.PATIENTS, Module.MEDICAL_RECORDS)), "Doctor safe list");
-        check(nav.visibleModules(session(Role.NURSE)).equals(List.of(Module.HOME)),
-                "Nurse needs separate fine-grained UI destinations");
+                List.of(Module.HOME, Module.PATIENTS, Module.MEDICAL_RECORDS,
+                        Module.EXAMINATIONS, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE)), "Doctor safe list");
+        check(nav.visibleModules(session(Role.NURSE)).equals(List.of(
+                Module.HOME, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE, Module.EMERGENCY_KIT)),
+                "Nurse routes are restricted to assigned activities");
         check(nav.visibleModules(session(Role.CLINIC_MANAGER)).equals(
                 List.of(Module.HOME, Module.BILLING, Module.WORKFORCE,
-                        Module.ACCOUNTS, Module.ROLES, Module.AUDIT)), "Manager allowed modules");
+                        Module.ACCOUNTS, Module.ROLES, Module.AUDIT,
+                        Module.SERVICE_CATALOG, Module.MY_SCHEDULE)), "Manager allowed modules");
         check(nav.visibleModules(session(Role.INVENTORY_MANAGER)).equals(
-                List.of(Module.HOME, Module.INVENTORY)), "Inventory allowed modules");
+                List.of(Module.HOME, Module.INVENTORY, Module.MY_SCHEDULE)), "Inventory allowed modules");
         check(nav.visibleModules(session(Role.SYSTEM_ADMIN)).size() == Module.values().length,
                 "Admin navigation covers all modules");
 
