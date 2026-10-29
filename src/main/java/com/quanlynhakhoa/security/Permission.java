@@ -1,6 +1,5 @@
 package com.quanlynhakhoa.security;
 
-/** Original permissions from the pre-Swing repository, without framework dependencies. */
 public enum Permission {
     PATIENT_READ,
     PATIENT_CREATE,
@@ -17,5 +16,13 @@ public enum Permission {
     WORKFORCE_MANAGE,
     ACCOUNT_MANAGE,
     ROLE_MANAGE,
-    AUDIT_READ
+    AUDIT_READ,
+    PATIENT_CHECK_IN,
+    REEXAM_SCHEDULE,
+    SUPPLY_REQUEST,
+    EMERGENCY_KIT_CHECK,
+    SCHEDULE_SELF_READ,
+    SERVICE_CATALOG_MANAGE,
+    INVOICE_CANCEL_REQUEST,
+    INVOICE_CANCEL_APPROVE
 }
