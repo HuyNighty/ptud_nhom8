@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.view;
 
+import com.quanlynhakhoa.features.FeatureBootstrap;
+import com.quanlynhakhoa.features.FeatureRegistry;
 import com.quanlynhakhoa.navigation.Module;
 import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
@@ -10,6 +12,7 @@ import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -21,23 +24,23 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
-/**
- * HOME-UI-01: horizontal business navigation + dashboard shell.
- * Permission filtering and the authenticated constructor are preserved.
- * All feature destinations remain placeholders; only feature owners implement them.
- */
 public final class MainFrame extends JFrame {
     private static final Color NAVY = new Color(29, 61, 102);
     private static final Color BACKGROUND = new Color(245, 248, 252);
     private static final Color INK = new Color(28, 48, 75);
     private static final Color LINE = new Color(221, 231, 242);
     private final MainNavigationModel model;
+    private final DesktopSession session;
+    private final FeatureRegistry registry;
+    private final Set<Module> loaded = EnumSet.noneOf(Module.class);
+    private final Map<Module, JPanel> slots = new EnumMap<>(Module.class);
     private final Runnable returnToLogin;
     private final CardLayout cards = new CardLayout();
     private final JPanel content = new JPanel(cards);
@@ -45,10 +48,15 @@ public final class MainFrame extends JFrame {
     private final Map<Module, JMenuItem> links = new EnumMap<>(Module.class);
     private JButton overviewButton;
 
-    /** Do not introduce a no-argument constructor: access requires a real session. */
     public MainFrame(DesktopSession session, Runnable returnToLogin) {
+        this(session, returnToLogin, FeatureBootstrap.createRegistry());
+    }
+
+    public MainFrame(DesktopSession session, Runnable returnToLogin, FeatureRegistry registry) {
         super("Nhóm 8 - Quản lý nha khoa");
         this.model = new MainNavigationModel(session);
+        this.session = session;
+        this.registry = Objects.requireNonNull(registry, "registry");
         this.returnToLogin = Objects.requireNonNull(returnToLogin, "returnToLogin");
         this.allowed = new HashSet<>(model.availableModules());
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -71,10 +79,10 @@ public final class MainFrame extends JFrame {
         content.setBackground(BACKGROUND);
         for (Module module : model.availableModules()) {
             JPanel page = module == Module.HOME ? new DashboardPanel(session) : buildPlaceholder(module);
-            JScrollPane scroll = new JScrollPane(page);
-            scroll.setBorder(BorderFactory.createEmptyBorder());
-            scroll.getVerticalScrollBar().setUnitIncrement(16);
-            content.add(scroll, module.name());
+            JPanel slot = new JPanel(new BorderLayout());
+            slot.add(scroll(page), BorderLayout.CENTER);
+            slots.put(module, slot);
+            content.add(slot, module.name());
         }
         root.add(content, BorderLayout.CENTER);
         setContentPane(root);
@@ -138,7 +146,6 @@ public final class MainFrame extends JFrame {
         pending(appointments, "Đặt lịch hẹn");
         addIfNotEmpty(bar, appointments);
 
-        // Clinical feature destinations do not exist yet; no new permissions are invented.
         if (allowed.contains(Module.MEDICAL_RECORDS)) {
             JMenu clinical = menu("Khám & điều trị");
             pending(clinical, "Phiếu khám");
@@ -190,8 +197,6 @@ public final class MainFrame extends JFrame {
     }
 
     private void pending(JMenu menu, String text) {
-        // Only show a disabled preview entry if this user can already open a module in the group.
-        // Empty groups are hidden below; clinical group has a separate permission check.
         JMenuItem action = new JMenuItem(text + "  ·  Sắp triển khai");
         action.setFont(new Font("SansSerif", Font.PLAIN, 12));
         action.setEnabled(false);
@@ -230,8 +235,32 @@ public final class MainFrame extends JFrame {
         return panel;
     }
 
+    private JScrollPane scroll(JPanel page) {
+        JScrollPane scroll = new JScrollPane(page);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        return scroll;
+    }
+
+    private void loadFeature(Module module) {
+        if (module == Module.HOME || loaded.contains(module) || !registry.contains(module)) return;
+        try {
+            JPanel page = registry.create(session, module);
+            JPanel slot = slots.get(module);
+            slot.removeAll();
+            slot.add(scroll(page), BorderLayout.CENTER);
+            slot.revalidate();
+            slot.repaint();
+            loaded.add(module);
+        } catch (RuntimeException failure) {
+            JOptionPane.showMessageDialog(this, "Không thể mở màn hình nghiệp vụ.",
+                    "Lỗi tải giao diện", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
     private void navigate(Module module) {
-        model.select(module); // Enforces role and active-session authorization.
+        model.select(module);
+        loadFeature(module);
         cards.show(content, module.name());
         if (overviewButton != null) {
             overviewButton.setBackground(module == Module.HOME ? new Color(43, 110, 190) : NAVY);
