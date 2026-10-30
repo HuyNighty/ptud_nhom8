@@ -14,14 +14,16 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-public final class DichVuPanel extends JPanel {
+public final class DichVuPanel extends JPanel implements com.quanlynhakhoa.features.RefreshableFeature {
+    public enum EditorMode { COMBINED, SERVICES, PRICES }
+    private final EditorMode mode;
     private final JTextField txtTuKhoa = new JTextField(18);
     private final JComboBox<String> cmbTrangThai = new JComboBox<>(new String[]{"Tất cả", "Đang áp dụng", "Ngừng áp dụng"});
     private final JButton btnTim = new JButton("Tìm"), btnTaiLai = new JButton("Tải lại");
     private final JTextField txtMaDichVu = new JTextField(), txtTenDichVu = new JTextField(), txtDonGia = new JTextField();
     private final JTextArea txaMoTa = new JTextArea(3, 22);
     private final JCheckBox chkLaCanLamSang = new JCheckBox("Cận lâm sàng"), chkDangApDung = new JCheckBox("Đang áp dụng", true);
-    private final JButton btnThem = new JButton("Thêm / Xóa trắng"), btnLuu = new JButton("Lưu");
+    private final JButton btnThem = new JButton("Thêm"), btnXoaTrang = new JButton("Xóa trắng"), btnLuu = new JButton("Lưu");
     private final JButton btnNgungApDung = new JButton("Ngừng áp dụng"), btnApDungLai = new JButton("Áp dụng lại");
     private final JLabel lblTrangThai = new JLabel("Bấm Tải lại để đọc database.");
     private final DefaultTableModel tableModel = BillingUi.model("Mã", "Tên dịch vụ", "Đơn giá", "Cận lâm sàng", "Trạng thái");
@@ -33,11 +35,15 @@ public final class DichVuPanel extends JPanel {
 
     public DichVuPanel(DesktopSession session) { this(session, TeamDevConnection::open); }
     public DichVuPanel(DesktopSession session, ConnectionProvider connections) {
+        this(session,connections,EditorMode.COMBINED);
+    }
+    public DichVuPanel(DesktopSession session, ConnectionProvider connections,EditorMode mode) {
+        this.mode=mode;
         new AuthorizationService(new RolePermissionPolicy()).require(session, Permission.SERVICE_CATALOG_MANAGE);
         setLayout(new BorderLayout(12, 12));
         setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
         JPanel pnlTop = new JPanel(new BorderLayout(0, 8));
-        JLabel lblTitle = new JLabel("BẢNG GIÁ DỊCH VỤ · M1");
+        JLabel lblTitle = new JLabel(mode==EditorMode.SERVICES?"DỊCH VỤ":"BẢNG GIÁ DỊCH VỤ");
         lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 22f));
         pnlTop.add(lblTitle, BorderLayout.NORTH);
         JPanel pnlTim = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -55,7 +61,10 @@ public final class DichVuPanel extends JPanel {
         scrMoTa.setBorder(BorderFactory.createTitledBorder("Mô tả (tối đa 300 ký tự)"));
         pnlForm.add(scrMoTa, BorderLayout.CENTER);
         JPanel pnlActions = new JPanel(new GridLayout(0, 2, 6, 6));
-        pnlActions.add(btnThem); pnlActions.add(btnLuu); pnlActions.add(btnNgungApDung); pnlActions.add(btnApDungLai);
+        if(mode!=EditorMode.PRICES)pnlActions.add(btnThem);
+        pnlActions.add(btnXoaTrang); pnlActions.add(btnLuu);
+        pnlActions.add(btnNgungApDung); pnlActions.add(btnApDungLai);
+        btnThem.setVisible(mode!=EditorMode.PRICES);
         pnlForm.add(pnlActions, BorderLayout.SOUTH);
         JScrollPane scrDanhSach = BillingUi.scroll(tblDichVu);
         scrDanhSach.setPreferredSize(new Dimension(650, 360));
@@ -63,6 +72,7 @@ public final class DichVuPanel extends JPanel {
         pnlBody.add(scrDanhSach, BorderLayout.CENTER); pnlBody.add(pnlForm, BorderLayout.EAST); add(pnlBody, BorderLayout.CENTER);
         JPanel pnlBottom = new JPanel(new GridLayout(0, 1, 0, 6));
         pnlBottom.add(new JLabel("Ngừng áp dụng thay cho xóa; giữ liên kết và giá trên hóa đơn lịch sử."));
+        pnlBottom.add(new JLabel(mode==EditorMode.SERVICES?"Dịch vụ mới có giá 0; đặt đơn giá tại Danh mục → Bảng giá dịch vụ.":"Giá hiện tại dùng chung trạng thái áp dụng của dịch vụ; schema chưa có ngày hiệu lực hoặc lịch sử bảng giá."));
         pnlBottom.add(lblTrangThai); add(pnlBottom, BorderLayout.SOUTH);
         controller = new DichVuController(this, session, new DichVuService(session, connections));
         clearForm();
@@ -74,6 +84,10 @@ public final class DichVuPanel extends JPanel {
     public void onSearch(ActionListener listener) { btnTim.addActionListener(listener); txtTuKhoa.addActionListener(listener); cmbTrangThai.addActionListener(listener); }
     public void onReload(ActionListener listener) { btnTaiLai.addActionListener(listener); }
     public void onNew(ActionListener listener) { btnThem.addActionListener(listener); }
+    public void onClear(ActionListener listener) { btnXoaTrang.addActionListener(listener); }
+    public void focusNewCode() { txtMaDichVu.requestFocusInWindow(); }
+    public EditorMode editorMode(){return mode;}
+    @Override public void refreshData(){controller.load(false);}
     public void onSave(ActionListener listener) { btnLuu.addActionListener(listener); }
     public void onDeactivate(ActionListener listener) { btnNgungApDung.addActionListener(listener); }
     public void onActivate(ActionListener listener) { btnApDungLai.addActionListener(listener); }
@@ -84,7 +98,7 @@ public final class DichVuPanel extends JPanel {
     public DichVu selected() { return selected; }
     public DichVu input() {
         return new DichVu(selected == null ? txtMaDichVu.getText() : selected.maDichVu(), txtTenDichVu.getText(),
-                DichVuService.parsePrice(txtDonGia.getText()), txaMoTa.getText(), chkLaCanLamSang.isSelected(), chkDangApDung.isSelected());
+        mode==EditorMode.SERVICES?(selected==null?java.math.BigDecimal.ZERO:selected.donGia()):DichVuService.parsePrice(txtDonGia.getText()), txaMoTa.getText(), chkLaCanLamSang.isSelected(), chkDangApDung.isSelected());
     }
     public void showRows(List<DichVu> values) {
         rows = List.of(); tableModel.setRowCount(0); rows = List.copyOf(values);
@@ -107,13 +121,15 @@ public final class DichVuPanel extends JPanel {
     }
     public void clearForm() {
         tblDichVu.clearSelection(); selected = null;
-        txtMaDichVu.setText(""); txtTenDichVu.setText(""); txtDonGia.setText(""); txaMoTa.setText("");
+        txtMaDichVu.setText(""); txtTenDichVu.setText(""); txtDonGia.setText(mode==EditorMode.SERVICES?"0":""); txaMoTa.setText("");
         chkLaCanLamSang.setSelected(false); chkDangApDung.setSelected(true); setBusy(false);
     }
     public void setBusy(boolean busy) {
         for (Component control : new Component[]{txtTuKhoa, cmbTrangThai, btnTim, btnTaiLai, txtMaDichVu,
-                txtTenDichVu, txtDonGia, txaMoTa, chkLaCanLamSang, chkDangApDung, btnThem, btnLuu, tblDichVu}) control.setEnabled(!busy);
+                txtTenDichVu, txtDonGia, txaMoTa, chkLaCanLamSang, chkDangApDung, btnThem, btnXoaTrang, btnLuu, tblDichVu}) control.setEnabled(!busy);
         txtMaDichVu.setEditable(!busy && selected == null);
+        if(mode==EditorMode.SERVICES)txtDonGia.setEnabled(false);
+        if(mode==EditorMode.PRICES){txtMaDichVu.setEditable(false);txtTenDichVu.setEnabled(false);txaMoTa.setEnabled(false);chkLaCanLamSang.setEnabled(false);btnLuu.setEnabled(!busy&&selected!=null);}
         btnNgungApDung.setEnabled(!busy && selected != null && selected.dangApDung());
         btnApDungLai.setEnabled(!busy && selected != null && !selected.dangApDung());
     }

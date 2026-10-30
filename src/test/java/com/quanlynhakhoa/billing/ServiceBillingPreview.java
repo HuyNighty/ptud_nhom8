@@ -34,6 +34,20 @@ public final class ServiceBillingPreview {
                     pnlBilling.showDetail(new ChiTietBilling(invoice, List.of(new ChiTietHoaDon(1, "TSTHD001", "TST001", null, null, 2, new BigDecimal("150000"))), List.of()));
                     pnlBilling.status("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · chưa kiểm thử SQL thật");
                     render(pnlBilling, "target/billing-preview.png");
+                    for(HoaDonPanel.ViewMode mode:HoaDonPanel.ViewMode.values()) {
+                        HoaDonPanel pnlMode=new HoaDonPanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc,mode);
+                        pnlMode.showRows(List.of(invoice));pnlMode.showDetail(new ChiTietBilling(invoice,List.of(),List.of()));
+                        pnlMode.status("XEM BỐ CỤC · dữ liệu tổng hợp · không SQL");render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
+                    }
+                    for(DichVuPanel.EditorMode mode:List.of(DichVuPanel.EditorMode.SERVICES,DichVuPanel.EditorMode.PRICES)) {
+                        DichVuPanel pnlMode=new DichVuPanel(ServiceBillingSelfTest.session(Role.CLINIC_MANAGER),jdbc,mode);
+                        pnlMode.showRows(List.of(value));pnlMode.showForm(value);render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
+                    }
+                    com.quanlynhakhoa.billing.ui.CancellationPanel pnlCancellation=new com.quanlynhakhoa.billing.ui.CancellationPanel(ServiceBillingSelfTest.session(Role.CLINIC_MANAGER),jdbc);
+                    YeuCauHuyHoaDon request=new YeuCauHuyHoaDon("TSTYC001",invoice.maHoaDon(),invoice.maBenhNhan(),invoice.tenBenhNhan(),invoice.tongTien(),invoice.daThu(),"TST_ACC",LocalDateTime.of(2026,10,30,10,0),"[KIỂM THỬ] Đề nghị kiểm tra chứng từ",YeuCauHuyHoaDon.TrangThai.CHO_DUYET,null,null,null);
+                    pnlCancellation.showRows(List.of(request));
+                    pnlCancellation.showDetail(new com.quanlynhakhoa.billing.service.CancellationService.Detail(request,new ChiTietBilling(invoice,List.of(),List.of())));
+                    pnlCancellation.lblTrangThai.setText("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · hóa đơn có thu tiền nên chặn duyệt hủy");render(pnlCancellation,"target/cancellation-preview.png");
                     if (jdbc.opens != 0) throw new AssertionError("Preview must not open JDBC");
                 } catch (Exception failure) { throw new RuntimeException(failure); }
             }

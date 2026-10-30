@@ -19,7 +19,12 @@ public final class DichVuController {
         this.view = view; this.session = session; this.service = service;
         view.onSearch(new ActionListener() { public void actionPerformed(ActionEvent event) { load(false); } });
         view.onReload(new ActionListener() { public void actionPerformed(ActionEvent event) { load(false); } });
-        view.onNew(new ActionListener() { public void actionPerformed(ActionEvent event) { if (!busy) view.clearForm(); } });
+        view.onNew(new ActionListener() { public void actionPerformed(ActionEvent event) {
+            if (!busy) { view.clearForm(); view.focusNewCode(); view.status("Nhập dịch vụ mới rồi bấm Lưu."); }
+        } });
+        view.onClear(new ActionListener() { public void actionPerformed(ActionEvent event) {
+            if (!busy) { view.clearForm(); view.status("Đã xóa trắng form."); }
+        } });
         view.onSave(new ActionListener() { public void actionPerformed(ActionEvent event) { save(null); } });
         view.onDeactivate(new ActionListener() { public void actionPerformed(ActionEvent event) { save(false); } });
         view.onActivate(new ActionListener() { public void actionPerformed(ActionEvent event) { save(true); } });
@@ -60,7 +65,11 @@ public final class DichVuController {
         busy = true; view.setBusy(true); view.status("Đang lưu dịch vụ và nhật ký...");
         new SessionWorker<Void>(session) {
             protected Void doInBackground() throws Exception {
-                if (activeOnly == null) service.save(value, creating);
+                if (activeOnly == null) {
+                    if(view.editorMode()==DichVuPanel.EditorMode.SERVICES)service.saveInformation(value,creating);
+                    else if(view.editorMode()==DichVuPanel.EditorMode.PRICES)service.savePrice(value);
+                    else service.save(value, creating);
+                }
                 else service.changeActive(value.maDichVu(), activeOnly);
                 return null;
             }

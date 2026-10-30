@@ -8,11 +8,27 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
-/** M1 has no invoice/payment write API, even for BILLING_MANAGE. */
+/** Invoice creation is available only with approved clinical and ID dependencies. No payment writes. */
 public final class HoaDonService {
     private final DesktopSession session;
     private final ConnectionProvider connections;
     private final HoaDonDao dao;
+    private InvoiceCreationService creation;
+    public HoaDonService(DesktopSession session, ConnectionProvider connections,
+                         ClinicalBillingSource source, InvoiceIdGenerator ids) {
+        this(session, connections);
+        creation = new InvoiceCreationService(session, connections, source, ids);
+    }
+    public boolean creationConfigured() { return creation != null; }
+    private InvoiceCreationService creation() {
+        authorization.require(session, Permission.BILLING_MANAGE);
+        if (creation == null) throw new IllegalStateException("Chờ hợp đồng dữ liệu khám và bộ sinh mã được duyệt.");
+        return creation;
+    }
+    public List<BillingChoice> patientsForInvoice(String text) throws SQLException { return creation().patients(text); }
+    public List<BillingChoice> visitsForInvoice(String patient) throws SQLException { return creation().visits(patient); }
+    public InvoiceDraft previewInvoice(String patient, String visit) throws SQLException { return creation().preview(patient, visit); }
+    public String createInvoice(InvoiceDraft draft) throws SQLException { return creation().create(draft); }
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
     public HoaDonService(DesktopSession session, ConnectionProvider connections) { this(session, connections, new HoaDonDao()); }
     public HoaDonService(DesktopSession session, ConnectionProvider connections, HoaDonDao dao) {

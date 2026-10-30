@@ -82,6 +82,16 @@ public class DichVuDao {
             requireOne(statement.executeUpdate());
         }
     }
+    public void updateInformation(Connection c,DichVu value)throws SQLException {
+        try(PreparedStatement s=c.prepareStatement("UPDATE dbo.DichVu SET tenDichVu=?,moTa=?,laCanLamSang=?,dangApDung=? WHERE maDichVu=?")) {
+            s.setQueryTimeout(15);s.setNString(1,value.tenDichVu());s.setNString(2,value.moTa());s.setBoolean(3,value.laCanLamSang());s.setBoolean(4,value.dangApDung());s.setString(5,value.maDichVu());requireOne(s.executeUpdate());
+        }
+    }
+    public void updatePrice(Connection c,DichVu value)throws SQLException {
+        try(PreparedStatement s=c.prepareStatement("UPDATE dbo.DichVu SET donGia=?,dangApDung=? WHERE maDichVu=?")) {
+            s.setQueryTimeout(15);s.setBigDecimal(1,value.donGia());s.setBoolean(2,value.dangApDung());s.setString(3,value.maDichVu());requireOne(s.executeUpdate());
+        }
+    }
 
     public void audit(Connection connection, String accountId, String id, String action) throws SQLException {
         // DesktopSession is local, not a PhienDangNhap row: sessionId deliberately omitted.

@@ -76,8 +76,19 @@ public final class DichVuService {
         require();
         mutate(new DichVu(validateId(id), null, null, null, false, active), false, active);
     }
+    public void saveInformation(DichVu value,boolean creating)throws SQLException {
+        require();
+        DichVu normalized=validate(new DichVu(value.maDichVu(),value.tenDichVu(),BigDecimal.ZERO,value.moTa(),value.laCanLamSang(),value.dangApDung()));
+        mutate(normalized,creating,null,"INFORMATION");
+    }
+    public void savePrice(DichVu value)throws SQLException {
+        require();DichVu normalized=validate(value);mutate(normalized,false,null,"PRICE");
+    }
 
     private void mutate(DichVu value, boolean creating, Boolean activeOnly) throws SQLException {
+        mutate(value,creating,activeOnly,"ALL");
+    }
+    private void mutate(DichVu value, boolean creating, Boolean activeOnly,String fields) throws SQLException {
         boolean committed = false;
         try (Connection connection = connections.open()) {
             if (!connection.getAutoCommit()) throw new SQLException("Expected fresh auto-commit connection");
@@ -88,7 +99,9 @@ public final class DichVuService {
                 else if (creating) {
                     if (dao.exists(connection, value.maDichVu())) throw new IllegalArgumentException("Mã dịch vụ đã tồn tại.");
                     dao.insert(connection, value);
-                } else dao.update(connection, value);
+                } else if(fields.equals("INFORMATION"))dao.updateInformation(connection,value);
+                else if(fields.equals("PRICE"))dao.updatePrice(connection,value);
+                else dao.update(connection, value);
                 dao.audit(connection, session.accountId(), value.maDichVu(), activeOnly == null
                         ? (creating ? "Thêm dịch vụ" : "Sửa dịch vụ")
                         : (activeOnly ? "Áp dụng lại" : "Ngừng áp dụng"));

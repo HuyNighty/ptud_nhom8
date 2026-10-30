@@ -17,7 +17,11 @@ public enum Module {
     SERVICE_CATALOG(Permission.SERVICE_CATALOG_MANAGE),
     SUPPLY_REQUESTS(Permission.SUPPLY_REQUEST),
     MY_SCHEDULE(Permission.SCHEDULE_SELF_READ),
-    EMERGENCY_KIT(Permission.EMERGENCY_KIT_CHECK);
+    EMERGENCY_KIT(Permission.EMERGENCY_KIT_CHECK),
+    SERVICES(Permission.SERVICE_CATALOG_MANAGE),
+    DEBTS(Permission.BILLING_READ),
+    PAYMENTS(Permission.BILLING_MANAGE),
+    INVOICE_CANCELLATIONS(Permission.INVOICE_CANCEL_APPROVE);
 
     private final Permission openPermission;
 

@@ -33,6 +33,13 @@ public final class FeatureRegistrySelfTest {
 
     public static void main(String[] args) {
         FeatureRegistry empty = FeatureBootstrap.createRegistry();
+        check(empty.contains(Module.SERVICE_CATALOG), "service catalogue integrated in main shell");
+        check(empty.contains(Module.BILLING), "billing integrated in main shell");
+        check(empty.contains(Module.ACCOUNTS), "existing accounts registration preserved");
+        check(empty.contains(Module.SERVICES), "service information page registered");
+        check(empty.contains(Module.DEBTS), "separate debt page registered");
+        check(empty.contains(Module.PAYMENTS), "payment page registered");
+        check(empty.contains(Module.INVOICE_CANCELLATIONS), "cancellation review page registered");
         check(!empty.contains(Module.PATIENTS), "default registry has no implemented patients panel");
         check(!empty.contains(Module.HOME), "home remains owned by Core");
         check(!empty.contains(null), "null has no registration");

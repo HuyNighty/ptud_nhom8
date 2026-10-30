@@ -18,7 +18,7 @@ public class HoaDonDao {
                 WHERE trangThai='THANH_CONG' GROUP BY maHoaDon
             ), Ledger AS (
                 SELECT h.maHoaDon, h.maNhanVien, h.maBenhNhan, b.hoTen AS tenBenhNhan,
-                       h.maPhieuKham, h.ngayLap, h.trangThai,
+                       h.maPhieuKham, h.ngayLap, h.trangThai, b.soDienThoai,
                        COALESCE(l.tongTien, 0) AS tongTien, COALESCE(p.daThu, 0) AS daThu
                 FROM dbo.HoaDon h
                 JOIN dbo.BenhNhan b ON b.maBenhNhan=h.maBenhNhan
@@ -26,7 +26,7 @@ public class HoaDonDao {
                 LEFT JOIN Payments p ON p.maHoaDon=h.maHoaDon
             ), WithDebt AS (
                 SELECT maHoaDon, maNhanVien, maBenhNhan, tenBenhNhan, maPhieuKham, ngayLap,
-                       trangThai, tongTien, daThu,
+                       trangThai, tongTien, daThu, soDienThoai,
                        SUM(CASE WHEN trangThai='DA_HUY' THEN 0 ELSE tongTien-daThu END)
                            OVER (PARTITION BY maBenhNhan) AS congNoBenhNhan
                 FROM Ledger
@@ -38,7 +38,7 @@ public class HoaDonDao {
     public List<HoaDon> find(Connection connection, String keyword, LocalDate from, LocalDate to,
                              TrangThaiHoaDon status) throws SQLException {
         String sql = LEDGER + """
-                WHERE (CHARINDEX(?,maHoaDon)>0 OR CHARINDEX(?,maBenhNhan)>0 OR CHARINDEX(?,tenBenhNhan)>0)
+                WHERE (CHARINDEX(?,maHoaDon)>0 OR CHARINDEX(?,maBenhNhan)>0 OR CHARINDEX(?,tenBenhNhan + N' ' + soDienThoai)>0)
                 AND (? IS NULL OR ngayLap>=?) AND (? IS NULL OR ngayLap<?)
                 AND (? IS NULL OR trangThai=?) ORDER BY ngayLap DESC, maHoaDon
                 """;
@@ -62,6 +62,20 @@ public class HoaDonDao {
             statement.setQueryTimeout(15);
             statement.setString(1, id);
             try (ResultSet rows = statement.executeQuery()) { return rows.next() ? map(rows) : null; }
+        }
+    }
+    /** Targeted money snapshot under the caller's invoice lock; avoids scanning unrelated invoices while collecting. */
+    public HoaDon getForPayment(Connection connection,String id)throws SQLException {
+        try(PreparedStatement s=connection.prepareStatement("""
+                SELECT h.maHoaDon,h.maNhanVien,h.maBenhNhan,b.hoTen AS tenBenhNhan,h.maPhieuKham,h.ngayLap,h.trangThai,
+                    COALESCE((SELECT SUM(CAST(d.soLuong AS decimal(10,0))*d.donGiaApDung)
+                              FROM dbo.ChiTietHoaDon d WHERE d.maHoaDon=h.maHoaDon),0) AS tongTien,
+                    COALESCE((SELECT SUM(t.soTien) FROM dbo.ThanhToan t
+                              WHERE t.maHoaDon=h.maHoaDon AND t.trangThai='THANH_CONG'),0) AS daThu,
+                    CAST(0 AS decimal(38,0)) AS congNoBenhNhan
+                FROM dbo.HoaDon h JOIN dbo.BenhNhan b ON b.maBenhNhan=h.maBenhNhan WHERE h.maHoaDon=?
+                """)) {
+            s.setQueryTimeout(15);s.setString(1,id);try(ResultSet r=s.executeQuery()){return r.next()?map(r):null;}
         }
     }
 

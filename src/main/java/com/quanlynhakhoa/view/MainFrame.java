@@ -41,6 +41,7 @@ public final class MainFrame extends JFrame {
     private final FeatureRegistry registry;
     private final Set<Module> loaded = EnumSet.noneOf(Module.class);
     private final Map<Module, JPanel> slots = new EnumMap<>(Module.class);
+    private final Map<Module, JPanel> featurePages = new EnumMap<>(Module.class);
     private final Runnable returnToLogin;
     private final CardLayout cards = new CardLayout();
     private final JPanel pnlContent = new JPanel(cards);
@@ -153,14 +154,16 @@ public final class MainFrame extends JFrame {
         }
         addIfNotEmpty(mnuBar, mnuClinical);
 
-        JMenu mnuBilling = menu("Hóa đơn");
-        item(mnuBilling, "Danh sách hóa đơn", Module.BILLING);
-        item(mnuBilling, "Bảng giá dịch vụ", Module.SERVICE_CATALOG);
-        if (allowed.contains(Module.BILLING)) {
-            pending(mnuBilling, "Thanh toán");
-            pending(mnuBilling, "Công nợ");
-        }
+        JMenu mnuBilling = menu("Thanh toán");
+        item(mnuBilling, "Hóa đơn", Module.BILLING);
+        item(mnuBilling, "Công nợ", Module.DEBTS);
+        item(mnuBilling, "Thanh toán", Module.PAYMENTS);
+        item(mnuBilling, "Duyệt hủy hóa đơn", Module.INVOICE_CANCELLATIONS);
         addIfNotEmpty(mnuBar, mnuBilling);
+        JMenu mnuCatalog = menu("Danh mục");
+        item(mnuCatalog, "Dịch vụ", Module.SERVICES);
+        item(mnuCatalog, "Bảng giá dịch vụ", Module.SERVICE_CATALOG);
+        addIfNotEmpty(mnuBar, mnuCatalog);
 
         JMenu mnuInventory = menu("Kho vật tư");
         item(mnuInventory, "Danh mục thuốc & vật tư", Module.INVENTORY);
@@ -255,6 +258,16 @@ public final class MainFrame extends JFrame {
         if (module == Module.HOME || loaded.contains(module) || !registry.contains(module)) return;
         try {
             JPanel pnlPage = registry.create(session, module);
+            featurePages.put(module,pnlPage);
+            if(pnlPage instanceof com.quanlynhakhoa.billing.ui.HoaDonPanel billing) {
+                billing.setPaymentNavigation(new com.quanlynhakhoa.billing.ui.HoaDonPanel.PaymentNavigation(){
+                    public void open(String invoiceId){
+                        navigate(Module.PAYMENTS);
+                        JPanel pnlPayment=featurePages.get(Module.PAYMENTS);
+                        if(pnlPayment instanceof com.quanlynhakhoa.billing.ui.HoaDonPanel payments)payments.payInvoice(invoiceId);
+                    }
+                });
+            }
             JPanel pnlSlot = slots.get(module);
             pnlSlot.removeAll();
             pnlSlot.add(scroll(pnlPage), BorderLayout.CENTER);
@@ -269,7 +282,9 @@ public final class MainFrame extends JFrame {
 
     private void navigate(Module module) {
         model.select(module);
+        boolean alreadyLoaded=loaded.contains(module);
         loadFeature(module);
+        if(alreadyLoaded&&featurePages.get(module) instanceof com.quanlynhakhoa.features.RefreshableFeature page)page.refreshData();
         cards.show(pnlContent, module.name());
         if (btnOverview != null) {
             btnOverview.setBackground(module == Module.HOME ? new Color(43, 110, 190) : NAVY);
@@ -277,7 +292,10 @@ public final class MainFrame extends JFrame {
         for (Map.Entry<Module, JMenuItem> entry : links.entrySet()) {
             entry.getValue().setForeground(entry.getKey() == module
                     ? new Color(28, 112, 197) : INK);
+            if(entry.getValue().getParent() instanceof javax.swing.JPopupMenu popup&&popup.getInvoker() instanceof JMenu mnuParent)mnuParent.setForeground(Color.WHITE);
         }
+        JMenuItem mniSelected=links.get(module);
+        if(mniSelected!=null&&mniSelected.getParent() instanceof javax.swing.JPopupMenu popup&&popup.getInvoker() instanceof JMenu mnuParent)mnuParent.setForeground(new Color(160,215,255));
     }
 
     private void logout() {
@@ -301,6 +319,10 @@ public final class MainFrame extends JFrame {
             case AUDIT -> "Nhật ký thao tác";
             case EXAMINATIONS -> "Phiếu khám";
             case SERVICE_CATALOG -> "Bảng giá dịch vụ";
+            case SERVICES -> "Dịch vụ";
+            case DEBTS -> "Công nợ";
+            case PAYMENTS -> "Thanh toán";
+            case INVOICE_CANCELLATIONS -> "Duyệt hủy hóa đơn";
             case SUPPLY_REQUESTS -> "Yêu cầu cấp phát";
             case MY_SCHEDULE -> "Lịch làm việc của tôi";
             case EMERGENCY_KIT -> "Kiểm tra hộp cấp cứu";
