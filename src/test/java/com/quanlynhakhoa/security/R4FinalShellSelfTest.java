@@ -52,7 +52,7 @@ public final class R4FinalShellSelfTest {
     public static void main(String[] args) {
         check(Role.values().length == 6, "unreviewed role added");
         check(Permission.values().length == 24, "unreviewed permission added");
-        check(Module.values().length == 15, "unreviewed navigation destination added");
+        check(Module.values().length == 19, "unreviewed navigation destination added");
         AuthorizationService auth = new AuthorizationService(new RolePermissionPolicy());
         AuthorizedActionGate actions = new AuthorizedActionGate(auth);
         NavigationPolicy nav = new NavigationPolicy(auth);
