@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -26,7 +27,11 @@ public class BenhNhanController implements ActionListener, MouseListener {
     private BenhNhanService service;
     private BenhNhanDialog winBenhNhan;   // form Thêm/Sửa đang mở (null nếu chưa mở)
     private String maDangSua;             // null = đang THÊM, khác null = đang SỬA bệnh nhân này
-    private boolean dangTai;              // true = đang đọc database, bỏ qua bấm thêm lần nữa
+    private boolean dangTai;
+    private RefreshRequest pendingRefresh;
+
+    private record RefreshRequest(String tuKhoa, String gioiTinh, String maCanChon) {}
+    private final BenhNhanUiState uiState = new BenhNhanUiState();
 
     public BenhNhanController(BenhNhanPanel view, BenhNhanService service) {
         this.view = view;
@@ -84,6 +89,7 @@ public class BenhNhanController implements ActionListener, MouseListener {
     // Click 1 dòng trong bảng → đọc lại bệnh nhân từ database → hiện ở khung bên phải
     @Override
     public void mouseClicked(MouseEvent e) {
+        if (dangTai) return; // the displayed table belongs to the previous load
         int row = view.getTblBenhNhan().getSelectedRow();
         if (row < 0) {
             return;
@@ -115,41 +121,62 @@ public class BenhNhanController implements ActionListener, MouseListener {
     // xong rồi mới cập nhật giao diện (done).
     // maCanChon: mã bệnh nhân cần chọn sẵn sau khi tải xong (null = không chọn)
     private void docDuLieuVaoTable(String maCanChon) {
+        // Snapshot the latest request on EDT, including its requested selection.
+        RefreshRequest request = new RefreshRequest(view.getTxtTimKiem().getText(),
+                view.layGioiTinhDangChon(), maCanChon);
+        uiState.nextDetailRequest();
+        view.hienChiTiet(null);
         if (dangTai) {
-            return;                                    // đang tải rồi, không tải chồng
+            pendingRefresh = request;
+            return;
         }
+        taiDanhSach(request);
+    }
+
+    private void taiDanhSach(RefreshRequest request) {
+        uiState.nextDetailRequest();
         dangTai = true;
-        view.datDangTai(true);                         // làm mờ nút + hiện "Đang tải..."
-
-        // Đọc điều kiện lọc TRƯỚC (trên luồng giao diện)
-        String tuKhoa = view.getTxtTimKiem().getText();
-        String gioiTinh = view.layGioiTinhDangChon();
-
+        view.datDangTai(true);
         new SwingWorker<ArrayList<BenhNhan>, Void>() {
             @Override
             protected ArrayList<BenhNhan> doInBackground() throws Exception {
-                return service.timKiem(tuKhoa, gioiTinh);   // chạy ở luồng nền
+                return service.timKiem(request.tuKhoa(), request.gioiTinh());
             }
 
             @Override
-            protected void done() {                          // chạy lại trên luồng giao diện
-                dangTai = false;
-                view.datDangTai(false);
+            protected void done() {
                 try {
-                    view.docDuLieuVaoTable(get());
-                    if (maCanChon != null) {
-                        view.chonDongTheoMa(maCanChon);
-                        hienChiTiet(maCanChon);
+                    ArrayList<BenhNhan> rows = get();
+                    // A newer request supersedes both rows and selection from this load.
+                    if (pendingRefresh == null) {
+                        uiState.nextDetailRequest();
+                        view.docDuLieuVaoTable(rows);
+                        if (request.maCanChon() != null) {
+                            view.chonDongTheoMa(request.maCanChon());
+                            hienChiTiet(request.maCanChon());
+                        }
                     }
                 } catch (Exception ex) {
-                    view.hienLoi(thongBaoLoi(ex));
+                    if (pendingRefresh == null) view.hienLoi(thongBaoLoi(ex));
+                } finally {
+                    // Drain pending work even when the active load failed.
+                    dangTai = false;
+                    RefreshRequest next = pendingRefresh;
+                    pendingRefresh = null;
+                    if (next != null) {
+                        taiDanhSach(next);
+                    } else {
+                        view.datDangTai(false);
+                    }
                 }
             }
         }.execute();
     }
 
-    // Đọc lại 1 bệnh nhân từ database (luồng nền) rồi hiện ở khung bên phải
+    // Detail requests are asynchronous; never render a response for an old selection.
     private void hienChiTiet(String maBenhNhan) {
+        long request = uiState.nextDetailRequest();
+        view.hienChiTiet(null);
         new SwingWorker<BenhNhan, Void>() {
             @Override
             protected BenhNhan doInBackground() throws Exception {
@@ -158,6 +185,10 @@ public class BenhNhanController implements ActionListener, MouseListener {
 
             @Override
             protected void done() {
+                if (!uiState.isLatestDetail(request)) return;
+                int row = view.getTblBenhNhan().getSelectedRow();
+                if (row < 0 || !maBenhNhan.equals(
+                        String.valueOf(view.getTblBenhNhan().getValueAt(row, 0)))) return;
                 try {
                     view.hienChiTiet(get());
                 } catch (Exception ex) {
@@ -176,43 +207,79 @@ public class BenhNhanController implements ActionListener, MouseListener {
         winBenhNhan.getBtnChonNgay().addActionListener(this);
         winBenhNhan.getBtnLuu().addActionListener(this);
         winBenhNhan.getBtnHuy().addActionListener(this);
-        winBenhNhan.setVisible(true);   // form modal: dòng này chờ tới khi form đóng
-        winBenhNhan = null;
+        try {
+            winBenhNhan.setVisible(true); // modal nested event loop still processes SwingWorker.done
+        } finally {
+            winBenhNhan = null;
+        }
     }
 
     private void dongForm() {
         winBenhNhan.dispose();
     }
 
-    // Bấm Lưu trên form
+    // Snapshot Swing inputs on EDT, then check duplicates on a worker.
     private void luu() {
+        if (winBenhNhan == null || !uiState.beginSave()) return;
+        BenhNhanDialog dialog = winBenhNhan;
+        final BenhNhan bn;
+        final String maSua = maDangSua;
         try {
-            // 1. Đọc dữ liệu trên form
-            BenhNhan bn = winBenhNhan.layBenhNhanTuForm(maDangSua);
-
-            // 2. Kiểm tra nghi trùng → hỏi người dùng có muốn lưu tiếp không
-            ArrayList<BenhNhan> dsTrung = service.timNghiTrung(bn);
-            if (!dsTrung.isEmpty() && !xacNhanLuuKhiTrung(dsTrung)) {
-                return;   // người dùng chọn "Không" → giữ form để sửa lại
-            }
-
-            // 3. Lưu vào database
-            String maDaLuu;
-            if (maDangSua == null) {
-                maDaLuu = service.themBenhNhan(bn);
-                JOptionPane.showMessageDialog(winBenhNhan, "Đã thêm bệnh nhân " + maDaLuu + ".");
-            } else {
-                service.capNhatBenhNhan(bn);
-                maDaLuu = maDangSua;
-                JOptionPane.showMessageDialog(winBenhNhan, "Đã cập nhật bệnh nhân " + maDaLuu + ".");
-            }
-
-            // 4. Đóng form, tải lại bảng; tải xong sẽ tự chọn đúng bệnh nhân vừa lưu
-            dongForm();
-            docDuLieuVaoTable(maDaLuu);
-        } catch (Exception ex) {
-            winBenhNhan.hienLoi(thongBaoLoi(ex));   // hiện hộp thông báo lỗi, form vẫn mở để sửa lại
+            bn = dialog.layBenhNhanTuForm(maSua);
+        } catch (RuntimeException ex) {
+            uiState.finishSave();
+            dialog.hienLoi(thongBaoLoi(ex));
+            return;
         }
+        dialog.datDangLuu(true);
+        new SwingWorker<ArrayList<BenhNhan>, Void>() {
+            @Override protected ArrayList<BenhNhan> doInBackground() throws Exception {
+                return service.timNghiTrung(bn);
+            }
+            @Override protected void done() {
+                if (!dialog.isDisplayable()) { uiState.finishSave(); return; }
+                try {
+                    ArrayList<BenhNhan> dsTrung = get();
+                    if (!dsTrung.isEmpty() && !xacNhanLuuKhiTrung(dsTrung)) {
+                        ketThucLuu(dialog);
+                        return;
+                    }
+                    luuTrongNen(dialog, bn, maSua);
+                } catch (Exception ex) {
+                    ketThucLuu(dialog);
+                    dialog.hienLoi(thongBaoLoi(ex));
+                }
+            }
+        }.execute();
+    }
+
+    // SQL write and audit execute only in doInBackground(), never on EDT.
+    private void luuTrongNen(BenhNhanDialog dialog, BenhNhan bn, String maSua) {
+        new SwingWorker<String, Void>() {
+            @Override protected String doInBackground() throws Exception {
+                if (maSua == null) return service.themBenhNhan(bn);
+                service.capNhatBenhNhan(bn);
+                return maSua;
+            }
+            @Override protected void done() {
+                try {
+                    String maDaLuu = get();
+                    ketThucLuu(dialog);
+                    JOptionPane.showMessageDialog(dialog,
+                            (maSua == null ? "Đã thêm bệnh nhân " : "Đã cập nhật bệnh nhân ") + maDaLuu + ".");
+                    dialog.dispose();
+                    docDuLieuVaoTable(maDaLuu);
+                } catch (Exception ex) {
+                    ketThucLuu(dialog);
+                    if (dialog.isDisplayable()) dialog.hienLoi(thongBaoLoi(ex));
+                }
+            }
+        }.execute();
+    }
+
+    private void ketThucLuu(BenhNhanDialog dialog) {
+        uiState.finishSave();
+        if (dialog.isDisplayable()) dialog.datDangLuu(false);
     }
 
     // Hiện danh sách hồ sơ nghi trùng, trả về true nếu người dùng vẫn muốn lưu
@@ -233,8 +300,8 @@ public class BenhNhanController implements ActionListener, MouseListener {
 
     // Đổi lỗi thành câu dễ hiểu (không hiện câu SQL ra màn hình)
     private String thongBaoLoi(Throwable ex) {
-        // Lỗi từ SwingWorker bị bọc trong ExecutionException → lấy lỗi gốc bên trong
-        if (ex instanceof ExecutionException && ex.getCause() != null) {
+        // SwingWorker exceptions may be wrapped more than once.
+        while (ex instanceof ExecutionException && ex.getCause() != null) {
             ex = ex.getCause();
         }
         if (ex instanceof AccessDeniedException) {
@@ -242,6 +309,9 @@ public class BenhNhanController implements ActionListener, MouseListener {
         }
         if (ex instanceof IllegalArgumentException) {
             return ex.getMessage();
+        }
+        if (ex instanceof SQLTimeoutException) {
+            return "SQL Server phản hồi quá lâu. Vui lòng thử lại.";
         }
         if (ex instanceof SQLException) {
             return "Lỗi khi làm việc với SQL Server. Kiểm tra kết nối rồi thử lại.";

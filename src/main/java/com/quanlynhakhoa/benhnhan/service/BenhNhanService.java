@@ -32,12 +32,19 @@ public class BenhNhanService {
     // SỐ ĐIỆN THOẠI: số 0 + đúng 9 chữ số nữa (tổng 10 số, chỉ có chữ số).   Ví dụ: "0909123456"
     public static final String REGEX_SO_DIEN_THOAI = "0[0-9]{9}";
 
-    private DesktopSession phien;   // người đang đăng nhập
-    private AuthorizationService phanQuyen = new AuthorizationService(new RolePermissionPolicy());
-    private BenhNhanDao dao = new BenhNhanDao();
+    private final DesktopSession phien;
+    private final AuthorizationService phanQuyen = new AuthorizationService(new RolePermissionPolicy());
+    private final BenhNhanDao dao;
+    private final BenhNhanDao.ConnectionProvider connections;
 
     public BenhNhanService(DesktopSession phien) {
-        this.phien = phien;
+        this(phien, TeamDevConnection::open);
+    }
+
+    public BenhNhanService(DesktopSession phien, BenhNhanDao.ConnectionProvider connections) {
+        this.phien = java.util.Objects.requireNonNull(phien, "phien");
+        this.connections = java.util.Objects.requireNonNull(connections, "connections");
+        this.dao = new BenhNhanDao(connections);
     }
 
     // Người đang đăng nhập có quyền này không (View dùng để làm mờ nút)
@@ -170,7 +177,8 @@ public class BenhNhanService {
         phanQuyen.require(phien, Permission.PATIENT_CREATE);
         kiemTraDuLieu(bn);
 
-        try (Connection con = TeamDevConnection.open()) {
+        try (Connection con = connections.open()) {
+            if (!con.getAutoCommit()) throw new SQLException("Expected a fresh JDBC connection");
             con.setAutoCommit(false);          // bắt đầu transaction
             try {
                 String maBenhNhan = dao.taoMaBenhNhanMoi(con);
@@ -181,6 +189,7 @@ public class BenhNhanService {
                 dao.themHoSoBenhAn(con, maHoSo, maBenhNhan);
 
                 dao.ghiNhatKy(con, phien.accountId(), "Thêm bệnh nhân", maBenhNhan);
+                phanQuyen.require(phien, Permission.PATIENT_CREATE);
 
                 con.commit();                  // tất cả thành công → lưu thật
                 return maBenhNhan;
@@ -200,13 +209,15 @@ public class BenhNhanService {
         }
         kiemTraDuLieu(bn);
 
-        try (Connection con = TeamDevConnection.open()) {
+        try (Connection con = connections.open()) {
+            if (!con.getAutoCommit()) throw new SQLException("Expected a fresh JDBC connection");
             con.setAutoCommit(false);
             try {
                 if (!dao.capNhatBenhNhan(con, bn)) {
                     throw new IllegalArgumentException("Không tìm thấy bệnh nhân " + bn.getMaBenhNhan() + ".");
                 }
                 dao.ghiNhatKy(con, phien.accountId(), "Sửa thông tin bệnh nhân", bn.getMaBenhNhan());
+                phanQuyen.require(phien, Permission.PATIENT_UPDATE);
                 con.commit();
             } catch (SQLException | RuntimeException loi) {
                 con.rollback();

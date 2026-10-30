@@ -78,6 +78,11 @@ public class BenhNhanPanel extends JPanel {
 
     // Hàm khởi tạo: Core gắn vào menu bằng .register(Module.PATIENTS, BenhNhanPanel::new)
     public BenhNhanPanel(DesktopSession phien) {
+        this(new BenhNhanService(phien));
+    }
+
+    // Package-local injection keeps controller regressions independent of SQL Server.
+    BenhNhanPanel(BenhNhanService service) {
         setLayout(new BorderLayout(14, 14));
         setBackground(NEN);
         setBorder(new EmptyBorder(24, 26, 24, 26));
@@ -93,7 +98,6 @@ public class BenhNhanPanel extends JPanel {
         add(pnlSouth, BorderLayout.SOUTH);
 
         // Tạo Service và Controller, Controller sẽ gắn sự kiện cho các nút
-        BenhNhanService service = new BenhNhanService(phien);
         new BenhNhanController(this, service);
     }
 
