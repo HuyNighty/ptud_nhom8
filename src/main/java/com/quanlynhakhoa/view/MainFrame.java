@@ -120,6 +120,7 @@ public final class MainFrame extends JFrame {
         return pnlHeader;
     }
 
+    /** Menu grouped by five stages of clinic operation; module authorization is unchanged. */
     private JMenuBar buildNavigation() {
         JMenuBar mnuBar = new JMenuBar();
         mnuBar.setBackground(NAVY);
@@ -135,55 +136,58 @@ public final class MainFrame extends JFrame {
         btnOverview.addActionListener(event -> navigate(Module.HOME));
         mnuBar.add(btnOverview);
 
-        JMenu mnuPatient = menu("Bệnh nhân");
-        item(mnuPatient, "Danh sách bệnh nhân", Module.PATIENTS);
-        item(mnuPatient, "Hồ sơ bệnh án", Module.MEDICAL_RECORDS);
-        pending(mnuPatient, "Tiếp nhận mới");
-        addIfNotEmpty(mnuBar, mnuPatient);
+        // 1. Tổ chức: cơ cấu nhân sự, tài khoản và danh mục dịch vụ.
+        JMenu mnuOrganization = menu("Tổ chức");
+        item(mnuOrganization, "Danh sách nhân viên", Module.WORKFORCE);
+        item(mnuOrganization, "Tài khoản", Module.ACCOUNTS);
+        item(mnuOrganization, "Vai trò", Module.ROLES);
+        item(mnuOrganization, "Bảng giá dịch vụ", Module.SERVICE_CATALOG);
+        addIfNotEmpty(mnuBar, mnuOrganization);
 
-        JMenu mnuAppointments = menu("Lịch hẹn");
-        item(mnuAppointments, "Danh sách lịch hẹn", Module.APPOINTMENTS);
-        pending(mnuAppointments, "Đặt lịch hẹn");
-        addIfNotEmpty(mnuBar, mnuAppointments);
-
-        JMenu mnuClinical = menu("Khám & điều trị");
-        item(mnuClinical, "Phiếu khám", Module.EXAMINATIONS);
-        if (allowed.contains(Module.EXAMINATIONS)) {
-            pending(mnuClinical, "Kế hoạch điều trị");
+        // 2. Kế hoạch: lịch hẹn và thời gian làm việc.
+        JMenu mnuPlanning = menu("Kế hoạch");
+        item(mnuPlanning, "Danh sách lịch hẹn", Module.APPOINTMENTS);
+        item(mnuPlanning, "Lịch làm việc của tôi", Module.MY_SCHEDULE);
+        if (allowed.contains(Module.APPOINTMENTS)) {
+            pending(mnuPlanning, "Đặt lịch hẹn");
         }
-        addIfNotEmpty(mnuBar, mnuClinical);
-
-        JMenu mnuBilling = menu("Hóa đơn");
-        item(mnuBilling, "Danh sách hóa đơn", Module.BILLING);
-        item(mnuBilling, "Bảng giá dịch vụ", Module.SERVICE_CATALOG);
-        if (allowed.contains(Module.BILLING)) {
-            pending(mnuBilling, "Thanh toán");
-            pending(mnuBilling, "Công nợ");
-        }
-        addIfNotEmpty(mnuBar, mnuBilling);
-
-        JMenu mnuInventory = menu("Kho vật tư");
-        item(mnuInventory, "Danh mục thuốc & vật tư", Module.INVENTORY);
-        item(mnuInventory, "Yêu cầu cấp phát", Module.SUPPLY_REQUESTS);
-        item(mnuInventory, "Kiểm tra hộp cấp cứu", Module.EMERGENCY_KIT);
-        if (allowed.contains(Module.INVENTORY)) {
-            pending(mnuInventory, "Nhập / xuất kho");
-        }
-        addIfNotEmpty(mnuBar, mnuInventory);
-
-        JMenu mnuWorkforce = menu("Nhân viên");
-        item(mnuWorkforce, "Danh sách nhân viên", Module.WORKFORCE);
-        item(mnuWorkforce, "Lịch làm việc của tôi", Module.MY_SCHEDULE);
         if (allowed.contains(Module.WORKFORCE)) {
-            pending(mnuWorkforce, "Phân công ca");
+            pending(mnuPlanning, "Phân công ca");
         }
-        addIfNotEmpty(mnuBar, mnuWorkforce);
+        addIfNotEmpty(mnuBar, mnuPlanning);
 
-        JMenu mnuSystem = menu("Hệ thống");
-        item(mnuSystem, "Tài khoản", Module.ACCOUNTS);
-        item(mnuSystem, "Vai trò", Module.ROLES);
-        item(mnuSystem, "Nhật ký thao tác", Module.AUDIT);
-        addIfNotEmpty(mnuBar, mnuSystem);
+        // 3. Tiếp nhận: thông tin ban đầu của bệnh nhân.
+        JMenu mnuReception = menu("Tiếp nhận");
+        item(mnuReception, "Danh sách bệnh nhân", Module.PATIENTS);
+        if (allowed.contains(Module.PATIENTS)) {
+            pending(mnuReception, "Tiếp nhận mới");
+        }
+        addIfNotEmpty(mnuBar, mnuReception);
+
+        // 4. Hoạt động: hồ sơ, khám chữa bệnh, thuốc và vật tư.
+        JMenu mnuOperations = menu("Hoạt động");
+        item(mnuOperations, "Hồ sơ bệnh án", Module.MEDICAL_RECORDS);
+        item(mnuOperations, "Phiếu khám", Module.EXAMINATIONS);
+        item(mnuOperations, "Danh mục thuốc & vật tư", Module.INVENTORY);
+        item(mnuOperations, "Yêu cầu cấp phát", Module.SUPPLY_REQUESTS);
+        item(mnuOperations, "Kiểm tra hộp cấp cứu", Module.EMERGENCY_KIT);
+        if (allowed.contains(Module.EXAMINATIONS)) {
+            pending(mnuOperations, "Kế hoạch điều trị");
+        }
+        if (allowed.contains(Module.INVENTORY)) {
+            pending(mnuOperations, "Nhập / xuất kho");
+        }
+        addIfNotEmpty(mnuBar, mnuOperations);
+
+        // 5. Tổng kết: thanh toán, công nợ và lịch sử thao tác.
+        JMenu mnuSummary = menu("Tổng kết");
+        item(mnuSummary, "Danh sách hóa đơn", Module.BILLING);
+        item(mnuSummary, "Nhật ký thao tác", Module.AUDIT);
+        if (allowed.contains(Module.BILLING)) {
+            pending(mnuSummary, "Thanh toán");
+            pending(mnuSummary, "Công nợ");
+        }
+        addIfNotEmpty(mnuBar, mnuSummary);
         return mnuBar;
     }
 
