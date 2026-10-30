@@ -32,10 +32,15 @@ public final class FeatureRegistrySelfTest {
     }
 
     public static void main(String[] args) {
-        FeatureRegistry empty = FeatureBootstrap.createRegistry();
-        check(!empty.contains(Module.PATIENTS), "default registry has no implemented patients panel");
-        check(!empty.contains(Module.HOME), "home remains owned by Core");
-        check(!empty.contains(null), "null has no registration");
+        FeatureRegistry bootstrap = FeatureBootstrap.createRegistry();
+        check(bootstrap.contains(Module.PATIENTS), "patient panel registered");
+        check(bootstrap.contains(Module.ACCOUNTS), "account panel remains registered");
+        check(!bootstrap.contains(Module.BILLING), "unimplemented billing remains unregistered");
+        check(!bootstrap.contains(Module.HOME), "home remains owned by Core");
+        check(!bootstrap.contains(null), "null has no registration");
+        // Denied navigation must not invoke the real panel factory or open SQL.
+        reject(AccessDeniedException.class, () -> bootstrap.create(session(Role.NURSE), Module.PATIENTS));
+        reject(AccessDeniedException.class, () -> bootstrap.create(session(Role.INVENTORY_MANAGER), Module.PATIENTS));
 
         AtomicInteger created = new AtomicInteger();
         FeatureRegistry registry = FeatureRegistry.builder()
