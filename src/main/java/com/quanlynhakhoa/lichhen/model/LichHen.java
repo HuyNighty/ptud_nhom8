@@ -140,14 +140,6 @@ public class LichHen {
         return false;
     }
 
-    // Xác nhận đến chỉ làm được với lịch "Đã đặt" của HÔM NAY
-    public boolean duocXacNhanDen() {
-        if (!laDaDat()) {
-            return false;
-        }
-        return thoiGianHen.toLocalDate().equals(java.time.LocalDate.now());
-    }
-
     // Đổi mã trạng thái trong database sang chữ để hiển thị
     public String getTrangThaiHienThi() {
         if (CHO_XAC_NHAN.equals(trangThai)) {

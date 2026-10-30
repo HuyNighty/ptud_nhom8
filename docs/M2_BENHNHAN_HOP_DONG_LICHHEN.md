@@ -86,7 +86,7 @@ if (benhNhan == null) {
 | `dao/LichHenDao` | toàn bộ SQL (dùng lại `BenhNhanDao.taoCauLenh`, `doiKyTuDacBietThanhKyTuThuong`) |
 | `service/LichHenService` | quyền `APPOINTMENT_READ` / `APPOINTMENT_MANAGE`, BR02, BR03, BR10, transaction, nhật ký |
 | `controller/LichHenController` | sự kiện + SwingWorker |
-| `view/LichHenPanel` | menu Lịch hẹn → Danh sách lịch hẹn: North = lọc + Đặt lịch; West = lịch đang chọn + Xác nhận đến / Đổi / Hủy; Center = bảng |
+| `view/LichHenPanel` | menu Lịch hẹn → Danh sách lịch hẹn: North = lọc + Đặt lịch; Center = bảng; East = lịch đang chọn + Đổi / Hủy |
 | `view/LichHenDialog` | form Đặt lịch / Đổi lịch (dùng lại `ChonNgayDialog`, `BieuTuong`) |
 
 Quyết định đã chọn (Huy có thể đổi):
@@ -94,10 +94,6 @@ Quyết định đã chọn (Huy có thể đổi):
 - Lịch mới lưu `CHO_XAC_NHAN`. "Đã đặt" = `CHO_XAC_NHAN` hoặc `DA_XAC_NHAN` (cả 2 đổi / hủy được).
 - Đổi lịch: lịch cũ → `DA_DOI_LICH`, tạo lịch mới có `maLichHenGoc` = lịch cũ (giữ lịch sử).
 - Hủy: `DA_HUY` + `lyDoHuy` bắt buộc.
-- **Xác nhận đến** (UC005, chỉ cho lịch "Đã đặt" của hôm nay, quyền `PATIENT_CHECK_IN`): trong 1 transaction
-  kiểm tra BR09 (không có lượt khám `CHO_KHAM` / `DANG_KHAM`), tạo `PhieuKham` mã `PK000001…` trạng thái `CHO_KHAM`
-  (gắn `maHoSo`, bác sĩ, `maLichHen`), lịch hẹn → `DA_DEN`, ghi nhật ký.
-  Chưa làm: số thứ tự (V5 không có cột), kiểm tra bác sĩ đang trong ca (UC005 E2), tiếp đón khách không hẹn trước.
 - Mỗi lịch hẹn **30 phút cố định** (xem mục 5).
 - Giờ trống = các mốc 30 phút nằm trọn trong ca (`PhanCong` + `CaLamViec`, bỏ ca `DA_HUY`), trừ giờ đã qua và giờ chồng lịch khác (bỏ lịch `DA_HUY`, `DA_DOI_LICH`).
 - Lúc lưu: kiểm tra lại trong transaction với `UPDLOCK, HOLDLOCK`; không còn trống → báo "Khung giờ không còn trống" và tải lại giờ trống (UC004 E1).
