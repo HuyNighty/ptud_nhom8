@@ -15,6 +15,7 @@ public class LichHen {
     //   DA_DOI_LICH   "Đã đổi lịch"  (lịch cũ sau khi đổi; lịch mới trỏ về nó bằng maLichHenGoc)
     public static final String CHO_XAC_NHAN = "CHO_XAC_NHAN";
     public static final String DA_XAC_NHAN = "DA_XAC_NHAN";
+    public static final String DA_DEN = "DA_DEN";
     public static final String DA_HUY = "DA_HUY";
     public static final String DA_DOI_LICH = "DA_DOI_LICH";
 
@@ -139,6 +140,14 @@ public class LichHen {
         return false;
     }
 
+    // Xác nhận đến chỉ làm được với lịch "Đã đặt" của HÔM NAY
+    public boolean duocXacNhanDen() {
+        if (!laDaDat()) {
+            return false;
+        }
+        return thoiGianHen.toLocalDate().equals(java.time.LocalDate.now());
+    }
+
     // Đổi mã trạng thái trong database sang chữ để hiển thị
     public String getTrangThaiHienThi() {
         if (CHO_XAC_NHAN.equals(trangThai)) {
@@ -147,7 +156,7 @@ public class LichHen {
         if (DA_XAC_NHAN.equals(trangThai)) {
             return "Đã đặt (đã xác nhận)";
         }
-        if ("DA_DEN".equals(trangThai)) {
+        if (DA_DEN.equals(trangThai)) {
             return "Đã đến";
         }
         if ("HOAN_THANH".equals(trangThai)) {

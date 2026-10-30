@@ -12,6 +12,8 @@ import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.security.Permission;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.time.LocalDate;
@@ -23,10 +25,10 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-// Controller màn hình Lịch hẹn (UC004): nhận sự kiện từ View → gọi Service → đưa kết quả về View.
+// Controller màn hình Lịch hẹn (UC004 đặt / đổi / hủy, UC005 xác nhận đến): nhận sự kiện từ View → gọi Service → đưa kết quả về View.
 // Mọi việc đọc / ghi database đều chạy bằng SwingWorker (luồng nền) để app không bị đơ:
 //   doInBackground() chạy ở luồng nền (gọi Service), done() chạy lại trên giao diện (cập nhật View).
-public class LichHenController implements ActionListener {
+public class LichHenController implements ActionListener, MouseListener {
     private LichHenPanel view;
     private LichHenService lichHenService;
 
@@ -44,11 +46,16 @@ public class LichHenController implements ActionListener {
         view.getTxtTimKiem().addActionListener(this);
         view.getBtnTimKiem().addActionListener(this);
         view.getBtnDatLich().addActionListener(this);
+        view.getBtnXacNhanDen().addActionListener(this);
         view.getBtnDoiLich().addActionListener(this);
         view.getBtnHuyLich().addActionListener(this);
+        // Click 1 dòng trong bảng → hiện lịch hẹn đó ở pnlWest
+        view.getTblLichHen().addMouseListener(this);
 
-        // Không có quyền đặt / đổi / hủy thì làm mờ nút
-        view.datQuyen(lichHenService.coQuyen(Permission.APPOINTMENT_MANAGE));
+        // Không có quyền thì làm mờ nút (Service vẫn kiểm tra lại)
+        boolean duocQuanLyLich = lichHenService.coQuyen(Permission.APPOINTMENT_MANAGE);
+        boolean duocXacNhanDen = lichHenService.coQuyen(Permission.PATIENT_CHECK_IN);
+        view.datQuyen(duocQuanLyLich, duocXacNhanDen);
 
         // Mở màn hình là hiện lịch hẹn hôm nay
         taiDanhSach(null);
@@ -71,6 +78,9 @@ public class LichHenController implements ActionListener {
         }
         if (nguonSuKien.equals(view.getBtnDatLich())) {
             moForm(null);
+        }
+        if (nguonSuKien.equals(view.getBtnXacNhanDen())) {
+            xacNhanDen();
         }
         if (nguonSuKien.equals(view.getBtnDoiLich())) {
             LichHen lichHen = layLichHenDaDatDangChon("đổi");
@@ -107,6 +117,28 @@ public class LichHenController implements ActionListener {
         if (nguonSuKien.equals(winLichHen.getBtnHuy())) {
             winLichHen.dispose();
         }
+    }
+
+    // Click 1 dòng trong bảng → hiện ở pnlWest, bật / tắt nút theo trạng thái của lịch hẹn đó
+    @Override
+    public void mouseClicked(MouseEvent suKien) {
+        view.hienChiTiet(view.layLichHenDangChon());
+    }
+
+    @Override
+    public void mousePressed(MouseEvent suKien) {
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent suKien) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent suKien) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent suKien) {
     }
 
     // ===================== DANH SÁCH =====================
@@ -169,6 +201,50 @@ public class LichHenController implements ActionListener {
             return null;
         }
         return lichHen;
+    }
+
+    // ===================== XÁC NHẬN ĐẾN (UC005) =====================
+
+    // Bệnh nhân có lịch hẹn hôm nay đã tới: tạo lượt khám "Chờ khám" + lịch hẹn chuyển "Đã đến"
+    private void xacNhanDen() {
+        LichHen lichHen = view.layLichHenDangChon();
+        if (lichHen == null) {
+            view.hienLoi("Chọn 1 lịch hẹn trong bảng để xác nhận đến.");
+            return;
+        }
+        if (!lichHen.duocXacNhanDen()) {
+            view.hienLoi("Chỉ xác nhận đến cho lịch hẹn \"Đã đặt\" của hôm nay.");
+            return;
+        }
+        String cauHoi = "Xác nhận bệnh nhân " + lichHen.getTenBenhNhan() + " đã đến?\n"
+                + "Hệ thống sẽ tạo lượt khám \"Chờ khám\" với bác sĩ " + lichHen.getTenBacSi() + ".";
+        int luaChon = JOptionPane.showConfirmDialog(view, cauHoi, "Xác nhận đến", JOptionPane.YES_NO_OPTION);
+        if (luaChon != JOptionPane.YES_OPTION) {
+            return;
+        }
+        String maLichHen = lichHen.getMaLichHen();
+        String tenBacSi = lichHen.getTenBacSi();
+        view.datDangTai(true);
+
+        new SwingWorker<String, Void>() {
+            @Override
+            protected String doInBackground() throws Exception {
+                return lichHenService.xacNhanDen(maLichHen);
+            }
+
+            @Override
+            protected void done() {
+                view.datDangTai(false);
+                try {
+                    String maPhieuKham = get();
+                    JOptionPane.showMessageDialog(view, "Đã tạo lượt khám " + maPhieuKham
+                            + " (Chờ khám). Bệnh nhân vào danh sách chờ của bác sĩ " + tenBacSi + ".");
+                } catch (Exception loi) {
+                    view.hienLoi(thongBaoLoi(loi));
+                }
+                taiDanhSach(maLichHen);   // thành công hay lỗi đều tải lại để thấy trạng thái mới nhất
+            }
+        }.execute();
     }
 
     // ===================== HỦY LỊCH (UC004 A2) =====================
