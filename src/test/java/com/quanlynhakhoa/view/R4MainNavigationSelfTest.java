@@ -41,7 +41,7 @@ public final class R4MainNavigationSelfTest {
         MainNavigationModel reception = new MainNavigationModel(session(Role.RECEPTIONIST));
         check(reception.availableModules().equals(List.of(
                 Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING,
-                Module.MY_SCHEDULE)));
+                Module.MY_SCHEDULE, Module.DEBTS, Module.PAYMENTS)));
         reception.select(Module.PATIENTS);
         check(reception.selected() == Module.PATIENTS);
         reception.select(Module.BILLING);
@@ -70,7 +70,7 @@ public final class R4MainNavigationSelfTest {
         check(manager.availableModules().equals(List.of(
                 Module.HOME, Module.BILLING, Module.WORKFORCE,
                 Module.ACCOUNTS, Module.ROLES, Module.AUDIT,
-                Module.SERVICE_CATALOG, Module.MY_SCHEDULE)));
+                Module.SERVICE_CATALOG, Module.MY_SCHEDULE, Module.SERVICES, Module.DEBTS, Module.INVOICE_CANCELLATIONS)));
         manager.select(Module.WORKFORCE);
         denied(() -> manager.select(Module.INVENTORY));
         MainNavigationModel inventory = new MainNavigationModel(session(Role.INVENTORY_MANAGER));

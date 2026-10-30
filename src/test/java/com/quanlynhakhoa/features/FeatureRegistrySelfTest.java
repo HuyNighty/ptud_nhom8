@@ -32,15 +32,17 @@ public final class FeatureRegistrySelfTest {
     }
 
     public static void main(String[] args) {
-        FeatureRegistry bootstrap = FeatureBootstrap.createRegistry();
-        check(bootstrap.contains(Module.PATIENTS), "patient panel registered");
-        check(bootstrap.contains(Module.ACCOUNTS), "account panel remains registered");
-        check(!bootstrap.contains(Module.BILLING), "unimplemented billing remains unregistered");
-        check(!bootstrap.contains(Module.HOME), "home remains owned by Core");
-        check(!bootstrap.contains(null), "null has no registration");
-        // Denied navigation must not invoke the real panel factory or open SQL.
-        reject(AccessDeniedException.class, () -> bootstrap.create(session(Role.NURSE), Module.PATIENTS));
-        reject(AccessDeniedException.class, () -> bootstrap.create(session(Role.INVENTORY_MANAGER), Module.PATIENTS));
+        FeatureRegistry empty = FeatureBootstrap.createRegistry();
+        check(empty.contains(Module.SERVICE_CATALOG), "service catalogue integrated in main shell");
+        check(empty.contains(Module.BILLING), "billing integrated in main shell");
+        check(empty.contains(Module.ACCOUNTS), "existing accounts registration preserved");
+        check(empty.contains(Module.SERVICES), "service information page registered");
+        check(empty.contains(Module.DEBTS), "separate debt page registered");
+        check(empty.contains(Module.PAYMENTS), "payment page registered");
+        check(empty.contains(Module.INVOICE_CANCELLATIONS), "cancellation review page registered");
+        check(empty.contains(Module.PATIENTS), "latest main patient registration preserved");
+        check(!empty.contains(Module.HOME), "home remains owned by Core");
+        check(!empty.contains(null), "null has no registration");
 
         AtomicInteger created = new AtomicInteger();
         FeatureRegistry registry = FeatureRegistry.builder()

@@ -41,6 +41,7 @@ public final class MainFrame extends JFrame {
     private final FeatureRegistry registry;
     private final Set<Module> loaded = EnumSet.noneOf(Module.class);
     private final Map<Module, JPanel> slots = new EnumMap<>(Module.class);
+    private final Map<Module, JPanel> featurePages = new EnumMap<>(Module.class);
     private final Runnable returnToLogin;
     private final CardLayout cards = new CardLayout();
     private final JPanel pnlContent = new JPanel(cards);
@@ -141,7 +142,7 @@ public final class MainFrame extends JFrame {
         item(mnuOrganization, "Danh sách nhân viên", Module.WORKFORCE);
         item(mnuOrganization, "Tài khoản", Module.ACCOUNTS);
         item(mnuOrganization, "Vai trò", Module.ROLES);
-        item(mnuOrganization, "Bảng giá dịch vụ", Module.SERVICE_CATALOG);
+        item(mnuOrganization, "Dịch vụ & Bảng giá", Module.SERVICE_CATALOG);
         addIfNotEmpty(mnuBar, mnuOrganization);
 
         // 2. Kế hoạch: lịch hẹn và thời gian làm việc.
@@ -171,6 +172,9 @@ public final class MainFrame extends JFrame {
         item(mnuOperations, "Danh mục thuốc & vật tư", Module.INVENTORY);
         item(mnuOperations, "Yêu cầu cấp phát", Module.SUPPLY_REQUESTS);
         item(mnuOperations, "Kiểm tra hộp cấp cứu", Module.EMERGENCY_KIT);
+        item(mnuOperations, "Hóa đơn", Module.BILLING);
+        item(mnuOperations, "Thanh toán", Module.PAYMENTS);
+        item(mnuOperations, "Duyệt hủy hóa đơn", Module.INVOICE_CANCELLATIONS);
         if (allowed.contains(Module.EXAMINATIONS)) {
             pending(mnuOperations, "Kế hoạch điều trị");
         }
@@ -179,14 +183,10 @@ public final class MainFrame extends JFrame {
         }
         addIfNotEmpty(mnuBar, mnuOperations);
 
-        // 5. Tổng kết: thanh toán, công nợ và lịch sử thao tác.
+        // 5. Tổng kết: công nợ và lịch sử thao tác.
         JMenu mnuSummary = menu("Tổng kết");
-        item(mnuSummary, "Danh sách hóa đơn", Module.BILLING);
+        item(mnuSummary, "Công nợ", Module.DEBTS);
         item(mnuSummary, "Nhật ký thao tác", Module.AUDIT);
-        if (allowed.contains(Module.BILLING)) {
-            pending(mnuSummary, "Thanh toán");
-            pending(mnuSummary, "Công nợ");
-        }
         addIfNotEmpty(mnuBar, mnuSummary);
         return mnuBar;
     }
@@ -259,6 +259,15 @@ public final class MainFrame extends JFrame {
         if (module == Module.HOME || loaded.contains(module) || !registry.contains(module)) return;
         try {
             JPanel pnlPage = registry.create(session, module);
+            featurePages.put(module,pnlPage);
+            com.quanlynhakhoa.billing.ui.HoaDonPanel.PaymentNavigation paymentNavigation=new com.quanlynhakhoa.billing.ui.HoaDonPanel.PaymentNavigation(){
+                public void open(String invoiceId){
+                    navigate(Module.PAYMENTS);
+                    if(featurePages.get(Module.PAYMENTS) instanceof com.quanlynhakhoa.billing.ui.PaymentPanel payments)payments.openInvoice(invoiceId);
+                }
+            };
+            if(pnlPage instanceof com.quanlynhakhoa.billing.ui.HoaDonPanel invoices)invoices.setPaymentNavigation(paymentNavigation);
+            if(pnlPage instanceof com.quanlynhakhoa.billing.ui.DebtPanel debts)debts.setPaymentNavigation(paymentNavigation);
             JPanel pnlSlot = slots.get(module);
             pnlSlot.removeAll();
             pnlSlot.add(scroll(pnlPage), BorderLayout.CENTER);
@@ -272,8 +281,11 @@ public final class MainFrame extends JFrame {
     }
 
     private void navigate(Module module) {
+        if(module==Module.SERVICES)module=Module.SERVICE_CATALOG;
         model.select(module);
+        boolean existing=loaded.contains(module);
         loadFeature(module);
+        if(existing&&featurePages.get(module) instanceof com.quanlynhakhoa.features.RefreshableFeature page)page.refreshData();
         cards.show(pnlContent, module.name());
         if (btnOverview != null) {
             btnOverview.setBackground(module == Module.HOME ? new Color(43, 110, 190) : NAVY);
@@ -281,7 +293,10 @@ public final class MainFrame extends JFrame {
         for (Map.Entry<Module, JMenuItem> entry : links.entrySet()) {
             entry.getValue().setForeground(entry.getKey() == module
                     ? new Color(28, 112, 197) : INK);
+            if(entry.getValue().getParent() instanceof javax.swing.JPopupMenu popup&&popup.getInvoker() instanceof JMenu mnuParent)mnuParent.setForeground(Color.WHITE);
         }
+        JMenuItem mniSelected=links.get(module);
+        if(mniSelected!=null&&mniSelected.getParent() instanceof javax.swing.JPopupMenu popup&&popup.getInvoker() instanceof JMenu mnuParent)mnuParent.setForeground(new Color(160,215,255));
     }
 
     private void logout() {
@@ -304,7 +319,10 @@ public final class MainFrame extends JFrame {
             case ROLES -> "Vai trò";
             case AUDIT -> "Nhật ký thao tác";
             case EXAMINATIONS -> "Phiếu khám";
-            case SERVICE_CATALOG -> "Bảng giá dịch vụ";
+            case SERVICE_CATALOG, SERVICES -> "Dịch vụ & Bảng giá";
+            case DEBTS -> "Công nợ";
+            case PAYMENTS -> "Thanh toán";
+            case INVOICE_CANCELLATIONS -> "Duyệt hủy hóa đơn";
             case SUPPLY_REQUESTS -> "Yêu cầu cấp phát";
             case MY_SCHEDULE -> "Lịch làm việc của tôi";
             case EMERGENCY_KIT -> "Kiểm tra hộp cấp cứu";
