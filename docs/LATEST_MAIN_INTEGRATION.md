@@ -2,7 +2,9 @@
 
 ## Nguồn và bảo toàn thay đổi
 
-- Đã fetch origin/main: `d3db3da` — refactor(ui): đổi giao diện (#83).
+- Đã fetch origin/main: `d9b11c5` — refactor(ui): đổi giao diện (#83).
+  Trong lúc tích hợp, upstream đổi lịch sử từ d3db3da sang d9b11c5; đã xác minh hai
+  commit có cùng tree 0cc2d90c46cc0fc41eb4f59637bc7718cb05ffce và merge cả head mới.
 - Workspace gốc C:\Java\ptud_nhom8 vẫn giữ nhánh cũ và các thay đổi prototype chưa commit.
   Không reset, stash, ghi đè hoặc copy source Spring cũ sang tính năng JDBC.
 - Worktree triển khai: C:\Java\ptud_nhom8\.worktrees\service-billing-m1.
@@ -106,7 +108,9 @@ JDK 25.0.4, target release 21 từ pom không đổi:
   refresh trước JDBC. Dữ liệu/connection trong kiểm thử này là synthetic.
 - Đã render và xem ảnh shell, Công nợ, Thanh toán dưới target/, không commit ảnh.
 - `App --team-db` với application login: PASS kết nối SQL development thực tế.
-- Smoke bootstrap và diff check: PASS.
+- Smoke bootstrap và diff so với origin/main: PASS. Có một dòng whitespace sẵn có
+  trong AccountPanel của upstream; giữ nguyên source thành viên khác, không đưa sửa
+  định dạng ngoài phạm vi vào tích hợp này.
 
 **Chưa nghiệm thu ghi SQL thật**, đăng nhập tương tác bằng tài khoản nghiệp vụ thật,
 restart đọc lại một lần thu mới hoặc khóa cạnh tranh bằng hai connection SQL Server.
