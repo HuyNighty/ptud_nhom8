@@ -37,10 +37,10 @@ public final class DashboardPanel extends JPanel {
 
     private final DesktopSession session;
     private final DashboardService service;
-    private final JLabel[] values = new JLabel[4];
-    private final JLabel[] descriptions = new JLabel[4];
-    private final JLabel status = label("Chưa tải dữ liệu", 12, MUTED, false);
-    private final JButton refreshButton = new JButton("Làm mới");
+    private final JLabel[] lblValues = new JLabel[4];
+    private final JLabel[] lblDescriptions = new JLabel[4];
+    private final JLabel lblStatus = label("Chưa tải dữ liệu", 12, MUTED, false);
+    private final JButton btnRefresh = new JButton("Làm mới");
     private boolean loading;
 
     public DashboardPanel(DesktopSession session) {
@@ -60,107 +60,107 @@ public final class DashboardPanel extends JPanel {
         setBorder(new EmptyBorder(22, 24, 22, 24));
         add(introduction(), BorderLayout.NORTH);
 
-        JPanel body = new JPanel();
-        body.setOpaque(false);
-        body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
-        body.add(metrics());
-        body.add(Box.createVerticalStrut(18));
-        body.add(details());
-        body.add(Box.createVerticalStrut(18));
-        body.add(footer());
-        add(body, BorderLayout.CENTER);
-        refreshButton.addActionListener(event -> refresh());
+        JPanel pnlBody = new JPanel();
+        pnlBody.setOpaque(false);
+        pnlBody.setLayout(new BoxLayout(pnlBody, BoxLayout.Y_AXIS));
+        pnlBody.add(metrics());
+        pnlBody.add(Box.createVerticalStrut(18));
+        pnlBody.add(details());
+        pnlBody.add(Box.createVerticalStrut(18));
+        pnlBody.add(footer());
+        add(pnlBody, BorderLayout.CENTER);
+        btnRefresh.addActionListener(event -> refresh());
         if (configured) {
             refresh();
         } else {
-            refreshButton.setEnabled(false);
-            status.setText("Chưa có cấu hình SQL Server development trong worktree này.");
+            btnRefresh.setEnabled(false);
+            lblStatus.setText("Chưa có cấu hình SQL Server development trong worktree này.");
         }
     }
 
     private JPanel introduction() {
-        JPanel panel = card(new BorderLayout(16, 8));
-        panel.setBorder(BorderFactory.createCompoundBorder(
+        JPanel pnlPanel = card(new BorderLayout(16, 8));
+        pnlPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER), new EmptyBorder(23, 24, 23, 24)));
-        JPanel copy = new JPanel();
-        copy.setOpaque(false);
-        copy.setLayout(new BoxLayout(copy, BoxLayout.Y_AXIS));
-        copy.add(label("Chào mừng đến hệ thống quản lý nha khoa", 23, NAVY, true));
-        copy.add(Box.createVerticalStrut(9));
-        copy.add(label("Tổng quan dữ liệu phòng khám", 13, MUTED, false));
-        panel.add(copy, BorderLayout.CENTER);
-        JLabel account = label("Tài khoản: " + session.accountId(), 12, NAVY, true);
-        account.setHorizontalAlignment(SwingConstants.RIGHT);
-        panel.add(account, BorderLayout.EAST);
-        return panel;
+        JPanel pnlCopy = new JPanel();
+        pnlCopy.setOpaque(false);
+        pnlCopy.setLayout(new BoxLayout(pnlCopy, BoxLayout.Y_AXIS));
+        pnlCopy.add(label("Chào mừng đến hệ thống quản lý nha khoa", 23, NAVY, true));
+        pnlCopy.add(Box.createVerticalStrut(9));
+        pnlCopy.add(label("Tổng quan dữ liệu phòng khám", 13, MUTED, false));
+        pnlPanel.add(pnlCopy, BorderLayout.CENTER);
+        JLabel lblAccount = label("Tài khoản: " + session.accountId(), 12, NAVY, true);
+        lblAccount.setHorizontalAlignment(SwingConstants.RIGHT);
+        pnlPanel.add(lblAccount, BorderLayout.EAST);
+        return pnlPanel;
     }
 
     private JPanel metrics() {
-        JPanel row = new JPanel(new GridLayout(1, 4, 13, 0));
-        row.setOpaque(false);
-        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 125));
-        row.add(metric(0, "Bệnh nhân", "Tổng hồ sơ bệnh nhân"));
-        row.add(metric(1, "Lịch hẹn hôm nay", "Không tính lịch đã hủy hoặc đổi lịch"));
-        row.add(metric(2, "Đang khám", "Phiếu khám có trạng thái đang khám"));
-        row.add(metric(3, "Đã thu hôm nay", "Thanh toán thành công, đơn vị VND"));
-        return row;
+        JPanel pnlRow = new JPanel(new GridLayout(1, 4, 13, 0));
+        pnlRow.setOpaque(false);
+        pnlRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 125));
+        pnlRow.add(metric(0, "Bệnh nhân", "Tổng hồ sơ bệnh nhân"));
+        pnlRow.add(metric(1, "Lịch hẹn hôm nay", "Không tính lịch đã hủy hoặc đổi lịch"));
+        pnlRow.add(metric(2, "Đang khám", "Phiếu khám có trạng thái đang khám"));
+        pnlRow.add(metric(3, "Đã thu hôm nay", "Thanh toán thành công, đơn vị VND"));
+        return pnlRow;
     }
 
     private JPanel metric(int index, String title, String description) {
-        JPanel panel = card(new BorderLayout(0, 10));
-        panel.setBorder(BorderFactory.createCompoundBorder(
+        JPanel pnlPanel = card(new BorderLayout(0, 10));
+        pnlPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER), new EmptyBorder(17, 17, 17, 17)));
-        panel.add(label(title, 13, MUTED, true), BorderLayout.NORTH);
-        values[index] = label("—", 26, NAVY, true);
-        panel.add(values[index], BorderLayout.CENTER);
-        descriptions[index] = label("Chưa tải", 11, MUTED, false);
-        descriptions[index].setToolTipText(description);
-        panel.add(descriptions[index], BorderLayout.SOUTH);
-        return panel;
+        pnlPanel.add(label(title, 13, MUTED, true), BorderLayout.NORTH);
+        lblValues[index] = label("—", 26, NAVY, true);
+        pnlPanel.add(lblValues[index], BorderLayout.CENTER);
+        lblDescriptions[index] = label("Chưa tải", 11, MUTED, false);
+        lblDescriptions[index].setToolTipText(description);
+        pnlPanel.add(lblDescriptions[index], BorderLayout.SOUTH);
+        return pnlPanel;
     }
 
     private JPanel details() {
-        JPanel row = new JPanel(new GridLayout(1, 2, 15, 0));
-        row.setOpaque(false);
-        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 180));
-        row.add(information("Dữ liệu thực", "Chỉ thống kê từ cơ sở dữ liệu phát triển đã kết nối. Không tạo dữ liệu mẫu."));
-        row.add(information("Phân quyền", "Mỗi tài khoản chỉ xem các chỉ số được cấp quyền. Các chức năng nghiệp vụ do từng nhóm triển khai."));
-        return row;
+        JPanel pnlRow = new JPanel(new GridLayout(1, 2, 15, 0));
+        pnlRow.setOpaque(false);
+        pnlRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 180));
+        pnlRow.add(information("Dữ liệu thực", "Chỉ thống kê từ cơ sở dữ liệu phát triển đã kết nối. Không tạo dữ liệu mẫu."));
+        pnlRow.add(information("Phân quyền", "Mỗi tài khoản chỉ xem các chỉ số được cấp quyền. Các chức năng nghiệp vụ do từng nhóm triển khai."));
+        return pnlRow;
     }
 
     private JPanel information(String title, String message) {
-        JPanel panel = card(new BorderLayout(0, 14));
-        panel.setBorder(BorderFactory.createCompoundBorder(
+        JPanel pnlPanel = card(new BorderLayout(0, 14));
+        pnlPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER), new EmptyBorder(23, 22, 23, 22)));
-        panel.add(label(title, 17, NAVY, true), BorderLayout.NORTH);
-        JTextArea description = new JTextArea(message);
-        description.setEditable(false);
-        description.setFocusable(false);
-        description.setOpaque(false);
-        description.setLineWrap(true);
-        description.setWrapStyleWord(true);
-        description.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        description.setForeground(MUTED);
-        panel.add(description, BorderLayout.CENTER);
-        return panel;
+        pnlPanel.add(label(title, 17, NAVY, true), BorderLayout.NORTH);
+        JTextArea txaDescription = new JTextArea(message);
+        txaDescription.setEditable(false);
+        txaDescription.setFocusable(false);
+        txaDescription.setOpaque(false);
+        txaDescription.setLineWrap(true);
+        txaDescription.setWrapStyleWord(true);
+        txaDescription.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        txaDescription.setForeground(MUTED);
+        pnlPanel.add(txaDescription, BorderLayout.CENTER);
+        return pnlPanel;
     }
 
     private JPanel footer() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
-        panel.setOpaque(false);
-        panel.add(refreshButton);
-        panel.add(status);
-        return panel;
+        JPanel pnlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
+        pnlPanel.setOpaque(false);
+        pnlPanel.add(btnRefresh);
+        pnlPanel.add(lblStatus);
+        return pnlPanel;
     }
 
     private void refresh() {
         if (loading || !session.isActive()) return;
         loading = true;
-        refreshButton.setEnabled(false);
-        status.setText("Đang tải dữ liệu từ SQL Server...");
-        for (int i = 0; i < values.length; i++) {
-            values[i].setText("—");
-            descriptions[i].setText("Đang tải");
+        btnRefresh.setEnabled(false);
+        lblStatus.setText("Đang tải dữ liệu từ SQL Server...");
+        for (int i = 0; i < lblValues.length; i++) {
+            lblValues[i].setText("—");
+            lblDescriptions[i].setText("Đang tải");
         }
         new SwingWorker<Summary, Void>() {
             @Override protected Summary doInBackground() throws Exception {
@@ -170,14 +170,14 @@ public final class DashboardPanel extends JPanel {
             @Override protected void done() {
                 if (!session.isActive()) return;
                 loading = false;
-                refreshButton.setEnabled(true);
+                btnRefresh.setEnabled(true);
                 try {
                     Summary summary = get();
                     showLong(0, summary.patients());
                     showLong(1, summary.appointments());
                     showLong(2, summary.inProgressExams());
                     showMoney(summary.collected());
-                    status.setText("Dữ liệu ngày " + DATE.format(summary.date()) + " · Múi giờ Việt Nam");
+                    lblStatus.setText("Dữ liệu ngày " + DATE.format(summary.date()) + " · Múi giờ Việt Nam");
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                     showLoadError();
@@ -190,39 +190,39 @@ public final class DashboardPanel extends JPanel {
 
     private void showLong(int index, Long number) {
         if (number == null) {
-            values[index].setText("—");
-            descriptions[index].setText("Không có quyền xem");
+            lblValues[index].setText("—");
+            lblDescriptions[index].setText("Không có quyền xem");
         } else {
-            values[index].setText(NumberFormat.getIntegerInstance(VIETNAMESE).format(number));
-            descriptions[index].setText("Từ SQL Server");
+            lblValues[index].setText(NumberFormat.getIntegerInstance(VIETNAMESE).format(number));
+            lblDescriptions[index].setText("Từ SQL Server");
         }
     }
 
     private void showMoney(BigDecimal amount) {
         if (amount == null) {
-            values[3].setText("—");
-            descriptions[3].setText("Không có quyền xem");
+            lblValues[3].setText("—");
+            lblDescriptions[3].setText("Không có quyền xem");
         } else {
-            values[3].setText(NumberFormat.getIntegerInstance(VIETNAMESE).format(amount));
-            descriptions[3].setText("VND · Đã thanh toán");
+            lblValues[3].setText(NumberFormat.getIntegerInstance(VIETNAMESE).format(amount));
+            lblDescriptions[3].setText("VND · Đã thanh toán");
         }
     }
 
     private void showLoadError() {
-        status.setText("Không thể tải số liệu. Kiểm tra kết nối và thử lại.");
-        for (JLabel description : descriptions) description.setText("Không thể cập nhật");
+        lblStatus.setText("Không thể tải số liệu. Kiểm tra kết nối và thử lại.");
+        for (JLabel lblDescription : lblDescriptions) lblDescription.setText("Không thể cập nhật");
     }
 
     private static JPanel card(java.awt.LayoutManager layout) {
-        JPanel panel = new JPanel(layout);
-        panel.setBackground(Color.WHITE);
-        return panel;
+        JPanel pnlPanel = new JPanel(layout);
+        pnlPanel.setBackground(Color.WHITE);
+        return pnlPanel;
     }
 
     private static JLabel label(String text, int size, Color color, boolean bold) {
-        JLabel label = new JLabel(text);
-        label.setFont(new Font("SansSerif", bold ? Font.BOLD : Font.PLAIN, size));
-        label.setForeground(color);
-        return label;
+        JLabel lblLabel = new JLabel(text);
+        lblLabel.setFont(new Font("SansSerif", bold ? Font.BOLD : Font.PLAIN, size));
+        lblLabel.setForeground(color);
+        return lblLabel;
     }
 }
