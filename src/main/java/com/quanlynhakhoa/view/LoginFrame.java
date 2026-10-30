@@ -29,10 +29,10 @@ import javax.swing.WindowConstants;
 /** R3-A3 Swing login. SQL work is off the EDT; no main window without auth. */
 public final class LoginFrame extends JFrame {
     private final JdbcAuthService auth;
-    private final JTextField usernameField = new JTextField(22);
-    private final JPasswordField passwordField = new JPasswordField(22);
-    private final JButton loginButton = new JButton("Đăng nhập");
-    private final JLabel statusLabel = new JLabel("Chỉ thử nghiệm trên database N08AuthIT_ riêng biệt.");
+    private final JTextField txtUsername = new JTextField(22);
+    private final JPasswordField txtPassword = new JPasswordField(22);
+    private final JButton btnLogin = new JButton("Đăng nhập");
+    private final JLabel lblStatus = new JLabel("Chỉ thử nghiệm trên database N08AuthIT_ riêng biệt.");
     private boolean working;
 
     public LoginFrame(JdbcAuthService auth) {
@@ -44,49 +44,49 @@ public final class LoginFrame extends JFrame {
         setSize(560, 340);
         setLocationRelativeTo(null);
 
-        JPanel content = new JPanel(new BorderLayout(12, 16));
-        content.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
-        JLabel title = new JLabel("ĐĂNG NHẬP - QUẢN LÝ NHA KHOA");
-        title.setFont(new Font("SansSerif", Font.BOLD, 20));
-        content.add(title, BorderLayout.NORTH);
+        JPanel pnlContent = new JPanel(new BorderLayout(12, 16));
+        pnlContent.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
+        JLabel lblTitle = new JLabel("ĐĂNG NHẬP - QUẢN LÝ NHA KHOA");
+        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 20));
+        pnlContent.add(lblTitle, BorderLayout.NORTH);
 
-        JPanel labels = new JPanel(new GridLayout(2, 1, 0, 14));
-        labels.add(new JLabel("Tên đăng nhập"));
-        labels.add(new JLabel("Mật khẩu"));
-        JPanel fields = new JPanel(new GridLayout(2, 1, 0, 12));
-        fields.add(usernameField);
-        fields.add(passwordField);
-        JPanel inputPanel = new JPanel(new BorderLayout(12, 0));
-        inputPanel.add(labels, BorderLayout.WEST);
-        inputPanel.add(fields, BorderLayout.CENTER);
-        content.add(inputPanel, BorderLayout.CENTER);
+        JPanel pnlLabels = new JPanel(new GridLayout(2, 1, 0, 14));
+        pnlLabels.add(new JLabel("Tên đăng nhập"));
+        pnlLabels.add(new JLabel("Mật khẩu"));
+        JPanel pnlFields = new JPanel(new GridLayout(2, 1, 0, 12));
+        pnlFields.add(txtUsername);
+        pnlFields.add(txtPassword);
+        JPanel pnlInput = new JPanel(new BorderLayout(12, 0));
+        pnlInput.add(pnlLabels, BorderLayout.WEST);
+        pnlInput.add(pnlFields, BorderLayout.CENTER);
+        pnlContent.add(pnlInput, BorderLayout.CENTER);
 
-        JPanel bottom = new JPanel(new BorderLayout(0, 10));
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        actions.add(loginButton);
-        bottom.add(actions, BorderLayout.NORTH);
-        bottom.add(statusLabel, BorderLayout.SOUTH);
-        content.add(bottom, BorderLayout.SOUTH);
-        setContentPane(content);
-        getRootPane().setDefaultButton(loginButton);
-        loginButton.addActionListener(this::submit);
+        JPanel pnlBottom = new JPanel(new BorderLayout(0, 10));
+        JPanel pnlActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        pnlActions.add(btnLogin);
+        pnlBottom.add(pnlActions, BorderLayout.NORTH);
+        pnlBottom.add(lblStatus, BorderLayout.SOUTH);
+        pnlContent.add(pnlBottom, BorderLayout.SOUTH);
+        setContentPane(pnlContent);
+        getRootPane().setDefaultButton(btnLogin);
+        btnLogin.addActionListener(this::submit);
     }
 
     private void submit(ActionEvent ignored) {
         if (working) return;
-        String username = usernameField.getText().trim();
-        char[] chars = passwordField.getPassword();
-        passwordField.setText("");
+        String username = txtUsername.getText().trim();
+        char[] chars = txtPassword.getPassword();
+        txtPassword.setText("");
         if (username.isEmpty() || chars.length == 0) {
             Arrays.fill(chars, '\0');
-            statusLabel.setText("Vui lòng nhập tên đăng nhập và mật khẩu.");
+            lblStatus.setText("Vui lòng nhập tên đăng nhập và mật khẩu.");
             return;
         }
         working = true;
-        loginButton.setEnabled(false);
-        usernameField.setEnabled(false);
-        passwordField.setEnabled(false);
-        statusLabel.setText("Đang xác thực...");
+        btnLogin.setEnabled(false);
+        txtUsername.setEnabled(false);
+        txtPassword.setEnabled(false);
+        lblStatus.setText("Đang xác thực...");
 
         new SwingWorker<AuthDecision, Void>() {
             @Override protected AuthDecision doInBackground() throws Exception {
@@ -100,33 +100,33 @@ public final class LoginFrame extends JFrame {
             @Override protected void done() {
                 // SwingWorker.done() runs on the Event Dispatch Thread.
                 working = false;
-                loginButton.setEnabled(true);
-                usernameField.setEnabled(true);
-                passwordField.setEnabled(true);
+                btnLogin.setEnabled(true);
+                txtUsername.setEnabled(true);
+                txtPassword.setEnabled(true);
                 try {
                     AuthDecision decision = get();
                     if (DesktopLoginGate.mayOpenMain(decision)) {
                         DesktopSession session = DesktopSession.fromSuccessfulLogin(decision);
-                        MainFrame main = new MainFrame(session,
+                        MainFrame winMain = new MainFrame(session,
                                 () -> new LoginFrame(auth).setVisible(true));
-                        main.setVisible(true);
+                        winMain.setVisible(true);
                         dispose();
                     } else if (decision.authenticated() && decision.forcePasswordChange()) {
-                        statusLabel.setText("Tài khoản yêu cầu đổi mật khẩu.");
+                        lblStatus.setText("Tài khoản yêu cầu đổi mật khẩu.");
                         JOptionPane.showMessageDialog(LoginFrame.this,
                                 "Chức năng đổi mật khẩu chưa được triển khai. Không thể mở ứng dụng.",
                                 "Cần đổi mật khẩu", JOptionPane.WARNING_MESSAGE);
                     } else {
-                        statusLabel.setText("Tên đăng nhập hoặc mật khẩu không hợp lệ, hoặc tài khoản bị hạn chế.");
+                        lblStatus.setText("Tên đăng nhập hoặc mật khẩu không hợp lệ, hoặc tài khoản bị hạn chế.");
                     }
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    statusLabel.setText("Không thể hoàn tất đăng nhập.");
+                    lblStatus.setText("Không thể hoàn tất đăng nhập.");
                 } catch (ExecutionException | CancellationException ex) {
                     // Do not surface JDBC internals or credentials in UI / console.
-                    statusLabel.setText("Không thể kết nối hoặc xác thực. Kiểm tra môi trường thử nghiệm.");
+                    lblStatus.setText("Không thể kết nối hoặc xác thực. Kiểm tra môi trường thử nghiệm.");
                 }
-                SwingUtilities.invokeLater(() -> passwordField.requestFocusInWindow());
+                SwingUtilities.invokeLater(() -> txtPassword.requestFocusInWindow());
             }
         }.execute();
     }
