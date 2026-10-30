@@ -12,7 +12,7 @@ public class HoSoBenhAn {
     private LocalDate ngayLap;
     private String tienSuBenh;    // tối đa 500 ký tự, có thể để trống
     private String diUng;         // tối đa 300 ký tự, có thể để trống
-    private ArrayList<LuotKham> dsLuotKham = new ArrayList<>();   // các lần khám, mới nhất ở đầu
+    private ArrayList<LuotKham> danhSachLuotKham = new ArrayList<>();   // các lần khám, mới nhất ở đầu
 
     // Hàm khởi tạo rỗng
     public HoSoBenhAn() {
@@ -73,11 +73,11 @@ public class HoSoBenhAn {
         this.diUng = diUng;
     }
 
-    public ArrayList<LuotKham> getDsLuotKham() {
-        return dsLuotKham;
+    public ArrayList<LuotKham> getDanhSachLuotKham() {
+        return danhSachLuotKham;
     }
 
-    public void setDsLuotKham(ArrayList<LuotKham> dsLuotKham) {
-        this.dsLuotKham = dsLuotKham;
+    public void setDanhSachLuotKham(ArrayList<LuotKham> danhSachLuotKham) {
+        this.danhSachLuotKham = danhSachLuotKham;
     }
 }

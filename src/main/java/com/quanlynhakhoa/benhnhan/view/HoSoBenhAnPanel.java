@@ -47,8 +47,8 @@ public class HoSoBenhAnPanel extends JPanel {
     private static final Color XAM = new Color(97, 115, 137);
     private static final Color VIEN = new Color(220, 231, 242);
     private static final Color NEN = new Color(245, 248, 252);
-    private static final DateTimeFormatter NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final DateTimeFormatter NGAY_GIO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter DINH_DANG_NGAY_GIO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     // ----- NORTH -----
     private JPanel pnlNorth;
@@ -62,7 +62,7 @@ public class HoSoBenhAnPanel extends JPanel {
     private DefaultTableModel modelBenhNhan;
     private JTable tblBenhNhan;
     private JScrollPane scrBenhNhan;
-    private ArrayList<BenhNhan> dsBenhNhan = new ArrayList<>();
+    private ArrayList<BenhNhan> danhSachBenhNhan = new ArrayList<>();   // dữ liệu của bảng bên trái
 
     // ----- CENTER: thông tin hồ sơ + các lần khám -----
     private JPanel pnlCenter;
@@ -73,7 +73,7 @@ public class HoSoBenhAnPanel extends JPanel {
     private DefaultTableModel modelLuotKham;
     private JTable tblLuotKham;
     private JScrollPane scrLuotKham;
-    private ArrayList<LuotKham> dsLuotKham = new ArrayList<>();
+    private ArrayList<LuotKham> danhSachLuotKham = new ArrayList<>();   // dữ liệu của bảng lần khám
 
     // ----- EAST: chi tiết lần khám -----
     private JPanel pnlEast;
@@ -90,7 +90,7 @@ public class HoSoBenhAnPanel extends JPanel {
     private JLabel lblTrangThai;
 
     // Hàm khởi tạo: Core gắn vào menu bằng .register(Module.MEDICAL_RECORDS, HoSoBenhAnPanel::new)
-    public HoSoBenhAnPanel(DesktopSession phien) {
+    public HoSoBenhAnPanel(DesktopSession phienDangNhap) {
         setLayout(new BorderLayout(14, 14));
         setBackground(NEN);
         setBorder(new EmptyBorder(24, 26, 24, 26));
@@ -111,7 +111,7 @@ public class HoSoBenhAnPanel extends JPanel {
         hienChiTietLuotKham(null);
 
         // Tạo Service và Controller, Controller sẽ gắn sự kiện cho các nút
-        new HoSoBenhAnController(this, new BenhNhanService(phien), new HoSoBenhAnService(phien));
+        new HoSoBenhAnController(this, new BenhNhanService(phienDangNhap), new HoSoBenhAnService(phienDangNhap));
     }
 
     // ===================== Tạo các vùng =====================
@@ -155,9 +155,10 @@ public class HoSoBenhAnPanel extends JPanel {
         pnlWest.setOpaque(false);
         pnlWest.setPreferredSize(new Dimension(300, 0));
 
-        modelBenhNhan = new DefaultTableModel("Mã BN;Họ tên;SĐT".split(";"), 0) {
+        String[] tenCotBenhNhan = {"Mã BN", "Họ tên", "SĐT"};
+        modelBenhNhan = new DefaultTableModel(tenCotBenhNhan, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
+            public boolean isCellEditable(int dong, int cot) {
                 return false;
             }
         };
@@ -193,9 +194,10 @@ public class HoSoBenhAnPanel extends JPanel {
         themDongNhieuChu(boxHoSo, "Dị ứng:", txaDiUng);
 
         // CENTER → CENTER: bảng các lần khám
-        modelLuotKham = new DefaultTableModel("Mã phiếu;Ngày khám;Bác sĩ;Chẩn đoán;Trạng thái".split(";"), 0) {
+        String[] tenCotLuotKham = {"Mã phiếu", "Ngày khám", "Bác sĩ", "Chẩn đoán", "Trạng thái"};
+        modelLuotKham = new DefaultTableModel(tenCotLuotKham, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
+            public boolean isCellEditable(int dong, int cot) {
                 return false;
             }
         };
@@ -264,52 +266,53 @@ public class HoSoBenhAnPanel extends JPanel {
 
     // ===================== Hàm tiện ích tạo giao diện =====================
 
-    private JTable taoBang(DefaultTableModel model) {
-        JTable tbl = new JTable(model);
-        tbl.setRowHeight(28);
-        tbl.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tbl.getTableHeader().setReorderingAllowed(false);
-        tbl.setFillsViewportHeight(true);
-        return tbl;
+    private JTable taoBang(DefaultTableModel modelCuaBang) {
+        JTable tblMoi = new JTable(modelCuaBang);
+        tblMoi.setRowHeight(28);
+        tblMoi.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tblMoi.getTableHeader().setReorderingAllowed(false);
+        tblMoi.setFillsViewportHeight(true);
+        return tblMoi;
     }
 
-    private JLabel taoTieuDeKhung(String chu) {
-        JLabel lbl = new JLabel(chu);
-        lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
-        lbl.setForeground(NAVY);
-        return lbl;
+    private JLabel taoTieuDeKhung(String noiDung) {
+        JLabel lblTieuDeKhung = new JLabel(noiDung);
+        lblTieuDeKhung.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblTieuDeKhung.setForeground(NAVY);
+        return lblTieuDeKhung;
     }
 
     private JLabel taoGiaTri() {
-        JLabel lbl = new JLabel("—");
-        lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
-        lbl.setForeground(NAVY);
-        return lbl;
+        JLabel lblGiaTri = new JLabel("—");
+        lblGiaTri.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblGiaTri.setForeground(NAVY);
+        return lblGiaTri;
     }
 
     // Ô chữ nhiều dòng CHỈ ĐỂ XEM: tự xuống dòng, không viền, nền trong suốt giống JLabel
     private JTextArea taoOChuChiXem() {
-        JTextArea txa = new JTextArea("—");
-        txa.setEditable(false);
-        txa.setLineWrap(true);
-        txa.setWrapStyleWord(true);
-        txa.setOpaque(false);
-        txa.setBorder(null);
-        txa.setFont(new Font("SansSerif", Font.BOLD, 13));
-        txa.setForeground(NAVY);
-        return txa;
+        JTextArea txaChiXem = new JTextArea("—");
+        txaChiXem.setEditable(false);
+        txaChiXem.setLineWrap(true);
+        txaChiXem.setWrapStyleWord(true);
+        txaChiXem.setOpaque(false);
+        txaChiXem.setBorder(null);
+        txaChiXem.setFont(new Font("SansSerif", Font.BOLD, 13));
+        txaChiXem.setForeground(NAVY);
+        return txaChiXem;
     }
 
-    private Box dongTrai(JLabel lbl) {
-        Box box = Box.createHorizontalBox();
-        box.add(lbl);
-        box.add(Box.createHorizontalGlue());
-        return box;
+    // 1 dòng chỉ có 1 nhãn, nằm sát bên trái
+    private Box dongTrai(JLabel lblNoiDung) {
+        Box boxDong = Box.createHorizontalBox();
+        boxDong.add(lblNoiDung);
+        boxDong.add(Box.createHorizontalGlue());
+        return boxDong;
     }
 
     // Thêm 1 dòng "nhãn : giá trị" vào Box dọc
-    private void themDong(Box box, String nhan, JLabel lblGiaTri) {
-        JLabel lblNhan = new JLabel(nhan);
+    private void themDong(Box boxCha, String noiDungNhan, JLabel lblGiaTri) {
+        JLabel lblNhan = new JLabel(noiDungNhan);
         lblNhan.setForeground(XAM);
         lblNhan.setPreferredSize(new Dimension(95, lblNhan.getPreferredSize().height));
         Box boxDong = Box.createHorizontalBox();
@@ -317,13 +320,13 @@ public class HoSoBenhAnPanel extends JPanel {
         boxDong.add(Box.createHorizontalStrut(8));
         boxDong.add(lblGiaTri);
         boxDong.add(Box.createHorizontalGlue());
-        box.add(boxDong);
-        box.add(Box.createVerticalStrut(10));
+        boxCha.add(boxDong);
+        boxCha.add(Box.createVerticalStrut(10));
     }
 
     // Thêm 1 dòng "nhãn : nội dung nhiều dòng" vào Box dọc
-    private void themDongNhieuChu(Box box, String nhan, JTextArea txaGiaTri) {
-        JLabel lblNhan = new JLabel(nhan);
+    private void themDongNhieuChu(Box boxCha, String noiDungNhan, JTextArea txaGiaTri) {
+        JLabel lblNhan = new JLabel(noiDungNhan);
         lblNhan.setForeground(XAM);
         lblNhan.setPreferredSize(new Dimension(95, lblNhan.getPreferredSize().height));
         lblNhan.setAlignmentY(TOP_ALIGNMENT);
@@ -332,62 +335,71 @@ public class HoSoBenhAnPanel extends JPanel {
         boxDong.add(lblNhan);
         boxDong.add(Box.createHorizontalStrut(8));
         boxDong.add(txaGiaTri);
-        box.add(boxDong);
-        box.add(Box.createVerticalStrut(10));
+        boxCha.add(boxDong);
+        boxCha.add(Box.createVerticalStrut(10));
     }
 
     // ===================== Hàm hiển thị (Controller gọi) =====================
 
     // Bước 1: đổ danh sách bệnh nhân tìm được vào bảng bên trái
-    public void hienDsBenhNhan(ArrayList<BenhNhan> ds) {
-        dsBenhNhan = ds;
+    public void hienDanhSachBenhNhan(ArrayList<BenhNhan> danhSachTimDuoc) {
+        danhSachBenhNhan = danhSachTimDuoc;
         modelBenhNhan.setRowCount(0);
-        for (BenhNhan bn : ds) {
-            modelBenhNhan.addRow(new Object[]{bn.getMaBenhNhan(), bn.getHoTen(), bn.getSoDienThoai()});
+        for (BenhNhan benhNhan : danhSachBenhNhan) {
+            modelBenhNhan.addRow(new Object[]{
+                    benhNhan.getMaBenhNhan(),
+                    benhNhan.getHoTen(),
+                    benhNhan.getSoDienThoai()
+            });
         }
         lblTrangThai.setForeground(XAM);
-        lblTrangThai.setText("Tìm được " + ds.size() + " bệnh nhân. Chọn một bệnh nhân để mở hồ sơ.");
+        lblTrangThai.setText("Tìm được " + danhSachBenhNhan.size() + " bệnh nhân. Chọn một bệnh nhân để mở hồ sơ.");
         hienHoSo(null, null);
     }
 
-    // Bước 2: hiện hồ sơ + danh sách các lần khám (bn = null → xóa trắng)
-    public void hienHoSo(BenhNhan bn, HoSoBenhAn hoSo) {
+    // Bước 2: hiện hồ sơ + danh sách các lần khám (benhNhan = null → xóa trắng)
+    public void hienHoSo(BenhNhan benhNhan, HoSoBenhAn hoSoBenhAn) {
         modelLuotKham.setRowCount(0);
-        dsLuotKham = new ArrayList<>();
+        danhSachLuotKham = new ArrayList<>();
         hienChiTietLuotKham(null);
-        if (bn == null || hoSo == null) {
+        if (benhNhan == null || hoSoBenhAn == null) {
             lblTenBenhNhan.setText("Chưa chọn bệnh nhân");
             lblThongTinHoSo.setText("Chọn một bệnh nhân ở danh sách bên trái.");
             txaTienSuBenh.setText("—");
             txaDiUng.setText("—");
             return;
         }
-        lblTenBenhNhan.setText(bn.getHoTen() + " (" + bn.getMaBenhNhan() + ")");
-        lblThongTinHoSo.setText(hoSo.getMaHoSo() == null
-                ? "Chưa có hồ sơ bệnh án"
-                : "Mã hồ sơ " + hoSo.getMaHoSo() + " · Lập ngày " + hoSo.getNgayLap().format(NGAY));
-        txaTienSuBenh.setText(hoSo.getTienSuBenh() == null ? "Không có" : hoSo.getTienSuBenh());
-        txaDiUng.setText(hoSo.getDiUng() == null ? "Không có" : hoSo.getDiUng());
+        lblTenBenhNhan.setText(benhNhan.getHoTen() + " (" + benhNhan.getMaBenhNhan() + ")");
+        if (hoSoBenhAn.getMaHoSo() == null) {
+            lblThongTinHoSo.setText("Chưa có hồ sơ bệnh án");
+        } else {
+            lblThongTinHoSo.setText("Mã hồ sơ " + hoSoBenhAn.getMaHoSo()
+                    + " · Lập ngày " + hoSoBenhAn.getNgayLap().format(DINH_DANG_NGAY));
+        }
+        txaTienSuBenh.setText(hienKhongCoNeuTrong(hoSoBenhAn.getTienSuBenh()));
+        txaDiUng.setText(hienKhongCoNeuTrong(hoSoBenhAn.getDiUng()));
 
-        dsLuotKham = hoSo.getDsLuotKham();
-        for (LuotKham lk : dsLuotKham) {
+        danhSachLuotKham = hoSoBenhAn.getDanhSachLuotKham();
+        for (LuotKham luotKham : danhSachLuotKham) {
             modelLuotKham.addRow(new Object[]{
-                    lk.getMaPhieuKham(),
-                    lk.getThoiGianTiepNhan() == null ? "" : lk.getThoiGianTiepNhan().format(NGAY_GIO),
-                    hien(lk.getTenBacSi()),
-                    hien(lk.getChanDoan()),
-                    lk.getTrangThaiHienThi()
+                    luotKham.getMaPhieuKham(),
+                    dinhDangNgayKham(luotKham, ""),
+                    hienGachNgangNeuTrong(luotKham.getTenBacSi()),
+                    hienGachNgangNeuTrong(luotKham.getChanDoan()),
+                    luotKham.getTrangThaiHienThi()
             });
         }
         lblTrangThai.setForeground(XAM);
-        lblTrangThai.setText(dsLuotKham.isEmpty()
-                ? "Bệnh nhân chưa có lần khám nào."
-                : "Có " + dsLuotKham.size() + " lần khám. Chọn một lần khám để xem chi tiết.");
+        if (danhSachLuotKham.isEmpty()) {
+            lblTrangThai.setText("Bệnh nhân chưa có lần khám nào.");
+        } else {
+            lblTrangThai.setText("Có " + danhSachLuotKham.size() + " lần khám. Chọn một lần khám để xem chi tiết.");
+        }
     }
 
     // Bước 3–4: hiện chi tiết 1 lần khám (null → xóa trắng)
-    public void hienChiTietLuotKham(LuotKham lk) {
-        if (lk == null) {
+    public void hienChiTietLuotKham(LuotKham luotKham) {
+        if (luotKham == null) {
             lblMaPhieu.setText("—");
             lblNgayKham.setText("—");
             lblBacSi.setText("—");
@@ -397,13 +409,13 @@ public class HoSoBenhAnPanel extends JPanel {
             txaKetLuan.setText("—");
             return;
         }
-        lblMaPhieu.setText(lk.getMaPhieuKham());
-        lblNgayKham.setText(lk.getThoiGianTiepNhan() == null ? "—" : lk.getThoiGianTiepNhan().format(NGAY_GIO));
-        lblBacSi.setText(hien(lk.getTenBacSi()));
-        lblTrangThaiKham.setText(lk.getTrangThaiHienThi());
-        txaTrieuChung.setText(hien(lk.getTrieuChung()));
-        txaChanDoan.setText(hien(lk.getChanDoan()));
-        txaKetLuan.setText(hien(lk.getKetLuan()));
+        lblMaPhieu.setText(luotKham.getMaPhieuKham());
+        lblNgayKham.setText(dinhDangNgayKham(luotKham, "—"));
+        lblBacSi.setText(hienGachNgangNeuTrong(luotKham.getTenBacSi()));
+        lblTrangThaiKham.setText(luotKham.getTrangThaiHienThi());
+        txaTrieuChung.setText(hienGachNgangNeuTrong(luotKham.getTrieuChung()));
+        txaChanDoan.setText(hienGachNgangNeuTrong(luotKham.getChanDoan()));
+        txaKetLuan.setText(hienGachNgangNeuTrong(luotKham.getKetLuan()));
     }
 
     // Đang đọc database: làm mờ nút để không bấm chồng
@@ -423,26 +435,65 @@ public class HoSoBenhAnPanel extends JPanel {
         JOptionPane.showMessageDialog(this, thongBao, "Thông báo lỗi", JOptionPane.ERROR_MESSAGE);
     }
 
-    // Bệnh nhân / lần khám ở dòng đang chọn (null nếu chưa chọn)
+    // Bệnh nhân ở dòng đang chọn (null nếu chưa chọn)
     public BenhNhan layBenhNhanDangChon() {
-        int row = tblBenhNhan.getSelectedRow();
-        return row < 0 || row >= dsBenhNhan.size() ? null : dsBenhNhan.get(row);
+        int dongDangChon = tblBenhNhan.getSelectedRow();
+        if (dongDangChon < 0 || dongDangChon >= danhSachBenhNhan.size()) {
+            return null;
+        }
+        return danhSachBenhNhan.get(dongDangChon);
     }
 
+    // Lần khám ở dòng đang chọn (null nếu chưa chọn)
     public LuotKham layLuotKhamDangChon() {
-        int row = tblLuotKham.getSelectedRow();
-        return row < 0 || row >= dsLuotKham.size() ? null : dsLuotKham.get(row);
+        int dongDangChon = tblLuotKham.getSelectedRow();
+        if (dongDangChon < 0 || dongDangChon >= danhSachLuotKham.size()) {
+            return null;
+        }
+        return danhSachLuotKham.get(dongDangChon);
     }
 
-    private String hien(String s) {
-        return s == null || s.isBlank() ? "—" : s;
+    // Ngày giờ khám dạng dd/MM/yyyy HH:mm; không có thì hiện chuỗi thayThe
+    private String dinhDangNgayKham(LuotKham luotKham, String thayThe) {
+        if (luotKham.getThoiGianTiepNhan() == null) {
+            return thayThe;
+        }
+        return luotKham.getThoiGianTiepNhan().format(DINH_DANG_NGAY_GIO);
+    }
+
+    private String hienGachNgangNeuTrong(String giaTri) {
+        if (giaTri == null || giaTri.isBlank()) {
+            return "—";
+        }
+        return giaTri;
+    }
+
+    private String hienKhongCoNeuTrong(String giaTri) {
+        if (giaTri == null) {
+            return "Không có";
+        }
+        return giaTri;
     }
 
     // ===================== Getter cho Controller =====================
 
-    public JTextField getTxtTimKiem() { return txtTimKiem; }
-    public JButton getBtnTimKiem() { return btnTimKiem; }
-    public JButton getBtnLamMoi() { return btnLamMoi; }
-    public JTable getTblBenhNhan() { return tblBenhNhan; }
-    public JTable getTblLuotKham() { return tblLuotKham; }
+    public JTextField getTxtTimKiem() {
+        return txtTimKiem;
+    }
+
+    public JButton getBtnTimKiem() {
+        return btnTimKiem;
+    }
+
+    public JButton getBtnLamMoi() {
+        return btnLamMoi;
+    }
+
+    public JTable getTblBenhNhan() {
+        return tblBenhNhan;
+    }
+
+    public JTable getTblLuotKham() {
+        return tblLuotKham;
+    }
 }

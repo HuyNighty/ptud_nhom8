@@ -8,7 +8,7 @@ public class BenhNhan {
     private String maBenhNhan;
     private String hoTen;
     private LocalDate ngaySinh;
-    private String gioiTinh;      // NAM hoặc NU
+    private String gioiTinh;      // NAM hoặc NU (dữ liệu cũ có thể là KHAC)
     private String soDienThoai;
     private String diaChi;
     private String nguoiLienHe;
@@ -122,8 +122,12 @@ public class BenhNhan {
 
     // Đổi mã giới tính trong database sang chữ để hiển thị
     public String getGioiTinhHienThi() {
-        if ("NAM".equals(gioiTinh)) return "Nam";
-        if ("NU".equals(gioiTinh)) return "Nữ";
-        return "Khác";   // chỉ gặp với dữ liệu cũ trong database (ứng dụng không cho chọn nữa)
+        if ("NAM".equals(gioiTinh)) {
+            return "Nam";
+        }
+        if ("NU".equals(gioiTinh)) {
+            return "Nữ";
+        }
+        return "Khác";   // chỉ gặp với dữ liệu cũ trong database (form thêm mới không cho chọn)
     }
 }

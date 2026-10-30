@@ -63,8 +63,13 @@ public class ChonNgayDialog extends JDialog implements ActionListener, ChangeLis
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         ngayBanDau = ngayDangCo;
         // Chưa có ngày → mở sẵn ở tháng hiện tại của 30 năm trước (người dùng đổi năm bằng spnNam)
-        LocalDate moTai = ngayDangCo != null ? ngayDangCo : LocalDate.now().minusYears(30);
-        thangDangXem = YearMonth.from(moTai);
+        LocalDate ngayMoLich;
+        if (ngayDangCo != null) {
+            ngayMoLich = ngayDangCo;
+        } else {
+            ngayMoLich = LocalDate.now().minusYears(30);
+        }
+        thangDangXem = YearMonth.from(ngayMoLich);
 
         JPanel pnlNoiDung = new JPanel(new BorderLayout(0, 8));
         pnlNoiDung.setBorder(new EmptyBorder(12, 12, 12, 12));
@@ -122,28 +127,28 @@ public class ChonNgayDialog extends JDialog implements ActionListener, ChangeLis
         pnlCenter.removeAll();
 
         // Dòng tiêu đề thứ
-        String[] thu = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
-        for (String t : thu) {
-            JLabel lblThu = new JLabel(t, SwingConstants.CENTER);
+        String[] cacThuTrongTuan = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
+        for (String tenThu : cacThuTrongTuan) {
+            JLabel lblThu = new JLabel(tenThu, SwingConstants.CENTER);
             lblThu.setForeground(Color.GRAY);
             pnlCenter.add(lblThu);
         }
 
         // Ô trống trước ngày 1 (ví dụ ngày 1 là thứ Tư → 2 ô trống cho T2, T3)
         int soOTrong = thangDangXem.atDay(1).getDayOfWeek().getValue() - 1;
-        for (int i = 0; i < soOTrong; i++) {
+        for (int soThuTuO = 0; soThuTuO < soOTrong; soThuTuO++) {
             pnlCenter.add(new JLabel(""));
         }
 
         // Các nút ngày 1 → cuối tháng
         LocalDate homNay = LocalDate.now();
         for (int ngay = 1; ngay <= thangDangXem.lengthOfMonth(); ngay++) {
-            LocalDate d = thangDangXem.atDay(ngay);
+            LocalDate ngayTrongThang = thangDangXem.atDay(ngay);
             JButton btnNgay = new JButton(String.valueOf(ngay));
             btnNgay.setMargin(new java.awt.Insets(2, 2, 2, 2));
             btnNgay.setActionCommand(String.valueOf(ngay));   // để biết bấm ngày mấy
-            btnNgay.setEnabled(!d.isAfter(homNay));           // không cho chọn ngày tương lai
-            if (d.equals(ngayBanDau)) {                       // tô màu ngày đang có trên form
+            btnNgay.setEnabled(!ngayTrongThang.isAfter(homNay));           // không cho chọn ngày tương lai
+            if (ngayTrongThang.equals(ngayBanDau)) {                       // tô màu ngày đang có trên form
                 btnNgay.setBackground(XANH_CHON);
                 btnNgay.setForeground(Color.WHITE);
                 btnNgay.setOpaque(true);
@@ -161,17 +166,17 @@ public class ChonNgayDialog extends JDialog implements ActionListener, ChangeLis
 
     // Bấm ‹ › Hủy hoặc 1 ngày
     @Override
-    public void actionPerformed(ActionEvent e) {
-        Object o = e.getSource();
-        if (o.equals(btnThangTruoc)) {
+    public void actionPerformed(ActionEvent suKien) {
+        Object nguonSuKien = suKien.getSource();
+        if (nguonSuKien.equals(btnThangTruoc)) {
             doiThang(thangDangXem.minusMonths(1));
-        } else if (o.equals(btnThangSau)) {
+        } else if (nguonSuKien.equals(btnThangSau)) {
             doiThang(thangDangXem.plusMonths(1));
-        } else if (o.equals(btnHuy)) {
+        } else if (nguonSuKien.equals(btnHuy)) {
             dispose();
         } else {
             // Còn lại là nút ngày
-            int ngay = Integer.parseInt(e.getActionCommand());
+            int ngay = Integer.parseInt(suKien.getActionCommand());
             ngayDaChon = thangDangXem.atDay(ngay);
             dispose();
         }
@@ -179,25 +184,25 @@ public class ChonNgayDialog extends JDialog implements ActionListener, ChangeLis
 
     // Đổi năm trên spnNam
     @Override
-    public void stateChanged(ChangeEvent e) {
+    public void stateChanged(ChangeEvent suKien) {
         int nam = (Integer) spnNam.getValue();
         if (nam != thangDangXem.getYear()) {
-            YearMonth moi = YearMonth.of(nam, thangDangXem.getMonthValue());
-            if (moi.isAfter(YearMonth.now())) {
-                moi = YearMonth.now();          // năm nay nhưng tháng chưa tới → về tháng hiện tại
+            YearMonth thangMoi = YearMonth.of(nam, thangDangXem.getMonthValue());
+            if (thangMoi.isAfter(YearMonth.now())) {
+                thangMoi = YearMonth.now();     // năm nay nhưng tháng chưa tới → về tháng hiện tại
             }
-            thangDangXem = moi;
+            thangDangXem = thangMoi;
             veLaiLich();
         }
     }
 
-    private void doiThang(YearMonth moi) {
+    private void doiThang(YearMonth thangMoi) {
         int namNay = LocalDate.now().getYear();
-        if (moi.getYear() < namNay - 120 || moi.isAfter(YearMonth.now())) {
+        if (thangMoi.getYear() < namNay - 120 || thangMoi.isAfter(YearMonth.now())) {
             return;   // ngoài phạm vi cho phép
         }
-        thangDangXem = moi;
-        spnNam.setValue(moi.getYear());   // đồng bộ ô năm (stateChanged tự bỏ qua vì cùng năm)
+        thangDangXem = thangMoi;
+        spnNam.setValue(thangMoi.getYear());   // đồng bộ ô năm (stateChanged tự bỏ qua vì cùng năm)
         veLaiLich();
     }
 }

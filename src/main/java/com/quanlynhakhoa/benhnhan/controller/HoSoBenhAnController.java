@@ -20,16 +20,16 @@ import javax.swing.SwingWorker;
 // Đọc database bằng SwingWorker (luồng nền) để app không bị đơ.
 public class HoSoBenhAnController implements ActionListener, MouseListener {
     private HoSoBenhAnPanel view;
-    private BenhNhanService benhNhanService;   // tìm bệnh nhân (bước 1)
-    private HoSoBenhAnService hoSoService;     // mở hồ sơ + ghi nhật ký (bước 2)
-    private boolean dangTim;                   // đang tìm bệnh nhân → bỏ qua bấm thêm
-    private long lanMoHoSo;                    // số thứ tự lần mở hồ sơ, dùng để bỏ kết quả cũ
+    private BenhNhanService benhNhanService;       // tìm bệnh nhân (bước 1)
+    private HoSoBenhAnService hoSoBenhAnService;   // mở hồ sơ + ghi nhật ký (bước 2)
+    private boolean dangTimBenhNhan;               // đang tìm bệnh nhân → bỏ qua bấm thêm
+    private long soThuTuLanMoHoSo;                 // số thứ tự lần mở hồ sơ, dùng để bỏ kết quả cũ
 
     public HoSoBenhAnController(HoSoBenhAnPanel view, BenhNhanService benhNhanService,
-                                HoSoBenhAnService hoSoService) {
+                                HoSoBenhAnService hoSoBenhAnService) {
         this.view = view;
         this.benhNhanService = benhNhanService;
-        this.hoSoService = hoSoService;
+        this.hoSoBenhAnService = hoSoBenhAnService;
 
         // Gắn sự kiện cho nút, ô tìm kiếm (Enter) và 2 bảng
         view.getBtnTimKiem().addActionListener(this);
@@ -44,9 +44,9 @@ public class HoSoBenhAnController implements ActionListener, MouseListener {
 
     // Bấm Tìm kiếm / Làm mới / Enter
     @Override
-    public void actionPerformed(ActionEvent e) {
-        Object o = e.getSource();
-        if (o.equals(view.getBtnLamMoi())) {
+    public void actionPerformed(ActionEvent suKien) {
+        Object nguonSuKien = suKien.getSource();
+        if (nguonSuKien.equals(view.getBtnLamMoi())) {
             view.getTxtTimKiem().setText("");
         }
         timBenhNhan();
@@ -54,46 +54,47 @@ public class HoSoBenhAnController implements ActionListener, MouseListener {
 
     // Click vào bảng bệnh nhân → mở hồ sơ; click vào bảng lần khám → xem chi tiết
     @Override
-    public void mouseClicked(MouseEvent e) {
-        Object o = e.getSource();
-        if (o.equals(view.getTblBenhNhan())) {
-            BenhNhan bn = view.layBenhNhanDangChon();
-            if (bn != null) {
-                moHoSo(bn);
+    public void mouseClicked(MouseEvent suKien) {
+        Object nguonSuKien = suKien.getSource();
+        if (nguonSuKien.equals(view.getTblBenhNhan())) {
+            BenhNhan benhNhan = view.layBenhNhanDangChon();
+            if (benhNhan != null) {
+                moHoSo(benhNhan);
             }
         }
-        if (o.equals(view.getTblLuotKham())) {
+        if (nguonSuKien.equals(view.getTblLuotKham())) {
             // Chi tiết đã có sẵn trong danh sách vừa đọc → không cần đọc lại database
             view.hienChiTietLuotKham(view.layLuotKhamDangChon());
         }
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(MouseEvent suKien) {
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {
+    public void mouseReleased(MouseEvent suKien) {
     }
 
     @Override
-    public void mouseEntered(MouseEvent e) {
+    public void mouseEntered(MouseEvent suKien) {
     }
 
     @Override
-    public void mouseExited(MouseEvent e) {
+    public void mouseExited(MouseEvent suKien) {
     }
 
     // ===================== Bước 1: tìm bệnh nhân =====================
 
     private void timBenhNhan() {
-        if (dangTim) {
+        if (dangTimBenhNhan) {
             return;
         }
-        dangTim = true;
-        lanMoHoSo++;                                   // bỏ kết quả mở hồ sơ đang chờ (nếu có)
+        dangTimBenhNhan = true;
+        soThuTuLanMoHoSo++;                            // bỏ kết quả mở hồ sơ đang chờ (nếu có)
         String tuKhoa = view.getTxtTimKiem().getText();
         view.datDangTai(true, "Đang tìm bệnh nhân...");
+
         new SwingWorker<ArrayList<BenhNhan>, Void>() {
             @Override
             protected ArrayList<BenhNhan> doInBackground() throws Exception {
@@ -102,12 +103,12 @@ public class HoSoBenhAnController implements ActionListener, MouseListener {
 
             @Override
             protected void done() {
-                dangTim = false;
+                dangTimBenhNhan = false;
                 view.datDangTai(false, null);
                 try {
-                    view.hienDsBenhNhan(get());
-                } catch (Exception ex) {
-                    view.hienLoi(thongBaoLoi(ex));
+                    view.hienDanhSachBenhNhan(get());
+                } catch (Exception loi) {
+                    view.hienLoi(thongBaoLoi(loi));
                 }
             }
         }.execute();
@@ -115,46 +116,49 @@ public class HoSoBenhAnController implements ActionListener, MouseListener {
 
     // ===================== Bước 2: mở hồ sơ (ghi nhật ký + đọc các lần khám) =====================
 
-    private void moHoSo(BenhNhan bn) {
-        long lanNay = ++lanMoHoSo;
+    private void moHoSo(BenhNhan benhNhan) {
+        soThuTuLanMoHoSo++;
+        long lanMoNay = soThuTuLanMoHoSo;
         view.hienHoSo(null, null);
-        view.datDangTai(true, "Đang mở hồ sơ bệnh án của " + bn.getHoTen() + "...");
+        view.datDangTai(true, "Đang mở hồ sơ bệnh án của " + benhNhan.getHoTen() + "...");
+
         new SwingWorker<HoSoBenhAn, Void>() {
             @Override
             protected HoSoBenhAn doInBackground() throws Exception {
-                return hoSoService.moHoSo(bn.getMaBenhNhan());
+                return hoSoBenhAnService.moHoSo(benhNhan.getMaBenhNhan());
             }
 
             @Override
             protected void done() {
-                if (lanNay != lanMoHoSo) {
-                    return;                            // người dùng đã chọn bệnh nhân khác → bỏ kết quả này
+                if (lanMoNay != soThuTuLanMoHoSo) {
+                    return;      // người dùng đã chọn bệnh nhân khác → bỏ kết quả này
                 }
                 view.datDangTai(false, null);
                 try {
-                    view.hienHoSo(bn, get());
-                } catch (Exception ex) {
-                    view.hienLoi(thongBaoLoi(ex));
+                    view.hienHoSo(benhNhan, get());
+                } catch (Exception loi) {
+                    view.hienLoi(thongBaoLoi(loi));
                 }
             }
         }.execute();
     }
 
     // Đổi lỗi thành câu dễ hiểu (không hiện câu SQL ra màn hình)
-    private String thongBaoLoi(Throwable ex) {
-        while (ex instanceof ExecutionException && ex.getCause() != null) {
-            ex = ex.getCause();
+    private String thongBaoLoi(Throwable loi) {
+        // SwingWorker bọc lỗi thật bên trong ExecutionException → lấy lỗi thật ra
+        while (loi instanceof ExecutionException && loi.getCause() != null) {
+            loi = loi.getCause();
         }
-        if (ex instanceof AccessDeniedException) {
+        if (loi instanceof AccessDeniedException) {
             return "Tài khoản không có quyền xem hồ sơ bệnh án.";
         }
-        if (ex instanceof IllegalArgumentException) {
-            return ex.getMessage();
+        if (loi instanceof IllegalArgumentException) {
+            return loi.getMessage();
         }
-        if (ex instanceof SQLTimeoutException) {
+        if (loi instanceof SQLTimeoutException) {
             return "SQL Server phản hồi quá lâu. Vui lòng thử lại.";
         }
-        if (ex instanceof SQLException) {
+        if (loi instanceof SQLException) {
             return "Lỗi khi làm việc với SQL Server. Kiểm tra kết nối rồi thử lại.";
         }
         return "Có lỗi xảy ra, vui lòng thử lại.";

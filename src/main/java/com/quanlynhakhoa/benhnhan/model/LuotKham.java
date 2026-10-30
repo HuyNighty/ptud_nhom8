@@ -85,12 +85,23 @@ public class LuotKham {
         this.trangThai = trangThai;
     }
 
-    // Đổi mã trạng thái trong database sang chữ để hiển thị
+    // Đổi mã trạng thái trong database sang chữ để hiển thị.
+    // Dùng đúng tên trạng thái trong báo cáo: Chờ khám → Đang khám → Hoàn tất; Chờ khám / Đang khám → Bỏ khám.
+    //   DA_KET_LUAN (database) = "Hoàn tất" (báo cáo)
+    //   DA_HUY      (database) = "Bỏ khám"  (báo cáo)
     public String getTrangThaiHienThi() {
-        if ("CHO_KHAM".equals(trangThai)) return "Chờ khám";
-        if ("DANG_KHAM".equals(trangThai)) return "Đang khám";
-        if ("DA_KET_LUAN".equals(trangThai)) return "Đã kết luận";
-        if ("DA_HUY".equals(trangThai)) return "Đã hủy";
+        if ("CHO_KHAM".equals(trangThai)) {
+            return "Chờ khám";
+        }
+        if ("DANG_KHAM".equals(trangThai)) {
+            return "Đang khám";
+        }
+        if ("DA_KET_LUAN".equals(trangThai)) {
+            return "Hoàn tất";
+        }
+        if ("DA_HUY".equals(trangThai)) {
+            return "Bỏ khám";
+        }
         return trangThai;
     }
 }

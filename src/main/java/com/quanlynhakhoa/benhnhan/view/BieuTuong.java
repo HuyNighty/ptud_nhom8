@@ -36,38 +36,42 @@ public class BieuTuong implements Icon {
     }
 
     @Override
-    public void paintIcon(Component c, Graphics g, int x, int y) {
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // nét mịn
+    public void paintIcon(Component nutChuaIcon, Graphics doHoa, int viTriX, int viTriY) {
+        Graphics2D butVe = (Graphics2D) doHoa.create();
+        butVe.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // nét mịn
         // Nút bị làm mờ thì icon cũng mờ theo
-        g2.setColor(c != null && !c.isEnabled() ? Color.LIGHT_GRAY : MAU);
-        g2.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g2.translate(x, y);
+        if (nutChuaIcon != null && !nutChuaIcon.isEnabled()) {
+            butVe.setColor(Color.LIGHT_GRAY);
+        } else {
+            butVe.setColor(MAU);
+        }
+        butVe.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        butVe.translate(viTriX, viTriY);
 
         if (loai == TIM_KIEM) {
-            veKinhLup(g2);
+            veKinhLup(butVe);
         } else if (loai == LAM_MOI) {
-            veLamMoi(g2);
+            veLamMoi(butVe);
         }
-        g2.dispose();
+        butVe.dispose();
     }
 
     // Kính lúp: 1 vòng tròn + 1 cán chéo xuống góc phải
-    private void veKinhLup(Graphics2D g2) {
-        g2.drawOval(2, 2, 9, 9);      // mắt kính
-        g2.drawLine(10, 10, 14, 14);  // cán kính
+    private void veKinhLup(Graphics2D butVe) {
+        butVe.drawOval(2, 2, 9, 9);      // mắt kính
+        butVe.drawLine(10, 10, 14, 14);  // cán kính
     }
 
     // Làm mới: 1 cung tròn gần kín + 1 đầu mũi tên ở cuối cung
-    private void veLamMoi(Graphics2D g2) {
+    private void veLamMoi(Graphics2D butVe) {
         // Cung tròn từ 60° quay ngược chiều kim đồng hồ 280°
-        g2.draw(new Arc2D.Double(2.5, 2.5, 11, 11, 60, 280, Arc2D.OPEN));
+        butVe.draw(new Arc2D.Double(2.5, 2.5, 11, 11, 60, 280, Arc2D.OPEN));
         // Đầu mũi tên (tam giác) ở điểm bắt đầu cung, phía trên bên phải
         Path2D muiTen = new Path2D.Double();
         muiTen.moveTo(13.5, 1.5);
         muiTen.lineTo(13.5, 6.5);
         muiTen.lineTo(8.5, 6.5);
         muiTen.closePath();
-        g2.fill(muiTen);
+        butVe.fill(muiTen);
     }
 }

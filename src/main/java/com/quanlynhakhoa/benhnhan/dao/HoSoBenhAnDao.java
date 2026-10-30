@@ -8,22 +8,23 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 // DAO: chỉ làm việc với bảng dbo.HoSoBenhAn và đọc dbo.PhieuKham (lịch sử khám).
 // Không kiểm tra quyền, không kiểm tra nghiệp vụ. Kết nối bằng tài khoản n08dev_*, KHÔNG dùng sa.
 public class HoSoBenhAnDao {
-    // Thời gian chờ tối đa cho mỗi câu SQL (giống BenhNhanDao)
-    private static final int QUERY_TIMEOUT_SECONDS = 15;
+    // Thời gian chờ tối đa (giây) cho mỗi câu SQL (giống BenhNhanDao)
+    private static final int THOI_GIAN_CHO_TOI_DA = 15;
 
-    private final BenhNhanDao.ConnectionProvider connections;
+    private final BenhNhanDao.ConnectionProvider cachMoKetNoi;
 
     public HoSoBenhAnDao() {
         this(TeamDevConnection::open);
     }
 
-    public HoSoBenhAnDao(BenhNhanDao.ConnectionProvider connections) {
-        this.connections = java.util.Objects.requireNonNull(connections, "connections");
+    public HoSoBenhAnDao(BenhNhanDao.ConnectionProvider cachMoKetNoi) {
+        this.cachMoKetNoi = java.util.Objects.requireNonNull(cachMoKetNoi, "cachMoKetNoi");
     }
 
     // ===================== XEM HỒ SƠ BỆNH ÁN =====================
@@ -33,17 +34,17 @@ public class HoSoBenhAnDao {
         String sql = "SELECT maHoSo, maBenhNhan, ngayLap, tienSuBenh, diUng "
                 + "FROM dbo.HoSoBenhAn WHERE maBenhNhan = ?";
 
-        try (Connection con = connections.open();
-             PreparedStatement stmt = prepareStatement(con, sql)) {
-            stmt.setString(1, maBenhNhan);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
+        try (Connection ketNoi = cachMoKetNoi.open();
+             PreparedStatement cauLenh = taoCauLenh(ketNoi, sql)) {
+            cauLenh.setString(1, maBenhNhan);
+            try (ResultSet ketQua = cauLenh.executeQuery()) {
+                if (ketQua.next()) {
                     return new HoSoBenhAn(
-                            rs.getString(1),
-                            rs.getString(2),
-                            rs.getDate(3).toLocalDate(),
-                            rs.getNString(4),
-                            rs.getNString(5));
+                            ketQua.getString(1),
+                            ketQua.getString(2),
+                            ketQua.getDate(3).toLocalDate(),
+                            ketQua.getNString(4),
+                            ketQua.getNString(5));
                 }
             }
         }
@@ -51,8 +52,8 @@ public class HoSoBenhAnDao {
     }
 
     // Danh sách các lần khám của 1 bệnh nhân (mới nhất ở trên, tối đa 200 lần)
-    public ArrayList<LuotKham> dsLuotKham(String maBenhNhan) throws SQLException {
-        ArrayList<LuotKham> dsLuotKham = new ArrayList<>();
+    public ArrayList<LuotKham> layDanhSachLuotKham(String maBenhNhan) throws SQLException {
+        ArrayList<LuotKham> danhSachLuotKham = new ArrayList<>();
         String sql = "SELECT TOP 200 p.maPhieuKham, p.thoiGianTiepNhan, n.hoTen, "
                 + "p.trieuChung, p.chanDoan, p.ketLuan, p.trangThai "
                 + "FROM dbo.PhieuKham AS p "
@@ -60,24 +61,30 @@ public class HoSoBenhAnDao {
                 + "WHERE p.maBenhNhan = ? "
                 + "ORDER BY p.thoiGianTiepNhan DESC";
 
-        try (Connection con = connections.open();
-             PreparedStatement stmt = prepareStatement(con, sql)) {
-            stmt.setString(1, maBenhNhan);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Timestamp tg = rs.getTimestamp(2);
-                    dsLuotKham.add(new LuotKham(
-                            rs.getString(1),
-                            tg == null ? null : tg.toLocalDateTime(),
-                            rs.getNString(3),
-                            rs.getNString(4),
-                            rs.getNString(5),
-                            rs.getNString(6),
-                            rs.getString(7)));
+        try (Connection ketNoi = cachMoKetNoi.open();
+             PreparedStatement cauLenh = taoCauLenh(ketNoi, sql)) {
+            cauLenh.setString(1, maBenhNhan);
+            try (ResultSet ketQua = cauLenh.executeQuery()) {
+                while (ketQua.next()) {
+                    LocalDateTime thoiGianTiepNhan = null;
+                    Timestamp thoiGianTrongDatabase = ketQua.getTimestamp(2);
+                    if (thoiGianTrongDatabase != null) {
+                        thoiGianTiepNhan = thoiGianTrongDatabase.toLocalDateTime();
+                    }
+
+                    LuotKham luotKham = new LuotKham(
+                            ketQua.getString(1),       // mã phiếu khám
+                            thoiGianTiepNhan,
+                            ketQua.getNString(3),      // tên bác sĩ
+                            ketQua.getNString(4),      // triệu chứng
+                            ketQua.getNString(5),      // chẩn đoán
+                            ketQua.getNString(6),      // kết luận
+                            ketQua.getString(7));      // trạng thái
+                    danhSachLuotKham.add(luotKham);
                 }
             }
         }
-        return dsLuotKham;
+        return danhSachLuotKham;
     }
 
     // Ghi nhật ký "ai đã xem hồ sơ bệnh án của bệnh nhân nào" (UC009 bước 2: mỗi lần xem đều ghi nhật ký).
@@ -86,11 +93,11 @@ public class HoSoBenhAnDao {
         String sql = "INSERT INTO dbo.NhatKyThaoTac "
                 + "(loaiTacNhan, maTaiKhoan, chucNang, hanhDong, ketQua, doiTuong, maDoiTuong) "
                 + "VALUES ('ACCOUNT', ?, N'HoSoBenhAn', N'Xem hồ sơ bệnh án', 'SUCCESS', 'BenhNhan', ?)";
-        try (Connection con = connections.open();
-             PreparedStatement stmt = prepareStatement(con, sql)) {
-            stmt.setString(1, maTaiKhoan);
-            stmt.setString(2, maBenhNhan);
-            stmt.executeUpdate();
+        try (Connection ketNoi = cachMoKetNoi.open();
+             PreparedStatement cauLenh = taoCauLenh(ketNoi, sql)) {
+            cauLenh.setString(1, maTaiKhoan);
+            cauLenh.setString(2, maBenhNhan);
+            cauLenh.executeUpdate();
         }
     }
 
@@ -98,41 +105,45 @@ public class HoSoBenhAnDao {
     // Các hàm dưới đây nhận Connection từ Service (BenhNhanService mở 1 transaction khi sửa bệnh nhân)
 
     // Lấy mã hồ sơ của bệnh nhân (có khóa dòng trong transaction), chưa có thì trả về null
-    public String timMaHoSo(Connection con, String maBenhNhan) throws SQLException {
+    public String timMaHoSo(Connection ketNoi, String maBenhNhan) throws SQLException {
         String sql = "SELECT maHoSo FROM dbo.HoSoBenhAn WITH (UPDLOCK, HOLDLOCK) WHERE maBenhNhan = ?";
-        try (PreparedStatement stmt = prepareStatement(con, sql)) {
-            stmt.setString(1, maBenhNhan);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? rs.getString(1) : null;
+        try (PreparedStatement cauLenh = taoCauLenh(ketNoi, sql)) {
+            cauLenh.setString(1, maBenhNhan);
+            try (ResultSet ketQua = cauLenh.executeQuery()) {
+                if (ketQua.next()) {
+                    return ketQua.getString(1);
+                }
+                return null;
             }
         }
     }
 
     // Cập nhật tiền sử bệnh và dị ứng, trả về true nếu có dòng được sửa
-    public boolean capNhatTienSu(Connection con, String maHoSo, String tienSuBenh, String diUng)
+    public boolean capNhatTienSu(Connection ketNoi, String maHoSo, String tienSuBenh, String diUng)
             throws SQLException {
         String sql = "UPDATE dbo.HoSoBenhAn SET tienSuBenh = ?, diUng = ? WHERE maHoSo = ?";
-        try (PreparedStatement stmt = prepareStatement(con, sql)) {
-            stmt.setNString(1, tienSuBenh);
-            stmt.setNString(2, diUng);
-            stmt.setString(3, maHoSo);
-            return stmt.executeUpdate() > 0;
+        try (PreparedStatement cauLenh = taoCauLenh(ketNoi, sql)) {
+            cauLenh.setNString(1, tienSuBenh);
+            cauLenh.setNString(2, diUng);
+            cauLenh.setString(3, maHoSo);
+            int soDongDaSua = cauLenh.executeUpdate();
+            return soDongDaSua > 0;
         }
     }
 
     // Tạo PreparedStatement kèm thời gian chờ tối đa; lỗi thì đóng lại ngay (giống BenhNhanDao)
-    private PreparedStatement prepareStatement(Connection con, String sql) throws SQLException {
-        PreparedStatement stmt = con.prepareStatement(sql);
+    private PreparedStatement taoCauLenh(Connection ketNoi, String sql) throws SQLException {
+        PreparedStatement cauLenh = ketNoi.prepareStatement(sql);
         try {
-            stmt.setQueryTimeout(QUERY_TIMEOUT_SECONDS);
-            return stmt;
-        } catch (SQLException | RuntimeException ex) {
+            cauLenh.setQueryTimeout(THOI_GIAN_CHO_TOI_DA);
+            return cauLenh;
+        } catch (SQLException | RuntimeException loi) {
             try {
-                stmt.close();
-            } catch (SQLException closeError) {
-                ex.addSuppressed(closeError);
+                cauLenh.close();
+            } catch (SQLException loiKhiDong) {
+                loi.addSuppressed(loiKhiDong);
             }
-            throw ex;
+            throw loi;
         }
     }
 }

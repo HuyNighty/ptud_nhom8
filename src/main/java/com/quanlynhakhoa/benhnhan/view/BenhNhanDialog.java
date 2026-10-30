@@ -2,17 +2,23 @@ package com.quanlynhakhoa.benhnhan.view;
 
 import com.quanlynhakhoa.benhnhan.model.BenhNhan;
 import com.quanlynhakhoa.benhnhan.service.BenhNhanService;
+import com.quanlynhakhoa.benhnhan.service.LoiNhapLieuException;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Window;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -20,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
 // Hộp thoại Thêm / Sửa bệnh nhân. Chỉ tạo giao diện và đọc dữ liệu trên form.
@@ -35,7 +42,8 @@ import javax.swing.border.EmptyBorder;
 public class BenhNhanDialog extends JDialog {
     private static final Color NAVY = new Color(29, 61, 102);
     private static final Color XAM = new Color(97, 115, 137);
-    private static final DateTimeFormatter NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final Color DO = new Color(200, 40, 40);    // viền ô nhập bị lỗi
+    private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private JPanel pnlNorth;
     private JLabel lblTieuDe;
@@ -58,29 +66,38 @@ public class BenhNhanDialog extends JDialog {
     private JButton btnLuu;
     private JButton btnHuy;
 
-    // bnCanSua = null → form THÊM; khác null → form SỬA (đổ sẵn dữ liệu)
-    public BenhNhanDialog(Window chuSoHuu, BenhNhan bnCanSua) {
-        super(chuSoHuu, ModalityType.APPLICATION_MODAL); // mở form thì phải đóng mới bấm được màn hình chính
-        setTitle(bnCanSua == null ? "Thêm bệnh nhân" : "Sửa thông tin bệnh nhân");
+    // Viền ban đầu của từng ô nhập, để bỏ viền đỏ thì trả lại đúng viền cũ
+    private HashMap<JComponent, Border> vienBanDau = new HashMap<>();
+
+    // benhNhanCanSua = null → form THÊM; khác null → form SỬA (đổ sẵn dữ liệu)
+    public BenhNhanDialog(Window cuaSoCha, BenhNhan benhNhanCanSua) {
+        super(cuaSoCha, ModalityType.APPLICATION_MODAL); // mở form thì phải đóng mới bấm được màn hình chính
+        String tieuDe;
+        if (benhNhanCanSua == null) {
+            tieuDe = "Thêm bệnh nhân";
+        } else {
+            tieuDe = "Sửa thông tin bệnh nhân";
+        }
+        setTitle(tieuDe);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         JPanel pnlNoiDung = new JPanel(new BorderLayout(0, 12));
         pnlNoiDung.setBorder(new EmptyBorder(18, 20, 16, 20));
         setContentPane(pnlNoiDung);
 
-        taoNorth(bnCanSua == null ? "Thêm bệnh nhân" : "Sửa thông tin bệnh nhân");
+        taoNorth(tieuDe);
         taoCenter();
         taoSouth();
         pnlNoiDung.add(pnlNorth, BorderLayout.NORTH);
         pnlNoiDung.add(pnlCenter, BorderLayout.CENTER);
         pnlNoiDung.add(pnlSouth, BorderLayout.SOUTH);
 
-        if (bnCanSua != null) {
-            doDuLieuLenForm(bnCanSua);
+        if (benhNhanCanSua != null) {
+            doDuLieuLenForm(benhNhanCanSua);
         }
 
         setSize(560, 560);
-        setLocationRelativeTo(chuSoHuu);
+        setLocationRelativeTo(cuaSoCha);
     }
 
     private void taoNorth(String tieuDe) {
@@ -116,6 +133,16 @@ public class BenhNhanDialog extends JDialog {
         txaDiUng = taoOChuNhieuDong();
         scrDiUng = new JScrollPane(txaDiUng);
 
+        // Ghi nhớ viền ban đầu của các ô có thể bị tô đỏ
+        vienBanDau.put(txtHoTen, txtHoTen.getBorder());
+        vienBanDau.put(txtNgaySinh, txtNgaySinh.getBorder());
+        vienBanDau.put(cmbGioiTinh, cmbGioiTinh.getBorder());
+        vienBanDau.put(txtSoDienThoai, txtSoDienThoai.getBorder());
+        vienBanDau.put(txtDiaChi, txtDiaChi.getBorder());
+        vienBanDau.put(txtNguoiLienHe, txtNguoiLienHe.getBorder());
+        vienBanDau.put(scrTienSuBenh, scrTienSuBenh.getBorder());
+        vienBanDau.put(scrDiUng, scrDiUng.getBorder());
+
         JLabel lblNhanMa = new JLabel("Mã bệnh nhân:");
         JLabel lblNhanHoTen = new JLabel("Họ tên (*):");
         JLabel lblNhanNgaySinh = new JLabel("Ngày sinh (*):");
@@ -127,15 +154,15 @@ public class BenhNhanDialog extends JDialog {
         JLabel lblNhanDiUng = new JLabel("Dị ứng:");
 
         // Cho các nhãn rộng bằng nhau (giống code cũ)
-        Dimension rongNhan = lblNhanSoDienThoai.getPreferredSize();
-        lblNhanMa.setPreferredSize(rongNhan);
-        lblNhanHoTen.setPreferredSize(rongNhan);
-        lblNhanNgaySinh.setPreferredSize(rongNhan);
-        lblNhanGioiTinh.setPreferredSize(rongNhan);
-        lblNhanDiaChi.setPreferredSize(rongNhan);
-        lblNhanNguoiLienHe.setPreferredSize(rongNhan);
-        lblNhanTienSu.setPreferredSize(rongNhan);
-        lblNhanDiUng.setPreferredSize(rongNhan);
+        Dimension doRongNhan = lblNhanSoDienThoai.getPreferredSize();
+        lblNhanMa.setPreferredSize(doRongNhan);
+        lblNhanHoTen.setPreferredSize(doRongNhan);
+        lblNhanNgaySinh.setPreferredSize(doRongNhan);
+        lblNhanGioiTinh.setPreferredSize(doRongNhan);
+        lblNhanDiaChi.setPreferredSize(doRongNhan);
+        lblNhanNguoiLienHe.setPreferredSize(doRongNhan);
+        lblNhanTienSu.setPreferredSize(doRongNhan);
+        lblNhanDiUng.setPreferredSize(doRongNhan);
         lblNhanTienSu.setAlignmentY(TOP_ALIGNMENT);   // nhãn nằm sát trên ô nhiều dòng
         lblNhanDiUng.setAlignmentY(TOP_ALIGNMENT);
         scrTienSuBenh.setAlignmentY(TOP_ALIGNMENT);
@@ -165,14 +192,14 @@ public class BenhNhanDialog extends JDialog {
 
     // Ô nhập nhiều dòng, tự xuống dòng theo từ
     private JTextArea taoOChuNhieuDong() {
-        JTextArea txa = new JTextArea(3, 20);
-        txa.setLineWrap(true);
-        txa.setWrapStyleWord(true);
-        return txa;
+        JTextArea txaNhieuDong = new JTextArea(3, 20);
+        txaNhieuDong.setLineWrap(true);
+        txaNhieuDong.setWrapStyleWord(true);
+        return txaNhieuDong;
     }
 
     // Thêm 1 dòng "nhãn : ô nhập" vào form
-    private void themDong(Box boxForm, JLabel lblNhan, java.awt.Component oNhap) {
+    private void themDong(Box boxForm, JLabel lblNhan, Component oNhap) {
         Box boxDong = Box.createHorizontalBox();
         boxDong.add(lblNhan);
         boxDong.add(Box.createHorizontalStrut(10));
@@ -190,27 +217,41 @@ public class BenhNhanDialog extends JDialog {
     }
 
     // Form SỬA: đổ dữ liệu bệnh nhân lên các ô
-    private void doDuLieuLenForm(BenhNhan bn) {
-        txtMaBenhNhan.setText(bn.getMaBenhNhan());
-        txtHoTen.setText(bn.getHoTen());
-        txtNgaySinh.setText(bn.getNgaySinh().format(NGAY));
-        cmbGioiTinh.setSelectedItem(bn.getGioiTinhHienThi());
-        txtSoDienThoai.setText(bn.getSoDienThoai());
-        txtDiaChi.setText(bn.getDiaChi() == null ? "" : bn.getDiaChi());
-        txtNguoiLienHe.setText(bn.getNguoiLienHe() == null ? "" : bn.getNguoiLienHe());
-        txaTienSuBenh.setText(bn.getTienSuBenh() == null ? "" : bn.getTienSuBenh());
-        txaDiUng.setText(bn.getDiUng() == null ? "" : bn.getDiUng());
+    private void doDuLieuLenForm(BenhNhan benhNhan) {
+        txtMaBenhNhan.setText(benhNhan.getMaBenhNhan());
+        txtHoTen.setText(benhNhan.getHoTen());
+        txtNgaySinh.setText(benhNhan.getNgaySinh().format(DINH_DANG_NGAY));
+
+        // Dữ liệu cũ có giới tính "Khác": thêm lựa chọn "Khác" riêng cho bệnh nhân này,
+        // nếu không ô chọn sẽ tự hiện "Nam" và bấm Lưu là giới tính bị đổi mà không ai biết.
+        if ("KHAC".equals(benhNhan.getGioiTinh())) {
+            cmbGioiTinh.addItem("Khác");
+        }
+        cmbGioiTinh.setSelectedItem(benhNhan.getGioiTinhHienThi());
+
+        txtSoDienThoai.setText(benhNhan.getSoDienThoai());
+        txtDiaChi.setText(chuoiRongNeuNull(benhNhan.getDiaChi()));
+        txtNguoiLienHe.setText(chuoiRongNeuNull(benhNhan.getNguoiLienHe()));
+        txaTienSuBenh.setText(chuoiRongNeuNull(benhNhan.getTienSuBenh()));
+        txaDiUng.setText(chuoiRongNeuNull(benhNhan.getDiUng()));
+    }
+
+    private String chuoiRongNeuNull(String chuoi) {
+        if (chuoi == null) {
+            return "";
+        }
+        return chuoi;
     }
 
     // Bấm "Chọn..." → mở lịch → điền ngày đã chọn vào ô ngày sinh
     public void moLichChonNgaySinh() {
         LocalDate ngayDangCo = null;
         if (!txtNgaySinh.getText().isEmpty()) {
-            ngayDangCo = LocalDate.parse(txtNgaySinh.getText(), NGAY);
+            ngayDangCo = LocalDate.parse(txtNgaySinh.getText(), DINH_DANG_NGAY);
         }
-        LocalDate ngayChon = ChonNgayDialog.chon(this, ngayDangCo);
-        if (ngayChon != null) {           // null = người dùng bấm Hủy → giữ nguyên
-            txtNgaySinh.setText(ngayChon.format(NGAY));
+        LocalDate ngayDaChon = ChonNgayDialog.chon(this, ngayDangCo);
+        if (ngayDaChon != null) {           // null = người dùng bấm Hủy → giữ nguyên
+            txtNgaySinh.setText(ngayDaChon.format(DINH_DANG_NGAY));
         }
     }
 
@@ -220,37 +261,108 @@ public class BenhNhanDialog extends JDialog {
         // Ngày sinh dạng dd/MM/yyyy → Service kiểm tra bằng regex rồi đổi sang LocalDate
         LocalDate ngaySinh = BenhNhanService.docNgaySinh(txtNgaySinh.getText());
 
-        // Chỉ có 2 lựa chọn: Nam → NAM, Nữ → NU
-        String gioiTinh = "NAM";
-        if ("Nữ".equals(cmbGioiTinh.getSelectedItem())) gioiTinh = "NU";
+        // Đổi chữ trong ô chọn sang mã lưu trong database
+        String gioiTinh;
+        Object luaChonGioiTinh = cmbGioiTinh.getSelectedItem();
+        if ("Nữ".equals(luaChonGioiTinh)) {
+            gioiTinh = "NU";
+        } else if ("Khác".equals(luaChonGioiTinh)) {
+            gioiTinh = "KHAC";
+        } else {
+            gioiTinh = "NAM";
+        }
 
-        BenhNhan bn = new BenhNhan(maBenhNhan);
-        bn.setHoTen(txtHoTen.getText());
-        bn.setNgaySinh(ngaySinh);
-        bn.setGioiTinh(gioiTinh);
-        bn.setSoDienThoai(txtSoDienThoai.getText());
-        bn.setDiaChi(txtDiaChi.getText());
-        bn.setNguoiLienHe(txtNguoiLienHe.getText());
-        bn.setTienSuBenh(txaTienSuBenh.getText());
-        bn.setDiUng(txaDiUng.getText());
-        return bn;
+        BenhNhan benhNhan = new BenhNhan(maBenhNhan);
+        benhNhan.setHoTen(txtHoTen.getText());
+        benhNhan.setNgaySinh(ngaySinh);
+        benhNhan.setGioiTinh(gioiTinh);
+        benhNhan.setSoDienThoai(txtSoDienThoai.getText());
+        benhNhan.setDiaChi(txtDiaChi.getText());
+        benhNhan.setNguoiLienHe(txtNguoiLienHe.getText());
+        benhNhan.setTienSuBenh(txaTienSuBenh.getText());
+        benhNhan.setDiUng(txaDiUng.getText());
+        return benhNhan;
     }
 
-    // Called on EDT; prevent double submit or losing an in-flight edit.
+    // ===================== Tô đỏ ô lỗi (UC003 E1) =====================
+
+    // Tô đỏ ô có tên tenO (tên ô lấy từ LoiNhapLieuException) và đưa con trỏ vào ô đó
+    public void toDoO(String tenO) {
+        JComponent oBiLoi = layONhapTheoTen(tenO);
+        if (oBiLoi == null) {
+            return;
+        }
+        boToDoTatCa();
+        oBiLoi.setBorder(BorderFactory.createLineBorder(DO, 2));
+
+        // Ô nhiều dòng nằm trong JScrollPane → đưa con trỏ vào ô chữ bên trong
+        if (oBiLoi == scrTienSuBenh) {
+            txaTienSuBenh.requestFocusInWindow();
+        } else if (oBiLoi == scrDiUng) {
+            txaDiUng.requestFocusInWindow();
+        } else {
+            oBiLoi.requestFocusInWindow();
+        }
+    }
+
+    // Trả lại viền ban đầu cho tất cả các ô
+    public void boToDoTatCa() {
+        for (JComponent oNhap : vienBanDau.keySet()) {
+            oNhap.setBorder(vienBanDau.get(oNhap));
+        }
+    }
+
+    private JComponent layONhapTheoTen(String tenO) {
+        if (LoiNhapLieuException.O_HO_TEN.equals(tenO)) {
+            return txtHoTen;
+        }
+        if (LoiNhapLieuException.O_NGAY_SINH.equals(tenO)) {
+            return txtNgaySinh;
+        }
+        if (LoiNhapLieuException.O_GIOI_TINH.equals(tenO)) {
+            return cmbGioiTinh;
+        }
+        if (LoiNhapLieuException.O_SO_DIEN_THOAI.equals(tenO)) {
+            return txtSoDienThoai;
+        }
+        if (LoiNhapLieuException.O_DIA_CHI.equals(tenO)) {
+            return txtDiaChi;
+        }
+        if (LoiNhapLieuException.O_NGUOI_LIEN_HE.equals(tenO)) {
+            return txtNguoiLienHe;
+        }
+        if (LoiNhapLieuException.O_TIEN_SU_BENH.equals(tenO)) {
+            return scrTienSuBenh;
+        }
+        if (LoiNhapLieuException.O_DI_UNG.equals(tenO)) {
+            return scrDiUng;
+        }
+        return null;
+    }
+
+    // ===================== Trạng thái đang lưu =====================
+
+    // Đang lưu: khóa các ô và nút để không bấm Lưu 2 lần hay đóng form giữa chừng
     public void datDangLuu(boolean dangLuu) {
-        btnLuu.setEnabled(!dangLuu);
-        btnHuy.setEnabled(!dangLuu);
-        btnChonNgay.setEnabled(!dangLuu);
-        txtHoTen.setEnabled(!dangLuu);
-        txtSoDienThoai.setEnabled(!dangLuu);
-        txtDiaChi.setEnabled(!dangLuu);
-        txtNguoiLienHe.setEnabled(!dangLuu);
-        txaTienSuBenh.setEnabled(!dangLuu);
-        txaDiUng.setEnabled(!dangLuu);
-        cmbGioiTinh.setEnabled(!dangLuu);
-        setDefaultCloseOperation(dangLuu ? DO_NOTHING_ON_CLOSE : DISPOSE_ON_CLOSE);
-        setCursor(java.awt.Cursor.getPredefinedCursor(
-                dangLuu ? java.awt.Cursor.WAIT_CURSOR : java.awt.Cursor.DEFAULT_CURSOR));
+        boolean choPhepThaoTac = !dangLuu;
+        btnLuu.setEnabled(choPhepThaoTac);
+        btnHuy.setEnabled(choPhepThaoTac);
+        btnChonNgay.setEnabled(choPhepThaoTac);
+        txtHoTen.setEnabled(choPhepThaoTac);
+        txtSoDienThoai.setEnabled(choPhepThaoTac);
+        txtDiaChi.setEnabled(choPhepThaoTac);
+        txtNguoiLienHe.setEnabled(choPhepThaoTac);
+        txaTienSuBenh.setEnabled(choPhepThaoTac);
+        txaDiUng.setEnabled(choPhepThaoTac);
+        cmbGioiTinh.setEnabled(choPhepThaoTac);
+
+        if (dangLuu) {
+            setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);           // không cho bấm X
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        } else {
+            setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
     }
 
     // Hiện lỗi thành hộp thông báo giữa màn hình (form vẫn mở để sửa lại)
@@ -258,7 +370,15 @@ public class BenhNhanDialog extends JDialog {
         JOptionPane.showMessageDialog(this, thongBao, "Dữ liệu chưa hợp lệ", JOptionPane.WARNING_MESSAGE);
     }
 
-    public JButton getBtnChonNgay() { return btnChonNgay; }
-    public JButton getBtnLuu() { return btnLuu; }
-    public JButton getBtnHuy() { return btnHuy; }
+    public JButton getBtnChonNgay() {
+        return btnChonNgay;
+    }
+
+    public JButton getBtnLuu() {
+        return btnLuu;
+    }
+
+    public JButton getBtnHuy() {
+        return btnHuy;
+    }
 }
