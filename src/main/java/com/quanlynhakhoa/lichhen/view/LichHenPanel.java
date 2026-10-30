@@ -7,6 +7,7 @@ import com.quanlynhakhoa.lichhen.service.LichHenService;
 import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.time.LocalDate;
@@ -28,18 +29,17 @@ import javax.swing.table.DefaultTableModel;
 // Màn hình LỊCH HẸN (menu Lịch hẹn → Danh sách lịch hẹn), theo UC004 trong báo cáo docs/tuan_cuoi.
 // View chỉ tạo giao diện và hiển thị. Sự kiện do LichHenController xử lý.
 //
-//  ┌────────────────────────── pnlNorth ──────────────────────────┐
-//  │ Lịch hẹn                                                     │  ← tiêu đề
-//  │ ┌──────────────── khung trắng (pnlNorthSouth) ─────────────┐ │
-//  │ │ Ngày [30/10/2026] Chọn... Hôm nay   Tìm [.......] Tìm kiếm │ │  ← dòng 1: lọc + tìm
-//  │ │ ──────────────────────────────────────────────────────── │ │
-//  │ │ [+ Đặt lịch hẹn] [Đổi lịch...] [Hủy lịch...]              │ │  ← dòng 2: nút thao tác
-//  │ └──────────────────────────────────────────────────────────┘ │
-//  ├────────────────────────── pnlCenter ─────────────────────────┤
-//  │ bảng lịch hẹn trong ngày                                     │
-//  ├────────────────────────── pnlSouth ──────────────────────────┤
-//  │ dòng trạng thái                                              │
-//  └──────────────────────────────────────────────────────────────┘
+//  ┌────────────────────────── pnlNorth ──────────────────────────────┐
+//  │ Lịch hẹn                                                         │  ← tiêu đề
+//  │ ┌──────────────── khung trắng (pnlNorthSouth) ─────────────────┐ │
+//  │ │ Lọc:      Tìm [..........]  Ngày [30/10/2026] Chọn... Hôm nay [Tìm kiếm] │ │
+//  │ │ Thao tác: [+ Đặt lịch hẹn] [Đổi lịch...] [Hủy lịch...]       │ │
+//  │ └──────────────────────────────────────────────────────────────┘ │
+//  ├────────────────────────── pnlCenter ─────────────────────────────┤
+//  │ bảng lịch hẹn trong ngày                                         │
+//  ├────────────────────────── pnlSouth ──────────────────────────────┤
+//  │ dòng trạng thái                                                  │
+//  └──────────────────────────────────────────────────────────────────┘
 public class LichHenPanel extends JPanel {
     // Màu giống BenhNhanPanel / AccountPanel
     private static final Color NAVY = new Color(29, 61, 102);
@@ -105,34 +105,45 @@ public class LichHenPanel extends JPanel {
         lblTieuDe.setFont(new Font("SansSerif", Font.BOLD, 23));
         lblTieuDe.setForeground(NAVY);
 
-        // ----- Dòng 1: lọc theo ngày + tìm kiếm -----
+        // 2 nhãn nhóm "Lọc:" và "Thao tác:" rộng bằng nhau để các ô phía sau thẳng cột
+        JLabel lblNhomLoc = taoNhanNhom("Lọc:");
+        JLabel lblNhomThaoTac = taoNhanNhom("Thao tác:");
+        lblNhomLoc.setPreferredSize(lblNhomThaoTac.getPreferredSize());
+
+        // ----- Dòng 1 "Lọc:" → Tìm [ô nhập] → Ngày [..] Chọn... Hôm nay → nút Tìm kiếm -----
+        txtTimKiem = new JTextField(18);
+        txtTimKiem.setToolTipText("Mã lịch hẹn, mã bệnh nhân, tên hoặc số điện thoại");
         txtNgayXem = new JTextField(9);
         txtNgayXem.setEditable(false);
         btnChonNgayXem = new JButton("Chọn...");
         btnHomNay = new JButton("Hôm nay");
-        txtTimKiem = new JTextField(20);
         btnTimKiem = new JButton("Tìm kiếm");
         btnTimKiem.setIcon(new BieuTuong(BieuTuong.TIM_KIEM));   // dùng lại icon kính lúp
 
-        JPanel pnlDongLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
+        JPanel pnlDongLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
         pnlDongLoc.setOpaque(false);
+        pnlDongLoc.add(lblNhomLoc);
+        pnlDongLoc.add(new JLabel("Tìm:"));
+        pnlDongLoc.add(txtTimKiem);
+        pnlDongLoc.add(Box.createHorizontalStrut(10));
         pnlDongLoc.add(new JLabel("Ngày:"));
         pnlDongLoc.add(txtNgayXem);
         pnlDongLoc.add(btnChonNgayXem);
         pnlDongLoc.add(btnHomNay);
-        pnlDongLoc.add(Box.createHorizontalStrut(18));   // khoảng cách giữa nhóm Ngày và nhóm Tìm
-        pnlDongLoc.add(new JLabel("Tìm (mã LH, mã BN, tên, SĐT):"));
-        pnlDongLoc.add(txtTimKiem);
+        pnlDongLoc.add(Box.createHorizontalStrut(10));
         pnlDongLoc.add(btnTimKiem);
 
-        // ----- Dòng 2: nút thao tác, có 1 đường kẻ mảnh phía trên để tách với dòng 1 -----
+        // ----- Dòng 2 "Thao tác:" → 3 nút rộng bằng nhau -----
         btnDatLich = new JButton("+ Đặt lịch hẹn");
         btnDoiLich = new JButton("Đổi lịch...");
         btnHuyLich = new JButton("Hủy lịch...");
+        Dimension kichThuocNut = btnDatLich.getPreferredSize();   // nút dài nhất
+        btnDoiLich.setPreferredSize(kichThuocNut);
+        btnHuyLich.setPreferredSize(kichThuocNut);
 
-        JPanel pnlDongThaoTac = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
+        JPanel pnlDongThaoTac = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
         pnlDongThaoTac.setOpaque(false);
-        pnlDongThaoTac.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, VIEN));   // đường kẻ trên
+        pnlDongThaoTac.add(lblNhomThaoTac);
         pnlDongThaoTac.add(btnDatLich);
         pnlDongThaoTac.add(btnDoiLich);
         pnlDongThaoTac.add(btnHuyLich);
@@ -140,12 +151,21 @@ public class LichHenPanel extends JPanel {
         // Khung trắng chứa 2 dòng (SOUTH của pnlNorth)
         JPanel pnlNorthSouth = new JPanel(new BorderLayout());
         pnlNorthSouth.setBackground(Color.WHITE);
-        pnlNorthSouth.setBorder(BorderFactory.createLineBorder(VIEN));
+        pnlNorthSouth.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(VIEN), new EmptyBorder(4, 6, 4, 6)));
         pnlNorthSouth.add(pnlDongLoc, BorderLayout.NORTH);
         pnlNorthSouth.add(pnlDongThaoTac, BorderLayout.SOUTH);
 
         pnlNorth.add(lblTieuDe, BorderLayout.NORTH);
         pnlNorth.add(pnlNorthSouth, BorderLayout.SOUTH);
+    }
+
+    // Nhãn tên nhóm ("Lọc:", "Thao tác:"): chữ đậm, màu navy
+    private JLabel taoNhanNhom(String noiDung) {
+        JLabel lblNhom = new JLabel(noiDung);
+        lblNhom.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblNhom.setForeground(NAVY);
+        return lblNhom;
     }
 
     private void taoCenter() {
