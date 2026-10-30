@@ -261,7 +261,57 @@ public class LichHenDao {
         }
     }
 
-    // Ghi nhật ký thao tác trên lịch hẹn (đặt, đổi, hủy)
+    // ===================== TIẾP ĐÓN BỆNH NHÂN (UC005, bệnh nhân có lịch hẹn) =====================
+
+    // Đếm lượt khám CHƯA HOÀN TẤT của bệnh nhân (Chờ khám / Đang khám) — BR09: không được có 2 lượt mở.
+    // Có khóa để 2 máy không cùng tạo lượt khám cho 1 bệnh nhân.
+    public int demLuotKhamDangMo(Connection ketNoi, String maBenhNhan) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM dbo.PhieuKham WITH (UPDLOCK, HOLDLOCK) "
+                + "WHERE maBenhNhan = ? AND trangThai IN ('CHO_KHAM', 'DANG_KHAM')";
+        try (PreparedStatement cauLenh = BenhNhanDao.taoCauLenh(ketNoi, sql)) {
+            cauLenh.setString(1, maBenhNhan);
+            try (ResultSet ketQua = cauLenh.executeQuery()) {
+                ketQua.next();
+                return ketQua.getInt(1);
+            }
+        }
+    }
+
+    // Sinh mã phiếu khám (lượt khám) mới: PK + 6 chữ số (PK000001, ...)
+    public String taoMaPhieuKhamMoi(Connection ketNoi) throws SQLException {
+        String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(maPhieuKham, 3, 6) AS INT)), 0) + 1 "
+                + "FROM dbo.PhieuKham WITH (UPDLOCK, HOLDLOCK) "
+                + "WHERE maPhieuKham LIKE 'PK[0-9][0-9][0-9][0-9][0-9][0-9]'";
+        try (PreparedStatement cauLenh = BenhNhanDao.taoCauLenh(ketNoi, sql);
+             ResultSet ketQua = cauLenh.executeQuery()) {
+            ketQua.next();
+            int soTiepTheo = ketQua.getInt(1);
+            if (soTiepTheo > 999999) {
+                throw new SQLException("Đã hết mã phiếu khám");
+            }
+            return "PK" + String.format("%06d", soTiepTheo);
+        }
+    }
+
+    // Tạo lượt khám "Chờ khám" từ lịch hẹn: gắn bệnh nhân, hồ sơ, bác sĩ và mã lịch hẹn.
+    // Triệu chứng / chẩn đoán để trống — bác sĩ ghi khi khám (UC006).
+    public void themLuotKhamChoKham(Connection ketNoi, String maPhieuKham, LichHen lichHen, String maHoSo,
+                                    LocalDateTime thoiGianTiepNhan) throws SQLException {
+        String sql = "INSERT INTO dbo.PhieuKham "
+                + "(maPhieuKham, maBenhNhan, maHoSo, maNhanVien, maLichHen, thoiGianTiepNhan, trangThai) "
+                + "VALUES (?, ?, ?, ?, ?, ?, 'CHO_KHAM')";
+        try (PreparedStatement cauLenh = BenhNhanDao.taoCauLenh(ketNoi, sql)) {
+            cauLenh.setString(1, maPhieuKham);
+            cauLenh.setString(2, lichHen.getMaBenhNhan());
+            cauLenh.setString(3, maHoSo);
+            cauLenh.setString(4, lichHen.getMaBacSi());
+            cauLenh.setString(5, lichHen.getMaLichHen());
+            cauLenh.setTimestamp(6, Timestamp.valueOf(thoiGianTiepNhan));
+            cauLenh.executeUpdate();
+        }
+    }
+
+    // Ghi nhật ký thao tác trên lịch hẹn (đặt, đổi, hủy, tiếp đón)
     public void ghiNhatKy(Connection ketNoi, String maTaiKhoan, String hanhDong, String maLichHen,
                           String noiDung) throws SQLException {
         String sql = "INSERT INTO dbo.NhatKyThaoTac "

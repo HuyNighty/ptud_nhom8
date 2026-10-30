@@ -1,6 +1,7 @@
 package com.quanlynhakhoa.lichhen.view;
 
 import com.quanlynhakhoa.benhnhan.view.BieuTuong;
+import com.quanlynhakhoa.benhnhan.view.MauNut;
 import com.quanlynhakhoa.lichhen.controller.LichHenController;
 import com.quanlynhakhoa.lichhen.model.LichHen;
 import com.quanlynhakhoa.lichhen.service.LichHenService;
@@ -28,7 +29,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-// Màn hình LỊCH HẸN (menu Lịch hẹn → Danh sách lịch hẹn), theo UC004 trong báo cáo docs/tuan_cuoi.
+// Màn hình LỊCH HẸN (menu Lịch hẹn → Danh sách lịch hẹn), theo UC004 (đặt / đổi / hủy) và UC005 (tiếp đón)
+// trong báo cáo docs/tuan_cuoi.
 // View chỉ tạo giao diện và hiển thị. Sự kiện do LichHenController xử lý.
 //
 //  ┌──────────────────────────── pnlNorth ─────────────────────────────┐
@@ -38,6 +40,8 @@ import javax.swing.table.DefaultTableModel;
 //  │ bảng lịch hẹn trong ngày                        │ Lịch hẹn đang   │
 //  │                                                 │ chọn: mã, giờ,  │
 //  │                                                 │ bệnh nhân...    │
+//  │                                                 │ [Tiếp đón bệnh  │
+//  │                                                 │  nhân]          │
 //  │                                                 │ [Đổi lịch...]   │
 //  │                                                 │ [Hủy lịch...]   │
 //  ├─────────────────────────────── pnlSouth ────────┴─────────────────┤
@@ -73,9 +77,11 @@ public class LichHenPanel extends JPanel {
     private JLabel lblBacSi;
     private JLabel lblTrangThaiLichHen;
     private JTextArea txaLyDo;
+    private JButton btnTiepDon;          // bệnh nhân có lịch hẹn hôm nay đã tới (UC005)
     private JButton btnDoiLich;
     private JButton btnHuyLich;
     private boolean duocQuanLyLich;      // có quyền đổi / hủy lịch không
+    private boolean duocTiepDon;         // có quyền tiếp đón bệnh nhân không
 
     // ----- CENTER: bảng lịch hẹn -----
     private JPanel pnlCenter;
@@ -130,6 +136,7 @@ public class LichHenPanel extends JPanel {
         btnTimKiem = new JButton("Tìm kiếm");
         btnTimKiem.setIcon(new BieuTuong(BieuTuong.TIM_KIEM));   // dùng lại icon kính lúp
         btnDatLich = new JButton("+ Đặt lịch hẹn");
+        MauNut.toXanhDuong(btnDatLich);   // tạo mới: xanh dương
 
         // Thanh lọc 1 dòng (SOUTH của pnlNorth)
         JPanel pnlNorthSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
@@ -192,12 +199,17 @@ public class LichHenPanel extends JPanel {
         boxThongTin.add(Box.createVerticalStrut(4));
         boxThongTin.add(txaLyDo);
 
-        // 2 nút thao tác xếp dọc, rộng bằng nhau (SOUTH của pnlEast)
+        // 3 nút thao tác xếp dọc, rộng bằng nhau (SOUTH của pnlEast)
+        btnTiepDon = new JButton("Tiếp đón bệnh nhân");
+        MauNut.toXanhLa(btnTiepDon);    // xác nhận việc tốt: xanh lá
         btnDoiLich = new JButton("Đổi lịch...");
+        MauNut.toCam(btnDoiLich);       // đổi: cam
         btnHuyLich = new JButton("Hủy lịch...");
-        JPanel pnlNutThaoTac = new JPanel(new GridLayout(2, 1, 0, 8));
+        MauNut.toDo(btnHuyLich);   // nút hủy màu đỏ (dùng chung với các form)
+        JPanel pnlNutThaoTac = new JPanel(new GridLayout(3, 1, 0, 8));
         pnlNutThaoTac.setOpaque(false);
         pnlNutThaoTac.setBorder(new EmptyBorder(10, 14, 14, 14));
+        pnlNutThaoTac.add(btnTiepDon);
         pnlNutThaoTac.add(btnDoiLich);
         pnlNutThaoTac.add(btnHuyLich);
 
@@ -295,11 +307,11 @@ public class LichHenPanel extends JPanel {
         lblTrangThai.setForeground(XAM);
         lblTrangThai.setText("Ngày " + ngayDangXem.format(DINH_DANG_NGAY) + ": có "
                 + danhSachLichHen.size() + " lịch hẹn. Mỗi lịch hẹn dài " + LichHenService.THOI_LUONG_PHUT
-                + " phút. Chọn 1 lịch hẹn để đổi hoặc hủy.");
+                + " phút. Chọn 1 lịch hẹn để tiếp đón, đổi hoặc hủy.");
         hienChiTiet(null);
     }
 
-    // Hiện lịch hẹn đang chọn ở pnlEast và bật / tắt 2 nút theo trạng thái + quyền (null = chưa chọn)
+    // Hiện lịch hẹn đang chọn ở pnlEast và bật / tắt 3 nút theo trạng thái + quyền (null = chưa chọn)
     public void hienChiTiet(LichHen lichHen) {
         if (lichHen == null) {
             lblMaLichHen.setText("—");
@@ -309,6 +321,7 @@ public class LichHenPanel extends JPanel {
             lblBacSi.setText("—");
             lblTrangThaiLichHen.setText("—");
             txaLyDo.setText("—");
+            btnTiepDon.setEnabled(false);
             btnDoiLich.setEnabled(false);
             btnHuyLich.setEnabled(false);
             return;
@@ -325,7 +338,8 @@ public class LichHenPanel extends JPanel {
             txaLyDo.setText(lichHen.getLyDoHen());
         }
 
-        // BR03: chỉ lịch "Đã đặt" mới được đổi / hủy
+        // BR03: chỉ lịch "Đã đặt" mới được đổi / hủy; tiếp đón chỉ cho lịch "Đã đặt" của hôm nay
+        btnTiepDon.setEnabled(duocTiepDon && lichHen.duocTiepDon());
         btnDoiLich.setEnabled(duocQuanLyLich && lichHen.laDaDat());
         btnHuyLich.setEnabled(duocQuanLyLich && lichHen.laDaDat());
     }
@@ -373,8 +387,9 @@ public class LichHenPanel extends JPanel {
     }
 
     // Lưu quyền của người đăng nhập (Controller gọi 1 lần khi mở màn hình). Service vẫn kiểm tra lại.
-    public void datQuyen(boolean duocQuanLyLich) {
+    public void datQuyen(boolean duocQuanLyLich, boolean duocTiepDon) {
         this.duocQuanLyLich = duocQuanLyLich;
+        this.duocTiepDon = duocTiepDon;
         btnDatLich.setEnabled(duocQuanLyLich);
         hienChiTiet(layLichHenDangChon());
     }
@@ -417,6 +432,10 @@ public class LichHenPanel extends JPanel {
 
     public JTable getTblLichHen() {
         return tblLichHen;
+    }
+
+    public JButton getBtnTiepDon() {
+        return btnTiepDon;
     }
 
     public JButton getBtnDoiLich() {

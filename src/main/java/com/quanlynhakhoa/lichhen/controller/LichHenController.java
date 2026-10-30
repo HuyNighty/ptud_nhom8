@@ -25,7 +25,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-// Controller màn hình Lịch hẹn (UC004 đặt / đổi / hủy): nhận sự kiện từ View → gọi Service → đưa kết quả về View.
+// Controller màn hình Lịch hẹn (UC004 đặt / đổi / hủy, UC005 tiếp đón bệnh nhân): nhận sự kiện từ View → gọi Service → đưa kết quả về View.
 // Mọi việc đọc / ghi database đều chạy bằng SwingWorker (luồng nền) để app không bị đơ:
 //   doInBackground() chạy ở luồng nền (gọi Service), done() chạy lại trên giao diện (cập nhật View).
 public class LichHenController implements ActionListener, MouseListener {
@@ -46,6 +46,7 @@ public class LichHenController implements ActionListener, MouseListener {
         view.getTxtTimKiem().addActionListener(this);
         view.getBtnTimKiem().addActionListener(this);
         view.getBtnDatLich().addActionListener(this);
+        view.getBtnTiepDon().addActionListener(this);
         view.getBtnDoiLich().addActionListener(this);
         view.getBtnHuyLich().addActionListener(this);
         // Click 1 dòng trong bảng → hiện lịch hẹn đó ở pnlEast
@@ -53,7 +54,8 @@ public class LichHenController implements ActionListener, MouseListener {
 
         // Không có quyền thì làm mờ nút (Service vẫn kiểm tra lại)
         boolean duocQuanLyLich = lichHenService.coQuyen(Permission.APPOINTMENT_MANAGE);
-        view.datQuyen(duocQuanLyLich);
+        boolean duocTiepDon = lichHenService.coQuyen(Permission.PATIENT_CHECK_IN);
+        view.datQuyen(duocQuanLyLich, duocTiepDon);
 
         // Mở màn hình là hiện lịch hẹn hôm nay
         taiDanhSach(null);
@@ -76,6 +78,9 @@ public class LichHenController implements ActionListener, MouseListener {
         }
         if (nguonSuKien.equals(view.getBtnDatLich())) {
             moForm(null);
+        }
+        if (nguonSuKien.equals(view.getBtnTiepDon())) {
+            tiepDonBenhNhan();
         }
         if (nguonSuKien.equals(view.getBtnDoiLich())) {
             LichHen lichHen = layLichHenDaDatDangChon("đổi");
@@ -196,6 +201,51 @@ public class LichHenController implements ActionListener, MouseListener {
             return null;
         }
         return lichHen;
+    }
+
+    // ===================== TIẾP ĐÓN BỆNH NHÂN (UC005) =====================
+
+    // Bệnh nhân có lịch hẹn hôm nay đã tới: tạo lượt khám "Chờ khám" + lịch hẹn chuyển "Đã đến"
+    private void tiepDonBenhNhan() {
+        LichHen lichHen = view.layLichHenDangChon();
+        if (lichHen == null) {
+            view.hienLoi("Chọn 1 lịch hẹn trong bảng để tiếp đón bệnh nhân.");
+            return;
+        }
+        if (!lichHen.duocTiepDon()) {
+            view.hienLoi("Chỉ tiếp đón bệnh nhân có lịch hẹn \"Đã đặt\" của hôm nay.");
+            return;
+        }
+        String cauHoi = "Tiếp đón bệnh nhân " + lichHen.getTenBenhNhan() + "?\n"
+                + "Lịch hẹn chuyển \"Đã đến\" và hệ thống tạo lượt khám \"Chờ khám\" với bác sĩ "
+                + lichHen.getTenBacSi() + ".";
+        int luaChon = JOptionPane.showConfirmDialog(view, cauHoi, "Tiếp đón bệnh nhân", JOptionPane.YES_NO_OPTION);
+        if (luaChon != JOptionPane.YES_OPTION) {
+            return;
+        }
+        String maLichHen = lichHen.getMaLichHen();
+        String tenBacSi = lichHen.getTenBacSi();
+        view.datDangTai(true);
+
+        new SwingWorker<String, Void>() {
+            @Override
+            protected String doInBackground() throws Exception {
+                return lichHenService.tiepDonBenhNhan(maLichHen);
+            }
+
+            @Override
+            protected void done() {
+                view.datDangTai(false);
+                try {
+                    String maPhieuKham = get();
+                    JOptionPane.showMessageDialog(view, "Đã tạo lượt khám " + maPhieuKham
+                            + " (Chờ khám). Bệnh nhân vào danh sách chờ của bác sĩ " + tenBacSi + ".");
+                } catch (Exception loi) {
+                    view.hienLoi(thongBaoLoi(loi));
+                }
+                taiDanhSach(maLichHen);   // thành công hay lỗi đều tải lại để thấy trạng thái mới nhất
+            }
+        }.execute();
     }
 
     // ===================== HỦY LỊCH (UC004 A2) =====================

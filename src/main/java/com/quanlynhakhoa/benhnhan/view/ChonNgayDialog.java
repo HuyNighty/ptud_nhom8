@@ -149,6 +149,7 @@ public class ChonNgayDialog extends JDialog implements ActionListener, ChangeLis
     private void taoSouth() {
         pnlSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         btnHuy = new JButton("Hủy");
+        MauNut.toDo(btnHuy);   // nút hủy màu đỏ
         btnHuy.addActionListener(this);
         pnlSouth.add(btnHuy);
     }

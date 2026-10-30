@@ -118,6 +118,7 @@ public class BenhNhanPanel extends JPanel {
         btnLoc.setIcon(new BieuTuong(BieuTuong.TIM_KIEM));     // hình kính lúp
         btnTaiLai.setIcon(new BieuTuong(BieuTuong.LAM_MOI));   // hình mũi tên vòng tròn
         btnThem = new JButton("+ Thêm bệnh nhân");
+        MauNut.toXanhDuong(btnThem);   // tạo mới: xanh dương
 
         // Hàng tìm kiếm nằm ở phía dưới (SOUTH) của pnlNorth
         JPanel pnlNorthSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
@@ -228,6 +229,7 @@ public class BenhNhanPanel extends JPanel {
 
         // SOUTH của pnlEast: nút Sửa (thao tác trên bệnh nhân đang chọn)
         btnSua = new JButton("Sửa thông tin...");
+        MauNut.toCam(btnSua);          // sửa: cam
         btnSua.setEnabled(false);
         JPanel pnlEastSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 12));
         pnlEastSouth.setOpaque(false);

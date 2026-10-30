@@ -211,7 +211,9 @@ public class BenhNhanDialog extends JDialog {
     private void taoSouth() {
         pnlSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btnLuu = new JButton("Lưu");
+        MauNut.toXanhDuong(btnLuu);   // nút lưu màu xanh dương
         btnHuy = new JButton("Hủy");
+        MauNut.toDo(btnHuy);   // nút hủy màu đỏ
         pnlSouth.add(btnHuy);
         pnlSouth.add(btnLuu);
     }

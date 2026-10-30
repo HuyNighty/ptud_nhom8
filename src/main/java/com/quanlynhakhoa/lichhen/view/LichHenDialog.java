@@ -3,6 +3,7 @@ package com.quanlynhakhoa.lichhen.view;
 import com.quanlynhakhoa.benhnhan.hopdong.BenhNhanTomTat;
 import com.quanlynhakhoa.benhnhan.view.BieuTuong;
 import com.quanlynhakhoa.benhnhan.view.ChonNgayDialog;
+import com.quanlynhakhoa.benhnhan.view.MauNut;
 import com.quanlynhakhoa.lichhen.model.BacSi;
 import com.quanlynhakhoa.lichhen.model.LichHen;
 import com.quanlynhakhoa.lichhen.service.LichHenService;
@@ -201,7 +202,9 @@ public class LichHenDialog extends JDialog {
     private void taoSouth() {
         pnlSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btnLuu = new JButton("Lưu");
+        MauNut.toXanhDuong(btnLuu);   // nút lưu màu xanh dương
         btnHuy = new JButton("Hủy");
+        MauNut.toDo(btnHuy);   // nút hủy màu đỏ
         pnlSouth.add(btnHuy);
         pnlSouth.add(btnLuu);
     }
