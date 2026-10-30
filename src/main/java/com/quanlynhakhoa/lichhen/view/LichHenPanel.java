@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -27,14 +28,16 @@ import javax.swing.table.DefaultTableModel;
 // Màn hình LỊCH HẸN (menu Lịch hẹn → Danh sách lịch hẹn), theo UC004 trong báo cáo docs/tuan_cuoi.
 // View chỉ tạo giao diện và hiển thị. Sự kiện do LichHenController xử lý.
 //
-//  ┌────────────────── pnlNorth ──────────────────┐
-//  │ tiêu đề                                      │
-//  │ Ngày [..] Chọn... Hôm nay  Tìm [....] Tìm   +Đặt lịch │
-//  ├────────────────── pnlCenter ─────────────────┤
-//  │ bảng lịch hẹn trong ngày                     │
-//  ├────────────────── pnlSouth ──────────────────┤
-//  │ dòng trạng thái              Đổi lịch  Hủy lịch │
-//  └──────────────────────────────────────────────┘
+//  ┌──────────────────────── pnlNorth ────────────────────────┐
+//  │ Lịch hẹn            [+ Đặt lịch hẹn] [Đổi lịch] [Hủy lịch] │  ← hàng trên: tiêu đề + nút thao tác
+//  │ ┌──────────────────────────────────────────────────────┐ │
+//  │ │ Ngày [30/10/2026] Chọn... Hôm nay │ Tìm [......] Tìm  │ │  ← hàng dưới: thanh lọc
+//  │ └──────────────────────────────────────────────────────┘ │
+//  ├──────────────────────── pnlCenter ───────────────────────┤
+//  │ bảng lịch hẹn trong ngày                                 │
+//  ├──────────────────────── pnlSouth ────────────────────────┤
+//  │ dòng trạng thái                                          │
+//  └──────────────────────────────────────────────────────────┘
 public class LichHenPanel extends JPanel {
     // Màu giống BenhNhanPanel / AccountPanel
     private static final Color NAVY = new Color(29, 61, 102);
@@ -48,12 +51,14 @@ public class LichHenPanel extends JPanel {
     // ----- NORTH -----
     private JPanel pnlNorth;
     private JLabel lblTieuDe;
+    private JButton btnDatLich;          // 3 nút thao tác: hàng trên, bên phải
+    private JButton btnDoiLich;
+    private JButton btnHuyLich;
     private JTextField txtNgayXem;       // ngày đang xem, chỉ hiển thị (chọn bằng nút "Chọn...")
     private JButton btnChonNgayXem;
     private JButton btnHomNay;
     private JTextField txtTimKiem;
     private JButton btnTimKiem;
-    private JButton btnDatLich;
 
     // ----- CENTER -----
     private JPanel pnlCenter;
@@ -65,8 +70,6 @@ public class LichHenPanel extends JPanel {
     // ----- SOUTH -----
     private JPanel pnlSouth;
     private JLabel lblTrangThai;
-    private JButton btnDoiLich;
-    private JButton btnHuyLich;
 
     private LocalDate ngayDangXem = LocalDate.now();
 
@@ -92,23 +95,37 @@ public class LichHenPanel extends JPanel {
     // ===================== Tạo các vùng =====================
 
     private void taoNorth() {
-        pnlNorth = new JPanel(new BorderLayout(0, 10));
+        pnlNorth = new JPanel(new BorderLayout(0, 12));
         pnlNorth.setOpaque(false);
 
+        // ----- Hàng trên (NORTH của pnlNorth): tiêu đề bên trái, nút thao tác bên phải -----
         lblTieuDe = new JLabel("Lịch hẹn");
         lblTieuDe.setFont(new Font("SansSerif", Font.BOLD, 23));
         lblTieuDe.setForeground(NAVY);
 
+        btnDatLich = new JButton("+ Đặt lịch hẹn");
+        btnDoiLich = new JButton("Đổi lịch...");
+        btnHuyLich = new JButton("Hủy lịch...");
+        JPanel pnlNutThaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        pnlNutThaoTac.setOpaque(false);
+        pnlNutThaoTac.add(btnDatLich);
+        pnlNutThaoTac.add(btnDoiLich);
+        pnlNutThaoTac.add(btnHuyLich);
+
+        JPanel pnlNorthNorth = new JPanel(new BorderLayout());
+        pnlNorthNorth.setOpaque(false);
+        pnlNorthNorth.add(lblTieuDe, BorderLayout.WEST);
+        pnlNorthNorth.add(pnlNutThaoTac, BorderLayout.EAST);
+
+        // ----- Hàng dưới (SOUTH của pnlNorth): thanh lọc theo ngày + tìm kiếm -----
         txtNgayXem = new JTextField(9);
         txtNgayXem.setEditable(false);
         btnChonNgayXem = new JButton("Chọn...");
         btnHomNay = new JButton("Hôm nay");
-        txtTimKiem = new JTextField(16);
+        txtTimKiem = new JTextField(20);
         btnTimKiem = new JButton("Tìm kiếm");
         btnTimKiem.setIcon(new BieuTuong(BieuTuong.TIM_KIEM));   // dùng lại icon kính lúp
-        btnDatLich = new JButton("+ Đặt lịch hẹn");
 
-        // Hàng lọc nằm ở phía dưới (SOUTH) của pnlNorth
         JPanel pnlNorthSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
         pnlNorthSouth.setBackground(Color.WHITE);
         pnlNorthSouth.setBorder(BorderFactory.createLineBorder(VIEN));
@@ -116,12 +133,12 @@ public class LichHenPanel extends JPanel {
         pnlNorthSouth.add(txtNgayXem);
         pnlNorthSouth.add(btnChonNgayXem);
         pnlNorthSouth.add(btnHomNay);
+        pnlNorthSouth.add(Box.createHorizontalStrut(18));   // khoảng cách giữa nhóm Ngày và nhóm Tìm
         pnlNorthSouth.add(new JLabel("Tìm (mã LH, mã BN, tên, SĐT):"));
         pnlNorthSouth.add(txtTimKiem);
         pnlNorthSouth.add(btnTimKiem);
-        pnlNorthSouth.add(btnDatLich);
 
-        pnlNorth.add(lblTieuDe, BorderLayout.NORTH);
+        pnlNorth.add(pnlNorthNorth, BorderLayout.NORTH);
         pnlNorth.add(pnlNorthSouth, BorderLayout.SOUTH);
     }
 
@@ -142,6 +159,16 @@ public class LichHenPanel extends JPanel {
         tblLichHen.getTableHeader().setReorderingAllowed(false);
         tblLichHen.setFillsViewportHeight(true);
 
+        // Độ rộng cột: cột ngắn (mã, giờ, SĐT, trạng thái) hẹp lại, cột tên / lý do rộng hơn
+        tblLichHen.getColumnModel().getColumn(0).setPreferredWidth(90);    // Mã lịch hẹn
+        tblLichHen.getColumnModel().getColumn(1).setPreferredWidth(60);    // Giờ hẹn
+        tblLichHen.getColumnModel().getColumn(2).setPreferredWidth(80);    // Mã BN
+        tblLichHen.getColumnModel().getColumn(3).setPreferredWidth(170);   // Bệnh nhân
+        tblLichHen.getColumnModel().getColumn(4).setPreferredWidth(100);   // SĐT
+        tblLichHen.getColumnModel().getColumn(5).setPreferredWidth(150);   // Bác sĩ
+        tblLichHen.getColumnModel().getColumn(6).setPreferredWidth(220);   // Lý do
+        tblLichHen.getColumnModel().getColumn(7).setPreferredWidth(110);   // Trạng thái
+
         scrLichHen = new JScrollPane(tblLichHen);
         scrLichHen.setBorder(BorderFactory.createLineBorder(VIEN));
         pnlCenter.add(scrLichHen, BorderLayout.CENTER);
@@ -150,19 +177,9 @@ public class LichHenPanel extends JPanel {
     private void taoSouth() {
         pnlSouth = new JPanel(new BorderLayout());
         pnlSouth.setOpaque(false);
-
         lblTrangThai = new JLabel("Chưa tải dữ liệu.");
         lblTrangThai.setForeground(XAM);
-
-        btnDoiLich = new JButton("Đổi lịch...");
-        btnHuyLich = new JButton("Hủy lịch...");
-        JPanel pnlSouthEast = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        pnlSouthEast.setOpaque(false);
-        pnlSouthEast.add(btnDoiLich);
-        pnlSouthEast.add(btnHuyLich);
-
         pnlSouth.add(lblTrangThai, BorderLayout.CENTER);
-        pnlSouth.add(pnlSouthEast, BorderLayout.EAST);
     }
 
     // ===================== Hàm hiển thị (Controller gọi) =====================
