@@ -203,6 +203,21 @@ public class BenhNhanDialog extends JDialog {
         return bn;
     }
 
+    // Called on EDT; prevent double submit or losing an in-flight edit.
+    public void datDangLuu(boolean dangLuu) {
+        btnLuu.setEnabled(!dangLuu);
+        btnHuy.setEnabled(!dangLuu);
+        btnChonNgay.setEnabled(!dangLuu);
+        txtHoTen.setEnabled(!dangLuu);
+        txtSoDienThoai.setEnabled(!dangLuu);
+        txtDiaChi.setEnabled(!dangLuu);
+        txtNguoiLienHe.setEnabled(!dangLuu);
+        cmbGioiTinh.setEnabled(!dangLuu);
+        setDefaultCloseOperation(dangLuu ? DO_NOTHING_ON_CLOSE : DISPOSE_ON_CLOSE);
+        setCursor(java.awt.Cursor.getPredefinedCursor(
+                dangLuu ? java.awt.Cursor.WAIT_CURSOR : java.awt.Cursor.DEFAULT_CURSOR));
+    }
+
     // Hiện lỗi thành hộp thông báo giữa màn hình (form vẫn mở để sửa lại)
     public void hienLoi(String thongBao) {
         JOptionPane.showMessageDialog(this, thongBao, "Dữ liệu chưa hợp lệ", JOptionPane.WARNING_MESSAGE);
