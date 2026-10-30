@@ -60,6 +60,7 @@ public final class AccountPanel extends JPanel {
     private final JTable tblAccounts = new JTable(model);
     private boolean loading;
     private boolean creating;
+    private boolean reloadPending;
 
     public AccountPanel(DesktopSession session) {
         this(session, new AccountDirectoryService(session, TeamDevConnection::open),
@@ -120,6 +121,9 @@ public final class AccountPanel extends JPanel {
         btnSearch.addActionListener(event -> load());
         btnRefresh.addActionListener(event -> load());
         txtKeyword.addActionListener(event -> load());
+        // Applying either filter is an immediate search, even during an in-flight load.
+        cmbRoleFilter.addActionListener(event -> load());
+        cmbStatusFilter.addActionListener(event -> load());
         if (configured) {
             load();
         } else {
@@ -142,15 +146,7 @@ public final class AccountPanel extends JPanel {
         for (Role role : Role.values()) cmbRoleFilter.addItem(role);
         cmbStatusFilter.addItem(null);
         for (AccountStatus status : AccountStatus.values()) cmbStatusFilter.addItem(status);
-        cmbRoleFilter.setRenderer(new DefaultListCellRenderer() {
-            @Override public java.awt.Component getListCellRendererComponent(
-                    javax.swing.JList<?> lstValues, Object value, int index,
-                    boolean selected, boolean focus) {
-                super.getListCellRendererComponent(lstValues, value, index, selected, focus);
-                setText(value == null ? "Tất cả vai trò" : roleLabel((Role) value));
-                return this;
-            }
-        });
+        cmbRoleFilter.setRenderer(roleRenderer());
         cmbStatusFilter.setRenderer(new DefaultListCellRenderer() {
             @Override public java.awt.Component getListCellRendererComponent(
                     javax.swing.JList<?> lstValues, Object value, int index,
@@ -168,8 +164,23 @@ public final class AccountPanel extends JPanel {
         return pnlFilters;
     }
 
+    private static DefaultListCellRenderer roleRenderer() {
+        return new DefaultListCellRenderer() {
+            @Override public java.awt.Component getListCellRendererComponent(
+                    javax.swing.JList<?> lstValues, Object value, int index,
+                    boolean selected, boolean focus) {
+                super.getListCellRendererComponent(lstValues, value, index, selected, focus);
+                setText(value == null ? "Tất cả vai trò" : roleLabel((Role) value));
+                return this;
+            }
+        };
+    }
+
     private void load() {
-        if (loading || creating) return;
+        if (loading || creating) {
+            reloadPending = true; // newest filter selection wins after current operation
+            return;
+        }
         if (!session.isActive()) {
             lblStatus.setText("Phiên đăng nhập đã kết thúc.");
             return;
@@ -192,28 +203,40 @@ public final class AccountPanel extends JPanel {
             }
             @Override protected void done() {
                 loading = false;
-                btnSearch.setEnabled(true);
-                btnRefresh.setEnabled(true);
-                btnCreate.setEnabled(true);
                 if (!session.isActive()) {
+                    reloadPending = false;
                     model.setRows(List.of());
                     lblStatus.setText("Phiên đăng nhập đã kết thúc.");
                     return;
                 }
                 try {
                     AccountDirectoryDao.Result result = get();
-                    model.setRows(result.rows());
-                    lblDetail.setText("Chọn một tài khoản để xem thông tin.");
-                    lblStatus.setText(result.rows().size() + " tài khoản"
-                            + (result.truncated() ? " (giới hạn 200; hãy lọc để tìm thêm)" : "")
-                            + " · Chỉ đọc danh sách; tạo tài khoản bằng biểu mẫu riêng.");
+                    // A changed filter supersedes this result; never show obsolete rows.
+                    if (!reloadPending) {
+                        model.setRows(result.rows());
+                        lblDetail.setText("Chọn một tài khoản để xem thông tin.");
+                        lblStatus.setText(result.rows().size() + " tài khoản"
+                                + (result.truncated() ? " (giới hạn 200; hãy lọc để tìm thêm)" : "")
+                                + " · Chỉ đọc danh sách; tạo tài khoản bằng biểu mẫu riêng.");
+                    }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    lblStatus.setText("Tải dữ liệu bị gián đoạn.");
+                    if (!reloadPending) lblStatus.setText("Tải dữ liệu bị gián đoạn.");
                 } catch (ExecutionException | CancellationException e) {
-                    model.setRows(List.of());
-                    lblDetail.setText("Không có dữ liệu hiển thị.");
-                    lblStatus.setText("Không thể tải tài khoản. Kiểm tra kết nối và quyền SQL.");
+                    if (!reloadPending) {
+                        model.setRows(List.of());
+                        lblDetail.setText("Không có dữ liệu hiển thị.");
+                        lblStatus.setText("Không thể tải tài khoản. Kiểm tra kết nối và quyền SQL.");
+                    }
+                } finally {
+                    if (reloadPending) {
+                        reloadPending = false;
+                        load();
+                    } else {
+                        btnSearch.setEnabled(true);
+                        btnRefresh.setEnabled(true);
+                        btnCreate.setEnabled(true);
+                    }
                 }
             }
         }.execute();
@@ -229,6 +252,7 @@ public final class AccountPanel extends JPanel {
         for (Role role : Role.values()) {
             if (role != Role.SYSTEM_ADMIN) cmbNewRole.addItem(role);
         }
+        cmbNewRole.setRenderer(roleRenderer()); // show Vietnamese; keep Role enum for DB
         JPasswordField txtPassword = new JPasswordField(16);
         JPasswordField txtConfirmation = new JPasswordField(16);
         JPanel pnlFields = new JPanel(new GridLayout(0, 2, 10, 9));
@@ -291,6 +315,7 @@ public final class AccountPanel extends JPanel {
                     try {
                         String id = get();
                         lblStatus.setText("Đã tạo tài khoản: " + id);
+                        reloadPending = false;
                         load();
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
@@ -302,6 +327,11 @@ public final class AccountPanel extends JPanel {
                                 "Không thể tạo tài khoản", JOptionPane.WARNING_MESSAGE);
                     } catch (CancellationException ex) {
                         lblStatus.setText("Thao tác bị gián đoạn; hãy làm mới để kiểm tra.");
+                    } finally {
+                        if (reloadPending && session.isActive()) {
+                            reloadPending = false;
+                            load();
+                        }
                     }
                 }
             }.execute();
