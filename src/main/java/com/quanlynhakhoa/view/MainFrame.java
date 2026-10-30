@@ -43,10 +43,10 @@ public final class MainFrame extends JFrame {
     private final Map<Module, JPanel> slots = new EnumMap<>(Module.class);
     private final Runnable returnToLogin;
     private final CardLayout cards = new CardLayout();
-    private final JPanel content = new JPanel(cards);
+    private final JPanel pnlContent = new JPanel(cards);
     private final Set<Module> allowed;
     private final Map<Module, JMenuItem> links = new EnumMap<>(Module.class);
-    private JButton overviewButton;
+    private JButton btnOverview;
 
     public MainFrame(DesktopSession session, Runnable returnToLogin) {
         this(session, returnToLogin, FeatureBootstrap.createRegistry());
@@ -69,197 +69,197 @@ public final class MainFrame extends JFrame {
             }
         });
 
-        JPanel root = new JPanel(new BorderLayout());
-        root.setBackground(BACKGROUND);
-        JPanel north = new JPanel(new BorderLayout());
-        north.add(buildHeader(session), BorderLayout.NORTH);
-        north.add(buildNavigation(), BorderLayout.SOUTH);
-        root.add(north, BorderLayout.NORTH);
+        JPanel pnlRoot = new JPanel(new BorderLayout());
+        pnlRoot.setBackground(BACKGROUND);
+        JPanel pnlNorth = new JPanel(new BorderLayout());
+        pnlNorth.add(buildHeader(session), BorderLayout.NORTH);
+        pnlNorth.add(buildNavigation(), BorderLayout.SOUTH);
+        pnlRoot.add(pnlNorth, BorderLayout.NORTH);
 
-        content.setBackground(BACKGROUND);
+        pnlContent.setBackground(BACKGROUND);
         for (Module module : model.availableModules()) {
-            JPanel page = module == Module.HOME ? new DashboardPanel(session) : buildPlaceholder(module);
-            JPanel slot = new JPanel(new BorderLayout());
-            slot.add(scroll(page), BorderLayout.CENTER);
-            slots.put(module, slot);
-            content.add(slot, module.name());
+            JPanel pnlPage = module == Module.HOME ? new DashboardPanel(session) : buildPlaceholder(module);
+            JPanel pnlSlot = new JPanel(new BorderLayout());
+            pnlSlot.add(scroll(pnlPage), BorderLayout.CENTER);
+            slots.put(module, pnlSlot);
+            pnlContent.add(pnlSlot, module.name());
         }
-        root.add(content, BorderLayout.CENTER);
-        setContentPane(root);
+        pnlRoot.add(pnlContent, BorderLayout.CENTER);
+        setContentPane(pnlRoot);
         navigate(Module.HOME);
     }
 
     private JPanel buildHeader(DesktopSession session) {
-        JPanel header = new JPanel(new BorderLayout(20, 0));
-        header.setBackground(Color.WHITE);
-        header.setBorder(new EmptyBorder(17, 26, 16, 26));
+        JPanel pnlHeader = new JPanel(new BorderLayout(20, 0));
+        pnlHeader.setBackground(Color.WHITE);
+        pnlHeader.setBorder(new EmptyBorder(17, 26, 16, 26));
 
-        JPanel brand = new JPanel(new BorderLayout(0, 4));
-        brand.setOpaque(false);
-        JLabel title = new JLabel("QUẢN LÝ NHA KHOA  |  NHÓM 8");
-        title.setFont(new Font("SansSerif", Font.BOLD, 20));
-        title.setForeground(NAVY);
-        JLabel caption = new JLabel("Ứng dụng quản lý phòng khám · Java Swing");
-        caption.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        caption.setForeground(new Color(104, 119, 136));
-        brand.add(title, BorderLayout.NORTH);
-        brand.add(caption, BorderLayout.SOUTH);
-        header.add(brand, BorderLayout.WEST);
+        JPanel pnlBrand = new JPanel(new BorderLayout(0, 4));
+        pnlBrand.setOpaque(false);
+        JLabel lblTitle = new JLabel("QUẢN LÝ NHA KHOA  |  NHÓM 8");
+        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 20));
+        lblTitle.setForeground(NAVY);
+        JLabel lblCaption = new JLabel("Ứng dụng quản lý phòng khám · Java Swing");
+        lblCaption.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblCaption.setForeground(new Color(104, 119, 136));
+        pnlBrand.add(lblTitle, BorderLayout.NORTH);
+        pnlBrand.add(lblCaption, BorderLayout.SOUTH);
+        pnlHeader.add(pnlBrand, BorderLayout.WEST);
 
-        JPanel right = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 15, 2));
-        right.setOpaque(false);
-        JLabel identity = new JLabel(session.accountId() + "   ·   " + roleLabel(session));
-        identity.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        identity.setForeground(INK);
-        right.add(identity);
-        JButton logout = new JButton("Đăng xuất");
-        logout.addActionListener(event -> logout());
-        logout.setFocusPainted(false);
-        right.add(logout);
-        header.add(right, BorderLayout.EAST);
-        return header;
+        JPanel pnlRight = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 15, 2));
+        pnlRight.setOpaque(false);
+        JLabel lblIdentity = new JLabel(session.accountId() + "   ·   " + roleLabel(session));
+        lblIdentity.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblIdentity.setForeground(INK);
+        pnlRight.add(lblIdentity);
+        JButton btnLogout = new JButton("Đăng xuất");
+        btnLogout.addActionListener(event -> logout());
+        btnLogout.setFocusPainted(false);
+        pnlRight.add(btnLogout);
+        pnlHeader.add(pnlRight, BorderLayout.EAST);
+        return pnlHeader;
     }
 
     private JMenuBar buildNavigation() {
-        JMenuBar bar = new JMenuBar();
-        bar.setBackground(NAVY);
-        bar.setOpaque(true);
-        bar.setBorder(new EmptyBorder(3, 16, 3, 16));
+        JMenuBar mnuBar = new JMenuBar();
+        mnuBar.setBackground(NAVY);
+        mnuBar.setOpaque(true);
+        mnuBar.setBorder(new EmptyBorder(3, 16, 3, 16));
 
-        overviewButton = new JButton("Tổng quan");
-        overviewButton.setForeground(Color.WHITE);
-        overviewButton.setBackground(NAVY);
-        overviewButton.setFont(new Font("SansSerif", Font.BOLD, 13));
-        overviewButton.setBorder(new EmptyBorder(14, 13, 14, 13));
-        overviewButton.setFocusPainted(false);
-        overviewButton.addActionListener(event -> navigate(Module.HOME));
-        bar.add(overviewButton);
+        btnOverview = new JButton("Tổng quan");
+        btnOverview.setForeground(Color.WHITE);
+        btnOverview.setBackground(NAVY);
+        btnOverview.setFont(new Font("SansSerif", Font.BOLD, 13));
+        btnOverview.setBorder(new EmptyBorder(14, 13, 14, 13));
+        btnOverview.setFocusPainted(false);
+        btnOverview.addActionListener(event -> navigate(Module.HOME));
+        mnuBar.add(btnOverview);
 
-        JMenu patient = menu("Bệnh nhân");
-        item(patient, "Danh sách bệnh nhân", Module.PATIENTS);
-        item(patient, "Hồ sơ bệnh án", Module.MEDICAL_RECORDS);
-        pending(patient, "Tiếp nhận mới");
-        addIfNotEmpty(bar, patient);
+        JMenu mnuPatient = menu("Bệnh nhân");
+        item(mnuPatient, "Danh sách bệnh nhân", Module.PATIENTS);
+        item(mnuPatient, "Hồ sơ bệnh án", Module.MEDICAL_RECORDS);
+        pending(mnuPatient, "Tiếp nhận mới");
+        addIfNotEmpty(mnuBar, mnuPatient);
 
-        JMenu appointments = menu("Lịch hẹn");
-        item(appointments, "Danh sách lịch hẹn", Module.APPOINTMENTS);
-        pending(appointments, "Đặt lịch hẹn");
-        addIfNotEmpty(bar, appointments);
+        JMenu mnuAppointments = menu("Lịch hẹn");
+        item(mnuAppointments, "Danh sách lịch hẹn", Module.APPOINTMENTS);
+        pending(mnuAppointments, "Đặt lịch hẹn");
+        addIfNotEmpty(mnuBar, mnuAppointments);
 
-        JMenu clinical = menu("Khám & điều trị");
-        item(clinical, "Phiếu khám", Module.EXAMINATIONS);
+        JMenu mnuClinical = menu("Khám & điều trị");
+        item(mnuClinical, "Phiếu khám", Module.EXAMINATIONS);
         if (allowed.contains(Module.EXAMINATIONS)) {
-            pending(clinical, "Kế hoạch điều trị");
+            pending(mnuClinical, "Kế hoạch điều trị");
         }
-        addIfNotEmpty(bar, clinical);
+        addIfNotEmpty(mnuBar, mnuClinical);
 
-        JMenu billing = menu("Hóa đơn");
-        item(billing, "Danh sách hóa đơn", Module.BILLING);
-        item(billing, "Bảng giá dịch vụ", Module.SERVICE_CATALOG);
+        JMenu mnuBilling = menu("Hóa đơn");
+        item(mnuBilling, "Danh sách hóa đơn", Module.BILLING);
+        item(mnuBilling, "Bảng giá dịch vụ", Module.SERVICE_CATALOG);
         if (allowed.contains(Module.BILLING)) {
-            pending(billing, "Thanh toán");
-            pending(billing, "Công nợ");
+            pending(mnuBilling, "Thanh toán");
+            pending(mnuBilling, "Công nợ");
         }
-        addIfNotEmpty(bar, billing);
+        addIfNotEmpty(mnuBar, mnuBilling);
 
-        JMenu inventory = menu("Kho vật tư");
-        item(inventory, "Danh mục thuốc & vật tư", Module.INVENTORY);
-        item(inventory, "Yêu cầu cấp phát", Module.SUPPLY_REQUESTS);
-        item(inventory, "Kiểm tra hộp cấp cứu", Module.EMERGENCY_KIT);
+        JMenu mnuInventory = menu("Kho vật tư");
+        item(mnuInventory, "Danh mục thuốc & vật tư", Module.INVENTORY);
+        item(mnuInventory, "Yêu cầu cấp phát", Module.SUPPLY_REQUESTS);
+        item(mnuInventory, "Kiểm tra hộp cấp cứu", Module.EMERGENCY_KIT);
         if (allowed.contains(Module.INVENTORY)) {
-            pending(inventory, "Nhập / xuất kho");
+            pending(mnuInventory, "Nhập / xuất kho");
         }
-        addIfNotEmpty(bar, inventory);
+        addIfNotEmpty(mnuBar, mnuInventory);
 
-        JMenu workforce = menu("Nhân viên");
-        item(workforce, "Danh sách nhân viên", Module.WORKFORCE);
-        item(workforce, "Lịch làm việc của tôi", Module.MY_SCHEDULE);
+        JMenu mnuWorkforce = menu("Nhân viên");
+        item(mnuWorkforce, "Danh sách nhân viên", Module.WORKFORCE);
+        item(mnuWorkforce, "Lịch làm việc của tôi", Module.MY_SCHEDULE);
         if (allowed.contains(Module.WORKFORCE)) {
-            pending(workforce, "Phân công ca");
+            pending(mnuWorkforce, "Phân công ca");
         }
-        addIfNotEmpty(bar, workforce);
+        addIfNotEmpty(mnuBar, mnuWorkforce);
 
-        JMenu system = menu("Hệ thống");
-        item(system, "Tài khoản", Module.ACCOUNTS);
-        item(system, "Vai trò", Module.ROLES);
-        item(system, "Nhật ký thao tác", Module.AUDIT);
-        addIfNotEmpty(bar, system);
-        return bar;
+        JMenu mnuSystem = menu("Hệ thống");
+        item(mnuSystem, "Tài khoản", Module.ACCOUNTS);
+        item(mnuSystem, "Vai trò", Module.ROLES);
+        item(mnuSystem, "Nhật ký thao tác", Module.AUDIT);
+        addIfNotEmpty(mnuBar, mnuSystem);
+        return mnuBar;
     }
 
     private JMenu menu(String title) {
-        JMenu menu = new JMenu(title + "  ▾");
-        menu.setForeground(Color.WHITE);
-        menu.setFont(new Font("SansSerif", Font.BOLD, 13));
-        menu.setBorder(new EmptyBorder(13, 13, 13, 13));
-        return menu;
+        JMenu mnuMenu = new JMenu(title + "  ▾");
+        mnuMenu.setForeground(Color.WHITE);
+        mnuMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
+        mnuMenu.setBorder(new EmptyBorder(13, 13, 13, 13));
+        return mnuMenu;
     }
 
-    private void item(JMenu menu, String text, Module module) {
+    private void item(JMenu mnuMenu, String text, Module module) {
         if (!allowed.contains(module)) return;
-        JMenuItem action = new JMenuItem(text);
-        action.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        action.setBorder(new EmptyBorder(11, 14, 11, 30));
-        action.addActionListener(event -> navigate(module));
-        menu.add(action);
-        links.put(module, action);
+        JMenuItem mniAction = new JMenuItem(text);
+        mniAction.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        mniAction.setBorder(new EmptyBorder(11, 14, 11, 30));
+        mniAction.addActionListener(event -> navigate(module));
+        mnuMenu.add(mniAction);
+        links.put(module, mniAction);
     }
 
-    private void pending(JMenu menu, String text) {
-        JMenuItem action = new JMenuItem(text + "  ·  Sắp triển khai");
-        action.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        action.setEnabled(false);
-        menu.add(action);
+    private void pending(JMenu mnuMenu, String text) {
+        JMenuItem mniAction = new JMenuItem(text + "  ·  Sắp triển khai");
+        mniAction.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        mniAction.setEnabled(false);
+        mnuMenu.add(mniAction);
     }
 
-    private void addIfNotEmpty(JMenuBar bar, JMenu menu) {
+    private void addIfNotEmpty(JMenuBar mnuBar, JMenu mnuMenu) {
         boolean hasEnabledItem = false;
-        for (int i = 0; i < menu.getItemCount(); i++) {
-            JMenuItem item = menu.getItem(i);
-            if (item != null && item.isEnabled()) hasEnabledItem = true;
+        for (int i = 0; i < mnuMenu.getItemCount(); i++) {
+            JMenuItem mniItem = mnuMenu.getItem(i);
+            if (mniItem != null && mniItem.isEnabled()) hasEnabledItem = true;
         }
-        if (hasEnabledItem) bar.add(menu);
+        if (hasEnabledItem) mnuBar.add(mnuMenu);
     }
 
     private JPanel buildPlaceholder(Module module) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(BACKGROUND);
-        panel.setBorder(new EmptyBorder(38, 40, 38, 40));
-        JPanel card = new JPanel(new BorderLayout(0, 20));
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createCompoundBorder(
+        JPanel pnlPanel = new JPanel(new BorderLayout());
+        pnlPanel.setBackground(BACKGROUND);
+        pnlPanel.setBorder(new EmptyBorder(38, 40, 38, 40));
+        JPanel pnlCard = new JPanel(new BorderLayout(0, 20));
+        pnlCard.setBackground(Color.WHITE);
+        pnlCard.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(LINE), new EmptyBorder(34, 34, 34, 34)));
-        JLabel title = new JLabel(labelFor(module));
-        title.setFont(new Font("SansSerif", Font.BOLD, 24));
-        title.setForeground(NAVY);
-        card.add(title, BorderLayout.NORTH);
-        JLabel message = new JLabel("Giao diện nghiệp vụ này sẽ do thành viên phụ trách phát triển.");
-        message.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        message.setForeground(INK);
-        card.add(message, BorderLayout.CENTER);
-        JLabel note = new JLabel("Chưa tích hợp dữ liệu. Không có thao tác SQL từ màn hình này.", SwingConstants.LEFT);
-        note.setForeground(new Color(94, 109, 127));
-        card.add(note, BorderLayout.SOUTH);
-        panel.add(card, BorderLayout.NORTH);
-        return panel;
+        JLabel lblTitle = new JLabel(labelFor(module));
+        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 24));
+        lblTitle.setForeground(NAVY);
+        pnlCard.add(lblTitle, BorderLayout.NORTH);
+        JLabel lblMessage = new JLabel("Giao diện nghiệp vụ này sẽ do thành viên phụ trách phát triển.");
+        lblMessage.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        lblMessage.setForeground(INK);
+        pnlCard.add(lblMessage, BorderLayout.CENTER);
+        JLabel lblNote = new JLabel("Chưa tích hợp dữ liệu. Không có thao tác SQL từ màn hình này.", SwingConstants.LEFT);
+        lblNote.setForeground(new Color(94, 109, 127));
+        pnlCard.add(lblNote, BorderLayout.SOUTH);
+        pnlPanel.add(pnlCard, BorderLayout.NORTH);
+        return pnlPanel;
     }
 
-    private JScrollPane scroll(JPanel page) {
-        JScrollPane scroll = new JScrollPane(page);
-        scroll.setBorder(BorderFactory.createEmptyBorder());
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
-        return scroll;
+    private JScrollPane scroll(JPanel pnlPage) {
+        JScrollPane scrPage = new JScrollPane(pnlPage);
+        scrPage.setBorder(BorderFactory.createEmptyBorder());
+        scrPage.getVerticalScrollBar().setUnitIncrement(16);
+        return scrPage;
     }
 
     private void loadFeature(Module module) {
         if (module == Module.HOME || loaded.contains(module) || !registry.contains(module)) return;
         try {
-            JPanel page = registry.create(session, module);
-            JPanel slot = slots.get(module);
-            slot.removeAll();
-            slot.add(scroll(page), BorderLayout.CENTER);
-            slot.revalidate();
-            slot.repaint();
+            JPanel pnlPage = registry.create(session, module);
+            JPanel pnlSlot = slots.get(module);
+            pnlSlot.removeAll();
+            pnlSlot.add(scroll(pnlPage), BorderLayout.CENTER);
+            pnlSlot.revalidate();
+            pnlSlot.repaint();
             loaded.add(module);
         } catch (RuntimeException failure) {
             JOptionPane.showMessageDialog(this, "Không thể mở màn hình nghiệp vụ.",
@@ -270,9 +270,9 @@ public final class MainFrame extends JFrame {
     private void navigate(Module module) {
         model.select(module);
         loadFeature(module);
-        cards.show(content, module.name());
-        if (overviewButton != null) {
-            overviewButton.setBackground(module == Module.HOME ? new Color(43, 110, 190) : NAVY);
+        cards.show(pnlContent, module.name());
+        if (btnOverview != null) {
+            btnOverview.setBackground(module == Module.HOME ? new Color(43, 110, 190) : NAVY);
         }
         for (Map.Entry<Module, JMenuItem> entry : links.entrySet()) {
             entry.getValue().setForeground(entry.getKey() == module
