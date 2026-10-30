@@ -8,7 +8,7 @@ Căn cứ: `docs/tuan_cuoi/9_REPORT_ApplicationDevelopment.docx`
 - UC005 bước 1: tìm theo mã, tên, số điện thoại.
 - BR10: kiểm tra lại dữ liệu ngay trước khi lưu.
 
-## 1. Phần Lịch hẹn được dùng gì
+## 1. Hợp đồng: phần Lịch hẹn được dùng gì
 
 Package `com.quanlynhakhoa.benhnhan.hopdong`:
 
@@ -72,15 +72,39 @@ if (benhNhan == null) {
 
 ## 3. Quy ước
 
-1. Phần Lịch hẹn **không** viết SQL đọc / ghi `dbo.BenhNhan`, `dbo.HoSoBenhAn`; chỉ lưu `maBenhNhan`.
-2. Phần Bệnh nhân giữ nguyên tên và ý nghĩa 2 hàm trên; muốn đổi phải báo trước.
-3. Các quy tắc của lịch hẹn (BR02 không chồng giờ, BR03 chỉ đổi/hủy lịch "Đã đặt") do phần Lịch hẹn tự kiểm tra.
+1. Phần Lịch hẹn **không ghi** vào `dbo.BenhNhan`, `dbo.HoSoBenhAn`; chỉ lưu `maBenhNhan` vào `LichHen`.
+2. Tìm / kiểm tra bệnh nhân khi đặt lịch: **chỉ qua `TraCuuBenhNhan`**.
+   Riêng câu SQL danh sách lịch hẹn được `JOIN dbo.BenhNhan` (chỉ đọc) để hiện tên + SĐT trên bảng.
+3. Phần Bệnh nhân giữ nguyên tên và ý nghĩa 2 hàm trên; muốn đổi phải báo trước.
+4. Các quy tắc của lịch hẹn (BR02 không chồng giờ + trong ca, BR03 chỉ đổi/hủy lịch "Đã đặt") do phần Lịch hẹn tự kiểm tra.
 
-## 4. Cần thống nhất trước khi làm Lịch hẹn
+## 4. Phần Lịch hẹn đã làm (package `com.quanlynhakhoa.lichhen`)
+
+| File | Nội dung |
+|---|---|
+| `model/LichHen`, `model/BacSi` | dữ liệu lịch hẹn, bác sĩ |
+| `dao/LichHenDao` | toàn bộ SQL (dùng lại `BenhNhanDao.taoCauLenh`, `doiKyTuDacBietThanhKyTuThuong`) |
+| `service/LichHenService` | quyền `APPOINTMENT_READ` / `APPOINTMENT_MANAGE`, BR02, BR03, BR10, transaction, nhật ký |
+| `controller/LichHenController` | sự kiện + SwingWorker |
+| `view/LichHenPanel` | menu Lịch hẹn → Danh sách lịch hẹn (xem theo ngày, tìm, Đặt / Đổi / Hủy) |
+| `view/LichHenDialog` | form Đặt lịch / Đổi lịch (dùng lại `ChonNgayDialog`, `BieuTuong`) |
+
+Quyết định đã chọn (Huy có thể đổi):
+
+- Lịch mới lưu `CHO_XAC_NHAN`. "Đã đặt" = `CHO_XAC_NHAN` hoặc `DA_XAC_NHAN` (cả 2 đổi / hủy được).
+- Đổi lịch: lịch cũ → `DA_DOI_LICH`, tạo lịch mới có `maLichHenGoc` = lịch cũ (giữ lịch sử).
+- Hủy: `DA_HUY` + `lyDoHuy` bắt buộc.
+- Mỗi lịch hẹn **30 phút cố định** (xem mục 5).
+- Giờ trống = các mốc 30 phút nằm trọn trong ca (`PhanCong` + `CaLamViec`, bỏ ca `DA_HUY`), trừ giờ đã qua và giờ chồng lịch khác (bỏ lịch `DA_HUY`, `DA_DOI_LICH`).
+- Lúc lưu: kiểm tra lại trong transaction với `UPDLOCK, HOLDLOCK`; không còn trống → báo "Khung giờ không còn trống" và tải lại giờ trống (UC004 E1).
+
+## 5. Cần Huy làm / chốt
 
 | # | Vấn đề | Đề xuất |
 |---|---|---|
-| 1 | Tài khoản app (`TeamM1Permissions`) chỉ có **SELECT** trên `LichHen` → chưa lưu được lịch hẹn. | Huy cấp thêm INSERT, UPDATE trên `LichHen`. |
-| 2 | Báo cáo dùng trạng thái **"Đã đặt"**, database V5 mặc định `CHO_XAC_NHAN` và có thêm `DA_XAC_NHAN`. | Chốt: "Đã đặt" = `CHO_XAC_NHAN` hay `DA_XAC_NHAN`. |
-| 3 | UC004 A3: chưa có hồ sơ thì tạo hồ sơ (UC003) rồi quay lại. | Màn hình Lịch hẹn có nút "Thêm bệnh nhân" mở form Thêm của phần Bệnh nhân — cần thống nhất cách gọi (hiện form Thêm nằm trong `BenhNhanController`). |
-| 4 | `TEAM_WORK_SPLIT` gợi ý package `patient/`, code hiện dùng `benhnhan/`. | Giữ `benhnhan/` (đã có sẵn), hoặc Huy quyết đổi. |
+| 1 | Tài khoản app chỉ có **SELECT** trên `LichHen` → không lưu được. | Thêm vào `TeamM1Permissions`: `LichHen` SELECT, INSERT, UPDATE. |
+| 2 | Tài khoản app **chưa có SELECT** trên `PhanCong`, `CaLamViec` → không xem được giờ trống (BR02). | Thêm SELECT cho 2 bảng này. |
+| 3 | Báo cáo cho chọn thời lượng **30 / 60 / 90 phút**, `LichHen` V5 **không có cột thời lượng / giờ kết thúc**. | Migration mới thêm `thoiLuongPhut INT NOT NULL DEFAULT 30`; khi có cột thì Lịch hẹn thêm ô chọn thời lượng. |
+| 4 | Database dev chưa có dữ liệu `CaLamViec` / `PhanCong` → mọi bác sĩ đều "không có ca". | Thêm dữ liệu mẫu ca làm việc cho dev. |
+| 5 | UC004 A3: chưa có hồ sơ → tạo hồ sơ rồi quay lại. | Hiện tại form báo "hãy tạo hồ sơ ở màn hình Bệnh nhân rồi đặt lịch lại". |
+| 6 | Đăng ký màn hình: `FeatureBootstrap` thêm `.register(Module.APPOINTMENTS, LichHenPanel::new)`. Menu "Đặt lịch hẹn" đang `pending` trong `MainFrame` → có thể bỏ, vì nút "+ Đặt lịch hẹn" nằm trong màn hình danh sách. | Huy đăng ký (file Core). |

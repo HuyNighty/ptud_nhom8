@@ -89,7 +89,8 @@ public class BenhNhanDao {
 
     // Trong LIKE của SQL Server: % = nhiều ký tự bất kỳ, _ = 1 ký tự bất kỳ, [ ] = nhóm ký tự.
     // Người dùng gõ "_" hay "%" thì phải hiểu là chữ bình thường → bọc trong [ ]   (ví dụ "_" → "[_]")
-    private String doiKyTuDacBietThanhKyTuThuong(String tuKhoa) {
+    // public static: phần Lịch hẹn (LichHenDao) dùng lại hàm này.
+    public static String doiKyTuDacBietThanhKyTuThuong(String tuKhoa) {
         StringBuilder ketQua = new StringBuilder();
         for (int viTri = 0; viTri < tuKhoa.length(); viTri++) {
             char kyTu = tuKhoa.charAt(viTri);
@@ -287,7 +288,8 @@ public class BenhNhanDao {
 
     // Tạo PreparedStatement kèm thời gian chờ tối đa.
     // Nếu đặt thời gian chờ bị lỗi thì đóng câu lệnh lại ngay rồi báo lỗi.
-    private PreparedStatement taoCauLenh(Connection ketNoi, String sql) throws SQLException {
+    // public static: phần Lịch hẹn (LichHenDao) dùng lại hàm này.
+    public static PreparedStatement taoCauLenh(Connection ketNoi, String sql) throws SQLException {
         PreparedStatement cauLenh = ketNoi.prepareStatement(sql);
         try {
             cauLenh.setQueryTimeout(THOI_GIAN_CHO_TOI_DA);
