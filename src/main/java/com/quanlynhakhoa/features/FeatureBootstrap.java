@@ -2,6 +2,8 @@ package com.quanlynhakhoa.features;
 
 import com.quanlynhakhoa.account.ui.AccountPanel;
 import com.quanlynhakhoa.benhnhan.view.BenhNhanPanel;
+import com.quanlynhakhoa.benhnhan.view.HoSoBenhAnPanel;
+import com.quanlynhakhoa.lichhen.view.LichHenPanel;
 import com.quanlynhakhoa.navigation.Module;
 import com.quanlynhakhoa.billing.ui.HoaDonPanel;
 import com.quanlynhakhoa.dichvu.ui.DichVuPanel;
@@ -16,6 +18,8 @@ public final class FeatureBootstrap {
         return FeatureRegistry.builder()
                 .register(Module.ACCOUNTS, AccountPanel::new)
                 .register(Module.PATIENTS, BenhNhanPanel::new)
+                .register(Module.APPOINTMENTS, LichHenPanel::new)
+                .register(Module.MEDICAL_RECORDS, HoSoBenhAnPanel::new)
                 .register(Module.SERVICE_CATALOG, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session) {
                         return new DichVuPanel(session, TeamDevConnection::open, DichVuPanel.EditorMode.COMBINED);
