@@ -71,7 +71,7 @@ public final class FeatureJdbcDouble implements ConnectionProvider {
                 if (name.equals("executeQuery")) {
                     List<Map<String, Object>> values = List.of();
                     if (query.startsWith("WITH Lines")) values = invoiceRows;
-                    else if (query.contains("FROM dbo.ChiTietHoaDon WHERE")) values = lineRows;
+                    else if (query.contains("FROM dbo.ChiTietHoaDon ct")) values = lineRows;
                     else if (query.contains("FROM dbo.ThanhToan WHERE")) values = paymentRows;
                     else if (query.startsWith("SELECT maDichVu FROM") && existing) values = List.of(Map.of("maDichVu", "TST1"));
                     return rows(values);

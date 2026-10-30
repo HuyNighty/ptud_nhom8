@@ -45,7 +45,7 @@ public final class DichVuController {
             protected void expired() { view.expired(); }
             protected void succeeded(List<DichVu> values) {
                 view.showRows(values);
-                view.status((afterSave ? "Đã lưu và tải lại. " : "") + (values.isEmpty() ? "Không có dịch vụ phù hợp." : values.size() + " dịch vụ."));
+                view.status((afterSave ? "Đã lưu và tải lại. " : "") + (values.isEmpty() ? keyword.isBlank()&&active==null?"Chưa có dịch vụ. Bấm Thêm mới để bắt đầu.":"Không tìm thấy dịch vụ phù hợp." : values.size() + " dịch vụ."));
                 if(reloadPending){reloadPending=false;load(false);}
             }
             protected void failed(Throwable failure) {

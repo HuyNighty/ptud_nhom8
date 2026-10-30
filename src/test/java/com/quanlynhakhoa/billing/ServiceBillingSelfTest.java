@@ -143,12 +143,14 @@ public final class ServiceBillingSelfTest {
         header.put("congNoBenhNhan", money("700"));
         jdbc.lineRows = List.of(lineRow(1, "maDichVu", "DV1", 2, "100"), lineRow(2, "maThuoc", "T1", 3, "20"),
                 lineRow(3, "maVatTu", "VT1", 1, "40"));
+        jdbc.lineRows.get(0).put("tenHang","Synthetic service name");jdbc.lineRows.get(1).put("tenHang","Synthetic medicine name");jdbc.lineRows.get(2).put("tenHang","Synthetic material name");
         jdbc.paymentRows = List.of(paymentRow("P1", "60", "THANH_CONG", "TIEN_MAT"),
                 paymentRow("P2", "40", "THANH_CONG", "THE_POS"), paymentRow("P3", "900", "DA_HUY", "CHUYEN_KHOAN"));
         ChiTietBilling detail = service.detail("H1");
         check(detail.chiTiet().size() == 3 && detail.thanhToan().size() == 3 && detail.hoaDon().conNo().intValueExact() == 200,
                 "real DAO maps mixed item types, multiple payments and cancellation");
         check(detail.hoaDon().congNoBenhNhan().intValueExact() == 700, "patient debt passed through unfiltered aggregate");
+        check(detail.chiTiet().get(0).tenHienThi().equals("Synthetic service name")&&detail.chiTiet().get(1).tenHienThi().equals("Synthetic medicine name")&&detail.chiTiet().get(2).tenHienThi().equals("Synthetic material name"),"DAO maps names for all three item types without changing frozen prices");
         check(detail.thanhToan().get(2).maTaiKhoanHuy().equals("TST_ACC") && detail.thanhToan().get(2).thoiGianHuy() != null,
                 "cancellation metadata mapped");
         header.put("tongTien", BigDecimal.TEN);

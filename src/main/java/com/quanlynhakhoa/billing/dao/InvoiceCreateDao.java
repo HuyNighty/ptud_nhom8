@@ -8,8 +8,8 @@ import java.util.List;
 /** All resources except the caller's connection are owned here. */
 public class InvoiceCreateDao {
     public List<BillingChoice> patients(Connection c, String text) throws SQLException {
-        try (PreparedStatement s = c.prepareStatement("SELECT TOP (100) maBenhNhan, hoTen FROM dbo.BenhNhan WHERE CHARINDEX(?,maBenhNhan)>0 OR CHARINDEX(?,hoTen)>0 ORDER BY maBenhNhan")) {
-            s.setQueryTimeout(15); s.setNString(1,text); s.setNString(2,text);
+        try (PreparedStatement s = c.prepareStatement("SELECT TOP (100) maBenhNhan, hoTen FROM dbo.BenhNhan WHERE CHARINDEX(?,maBenhNhan)>0 OR CHARINDEX(?,hoTen)>0 OR CHARINDEX(?,soDienThoai)>0 ORDER BY maBenhNhan")) {
+            s.setQueryTimeout(15); s.setNString(1,text); s.setNString(2,text);s.setNString(3,text);
             List<BillingChoice> result = new ArrayList<>();
             try (ResultSet r=s.executeQuery()) { while(r.next()) result.add(new BillingChoice(r.getString(1),r.getNString(2))); }
             return List.copyOf(result);
@@ -17,10 +17,14 @@ public class InvoiceCreateDao {
     }
     /** These are candidates only. Clinical eligibility is determined by the approved source. */
     public List<BillingChoice> visits(Connection c, String patient) throws SQLException {
-        try (PreparedStatement s=c.prepareStatement("SELECT p.maPhieuKham,p.trangThai FROM dbo.PhieuKham p WHERE p.maBenhNhan=? AND p.trangThai<>'DA_HUY' AND NOT EXISTS (SELECT 1 FROM dbo.HoaDon h WHERE h.maPhieuKham=p.maPhieuKham AND h.trangThai<>'DA_HUY') ORDER BY p.thoiGianTiepNhan DESC")) {
+        try (PreparedStatement s=c.prepareStatement("SELECT p.maPhieuKham,p.trangThai,p.thoiGianTiepNhan FROM dbo.PhieuKham p WHERE p.maBenhNhan=? AND p.trangThai<>'DA_HUY' AND NOT EXISTS (SELECT 1 FROM dbo.HoaDon h WHERE h.maPhieuKham=p.maPhieuKham AND h.trangThai<>'DA_HUY') ORDER BY p.thoiGianTiepNhan DESC")) {
             s.setQueryTimeout(15);s.setString(1,patient);
             List<BillingChoice> result=new ArrayList<>();
-            try(ResultSet r=s.executeQuery()){while(r.next())result.add(new BillingChoice(r.getString(1),r.getString(2)));}
+            try(ResultSet r=s.executeQuery()){while(r.next()){
+                Timestamp time=r.getTimestamp(3);String state=r.getString(2);
+                String caption=switch(state==null?"":state){case "DA_KET_LUAN" -> "Đã kết luận";case "DANG_KHAM" -> "Đang khám";case "CHO_KHAM" -> "Chờ khám";default -> "Cần kiểm tra dịch vụ tính phí";};
+                result.add(new BillingChoice(r.getString(1),(time==null?"":time.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/uuuu HH:mm"))+" · ")+caption));
+            }}
             return List.copyOf(result);
         }
     }

@@ -6,7 +6,7 @@ import javax.swing.*;
 
 public final class CancellationRequestDialog extends JDialog {
     public final JTextArea txaLyDo=new JTextArea(5,45);
-    public final JButton btnGuiYeuCau=new JButton("Gửi yêu cầu hủy"),btnTaiLai=new JButton("Kiểm tra/Tải lại");
+    public final JButton btnGuiYeuCau=new JButton("Gửi yêu cầu hủy"),btnTaiLai=new JButton("Kiểm tra/Làm mới");
     public final JLabel lblHoaDon=new JLabel("Đang đọc hóa đơn..."),lblTrangThai=new JLabel("Gửi yêu cầu chưa hủy hóa đơn. Lý do bắt buộc, tối đa 500 ký tự.");
     public CancellationRequestDialog(Window owner){
         super(owner,"Yêu cầu hủy hóa đơn",ModalityType.APPLICATION_MODAL);

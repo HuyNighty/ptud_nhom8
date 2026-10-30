@@ -23,7 +23,7 @@ public final class PaymentController {
         this.view=view;this.session=session;this.invoiceId=invoiceId;this.saved=saved;invoices=new HoaDonService(session,connections);payments=new PaymentService(session,connections);
         view.btnThuTien.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){collect();}});
         view.btnKiemTra.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
-        view.btnThuHet.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(detail!=null){String amount=detail.hoaDon().conNo().toPlainString();view.txtSoTien.setText(amount);view.txtTienMat.setText(amount);view.txtKhachDua.setText(amount);view.txtChuyenKhoan.setText("0");}}});
+
         load();
     }
     private boolean allowed(){return !pendingCancellation&&detail!=null&&detail.hoaDon().trangThai()!=TrangThaiHoaDon.DA_HUY&&detail.hoaDon().conNo().signum()>0&&detail.hoaDon().canhBao().isEmpty();}
@@ -34,7 +34,7 @@ public final class PaymentController {
         protected void failed(Throwable failure){view.lblTrangThai.setText(BillingUi.error(failure));}
     }
     private void load() {
-        if(busy){reloadPending=true;return;}reloadPending=false;busy=true;detail=null;view.busy(true,false,pending!=null);
+        if(busy){reloadPending=true;return;}reloadPending=false;busy=true;detail=null;view.loading();view.busy(true,false,pending!=null);
         new Task<ChiTietBilling>() {
             private boolean awaitingCancellation;
             protected ChiTietBilling doInBackground()throws Exception{ChiTietBilling result=invoices.detail(invoiceId);awaitingCancellation=payments.pendingCancellation(invoiceId);return result;}
@@ -59,14 +59,14 @@ public final class PaymentController {
         }.execute();
     }
     private void collect() {
-        if(busy||pending!=null||!allowed())return;
+        if(busy||pending!=null||!allowed()||!view.collectionContextAllowed())return;
         final PaymentRequest request;
         try {
-            BigDecimal cash=DichVuService.parsePrice(view.txtTienMat.getText()),bank=DichVuService.parsePrice(view.txtChuyenKhoan.getText());
+            BigDecimal cash=view.cashAmount(),bank=view.bankAmount();
             List<PaymentRequest.Part> parts=new ArrayList<>();RandomInvoiceIdGenerator ids=new RandomInvoiceIdGenerator();
-            if(cash.signum()>0)parts.add(new PaymentRequest.Part(ids.next(null),cash,ThanhToan.PhuongThuc.TIEN_MAT,null,DichVuService.parsePrice(view.txtKhachDua.getText())));
+            if(cash.signum()>0)parts.add(new PaymentRequest.Part(ids.next(null),cash,ThanhToan.PhuongThuc.TIEN_MAT,null,BillingUi.moneyInput(view.txtKhachDua.getText())));
             if(bank.signum()>0)parts.add(new PaymentRequest.Part(ids.next(null),bank,ThanhToan.PhuongThuc.CHUYEN_KHOAN,view.txtMaGiaoDich.getText().trim(),null));
-            request=new PaymentRequest(invoiceId,DichVuService.parsePrice(view.txtSoTien.getText()),parts,view.chkDaNhanChuyenKhoan.isSelected());PaymentService.validate(request);
+            request=new PaymentRequest(invoiceId,BillingUi.moneyInput(view.txtSoTien.getText()),parts,view.chkDaNhanChuyenKhoan.isSelected());PaymentService.validate(request);
         }catch(RuntimeException failure){view.lblTrangThai.setText(BillingUi.error(failure));return;}
         if(JOptionPane.showConfirmDialog(view,"Xác nhận đã nhận "+BillingUi.vnd(request.amount())+"?","Ghi nhận thu tiền",JOptionPane.YES_NO_OPTION)!=JOptionPane.YES_OPTION)return;
         pending=request;busy=true;view.busy(true,false,true);

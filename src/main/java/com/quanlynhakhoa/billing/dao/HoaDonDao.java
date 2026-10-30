@@ -81,15 +81,20 @@ public class HoaDonDao {
 
     public List<ChiTietHoaDon> lines(Connection connection, String id) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
-                SELECT maChiTiet, maHoaDon, maDichVu, maThuoc, maVatTu, soLuong, donGiaApDung
-                FROM dbo.ChiTietHoaDon WHERE maHoaDon=? ORDER BY maChiTiet
+                SELECT ct.maChiTiet, ct.maHoaDon, ct.maDichVu, ct.maThuoc, ct.maVatTu, ct.soLuong, ct.donGiaApDung,
+                       COALESCE(d.tenDichVu,t.tenThuoc,v.tenVatTu) AS tenHang
+                FROM dbo.ChiTietHoaDon ct
+                LEFT JOIN dbo.DichVu d ON d.maDichVu=ct.maDichVu
+                LEFT JOIN dbo.Thuoc t ON t.maThuoc=ct.maThuoc
+                LEFT JOIN dbo.VatTu v ON v.maVatTu=ct.maVatTu
+                WHERE ct.maHoaDon=? ORDER BY ct.maChiTiet
                 """)) {
             statement.setQueryTimeout(15); statement.setString(1, id);
             List<ChiTietHoaDon> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) {
                 while (rows.next()) result.add(new ChiTietHoaDon(rows.getInt("maChiTiet"), rows.getString("maHoaDon"),
                         rows.getString("maDichVu"), rows.getString("maThuoc"), rows.getString("maVatTu"),
-                        rows.getInt("soLuong"), rows.getBigDecimal("donGiaApDung")));
+                        rows.getInt("soLuong"), rows.getBigDecimal("donGiaApDung"),rows.getNString("tenHang")));
             }
             return List.copyOf(result);
         }

@@ -59,7 +59,7 @@ public final class ServiceBillingUiSelfTest {
         edt(new Action() { public void run() throws Exception {
             field(panel[0], "txtMaDichVu", JTextField.class).setText("TST1");
             field(panel[0], "txtTenDichVu", JTextField.class).setText("Synthetic");
-            field(panel[0], "txtDonGia", JTextField.class).setText("0");
+            field(panel[0], "txtDonGia", JTextField.class).setText("1.500.000");
             JButton btnLuu = field(panel[0], "btnLuu", JButton.class);
             btnLuu.doClick(); btnLuu.doClick();
             check(!btnLuu.isEnabled(), "save disabled during write");
@@ -69,6 +69,7 @@ public final class ServiceBillingUiSelfTest {
         jdbc.release.countDown();
         waitFor(field(panel[0], "lblTrangThai", JLabel.class), "Đã lưu và tải lại");
         check(jdbc.persisted.size() == 1 && jdbc.audits.size() == 1, "double click saved once; cached views may commit read transactions");
+        check(new BigDecimal("1500000").equals(jdbc.persisted.getFirst().get(2)),"Vietnamese grouped input persists the exact price");
         final FeatureJdbcDouble savedJdbc = new FeatureJdbcDouble();
         final DichVuPanel[] savedPanel = new DichVuPanel[1];
         edt(new Action() { public void run() throws Exception {
@@ -96,7 +97,16 @@ public final class ServiceBillingUiSelfTest {
             });
             field(errorPanel[0], "btnTaiLai", JButton.class).doClick();
         } });
-        waitFor(field(errorPanel[0], "lblTrangThai", JLabel.class), "08001");
+        waitFor(field(errorPanel[0], "lblTrangThai", JLabel.class), "Kiểm tra kết nối");
+        final com.quanlynhakhoa.billing.ui.CancellationPanel[] cancellation=new com.quanlynhakhoa.billing.ui.CancellationPanel[1];
+        final java.util.concurrent.atomic.AtomicInteger retries=new java.util.concurrent.atomic.AtomicInteger();
+        edt(new Action(){public void run(){
+            cancellation[0]=new com.quanlynhakhoa.billing.ui.CancellationPanel(session,new com.quanlynhakhoa.billing.dao.ConnectionProvider(){public java.sql.Connection open()throws java.sql.SQLException{check(!SwingUtilities.isEventDispatchThread(),"SQL retry outside EDT");retries.incrementAndGet();throw new java.sql.SQLException("SENSITIVE SQL PARAMETERS", "S0005",229);}});
+            cancellation[0].refreshData();
+        }});
+        waitFor(cancellation[0].lblTrangThai,"quyền");
+        edt(new Action(){public void run(){check(cancellation[0].btnThuLai.isVisible()&&!cancellation[0].btnDuyet.isEnabled()&&!cancellation[0].btnTuChoi.isEnabled(),"Permission failure exposes retry and disables decisions");check(!cancellation[0].lblTrangThai.getText().contains("S0005")&&!cancellation[0].lblTrangThai.getText().contains("229"),"Technical SQL details absent from UI");cancellation[0].btnThuLai.doClick();}});
+        waitFor(cancellation[0].lblTrangThai,"quyền");check(retries.get()==2,"Explicit retry performs one additional read");
         final FeatureJdbcDouble delayed = new FeatureJdbcDouble(); delayed.release = new CountDownLatch(1);
         final DesktopSession expiredSession = session(Role.CLINIC_MANAGER);
         final DichVuPanel[] expiredPanel = new DichVuPanel[1];
@@ -113,9 +123,9 @@ public final class ServiceBillingUiSelfTest {
             check(!field(expiredPanel[0], "btnLuu", JButton.class).isEnabled(), "expired form disabled");
             billing[0].showRows(List.of());
             check(field(billing[0], "tblHoaDon", JTable.class).getRowCount() == 0, "empty billing stays empty");
-            field(billing[0], "txtTuNgay", JTextField.class).setText("2026-02-30");
+            field(billing[0], "txtTuNgay", JTextField.class).setText("30/02/2026");
             field(billing[0], "btnTim", JButton.class).doClick();
-            check(field(billing[0], "lblTrangThai", JLabel.class).getText().contains("yyyy-MM-dd"), "invalid date shown");
+            check(field(billing[0], "lblTrangThai", JLabel.class).getText().contains("dd/MM/yyyy"), "invalid date shown");
         } });
         System.out.println("PASS: ServiceBillingUiSelfTest (headless interactions, no real DB/UI visual acceptance).");
     }
