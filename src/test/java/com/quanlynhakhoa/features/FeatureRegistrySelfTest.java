@@ -3,6 +3,7 @@ package com.quanlynhakhoa.features;
 import com.quanlynhakhoa.auth.AuthDecision;
 import com.quanlynhakhoa.model.Role;
 import com.quanlynhakhoa.navigation.Module;
+import com.quanlynhakhoa.navigation.NavigationPolicy;
 import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.security.DesktopSession;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,6 +42,8 @@ public final class FeatureRegistrySelfTest {
         check(empty.contains(Module.PAYMENTS), "payment page registered");
         check(empty.contains(Module.INVOICE_CANCELLATIONS), "cancellation review page registered");
         check(empty.contains(Module.PATIENTS), "latest main patient registration preserved");
+        check(empty.contains(Module.APPOINTMENTS), "appointments panel registered");
+        check(empty.contains(Module.MEDICAL_RECORDS), "medical records panel registered");
         check(!empty.contains(Module.HOME), "home remains owned by Core");
         check(!empty.contains(null), "null has no registration");
 
@@ -54,7 +57,13 @@ public final class FeatureRegistrySelfTest {
         check(!registry.contains(Module.BILLING), "missing billing panel is not fabricated");
         check(created.get() == 0, "factory not called during registration");
 
+        NavigationPolicy navigation = new NavigationPolicy();
         DesktopSession receptionist = session(Role.RECEPTIONIST);
+        check(navigation.canOpen(receptionist, Module.APPOINTMENTS), "receptionist can open appointments");
+        check(!navigation.canOpen(receptionist, Module.MEDICAL_RECORDS), "receptionist cannot open medical records");
+        DesktopSession doctor = session(Role.DOCTOR);
+        check(navigation.canOpen(doctor, Module.MEDICAL_RECORDS), "doctor can open medical records");
+        check(!navigation.canOpen(doctor, Module.APPOINTMENTS), "doctor cannot open appointments");
         check(registry.create(receptionist, Module.PATIENTS) != null, "permitted panel created");
         check(created.get() == 1, "factory called only when requested");
         reject(AccessDeniedException.class, () -> registry.create(receptionist, Module.INVENTORY));
@@ -65,6 +74,8 @@ public final class FeatureRegistrySelfTest {
         check(created.get() == 1, "logged-out session cannot run factory");
 
         DesktopSession admin = session(Role.SYSTEM_ADMIN);
+        check(navigation.canOpen(admin, Module.APPOINTMENTS), "admin can open appointments");
+        check(navigation.canOpen(admin, Module.MEDICAL_RECORDS), "admin can open medical records");
         reject(IllegalArgumentException.class, () -> registry.create(admin, Module.BILLING));
         reject(AccessDeniedException.class, () -> registry.create(null, Module.PATIENTS));
         reject(AccessDeniedException.class, () -> registry.create(admin, null));
