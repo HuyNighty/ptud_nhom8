@@ -98,8 +98,9 @@ public final class BenhNhanTimeoutSelfTest {
             check(bn.getMaBenhNhan() == null, "failed generated ID cleared for retry");
             check(jdbc.executions == step, "create stops at failed statement");
         }
-        // Fail either UPDATE or its audit; neither may commit alone.
-        for (int step = 1; step <= 2; step++) {
+        // Fail any statement of an update (patient UPDATE, medical-record lookup / ID / insert for
+        // history + allergy, audit); none may commit alone.
+        for (int step = 1; step <= 5; step++) {
             FakeJdbc jdbc = new FakeJdbc();
             jdbc.timeoutAt = step;
             BenhNhan bn = patient("BN000001");
@@ -115,8 +116,8 @@ public final class BenhNhanTimeoutSelfTest {
         create.checkClosed();
         FakeJdbc update = new FakeJdbc();
         service(update).capNhatBenhNhan(patient("BN000001"));
-        check(update.commits == 1 && update.rollbacks == 0 && update.committedWrites == 2,
-                "update and audit commit together");
+        check(update.commits == 1 && update.rollbacks == 0 && update.committedWrites == 3,
+                "update, medical-record history/allergy and audit commit together");
         update.checkClosed();
 
         FakeJdbc setupFailure = new FakeJdbc();

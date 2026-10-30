@@ -79,15 +79,23 @@ public class BenhNhanDao {
     }
 
     // Lấy 1 bệnh nhân theo mã, không có thì trả về null
+    // Đọc kèm tiền sử bệnh + dị ứng từ bảng HoSoBenhAn (LEFT JOIN: chưa có hồ sơ thì 2 cột này NULL)
     public BenhNhan timTheoMa(String maBenhNhan) throws SQLException {
-        String sql = "SELECT " + COT + "FROM dbo.BenhNhan WHERE maBenhNhan = ?";
+        String sql = "SELECT b.maBenhNhan, b.hoTen, b.ngaySinh, b.gioiTinh, b.soDienThoai, "
+                + "b.diaChi, b.nguoiLienHe, b.ngayTao, h.tienSuBenh, h.diUng "
+                + "FROM dbo.BenhNhan AS b "
+                + "LEFT JOIN dbo.HoSoBenhAn AS h ON h.maBenhNhan = b.maBenhNhan "
+                + "WHERE b.maBenhNhan = ?";
 
         try (Connection con = connections.open();
              PreparedStatement stmt = prepareStatement(con, sql)) {
             stmt.setString(1, maBenhNhan);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return docMotDong(rs);
+                    BenhNhan bn = docMotDong(rs);     // cột 1..8
+                    bn.setTienSuBenh(rs.getNString(9));
+                    bn.setDiUng(rs.getNString(10));
+                    return bn;
                 }
             }
         }
@@ -171,13 +179,22 @@ public class BenhNhanDao {
         }
     }
 
-    // Thêm hồ sơ bệnh án trống cho bệnh nhân mới (mỗi bệnh nhân có đúng 1 hồ sơ)
+    // Thêm hồ sơ bệnh án trống (chưa có tiền sử / dị ứng)
     public void themHoSoBenhAn(Connection con, String maHoSo, String maBenhNhan) throws SQLException {
-        String sql = "INSERT INTO dbo.HoSoBenhAn (maHoSo, maBenhNhan, ngayLap) "
-                + "VALUES (?, ?, CAST(GETDATE() AS DATE))";
+        themHoSoBenhAn(con, maHoSo, maBenhNhan, null, null);
+    }
+
+    // Thêm hồ sơ bệnh án cho bệnh nhân mới (mỗi bệnh nhân có đúng 1 hồ sơ),
+    // kèm tiền sử bệnh + dị ứng (có thể null)
+    public void themHoSoBenhAn(Connection con, String maHoSo, String maBenhNhan,
+                               String tienSuBenh, String diUng) throws SQLException {
+        String sql = "INSERT INTO dbo.HoSoBenhAn (maHoSo, maBenhNhan, ngayLap, tienSuBenh, diUng) "
+                + "VALUES (?, ?, CAST(GETDATE() AS DATE), ?, ?)";
         try (PreparedStatement stmt = prepareStatement(con, sql)) {
             stmt.setString(1, maHoSo);
             stmt.setString(2, maBenhNhan);
+            stmt.setNString(3, tienSuBenh);
+            stmt.setNString(4, diUng);
             stmt.executeUpdate();
         }
     }

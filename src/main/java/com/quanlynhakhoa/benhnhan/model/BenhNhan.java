@@ -13,6 +13,10 @@ public class BenhNhan {
     private String diaChi;
     private String nguoiLienHe;
     private LocalDateTime ngayTao;
+    // Tiền sử bệnh + dị ứng: là thông tin của bệnh nhân.
+    // Trong database V5 2 cột này nằm ở bảng HoSoBenhAn (mỗi bệnh nhân đúng 1 hồ sơ).
+    private String tienSuBenh;    // tối đa 500 ký tự, có thể để trống
+    private String diUng;         // tối đa 300 ký tự, có thể để trống
 
     // Hàm khởi tạo rỗng
     public BenhNhan() {
@@ -98,6 +102,22 @@ public class BenhNhan {
 
     public void setNgayTao(LocalDateTime ngayTao) {
         this.ngayTao = ngayTao;
+    }
+
+    public String getTienSuBenh() {
+        return tienSuBenh;
+    }
+
+    public void setTienSuBenh(String tienSuBenh) {
+        this.tienSuBenh = tienSuBenh;
+    }
+
+    public String getDiUng() {
+        return diUng;
+    }
+
+    public void setDiUng(String diUng) {
+        this.diUng = diUng;
     }
 
     // Đổi mã giới tính trong database sang chữ để hiển thị

@@ -1,6 +1,7 @@
 package com.quanlynhakhoa.benhnhan.service;
 
 import com.quanlynhakhoa.benhnhan.dao.BenhNhanDao;
+import com.quanlynhakhoa.benhnhan.dao.HoSoBenhAnDao;
 import com.quanlynhakhoa.benhnhan.model.BenhNhan;
 import com.quanlynhakhoa.dev.TeamDevConnection;
 import com.quanlynhakhoa.security.AuthorizationService;
@@ -32,9 +33,14 @@ public class BenhNhanService {
     // SỐ ĐIỆN THOẠI: số 0 + đúng 9 chữ số nữa (tổng 10 số, chỉ có chữ số).   Ví dụ: "0909123456"
     public static final String REGEX_SO_DIEN_THOAI = "0[0-9]{9}";
 
+    // TIỀN SỬ BỆNH / DỊ ỨNG: không bắt buộc, độ dài giống cột trong bảng HoSoBenhAn (V5)
+    public static final int TIEN_SU_TOI_DA = 500;
+    public static final int DI_UNG_TOI_DA = 300;
+
     private final DesktopSession phien;
     private final AuthorizationService phanQuyen = new AuthorizationService(new RolePermissionPolicy());
     private final BenhNhanDao dao;
+    private final HoSoBenhAnDao hoSoDao;   // tiền sử bệnh + dị ứng lưu ở bảng HoSoBenhAn
     private final BenhNhanDao.ConnectionProvider connections;
 
     public BenhNhanService(DesktopSession phien) {
@@ -45,6 +51,7 @@ public class BenhNhanService {
         this.phien = java.util.Objects.requireNonNull(phien, "phien");
         this.connections = java.util.Objects.requireNonNull(connections, "connections");
         this.dao = new BenhNhanDao(connections);
+        this.hoSoDao = new HoSoBenhAnDao(connections);
     }
 
     // Người đang đăng nhập có quyền này không (View dùng để làm mờ nút)
@@ -139,6 +146,18 @@ public class BenhNhanService {
         if (bn.getNguoiLienHe() != null && bn.getNguoiLienHe().length() > 200) {
             throw new IllegalArgumentException("Người liên hệ tối đa 200 ký tự.");
         }
+
+        // Tiền sử bệnh, dị ứng: không bắt buộc; để trống thì lưu NULL
+        bn.setTienSuBenh(boTrongThanhNull(bn.getTienSuBenh()));
+        bn.setDiUng(boTrongThanhNull(bn.getDiUng()));
+        if (bn.getTienSuBenh() != null && bn.getTienSuBenh().length() > TIEN_SU_TOI_DA) {
+            throw new IllegalArgumentException("Tiền sử bệnh tối đa " + TIEN_SU_TOI_DA + " ký tự "
+                    + "(đang nhập " + bn.getTienSuBenh().length() + ").");
+        }
+        if (bn.getDiUng() != null && bn.getDiUng().length() > DI_UNG_TOI_DA) {
+            throw new IllegalArgumentException("Dị ứng tối đa " + DI_UNG_TOI_DA + " ký tự "
+                    + "(đang nhập " + bn.getDiUng().length() + ").");
+        }
     }
 
     // Đổi chuỗi ngày sinh "dd/MM/yyyy" (lấy từ ô ngày sinh đã chọn trên lịch) thành LocalDate.
@@ -186,7 +205,7 @@ public class BenhNhanService {
                 dao.themBenhNhan(con, bn, phien.accountId());
 
                 String maHoSo = dao.taoMaHoSoMoi(con);
-                dao.themHoSoBenhAn(con, maHoSo, maBenhNhan);
+                dao.themHoSoBenhAn(con, maHoSo, maBenhNhan, bn.getTienSuBenh(), bn.getDiUng());
 
                 dao.ghiNhatKy(con, phien.accountId(), "Thêm bệnh nhân", maBenhNhan);
                 phanQuyen.require(phien, Permission.PATIENT_CREATE);
@@ -215,6 +234,14 @@ public class BenhNhanService {
             try {
                 if (!dao.capNhatBenhNhan(con, bn)) {
                     throw new IllegalArgumentException("Không tìm thấy bệnh nhân " + bn.getMaBenhNhan() + ".");
+                }
+                // Tiền sử bệnh + dị ứng nằm ở HoSoBenhAn; bệnh nhân chưa có hồ sơ thì tạo mới
+                String maHoSo = hoSoDao.timMaHoSo(con, bn.getMaBenhNhan());
+                if (maHoSo == null) {
+                    dao.themHoSoBenhAn(con, dao.taoMaHoSoMoi(con), bn.getMaBenhNhan(),
+                            bn.getTienSuBenh(), bn.getDiUng());
+                } else {
+                    hoSoDao.capNhatTienSu(con, maHoSo, bn.getTienSuBenh(), bn.getDiUng());
                 }
                 dao.ghiNhatKy(con, phien.accountId(), "Sửa thông tin bệnh nhân", bn.getMaBenhNhan());
                 phanQuyen.require(phien, Permission.PATIENT_UPDATE);

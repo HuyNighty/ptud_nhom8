@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
@@ -68,6 +69,8 @@ public class BenhNhanPanel extends JPanel {
     private JLabel lblDiaChi;
     private JLabel lblNguoiLienHe;
     private JLabel lblNgayTao;
+    private JTextArea txaTienSuBenh;   // nhiều dòng, chỉ xem
+    private JTextArea txaDiUng;        // nhiều dòng, chỉ xem
     private JButton btnSua;
     private BenhNhan bnDangXem;     // bệnh nhân đang hiện ở khung bên phải
     private boolean duocSua;        // người đăng nhập có quyền sửa không
@@ -163,7 +166,7 @@ public class BenhNhanPanel extends JPanel {
         pnlEast = new JPanel(new BorderLayout());
         pnlEast.setBackground(Color.WHITE);
         pnlEast.setBorder(BorderFactory.createLineBorder(VIEN));
-        pnlEast.setPreferredSize(new Dimension(340, 0));
+        pnlEast.setPreferredSize(new Dimension(360, 0));
 
         // Box dọc chứa các dòng thông tin, mỗi dòng là 1 Box ngang (giống code cũ)
         Box boxThongTin = Box.createVerticalBox();
@@ -215,6 +218,16 @@ public class BenhNhanPanel extends JPanel {
         themDong(boxThongTin, lblNhanNguoiLienHe, lblNguoiLienHe);
         themDong(boxThongTin, lblNhanNgayTao, lblNgayTao);
 
+        // Tiền sử bệnh + dị ứng: nội dung có thể dài → ô chữ nhiều dòng, chỉ xem
+        JLabel lblNhanTienSu = taoNhan("Tiền sử bệnh:");
+        JLabel lblNhanDiUng = taoNhan("Dị ứng:");
+        lblNhanTienSu.setPreferredSize(lblNhanNguoiLienHe.getPreferredSize());
+        lblNhanDiUng.setPreferredSize(lblNhanNguoiLienHe.getPreferredSize());
+        txaTienSuBenh = taoOChuChiXem();
+        txaDiUng = taoOChuChiXem();
+        themDongNhieuChu(boxThongTin, lblNhanTienSu, txaTienSuBenh);
+        themDongNhieuChu(boxThongTin, lblNhanDiUng, txaDiUng);
+
         pnlEast.add(boxThongTin, BorderLayout.NORTH); // NORTH để các dòng nằm sát phía trên
 
         // SOUTH của pnlEast: nút Sửa (thao tác trên bệnh nhân đang chọn)
@@ -224,6 +237,31 @@ public class BenhNhanPanel extends JPanel {
         pnlEastSouth.setOpaque(false);
         pnlEastSouth.add(btnSua);
         pnlEast.add(pnlEastSouth, BorderLayout.SOUTH);
+    }
+
+    // Ô chữ nhiều dòng CHỈ ĐỂ XEM: tự xuống dòng, không viền, nền trong suốt giống JLabel
+    private JTextArea taoOChuChiXem() {
+        JTextArea txa = new JTextArea("—");
+        txa.setEditable(false);
+        txa.setLineWrap(true);
+        txa.setWrapStyleWord(true);
+        txa.setOpaque(false);
+        txa.setBorder(null);
+        txa.setFont(new Font("SansSerif", Font.BOLD, 13));
+        txa.setForeground(NAVY);
+        return txa;
+    }
+
+    // Thêm 1 dòng "nhãn : nội dung nhiều dòng" vào Box dọc
+    private void themDongNhieuChu(Box box, JLabel lblNhan, JTextArea txaGiaTri) {
+        Box boxDong = Box.createHorizontalBox();
+        lblNhan.setAlignmentY(TOP_ALIGNMENT);
+        txaGiaTri.setAlignmentY(TOP_ALIGNMENT);
+        boxDong.add(lblNhan);
+        boxDong.add(Box.createHorizontalStrut(10));
+        boxDong.add(txaGiaTri);
+        box.add(boxDong);
+        box.add(Box.createVerticalStrut(12));
     }
 
     // Thêm 1 dòng "nhãn : giá trị" vào Box dọc
@@ -281,6 +319,8 @@ public class BenhNhanPanel extends JPanel {
     public void hienChiTiet(BenhNhan bn) {
         bnDangXem = bn;
         btnSua.setEnabled(bn != null && duocSua); // chưa chọn ai hoặc không có quyền → làm mờ
+        txaTienSuBenh.setText(bn == null ? "—" : coHoacKhong(bn.getTienSuBenh()));
+        txaDiUng.setText(bn == null ? "—" : coHoacKhong(bn.getDiUng()));
         if (bn == null) {
             lblTenBenhNhan.setText("Chưa chọn bệnh nhân");
             lblMaBenhNhan.setText("Chọn một dòng trong bảng");
@@ -319,6 +359,10 @@ public class BenhNhanPanel extends JPanel {
         lblTrangThai.setText(thongBao);
         javax.swing.JOptionPane.showMessageDialog(this, thongBao, "Thông báo lỗi",
                 javax.swing.JOptionPane.ERROR_MESSAGE);
+    }
+
+    private String coHoacKhong(String s) {
+        return s == null ? "Không có" : s;
     }
 
     // Bật/tắt nút theo quyền của người đăng nhập (Controller gọi 1 lần khi mở màn hình)

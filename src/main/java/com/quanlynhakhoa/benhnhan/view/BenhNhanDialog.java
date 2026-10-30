@@ -17,6 +17,8 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -47,6 +49,10 @@ public class BenhNhanDialog extends JDialog {
     private JTextField txtSoDienThoai;
     private JTextField txtDiaChi;
     private JTextField txtNguoiLienHe;
+    private JTextArea txaTienSuBenh;       // tiền sử bệnh (nhiều dòng, không bắt buộc)
+    private JScrollPane scrTienSuBenh;
+    private JTextArea txaDiUng;            // dị ứng (nhiều dòng, không bắt buộc)
+    private JScrollPane scrDiUng;
 
     private JPanel pnlSouth;
     private JButton btnLuu;
@@ -73,7 +79,7 @@ public class BenhNhanDialog extends JDialog {
             doDuLieuLenForm(bnCanSua);
         }
 
-        setSize(560, 400);
+        setSize(560, 560);
         setLocationRelativeTo(chuSoHuu);
     }
 
@@ -105,6 +111,10 @@ public class BenhNhanDialog extends JDialog {
         txtSoDienThoai = new JTextField();
         txtDiaChi = new JTextField();
         txtNguoiLienHe = new JTextField();
+        txaTienSuBenh = taoOChuNhieuDong();
+        scrTienSuBenh = new JScrollPane(txaTienSuBenh);
+        txaDiUng = taoOChuNhieuDong();
+        scrDiUng = new JScrollPane(txaDiUng);
 
         JLabel lblNhanMa = new JLabel("Mã bệnh nhân:");
         JLabel lblNhanHoTen = new JLabel("Họ tên (*):");
@@ -113,6 +123,8 @@ public class BenhNhanDialog extends JDialog {
         JLabel lblNhanSoDienThoai = new JLabel("Số điện thoại (*):");
         JLabel lblNhanDiaChi = new JLabel("Địa chỉ:");
         JLabel lblNhanNguoiLienHe = new JLabel("Người liên hệ:");
+        JLabel lblNhanTienSu = new JLabel("Tiền sử bệnh:");
+        JLabel lblNhanDiUng = new JLabel("Dị ứng:");
 
         // Cho các nhãn rộng bằng nhau (giống code cũ)
         Dimension rongNhan = lblNhanSoDienThoai.getPreferredSize();
@@ -122,6 +134,12 @@ public class BenhNhanDialog extends JDialog {
         lblNhanGioiTinh.setPreferredSize(rongNhan);
         lblNhanDiaChi.setPreferredSize(rongNhan);
         lblNhanNguoiLienHe.setPreferredSize(rongNhan);
+        lblNhanTienSu.setPreferredSize(rongNhan);
+        lblNhanDiUng.setPreferredSize(rongNhan);
+        lblNhanTienSu.setAlignmentY(TOP_ALIGNMENT);   // nhãn nằm sát trên ô nhiều dòng
+        lblNhanDiUng.setAlignmentY(TOP_ALIGNMENT);
+        scrTienSuBenh.setAlignmentY(TOP_ALIGNMENT);
+        scrDiUng.setAlignmentY(TOP_ALIGNMENT);
 
         Box boxForm = Box.createVerticalBox();
         themDong(boxForm, lblNhanMa, txtMaBenhNhan);
@@ -131,8 +149,11 @@ public class BenhNhanDialog extends JDialog {
         themDong(boxForm, lblNhanSoDienThoai, txtSoDienThoai);
         themDong(boxForm, lblNhanDiaChi, txtDiaChi);
         themDong(boxForm, lblNhanNguoiLienHe, txtNguoiLienHe);
+        themDong(boxForm, lblNhanTienSu, scrTienSuBenh);
+        themDong(boxForm, lblNhanDiUng, scrDiUng);
 
-        JLabel lblGhiChu = new JLabel("(*) bắt buộc · SĐT gồm 10 số, bắt đầu bằng 0");
+        JLabel lblGhiChu = new JLabel("(*) bắt buộc · SĐT gồm 10 số, bắt đầu bằng 0 · tiền sử tối đa "
+                + BenhNhanService.TIEN_SU_TOI_DA + ", dị ứng tối đa " + BenhNhanService.DI_UNG_TOI_DA + " ký tự");
         lblGhiChu.setForeground(XAM);
         Box boxGhiChu = Box.createHorizontalBox();
         boxGhiChu.add(lblGhiChu);
@@ -140,6 +161,14 @@ public class BenhNhanDialog extends JDialog {
         boxForm.add(boxGhiChu);
 
         pnlCenter.add(boxForm, BorderLayout.NORTH);
+    }
+
+    // Ô nhập nhiều dòng, tự xuống dòng theo từ
+    private JTextArea taoOChuNhieuDong() {
+        JTextArea txa = new JTextArea(3, 20);
+        txa.setLineWrap(true);
+        txa.setWrapStyleWord(true);
+        return txa;
     }
 
     // Thêm 1 dòng "nhãn : ô nhập" vào form
@@ -169,6 +198,8 @@ public class BenhNhanDialog extends JDialog {
         txtSoDienThoai.setText(bn.getSoDienThoai());
         txtDiaChi.setText(bn.getDiaChi() == null ? "" : bn.getDiaChi());
         txtNguoiLienHe.setText(bn.getNguoiLienHe() == null ? "" : bn.getNguoiLienHe());
+        txaTienSuBenh.setText(bn.getTienSuBenh() == null ? "" : bn.getTienSuBenh());
+        txaDiUng.setText(bn.getDiUng() == null ? "" : bn.getDiUng());
     }
 
     // Bấm "Chọn..." → mở lịch → điền ngày đã chọn vào ô ngày sinh
@@ -200,6 +231,8 @@ public class BenhNhanDialog extends JDialog {
         bn.setSoDienThoai(txtSoDienThoai.getText());
         bn.setDiaChi(txtDiaChi.getText());
         bn.setNguoiLienHe(txtNguoiLienHe.getText());
+        bn.setTienSuBenh(txaTienSuBenh.getText());
+        bn.setDiUng(txaDiUng.getText());
         return bn;
     }
 
@@ -212,6 +245,8 @@ public class BenhNhanDialog extends JDialog {
         txtSoDienThoai.setEnabled(!dangLuu);
         txtDiaChi.setEnabled(!dangLuu);
         txtNguoiLienHe.setEnabled(!dangLuu);
+        txaTienSuBenh.setEnabled(!dangLuu);
+        txaDiUng.setEnabled(!dangLuu);
         cmbGioiTinh.setEnabled(!dangLuu);
         setDefaultCloseOperation(dangLuu ? DO_NOTHING_ON_CLOSE : DISPOSE_ON_CLOSE);
         setCursor(java.awt.Cursor.getPredefinedCursor(
