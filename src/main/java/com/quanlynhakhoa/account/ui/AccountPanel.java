@@ -296,11 +296,10 @@ public final class AccountPanel extends JPanel {
                         Thread.currentThread().interrupt();
                         lblStatus.setText("Thao tác bị gián đoạn; hãy làm mới để kiểm tra.");
                     } catch (ExecutionException ex) {
-                        Throwable root = ex.getCause();
-                        String message = root instanceof IllegalArgumentException
-                                ? root.getMessage()
-                                : "Không thể tạo tài khoản. Kiểm tra dữ liệu và quyền SQL.";
+                        String message = AccountCreateFeedback.forFailure(ex.getCause());
                         lblStatus.setText(message);
+                        JOptionPane.showMessageDialog(AccountPanel.this, message,
+                                "Không thể tạo tài khoản", JOptionPane.WARNING_MESSAGE);
                     } catch (CancellationException ex) {
                         lblStatus.setText("Thao tác bị gián đoạn; hãy làm mới để kiểm tra.");
                     }
