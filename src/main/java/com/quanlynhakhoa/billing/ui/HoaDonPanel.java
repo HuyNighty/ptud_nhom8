@@ -101,6 +101,7 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.featu
         pnlBottom.add(lblTrangThai); add(pnlBottom, BorderLayout.SOUTH);
         controller = new HoaDonController(this, session, source == null || ids == null
                 ? new HoaDonService(session, connections) : new HoaDonService(session, connections, source, ids));
+        BillingUi.style(this);
     }
     @Override public void addNotify() {
         super.addNotify();

@@ -15,6 +15,16 @@ import javax.swing.table.DefaultTableModel;
 /** Shared display helpers for Khang's two panels. */
 public final class BillingUi {
     private BillingUi() { }
+    public static void style(javax.swing.JPanel root){
+        styleChildren(root);root.setBackground(new java.awt.Color(245,248,252));
+    }
+    private static void styleChildren(java.awt.Component component){
+        if(component instanceof javax.swing.JPanel panel)panel.setBackground(java.awt.Color.WHITE);
+        if(component instanceof javax.swing.JLabel label)label.setForeground(new java.awt.Color(28,48,75));
+        if(component instanceof javax.swing.JButton button){button.setFocusPainted(false);button.setBackground(new java.awt.Color(232,240,249));button.setForeground(new java.awt.Color(29,61,102));}
+        if(component instanceof javax.swing.JTable table){table.setRowHeight(28);table.getTableHeader().setBackground(new java.awt.Color(232,240,249));table.getTableHeader().setForeground(new java.awt.Color(29,61,102));}
+        if(component instanceof java.awt.Container container)for(java.awt.Component child:container.getComponents())styleChildren(child);
+    }
     public static String vnd(BigDecimal value) {
         if (value == null) return "";
         return NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN")).format(value) + " ₫";

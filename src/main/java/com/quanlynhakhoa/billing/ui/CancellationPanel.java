@@ -37,6 +37,7 @@ public final class CancellationPanel extends JPanel implements RefreshableFeatur
         JPanel pnlActions=new JPanel(new FlowLayout(FlowLayout.RIGHT));pnlActions.add(btnTuChoi);pnlActions.add(btnDuyet);
         JPanel pnlBottom=new JPanel(new BorderLayout(0,8));pnlBottom.add(pnlTexts,BorderLayout.NORTH);pnlBottom.add(lblTrangThai,BorderLayout.CENTER);pnlBottom.add(pnlActions,BorderLayout.SOUTH);add(pnlBottom,BorderLayout.SOUTH);
         controller=new CancellationController(this,session,new CancellationService(session,connections));buttons(false,false);
+        BillingUi.style(this);
     }
     @Override public void addNotify(){super.addNotify();if(!loaded){loaded=true;SwingUtilities.invokeLater(new Runnable(){public void run(){refreshData();}});}}
     @Override public void refreshData(){controller.load();}

@@ -15,6 +15,7 @@ public final class DichVuController {
     private final DesktopSession session;
     private final DichVuService service;
     private boolean busy;
+    private boolean reloadPending;
     public DichVuController(DichVuPanel view, DesktopSession session, DichVuService service) {
         this.view = view; this.session = session; this.service = service;
         view.onSearch(new ActionListener() { public void actionPerformed(ActionEvent event) { load(false); } });
@@ -33,7 +34,7 @@ public final class DichVuController {
         });
     }
     public void load(final boolean afterSave) {
-        if (busy) return;
+        if (busy) {reloadPending=true;return;}
         if (!session.isActive()) { view.expired(); return; }
         final String keyword = view.keyword(); final Boolean active = view.activeFilter();
         busy = true; view.setBusy(true);
@@ -45,6 +46,7 @@ public final class DichVuController {
             protected void succeeded(List<DichVu> values) {
                 view.showRows(values);
                 view.status((afterSave ? "Đã lưu và tải lại. " : "") + (values.isEmpty() ? "Không có dịch vụ phù hợp." : values.size() + " dịch vụ."));
+                if(reloadPending){reloadPending=false;load(false);}
             }
             protected void failed(Throwable failure) {
                 view.status((afterSave ? "Đã lưu thành công, nhưng tải lại thất bại. " : "Tải thất bại. ") + BillingUi.error(failure));
@@ -80,6 +82,7 @@ public final class DichVuController {
                 view.showForm(new DichVu(value.maDichVu(), value.tenDichVu(), value.donGia(), value.moTa(),
                         value.laCanLamSang(), activeOnly == null ? value.dangApDung() : activeOnly));
                 load(true);
+                com.quanlynhakhoa.billing.controller.BillingChangeBus.forSession(session).publish();
             }
             protected void failed(Throwable failure) {
                 if (failure instanceof DichVuService.CommittedWriteException) { saved(); return; }

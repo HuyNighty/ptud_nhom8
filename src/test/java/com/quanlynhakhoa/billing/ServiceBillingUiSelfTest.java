@@ -68,7 +68,7 @@ public final class ServiceBillingUiSelfTest {
         check(jdbc.opens == 1 && !jdbc.onEdt, "one JDBC invocation, off EDT");
         jdbc.release.countDown();
         waitFor(field(panel[0], "lblTrangThai", JLabel.class), "Đã lưu và tải lại");
-        check(jdbc.commits == 1 && jdbc.audits.size() == 1, "double click saved once");
+        check(jdbc.persisted.size() == 1 && jdbc.audits.size() == 1, "double click saved once; cached views may commit read transactions");
         final FeatureJdbcDouble savedJdbc = new FeatureJdbcDouble();
         final DichVuPanel[] savedPanel = new DichVuPanel[1];
         edt(new Action() { public void run() throws Exception {

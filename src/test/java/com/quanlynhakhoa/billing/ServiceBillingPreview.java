@@ -34,6 +34,11 @@ public final class ServiceBillingPreview {
                     pnlBilling.showDetail(new ChiTietBilling(invoice, List.of(new ChiTietHoaDon(1, "TSTHD001", "TST001", null, null, 2, new BigDecimal("150000"))), List.of()));
                     pnlBilling.status("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · chưa kiểm thử SQL thật");
                     render(pnlBilling, "target/billing-preview.png");
+                    com.quanlynhakhoa.billing.ui.DebtPanel pnlDebt=new com.quanlynhakhoa.billing.ui.DebtPanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc);
+                    pnlDebt.showPatients(com.quanlynhakhoa.billing.service.DebtService.byPatient(List.of(invoice)));
+                    pnlDebt.tblBenhNhan.setRowSelectionInterval(0,0);pnlDebt.showDetail(new ChiTietBilling(invoice,List.of(),List.of()));render(pnlDebt,"target/latest-debt-preview.png");
+                    com.quanlynhakhoa.billing.ui.PaymentPanel pnlPayment=new com.quanlynhakhoa.billing.ui.PaymentPanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc);
+                    com.quanlynhakhoa.billing.ui.PaymentForm pnlForm=new com.quanlynhakhoa.billing.ui.PaymentForm();pnlForm.showInvoice(new ChiTietBilling(invoice,List.of(),List.of()));pnlForm.busy(false,true,false);pnlForm.txtSoTien.setText("200000");pnlForm.txtTienMat.setText("100000");pnlForm.txtChuyenKhoan.setText("100000");pnlForm.txtKhachDua.setText("100000");pnlPayment.showForm(pnlForm);render(pnlPayment,"target/latest-payment-preview.png");
                     for(HoaDonPanel.ViewMode mode:HoaDonPanel.ViewMode.values()) {
                         HoaDonPanel pnlMode=new HoaDonPanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc,mode);
                         pnlMode.showRows(List.of(invoice));pnlMode.showDetail(new ChiTietBilling(invoice,List.of(),List.of()));

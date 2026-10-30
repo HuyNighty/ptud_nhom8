@@ -14,6 +14,7 @@ import javax.swing.event.*;
 public final class CancellationController {
     private final CancellationPanel view;private final DesktopSession session;private final CancellationService service;
     private boolean busy,reloadPending;private CancellationService.Detail selected;private String writeMessage="";
+    private final Runnable invalidated;
     public CancellationController(CancellationPanel view,DesktopSession session,CancellationService service){
         this.view=view;this.session=session;this.service=service;
         view.btnTim.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
@@ -23,6 +24,7 @@ public final class CancellationController {
         view.tblYeuCau.getSelectionModel().addListSelectionListener(new ListSelectionListener(){public void valueChanged(ListSelectionEvent e){if(!busy&&!e.getValueIsAdjusting())detail();}});
         view.btnDuyet.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){decide(true);}});
         view.btnTuChoi.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){decide(false);}});
+        invalidated=new Runnable(){public void run(){load();}};BillingChangeBus.forSession(session).subscribe(invalidated);
     }
     private boolean start(){if(busy)return false;if(!session.isActive()){view.expired();return false;}busy=true;view.busy(true);return true;}
     private boolean mayReject(){return selected!=null&&selected.request().trangThai()==YeuCauHuyHoaDon.TrangThai.CHO_DUYET&&!session.accountId().equals(selected.request().maTaiKhoanTao())&&selected.invoice().hoaDon().trangThai()!=TrangThaiHoaDon.DA_HUY;}
@@ -62,7 +64,7 @@ public final class CancellationController {
         if(!start())return;
         new Task<Void>(){
             protected Void doInBackground()throws Exception{service.decide(id,approve,reason);return null;}
-            protected void succeeded(Void ignored){selected=null;writeMessage=approve?"Đã duyệt hủy hóa đơn. ":"Đã từ chối; hóa đơn vẫn hoạt động. ";load();}
+            protected void succeeded(Void ignored){selected=null;writeMessage=approve?"Đã duyệt hủy hóa đơn. ":"Đã từ chối; hóa đơn vẫn hoạt động. ";load();BillingChangeBus.forSession(session).publishExcept(invalidated);}
             protected void failed(Throwable failure){
                 if(failure instanceof CancellationService.CommittedCancellationException){succeeded(null);return;}
                 selected=null;view.buttons(false,false);writeMessage=BillingUi.error(failure)+" Chưa xác nhận kết quả; tải lại để kiểm tra trước khi thử lại. ";load();

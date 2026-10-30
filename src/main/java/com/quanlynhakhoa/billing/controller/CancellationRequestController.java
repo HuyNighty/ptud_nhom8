@@ -35,7 +35,7 @@ public final class CancellationRequestController {
         busy=true;maySubmit=false;view.busy(true,false);
         new Task<String>(){
             protected String doInBackground()throws Exception{return service.request(invoiceId,reason);}
-            protected void succeeded(String id){view.lblTrangThai.setText("Đã gửi yêu cầu "+id+". Hóa đơn chưa bị hủy.");saved.run();view.busy(false,false);}
+            protected void succeeded(String id){view.lblTrangThai.setText("Đã gửi yêu cầu "+id+". Hóa đơn chưa bị hủy.");saved.run();view.busy(false,false);BillingChangeBus.forSession(session).publish();}
             protected void failed(Throwable failure){if(failure instanceof CancellationService.CommittedCancellationException committed){succeeded(committed.id());return;}view.lblTrangThai.setText(BillingUi.error(failure)+" Kiểm tra/Tải lại trước khi gửi tiếp; không tự thử lại.");view.busy(false,false);}
         }.execute();
     }

@@ -63,7 +63,7 @@ public final class TaoHoaDonController {
         if(!start())return;final InvoiceDraft reviewed=draft;
         new Task<String>() {
             protected String doInBackground()throws Exception{return service.createInvoice(reviewed);}
-            protected void succeeded(String id){view.dispose();saved.accept(id);}
+            protected void succeeded(String id){view.dispose();saved.accept(id);BillingChangeBus.forSession(session).publish();}
             protected void failed(Throwable failure){
                 if(failure instanceof InvoiceCreationService.CommittedInvoiceException committed){succeeded(committed.invoiceId());return;}
                 clear();view.lblTrangThai.setText(BillingUi.error(failure)+" Tải lại/xác minh kết quả trước khi lưu lại; không tự thử lại.");

@@ -16,6 +16,7 @@ public final class HoaDonController {
     private final HoaDonService service;
     private boolean busy;
     private String createdId;
+    private final Runnable invalidated;
     private boolean reloadPending;
     private String selectionAfterLoad;
     private boolean afterPayment;
@@ -42,6 +43,7 @@ public final class HoaDonController {
         view.onSelect(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent event) { if (!event.getValueIsAdjusting() && !busy) detail(); }
         });
+        invalidated=new Runnable(){public void run(){load();}};BillingChangeBus.forSession(session).subscribe(invalidated);
     }
     public void load() {
         if (busy) { reloadPending=true;return; }

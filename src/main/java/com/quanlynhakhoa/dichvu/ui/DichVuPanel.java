@@ -43,7 +43,7 @@ public final class DichVuPanel extends JPanel implements com.quanlynhakhoa.featu
         setLayout(new BorderLayout(12, 12));
         setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
         JPanel pnlTop = new JPanel(new BorderLayout(0, 8));
-        JLabel lblTitle = new JLabel(mode==EditorMode.SERVICES?"DỊCH VỤ":"BẢNG GIÁ DỊCH VỤ");
+        JLabel lblTitle = new JLabel(mode==EditorMode.COMBINED?"DỊCH VỤ & BẢNG GIÁ":mode==EditorMode.SERVICES?"DỊCH VỤ":"BẢNG GIÁ DỊCH VỤ");
         lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 22f));
         pnlTop.add(lblTitle, BorderLayout.NORTH);
         JPanel pnlTim = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -76,6 +76,7 @@ public final class DichVuPanel extends JPanel implements com.quanlynhakhoa.featu
         pnlBottom.add(lblTrangThai); add(pnlBottom, BorderLayout.SOUTH);
         controller = new DichVuController(this, session, new DichVuService(session, connections));
         clearForm();
+        BillingUi.style(this);
     }
     @Override public void addNotify() {
         super.addNotify();

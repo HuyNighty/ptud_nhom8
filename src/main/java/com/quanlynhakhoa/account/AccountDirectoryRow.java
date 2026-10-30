@@ -2,6 +2,7 @@ package com.quanlynhakhoa.account;
 
 import com.quanlynhakhoa.model.AccountStatus;
 import com.quanlynhakhoa.model.Role;
+import com.quanlynhakhoa.model.LockSource;
 import java.time.LocalDateTime;
 
 public record AccountDirectoryRow(
@@ -13,4 +14,5 @@ public record AccountDirectoryRow(
         Role role,
         AccountStatus status,
         boolean passwordChangeRequired,
-        LocalDateTime lastLoginUtc) { }
+        LocalDateTime lastLoginUtc,
+        LockSource lockSource) { }

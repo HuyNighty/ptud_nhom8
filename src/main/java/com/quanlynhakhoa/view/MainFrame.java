@@ -121,6 +121,7 @@ public final class MainFrame extends JFrame {
         return pnlHeader;
     }
 
+    /** Menu grouped by five stages of clinic operation; module authorization is unchanged. */
     private JMenuBar buildNavigation() {
         JMenuBar mnuBar = new JMenuBar();
         mnuBar.setBackground(NAVY);
@@ -136,57 +137,57 @@ public final class MainFrame extends JFrame {
         btnOverview.addActionListener(event -> navigate(Module.HOME));
         mnuBar.add(btnOverview);
 
-        JMenu mnuPatient = menu("Bệnh nhân");
-        item(mnuPatient, "Danh sách bệnh nhân", Module.PATIENTS);
-        item(mnuPatient, "Hồ sơ bệnh án", Module.MEDICAL_RECORDS);
-        pending(mnuPatient, "Tiếp nhận mới");
-        addIfNotEmpty(mnuBar, mnuPatient);
+        // 1. Tổ chức: cơ cấu nhân sự, tài khoản và danh mục dịch vụ.
+        JMenu mnuOrganization = menu("Tổ chức");
+        item(mnuOrganization, "Danh sách nhân viên", Module.WORKFORCE);
+        item(mnuOrganization, "Tài khoản", Module.ACCOUNTS);
+        item(mnuOrganization, "Vai trò", Module.ROLES);
+        item(mnuOrganization, "Dịch vụ & Bảng giá", Module.SERVICE_CATALOG);
+        addIfNotEmpty(mnuBar, mnuOrganization);
 
-        JMenu mnuAppointments = menu("Lịch hẹn");
-        item(mnuAppointments, "Danh sách lịch hẹn", Module.APPOINTMENTS);
-        pending(mnuAppointments, "Đặt lịch hẹn");
-        addIfNotEmpty(mnuBar, mnuAppointments);
-
-        JMenu mnuClinical = menu("Khám & điều trị");
-        item(mnuClinical, "Phiếu khám", Module.EXAMINATIONS);
-        if (allowed.contains(Module.EXAMINATIONS)) {
-            pending(mnuClinical, "Kế hoạch điều trị");
+        // 2. Kế hoạch: lịch hẹn và thời gian làm việc.
+        JMenu mnuPlanning = menu("Kế hoạch");
+        item(mnuPlanning, "Danh sách lịch hẹn", Module.APPOINTMENTS);
+        item(mnuPlanning, "Lịch làm việc của tôi", Module.MY_SCHEDULE);
+        if (allowed.contains(Module.APPOINTMENTS)) {
+            pending(mnuPlanning, "Đặt lịch hẹn");
         }
-        addIfNotEmpty(mnuBar, mnuClinical);
-
-        JMenu mnuBilling = menu("Thanh toán");
-        item(mnuBilling, "Hóa đơn", Module.BILLING);
-        item(mnuBilling, "Công nợ", Module.DEBTS);
-        item(mnuBilling, "Thanh toán", Module.PAYMENTS);
-        item(mnuBilling, "Duyệt hủy hóa đơn", Module.INVOICE_CANCELLATIONS);
-        addIfNotEmpty(mnuBar, mnuBilling);
-        JMenu mnuCatalog = menu("Danh mục");
-        item(mnuCatalog, "Dịch vụ", Module.SERVICES);
-        item(mnuCatalog, "Bảng giá dịch vụ", Module.SERVICE_CATALOG);
-        addIfNotEmpty(mnuBar, mnuCatalog);
-
-        JMenu mnuInventory = menu("Kho vật tư");
-        item(mnuInventory, "Danh mục thuốc & vật tư", Module.INVENTORY);
-        item(mnuInventory, "Yêu cầu cấp phát", Module.SUPPLY_REQUESTS);
-        item(mnuInventory, "Kiểm tra hộp cấp cứu", Module.EMERGENCY_KIT);
-        if (allowed.contains(Module.INVENTORY)) {
-            pending(mnuInventory, "Nhập / xuất kho");
-        }
-        addIfNotEmpty(mnuBar, mnuInventory);
-
-        JMenu mnuWorkforce = menu("Nhân viên");
-        item(mnuWorkforce, "Danh sách nhân viên", Module.WORKFORCE);
-        item(mnuWorkforce, "Lịch làm việc của tôi", Module.MY_SCHEDULE);
         if (allowed.contains(Module.WORKFORCE)) {
-            pending(mnuWorkforce, "Phân công ca");
+            pending(mnuPlanning, "Phân công ca");
         }
-        addIfNotEmpty(mnuBar, mnuWorkforce);
+        addIfNotEmpty(mnuBar, mnuPlanning);
 
-        JMenu mnuSystem = menu("Hệ thống");
-        item(mnuSystem, "Tài khoản", Module.ACCOUNTS);
-        item(mnuSystem, "Vai trò", Module.ROLES);
-        item(mnuSystem, "Nhật ký thao tác", Module.AUDIT);
-        addIfNotEmpty(mnuBar, mnuSystem);
+        // 3. Tiếp nhận: thông tin ban đầu của bệnh nhân.
+        JMenu mnuReception = menu("Tiếp nhận");
+        item(mnuReception, "Danh sách bệnh nhân", Module.PATIENTS);
+        if (allowed.contains(Module.PATIENTS)) {
+            pending(mnuReception, "Tiếp nhận mới");
+        }
+        addIfNotEmpty(mnuBar, mnuReception);
+
+        // 4. Hoạt động: hồ sơ, khám chữa bệnh, thuốc và vật tư.
+        JMenu mnuOperations = menu("Hoạt động");
+        item(mnuOperations, "Hồ sơ bệnh án", Module.MEDICAL_RECORDS);
+        item(mnuOperations, "Phiếu khám", Module.EXAMINATIONS);
+        item(mnuOperations, "Danh mục thuốc & vật tư", Module.INVENTORY);
+        item(mnuOperations, "Yêu cầu cấp phát", Module.SUPPLY_REQUESTS);
+        item(mnuOperations, "Kiểm tra hộp cấp cứu", Module.EMERGENCY_KIT);
+        item(mnuOperations, "Hóa đơn", Module.BILLING);
+        item(mnuOperations, "Thanh toán", Module.PAYMENTS);
+        item(mnuOperations, "Duyệt hủy hóa đơn", Module.INVOICE_CANCELLATIONS);
+        if (allowed.contains(Module.EXAMINATIONS)) {
+            pending(mnuOperations, "Kế hoạch điều trị");
+        }
+        if (allowed.contains(Module.INVENTORY)) {
+            pending(mnuOperations, "Nhập / xuất kho");
+        }
+        addIfNotEmpty(mnuBar, mnuOperations);
+
+        // 5. Tổng kết: công nợ và lịch sử thao tác.
+        JMenu mnuSummary = menu("Tổng kết");
+        item(mnuSummary, "Công nợ", Module.DEBTS);
+        item(mnuSummary, "Nhật ký thao tác", Module.AUDIT);
+        addIfNotEmpty(mnuBar, mnuSummary);
         return mnuBar;
     }
 
@@ -259,15 +260,14 @@ public final class MainFrame extends JFrame {
         try {
             JPanel pnlPage = registry.create(session, module);
             featurePages.put(module,pnlPage);
-            if(pnlPage instanceof com.quanlynhakhoa.billing.ui.HoaDonPanel billing) {
-                billing.setPaymentNavigation(new com.quanlynhakhoa.billing.ui.HoaDonPanel.PaymentNavigation(){
-                    public void open(String invoiceId){
-                        navigate(Module.PAYMENTS);
-                        JPanel pnlPayment=featurePages.get(Module.PAYMENTS);
-                        if(pnlPayment instanceof com.quanlynhakhoa.billing.ui.HoaDonPanel payments)payments.payInvoice(invoiceId);
-                    }
-                });
-            }
+            com.quanlynhakhoa.billing.ui.HoaDonPanel.PaymentNavigation paymentNavigation=new com.quanlynhakhoa.billing.ui.HoaDonPanel.PaymentNavigation(){
+                public void open(String invoiceId){
+                    navigate(Module.PAYMENTS);
+                    if(featurePages.get(Module.PAYMENTS) instanceof com.quanlynhakhoa.billing.ui.PaymentPanel payments)payments.openInvoice(invoiceId);
+                }
+            };
+            if(pnlPage instanceof com.quanlynhakhoa.billing.ui.HoaDonPanel invoices)invoices.setPaymentNavigation(paymentNavigation);
+            if(pnlPage instanceof com.quanlynhakhoa.billing.ui.DebtPanel debts)debts.setPaymentNavigation(paymentNavigation);
             JPanel pnlSlot = slots.get(module);
             pnlSlot.removeAll();
             pnlSlot.add(scroll(pnlPage), BorderLayout.CENTER);
@@ -281,10 +281,11 @@ public final class MainFrame extends JFrame {
     }
 
     private void navigate(Module module) {
+        if(module==Module.SERVICES)module=Module.SERVICE_CATALOG;
         model.select(module);
-        boolean alreadyLoaded=loaded.contains(module);
+        boolean existing=loaded.contains(module);
         loadFeature(module);
-        if(alreadyLoaded&&featurePages.get(module) instanceof com.quanlynhakhoa.features.RefreshableFeature page)page.refreshData();
+        if(existing&&featurePages.get(module) instanceof com.quanlynhakhoa.features.RefreshableFeature page)page.refreshData();
         cards.show(pnlContent, module.name());
         if (btnOverview != null) {
             btnOverview.setBackground(module == Module.HOME ? new Color(43, 110, 190) : NAVY);
@@ -318,8 +319,7 @@ public final class MainFrame extends JFrame {
             case ROLES -> "Vai trò";
             case AUDIT -> "Nhật ký thao tác";
             case EXAMINATIONS -> "Phiếu khám";
-            case SERVICE_CATALOG -> "Bảng giá dịch vụ";
-            case SERVICES -> "Dịch vụ";
+            case SERVICE_CATALOG, SERVICES -> "Dịch vụ & Bảng giá";
             case DEBTS -> "Công nợ";
             case PAYMENTS -> "Thanh toán";
             case INVOICE_CANCELLATIONS -> "Duyệt hủy hóa đơn";

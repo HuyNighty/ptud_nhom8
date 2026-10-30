@@ -40,7 +40,7 @@ public final class FeatureRegistrySelfTest {
         check(empty.contains(Module.DEBTS), "separate debt page registered");
         check(empty.contains(Module.PAYMENTS), "payment page registered");
         check(empty.contains(Module.INVOICE_CANCELLATIONS), "cancellation review page registered");
-        check(!empty.contains(Module.PATIENTS), "default registry has no implemented patients panel");
+        check(empty.contains(Module.PATIENTS), "latest main patient registration preserved");
         check(!empty.contains(Module.HOME), "home remains owned by Core");
         check(!empty.contains(null), "null has no registration");
 

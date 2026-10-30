@@ -2,6 +2,7 @@ package com.quanlynhakhoa.account;
 
 import com.quanlynhakhoa.model.AccountStatus;
 import com.quanlynhakhoa.model.Role;
+import com.quanlynhakhoa.model.LockSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,7 +18,7 @@ public final class AccountDirectoryDao {
             SELECT TOP (201)
                    a.maTaiKhoan, a.tenDangNhap, a.tenHienThi, a.maNhanVien,
                    n.hoTen AS tenNhanVien, a.vaiTro, a.trangThai,
-                   a.phaiDoiMatKhau, a.lanDangNhapCuoi
+                   a.phaiDoiMatKhau, a.lanDangNhapCuoi, a.nguonKhoa
             FROM dbo.TaiKhoan AS a
             LEFT JOIN dbo.NhanVien AS n ON n.maNhanVien = a.maNhanVien
             WHERE (? = N''
@@ -56,6 +57,7 @@ public final class AccountDirectoryDao {
                         break;
                     }
                     Timestamp lastLogin = rs.getTimestamp("lanDangNhapCuoi");
+                    String lockSource = rs.getString("nguonKhoa");
                     rows.add(new AccountDirectoryRow(
                             rs.getString("maTaiKhoan"),
                             rs.getString("tenDangNhap"),
@@ -65,7 +67,8 @@ public final class AccountDirectoryDao {
                             Role.valueOf(rs.getString("vaiTro")),
                             AccountStatus.valueOf(rs.getString("trangThai")),
                             rs.getBoolean("phaiDoiMatKhau"),
-                            lastLogin == null ? null : lastLogin.toLocalDateTime()));
+                            lastLogin == null ? null : lastLogin.toLocalDateTime(),
+                            lockSource == null ? null : LockSource.valueOf(lockSource)));
                 }
             }
             return new Result(rows, truncated);
