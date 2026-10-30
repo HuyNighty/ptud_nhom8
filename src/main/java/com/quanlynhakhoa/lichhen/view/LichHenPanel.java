@@ -35,15 +35,15 @@ import javax.swing.table.DefaultTableModel;
 //
 //  ┌──────────────────────────── pnlNorth ─────────────────────────────┐
 //  │ Lịch hẹn                                                          │
-//  │ Ngày [..] Chọn... Hôm nay   Tìm (...) [.......] Tìm kiếm  +Đặt lịch hẹn │
+//  │ Ngày [..] Chọn Hôm nay   Tìm (...) [.......] Tìm kiếm  +Đặt lịch hẹn │
 //  ├──────────────── pnlCenter ──────────────────────┬──── pnlEast ────┤
 //  │ bảng lịch hẹn trong ngày                        │ Lịch hẹn đang   │
 //  │                                                 │ chọn: mã, giờ,  │
 //  │                                                 │ bệnh nhân...    │
 //  │                                                 │ [Tiếp đón bệnh  │
 //  │                                                 │  nhân]          │
-//  │                                                 │ [Đổi lịch...]   │
-//  │                                                 │ [Hủy lịch...]   │
+//  │                                                 │ [Đổi lịch]   │
+//  │                                                 │ [Hủy lịch]   │
 //  ├─────────────────────────────── pnlSouth ────────┴─────────────────┤
 //  │ dòng trạng thái                                                   │
 //  └───────────────────────────────────────────────────────────────────┘
@@ -61,7 +61,7 @@ public class LichHenPanel extends JPanel {
     // ----- NORTH: tiêu đề + thanh lọc -----
     private JPanel pnlNorth;
     private JLabel lblTieuDe;
-    private JTextField txtNgayXem;       // ngày đang xem, chỉ hiển thị (chọn bằng nút "Chọn...")
+    private JTextField txtNgayXem;       // ngày đang xem, chỉ hiển thị (chọn bằng nút "Chọn")
     private JButton btnChonNgayXem;
     private JButton btnHomNay;
     private JTextField txtTimKiem;
@@ -130,7 +130,7 @@ public class LichHenPanel extends JPanel {
 
         txtNgayXem = new JTextField(9);
         txtNgayXem.setEditable(false);
-        btnChonNgayXem = new JButton("Chọn...");
+        btnChonNgayXem = new JButton("Chọn");
         btnHomNay = new JButton("Hôm nay");
         txtTimKiem = new JTextField(16);
         btnTimKiem = new JButton("Tìm kiếm");
@@ -202,9 +202,9 @@ public class LichHenPanel extends JPanel {
         // 3 nút thao tác xếp dọc, rộng bằng nhau (SOUTH của pnlEast)
         btnTiepDon = new JButton("Tiếp đón bệnh nhân");
         MauNut.toXanhLa(btnTiepDon);    // xác nhận việc tốt: xanh lá
-        btnDoiLich = new JButton("Đổi lịch...");
+        btnDoiLich = new JButton("Đổi lịch");
         MauNut.toCam(btnDoiLich);       // đổi: cam
-        btnHuyLich = new JButton("Hủy lịch...");
+        btnHuyLich = new JButton("Hủy lịch");
         MauNut.toDo(btnHuyLich);   // nút hủy màu đỏ (dùng chung với các form)
         JPanel pnlNutThaoTac = new JPanel(new GridLayout(3, 1, 0, 8));
         pnlNutThaoTac.setOpaque(false);

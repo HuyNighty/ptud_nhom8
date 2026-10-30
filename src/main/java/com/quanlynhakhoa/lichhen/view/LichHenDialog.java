@@ -128,10 +128,10 @@ public class LichHenDialog extends JDialog {
         cmbBenhNhan = new JComboBox<>();
         cmbBacSi = new JComboBox<>();
 
-        // Dòng ngày hẹn: ô chỉ xem + nút "Chọn..." mở lịch (dùng lại ChonNgayDialog)
+        // Dòng ngày hẹn: ô chỉ xem + nút "Chọn" mở lịch (dùng lại ChonNgayDialog)
         txtNgayHen = new JTextField();
         txtNgayHen.setEditable(false);
-        btnChonNgay = new JButton("Chọn...");
+        btnChonNgay = new JButton("Chọn");
         Box boxNgayHen = Box.createHorizontalBox();
         boxNgayHen.add(txtNgayHen);
         boxNgayHen.add(Box.createHorizontalStrut(6));
@@ -276,7 +276,7 @@ public class LichHenDialog extends JDialog {
                 + LichHenService.THOI_LUONG_PHUT + " phút.");
     }
 
-    // Bấm "Chọn..." → mở lịch (từ hôm nay tới 1 năm sau) → điền ngày đã chọn
+    // Bấm "Chọn" → mở lịch (từ hôm nay tới 1 năm sau) → điền ngày đã chọn
     public void moLichChonNgayHen() {
         LocalDate homNay = LocalDate.now();
         LocalDate ngayDaChon = ChonNgayDialog.chon(this, "Chọn ngày hẹn", layNgayHen(),

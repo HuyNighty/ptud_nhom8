@@ -115,10 +115,10 @@ public class BenhNhanDialog extends JDialog {
         txtMaBenhNhan.setEditable(false);   // mã do hệ thống sinh, không cho nhập
         txtHoTen = new JTextField();
 
-        // Ngày sinh: ô chỉ xem + nút "Chọn..." mở lịch
+        // Ngày sinh: ô chỉ xem + nút "Chọn" mở lịch
         txtNgaySinh = new JTextField();
         txtNgaySinh.setEditable(false);
-        btnChonNgay = new JButton("Chọn...");
+        btnChonNgay = new JButton("Chọn");
         Box boxNgaySinh = Box.createHorizontalBox();
         boxNgaySinh.add(txtNgaySinh);
         boxNgaySinh.add(Box.createHorizontalStrut(6));
@@ -245,7 +245,7 @@ public class BenhNhanDialog extends JDialog {
         return chuoi;
     }
 
-    // Bấm "Chọn..." → mở lịch → điền ngày đã chọn vào ô ngày sinh
+    // Bấm "Chọn" → mở lịch → điền ngày đã chọn vào ô ngày sinh
     public void moLichChonNgaySinh() {
         LocalDate ngayDangCo = null;
         if (!txtNgaySinh.getText().isEmpty()) {

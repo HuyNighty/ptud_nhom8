@@ -228,7 +228,7 @@ public class BenhNhanPanel extends JPanel {
         pnlEast.add(boxThongTin, BorderLayout.NORTH); // NORTH để các dòng nằm sát phía trên
 
         // SOUTH của pnlEast: nút Sửa (thao tác trên bệnh nhân đang chọn)
-        btnSua = new JButton("Sửa thông tin...");
+        btnSua = new JButton("Sửa thông tin");
         MauNut.toCam(btnSua);          // sửa: cam
         btnSua.setEnabled(false);
         JPanel pnlEastSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 12));

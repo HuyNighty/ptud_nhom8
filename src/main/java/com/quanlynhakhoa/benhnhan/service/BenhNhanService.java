@@ -186,7 +186,7 @@ public class BenhNhanService {
     public static LocalDate docNgaySinh(String chuoiNgaySinh) {
         if (!chuoiNgaySinh.matches(REGEX_NGAY_SINH)) {
             throw new LoiNhapLieuException(LoiNhapLieuException.O_NGAY_SINH,
-                    "Chọn ngày sinh (bấm nút \"Chọn...\").");
+                    "Chọn ngày sinh (bấm nút \"Chọn\").");
         }
         String[] ngayThangNam = chuoiNgaySinh.split("/");
         int ngay = Integer.parseInt(ngayThangNam[0]);

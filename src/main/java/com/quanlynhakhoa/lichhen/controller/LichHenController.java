@@ -177,7 +177,7 @@ public class LichHenController implements ActionListener, MouseListener {
         }.execute();
     }
 
-    // Bấm "Chọn..." ở ô ngày: xem được từ 5 năm trước tới 1 năm sau
+    // Bấm "Chọn" ở ô ngày: xem được từ 5 năm trước tới 1 năm sau
     private void chonNgayXem() {
         LocalDate homNay = LocalDate.now();
         LocalDate ngayDaChon = ChonNgayDialog.chon(SwingUtilities.getWindowAncestor(view), "Chọn ngày xem lịch hẹn",
