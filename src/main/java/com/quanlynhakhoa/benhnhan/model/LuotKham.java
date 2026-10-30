@@ -2,8 +2,6 @@ package com.quanlynhakhoa.benhnhan.model;
 
 import java.time.LocalDateTime;
 
-// Lớp LuotKham: 1 lần khám của bệnh nhân (đọc từ bảng dbo.PhieuKham, kèm tên bác sĩ từ dbo.NhanVien)
-// Chỉ dùng để XEM hồ sơ bệnh án; việc tạo / sửa phiếu khám thuộc phần Khám & điều trị.
 public class LuotKham {
     private String maPhieuKham;
     private LocalDateTime thoiGianTiepNhan;
@@ -11,13 +9,11 @@ public class LuotKham {
     private String trieuChung;
     private String chanDoan;
     private String ketLuan;
-    private String trangThai;     // CHO_KHAM, DANG_KHAM, DA_KET_LUAN, DA_HUY (giống database)
+    private String trangThai;
 
-    // Hàm khởi tạo rỗng
     public LuotKham() {
     }
 
-    // Hàm khởi tạo đầy đủ
     public LuotKham(String maPhieuKham, LocalDateTime thoiGianTiepNhan, String tenBacSi,
                     String trieuChung, String chanDoan, String ketLuan, String trangThai) {
         this.maPhieuKham = maPhieuKham;
@@ -85,10 +81,6 @@ public class LuotKham {
         this.trangThai = trangThai;
     }
 
-    // Đổi mã trạng thái trong database sang chữ để hiển thị.
-    // Dùng đúng tên trạng thái trong báo cáo: Chờ khám → Đang khám → Hoàn tất; Chờ khám / Đang khám → Bỏ khám.
-    //   DA_KET_LUAN (database) = "Hoàn tất" (báo cáo)
-    //   DA_HUY      (database) = "Bỏ khám"  (báo cáo)
     public String getTrangThaiHienThi() {
         if ("CHO_KHAM".equals(trangThai)) {
             return "Chờ khám";

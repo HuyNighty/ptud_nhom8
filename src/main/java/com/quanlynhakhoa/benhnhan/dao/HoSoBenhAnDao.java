@@ -11,10 +11,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-// DAO: chỉ làm việc với bảng dbo.HoSoBenhAn và đọc dbo.PhieuKham (lịch sử khám).
-// Không kiểm tra quyền, không kiểm tra nghiệp vụ. Kết nối bằng tài khoản n08dev_*, KHÔNG dùng sa.
 public class HoSoBenhAnDao {
-    // Thời gian chờ tối đa (giây) cho mỗi câu SQL (giống BenhNhanDao)
     private static final int THOI_GIAN_CHO_TOI_DA = 15;
 
     private final BenhNhanDao.ConnectionProvider cachMoKetNoi;
@@ -27,9 +24,6 @@ public class HoSoBenhAnDao {
         this.cachMoKetNoi = java.util.Objects.requireNonNull(cachMoKetNoi, "cachMoKetNoi");
     }
 
-    // ===================== XEM HỒ SƠ BỆNH ÁN =====================
-
-    // Lấy hồ sơ bệnh án của 1 bệnh nhân, chưa có thì trả về null
     public HoSoBenhAn timTheoBenhNhan(String maBenhNhan) throws SQLException {
         String sql = "SELECT maHoSo, maBenhNhan, ngayLap, tienSuBenh, diUng "
                 + "FROM dbo.HoSoBenhAn WHERE maBenhNhan = ?";
@@ -51,7 +45,6 @@ public class HoSoBenhAnDao {
         return null;
     }
 
-    // Danh sách các lần khám của 1 bệnh nhân (mới nhất ở trên, tối đa 200 lần)
     public ArrayList<LuotKham> layDanhSachLuotKham(String maBenhNhan) throws SQLException {
         ArrayList<LuotKham> danhSachLuotKham = new ArrayList<>();
         String sql = "SELECT TOP 200 p.maPhieuKham, p.thoiGianTiepNhan, n.hoTen, "
@@ -73,13 +66,13 @@ public class HoSoBenhAnDao {
                     }
 
                     LuotKham luotKham = new LuotKham(
-                            ketQua.getString(1),       // mã phiếu khám
+                            ketQua.getString(1),
                             thoiGianTiepNhan,
-                            ketQua.getNString(3),      // tên bác sĩ
-                            ketQua.getNString(4),      // triệu chứng
-                            ketQua.getNString(5),      // chẩn đoán
-                            ketQua.getNString(6),      // kết luận
-                            ketQua.getString(7));      // trạng thái
+                            ketQua.getNString(3),
+                            ketQua.getNString(4),
+                            ketQua.getNString(5),
+                            ketQua.getNString(6),
+                            ketQua.getString(7));
                     danhSachLuotKham.add(luotKham);
                 }
             }
@@ -87,8 +80,6 @@ public class HoSoBenhAnDao {
         return danhSachLuotKham;
     }
 
-    // Ghi nhật ký "ai đã xem hồ sơ bệnh án của bệnh nhân nào" (UC009 bước 2: mỗi lần xem đều ghi nhật ký).
-    // Không ghi nội dung hồ sơ vào nhật ký.
     public void ghiNhatKyXem(String maTaiKhoan, String maBenhNhan) throws SQLException {
         String sql = "INSERT INTO dbo.NhatKyThaoTac "
                 + "(loaiTacNhan, maTaiKhoan, chucNang, hanhDong, ketQua, doiTuong, maDoiTuong) "
@@ -101,10 +92,6 @@ public class HoSoBenhAnDao {
         }
     }
 
-    // ===================== CẬP NHẬT TIỀN SỬ / DỊ ỨNG =====================
-    // Các hàm dưới đây nhận Connection từ Service (BenhNhanService mở 1 transaction khi sửa bệnh nhân)
-
-    // Lấy mã hồ sơ của bệnh nhân (có khóa dòng trong transaction), chưa có thì trả về null
     public String timMaHoSo(Connection ketNoi, String maBenhNhan) throws SQLException {
         String sql = "SELECT maHoSo FROM dbo.HoSoBenhAn WITH (UPDLOCK, HOLDLOCK) WHERE maBenhNhan = ?";
         try (PreparedStatement cauLenh = taoCauLenh(ketNoi, sql)) {
@@ -118,7 +105,6 @@ public class HoSoBenhAnDao {
         }
     }
 
-    // Cập nhật tiền sử bệnh và dị ứng, trả về true nếu có dòng được sửa
     public boolean capNhatTienSu(Connection ketNoi, String maHoSo, String tienSuBenh, String diUng)
             throws SQLException {
         String sql = "UPDATE dbo.HoSoBenhAn SET tienSuBenh = ?, diUng = ? WHERE maHoSo = ?";
@@ -131,7 +117,6 @@ public class HoSoBenhAnDao {
         }
     }
 
-    // Tạo PreparedStatement kèm thời gian chờ tối đa; lỗi thì đóng lại ngay (giống BenhNhanDao)
     private PreparedStatement taoCauLenh(Connection ketNoi, String sql) throws SQLException {
         PreparedStatement cauLenh = ketNoi.prepareStatement(sql);
         try {

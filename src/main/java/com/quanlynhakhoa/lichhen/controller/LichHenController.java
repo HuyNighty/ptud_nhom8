@@ -25,22 +25,18 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-// Controller màn hình Lịch hẹn (UC004 đặt / đổi / hủy, UC005 tiếp đón bệnh nhân): nhận sự kiện từ View → gọi Service → đưa kết quả về View.
-// Mọi việc đọc / ghi database đều chạy bằng SwingWorker (luồng nền) để app không bị đơ:
-//   doInBackground() chạy ở luồng nền (gọi Service), done() chạy lại trên giao diện (cập nhật View).
 public class LichHenController implements ActionListener, MouseListener {
     private LichHenPanel view;
     private LichHenService lichHenService;
 
-    private LichHenDialog winLichHen;   // form Đặt / Đổi lịch đang mở (null nếu chưa mở)
-    private boolean dangTaiDanhSach;    // đang đọc danh sách → bỏ qua bấm thêm
-    private boolean dangXuLyForm;       // form đang đọc / ghi database → bỏ qua bấm thêm
+    private LichHenDialog winLichHen;
+    private boolean dangTaiDanhSach;
+    private boolean dangXuLyForm;
 
     public LichHenController(LichHenPanel view, LichHenService lichHenService) {
         this.view = view;
         this.lichHenService = lichHenService;
 
-        // Gắn sự kiện cho các nút và ô tìm kiếm (nhấn Enter)
         view.getBtnChonNgayXem().addActionListener(this);
         view.getBtnHomNay().addActionListener(this);
         view.getTxtTimKiem().addActionListener(this);
@@ -49,15 +45,12 @@ public class LichHenController implements ActionListener, MouseListener {
         view.getBtnTiepDon().addActionListener(this);
         view.getBtnDoiLich().addActionListener(this);
         view.getBtnHuyLich().addActionListener(this);
-        // Click 1 dòng trong bảng → hiện lịch hẹn đó ở pnlEast
         view.getTblLichHen().addMouseListener(this);
 
-        // Không có quyền thì làm mờ nút (Service vẫn kiểm tra lại)
         boolean duocQuanLyLich = lichHenService.coQuyen(Permission.APPOINTMENT_MANAGE);
         boolean duocTiepDon = lichHenService.coQuyen(Permission.PATIENT_CHECK_IN);
         view.datQuyen(duocQuanLyLich, duocTiepDon);
 
-        // Mở màn hình là hiện lịch hẹn hôm nay
         taiDanhSach(null);
     }
 
@@ -65,7 +58,6 @@ public class LichHenController implements ActionListener, MouseListener {
     public void actionPerformed(ActionEvent suKien) {
         Object nguonSuKien = suKien.getSource();
 
-        // ----- Màn hình danh sách -----
         if (nguonSuKien.equals(view.getBtnTimKiem()) || nguonSuKien.equals(view.getTxtTimKiem())) {
             taiDanhSach(null);
         }
@@ -95,7 +87,6 @@ public class LichHenController implements ActionListener, MouseListener {
             }
         }
 
-        // ----- Form Đặt / Đổi lịch -----
         if (winLichHen == null) {
             return;
         }
@@ -103,7 +94,7 @@ public class LichHenController implements ActionListener, MouseListener {
             timBenhNhan();
         }
         if (nguonSuKien.equals(winLichHen.getCmbBacSi())) {
-            winLichHen.xoaGioTrong();          // đổi bác sĩ → giờ trống cũ không còn đúng
+            winLichHen.xoaGioTrong();
         }
         if (nguonSuKien.equals(winLichHen.getBtnChonNgay())) {
             winLichHen.moLichChonNgayHen();
@@ -119,7 +110,6 @@ public class LichHenController implements ActionListener, MouseListener {
         }
     }
 
-    // Click 1 dòng trong bảng → hiện ở pnlEast, bật / tắt nút theo trạng thái của lịch hẹn đó
     @Override
     public void mouseClicked(MouseEvent suKien) {
         view.hienChiTiet(view.layLichHenDangChon());
@@ -141,16 +131,11 @@ public class LichHenController implements ActionListener, MouseListener {
     public void mouseExited(MouseEvent suKien) {
     }
 
-    // ===================== DANH SÁCH =====================
-
-    // Đọc lịch hẹn của ngày đang xem rồi đổ vào bảng.
-    // maCanChon: mã lịch hẹn cần chọn sẵn sau khi tải xong (null = không chọn)
     private void taiDanhSach(String maCanChon) {
         if (dangTaiDanhSach) {
             return;
         }
         dangTaiDanhSach = true;
-        // Lấy điều kiện lọc NGAY BÂY GIỜ (trên giao diện), luồng nền chỉ dùng 2 biến này
         LocalDate ngay = view.getNgayDangXem();
         String tuKhoa = view.getTxtTimKiem().getText();
         view.datDangTai(true);
@@ -177,7 +162,6 @@ public class LichHenController implements ActionListener, MouseListener {
         }.execute();
     }
 
-    // Bấm "Chọn" ở ô ngày: xem được từ 5 năm trước tới 1 năm sau
     private void chonNgayXem() {
         LocalDate homNay = LocalDate.now();
         LocalDate ngayDaChon = ChonNgayDialog.chon(SwingUtilities.getWindowAncestor(view), "Chọn ngày xem lịch hẹn",
@@ -188,7 +172,6 @@ public class LichHenController implements ActionListener, MouseListener {
         }
     }
 
-    // Lịch hẹn đang chọn trên bảng, phải ở trạng thái "Đã đặt" (BR03). Không hợp lệ → báo lỗi, trả về null.
     private LichHen layLichHenDaDatDangChon(String viecCanLam) {
         LichHen lichHen = view.layLichHenDangChon();
         if (lichHen == null) {
@@ -203,9 +186,6 @@ public class LichHenController implements ActionListener, MouseListener {
         return lichHen;
     }
 
-    // ===================== TIẾP ĐÓN BỆNH NHÂN (UC005) =====================
-
-    // Bệnh nhân có lịch hẹn hôm nay đã tới: tạo lượt khám "Chờ khám" + lịch hẹn chuyển "Đã đến"
     private void tiepDonBenhNhan() {
         LichHen lichHen = view.layLichHenDangChon();
         if (lichHen == null) {
@@ -243,19 +223,17 @@ public class LichHenController implements ActionListener, MouseListener {
                 } catch (Exception loi) {
                     view.hienLoi(thongBaoLoi(loi));
                 }
-                taiDanhSach(maLichHen);   // thành công hay lỗi đều tải lại để thấy trạng thái mới nhất
+                taiDanhSach(maLichHen);
             }
         }.execute();
     }
-
-    // ===================== HỦY LỊCH (UC004 A2) =====================
 
     private void huyLich(LichHen lichHen) {
         String cauHoi = "Hủy lịch hẹn " + lichHen.getMaLichHen() + " của " + lichHen.getTenBenhNhan()
                 + "?\nNhập lý do hủy (bắt buộc):";
         String lyDoHuy = JOptionPane.showInputDialog(view, cauHoi, "Hủy lịch hẹn", JOptionPane.QUESTION_MESSAGE);
         if (lyDoHuy == null) {
-            return;   // bấm Cancel
+            return;
         }
         String maLichHen = lichHen.getMaLichHen();
         view.datDangTai(true);
@@ -276,14 +254,11 @@ public class LichHenController implements ActionListener, MouseListener {
                 } catch (Exception loi) {
                     view.hienLoi(thongBaoLoi(loi));
                 }
-                taiDanhSach(maLichHen);   // thành công hay lỗi đều tải lại để thấy trạng thái mới nhất
+                taiDanhSach(maLichHen);
             }
         }.execute();
     }
 
-    // ===================== FORM ĐẶT / ĐỔI LỊCH =====================
-
-    // lichHenCanDoi = null → Đặt lịch; khác null → Đổi lịch
     private void moForm(LichHen lichHenCanDoi) {
         winLichHen = new LichHenDialog(SwingUtilities.getWindowAncestor(view), lichHenCanDoi);
         winLichHen.getTxtTimBenhNhan().addActionListener(this);
@@ -293,7 +268,6 @@ public class LichHenController implements ActionListener, MouseListener {
         winLichHen.getBtnLuu().addActionListener(this);
         winLichHen.getBtnHuy().addActionListener(this);
 
-        // Đọc danh sách bác sĩ (luồng nền); đổi lịch thì chọn sẵn bác sĩ cũ
         String maBacSiChonSan = null;
         if (lichHenCanDoi != null) {
             maBacSiChonSan = lichHenCanDoi.getMaBacSi();
@@ -301,7 +275,6 @@ public class LichHenController implements ActionListener, MouseListener {
         taiDanhSachBacSi(winLichHen, maBacSiChonSan);
 
         try {
-            // Form là modal: dòng này chờ tới khi form đóng (SwingWorker vẫn chạy bình thường)
             winLichHen.setVisible(true);
         } finally {
             winLichHen = null;
@@ -323,7 +296,7 @@ public class LichHenController implements ActionListener, MouseListener {
             protected void done() {
                 dangXuLyForm = false;
                 if (!winDangMo.isDisplayable()) {
-                    return;   // form đã đóng
+                    return;
                 }
                 winDangMo.datDangXuLy(false);
                 try {
@@ -331,13 +304,11 @@ public class LichHenController implements ActionListener, MouseListener {
                 } catch (Exception loi) {
                     winDangMo.hienLoi(thongBaoLoi(loi));
                 }
-                // Gắn sự kiện đổi bác sĩ SAU khi đổ danh sách, để việc đổ dữ liệu không xóa giờ trống
                 winDangMo.getCmbBacSi().addActionListener(LichHenController.this);
             }
         }.execute();
     }
 
-    // UC004 bước 1: tìm bệnh nhân theo mã / tên / SĐT
     private void timBenhNhan() {
         if (dangXuLyForm) {
             return;
@@ -369,7 +340,6 @@ public class LichHenController implements ActionListener, MouseListener {
         }.execute();
     }
 
-    // UC004 bước 2–3: chọn bác sĩ + ngày → hiện các giờ còn trống trong ca
     private void xemGioTrong() {
         if (dangXuLyForm) {
             return;
@@ -407,7 +377,6 @@ public class LichHenController implements ActionListener, MouseListener {
         }.execute();
     }
 
-    // UC004 bước 4–6 (đặt) hoặc A1 (đổi): bấm Lưu
     private void luu() {
         if (dangXuLyForm) {
             return;
@@ -415,7 +384,6 @@ public class LichHenController implements ActionListener, MouseListener {
         dangXuLyForm = true;
         LichHenDialog winDangMo = winLichHen;
 
-        // Lấy dữ liệu trên form NGAY BÂY GIỜ, luồng nền chỉ dùng các biến này
         LichHen lichHenCanDoi = winDangMo.getLichHenCanDoi();
         BenhNhanTomTat benhNhan = winDangMo.layBenhNhanDaChon();
         String maBenhNhan = null;
@@ -451,7 +419,6 @@ public class LichHenController implements ActionListener, MouseListener {
                     winDangMo.hienLoi(thongBaoLoi(loi));
                     Throwable loiGoc = layLoiGoc(loi);
                     if (loiGoc instanceof DuLieuDaThayDoiException) {
-                        // UC004 E1: khung giờ không còn trống → tải lại giờ trống; danh sách phía sau cũng tải lại
                         if (winDangMo.isDisplayable()) {
                             xemGioTrong();
                         }
@@ -469,16 +436,12 @@ public class LichHenController implements ActionListener, MouseListener {
                 JOptionPane.showMessageDialog(winDangMo, thongBao);
                 winDangMo.dispose();
 
-                // Chuyển danh sách sang ngày của lịch vừa lưu và chọn sẵn dòng đó
                 view.datNgayDangXem(thoiGianHen.toLocalDate());
                 taiDanhSach(maLichHenMoi);
             }
         }.execute();
     }
 
-    // ===================== Xử lý lỗi =====================
-
-    // SwingWorker bọc lỗi thật bên trong ExecutionException → lấy lỗi thật ra
     private Throwable layLoiGoc(Throwable loi) {
         while (loi instanceof ExecutionException && loi.getCause() != null) {
             loi = loi.getCause();
@@ -486,7 +449,6 @@ public class LichHenController implements ActionListener, MouseListener {
         return loi;
     }
 
-    // Đổi lỗi thành câu dễ hiểu (không hiện câu SQL ra màn hình)
     private String thongBaoLoi(Throwable loi) {
         Throwable loiGoc = layLoiGoc(loi);
         if (loiGoc instanceof AccessDeniedException) {

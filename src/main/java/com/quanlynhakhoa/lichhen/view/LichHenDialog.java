@@ -32,26 +32,12 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-// Hộp thoại ĐẶT LỊCH / ĐỔI LỊCH (UC004). Chỉ tạo giao diện và đọc dữ liệu trên form.
-// Các nút do LichHenController xử lý.
-//   lichHenCanDoi = null  → form ĐẶT LỊCH (tìm và chọn bệnh nhân)
-//   lichHenCanDoi != null → form ĐỔI LỊCH (bệnh nhân giữ nguyên, chỉ đổi bác sĩ / ngày / giờ)
-//
-//  ┌──────── pnlNorth ────────┐
-//  │ tiêu đề                  │
-//  ├──────── pnlCenter ───────┤
-//  │ 1. Bệnh nhân             │
-//  │ 2. Bác sĩ, ngày, giờ     │
-//  │ 3. Lý do khám            │
-//  ├──────── pnlSouth ────────┤
-//  │                Hủy  Lưu  │
-//  └──────────────────────────┘
 public class LichHenDialog extends JDialog {
     private static final Color NAVY = new Color(29, 61, 102);
     private static final Color XAM = new Color(97, 115, 137);
     private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    private LichHen lichHenCanDoi;     // null = đặt mới
+    private LichHen lichHenCanDoi;
 
     private JPanel pnlNorth;
     private JLabel lblTieuDe;
@@ -61,11 +47,10 @@ public class LichHenDialog extends JDialog {
     private JButton btnTimBenhNhan;
     private JComboBox<BenhNhanTomTat> cmbBenhNhan;
     private JComboBox<BacSi> cmbBacSi;
-    private JTextField txtNgayHen;           // chỉ hiển thị ngày đã chọn, không cho gõ
+    private JTextField txtNgayHen;
     private JButton btnChonNgay;
-    private JComboBox<LocalTime> cmbGioHen;  // các giờ còn trống (LocalTime hiện dạng 08:30)
+    private JComboBox<LocalTime> cmbGioHen;
     private JButton btnXemGioTrong;
-    private JLabel lblGhiChuGio;
     private JTextArea txaLyDo;
     private JScrollPane scrLyDo;
 
@@ -74,7 +59,7 @@ public class LichHenDialog extends JDialog {
     private JButton btnHuy;
 
     public LichHenDialog(Window cuaSoCha, LichHen lichHenCanDoi) {
-        super(cuaSoCha, ModalityType.APPLICATION_MODAL);   // phải đóng form mới bấm được màn hình chính
+        super(cuaSoCha, ModalityType.APPLICATION_MODAL);
         this.lichHenCanDoi = lichHenCanDoi;
 
         String tieuDe;
@@ -116,7 +101,6 @@ public class LichHenDialog extends JDialog {
     private void taoCenter() {
         pnlCenter = new JPanel(new BorderLayout());
 
-        // Dòng tìm bệnh nhân: ô từ khóa + nút Tìm
         txtTimBenhNhan = new JTextField();
         btnTimBenhNhan = new JButton("Tìm");
         btnTimBenhNhan.setIcon(new BieuTuong(BieuTuong.TIM_KIEM));
@@ -128,7 +112,6 @@ public class LichHenDialog extends JDialog {
         cmbBenhNhan = new JComboBox<>();
         cmbBacSi = new JComboBox<>();
 
-        // Dòng ngày hẹn: ô chỉ xem + nút "Chọn" mở lịch (dùng lại ChonNgayDialog)
         txtNgayHen = new JTextField();
         txtNgayHen.setEditable(false);
         btnChonNgay = new JButton("Chọn");
@@ -137,17 +120,12 @@ public class LichHenDialog extends JDialog {
         boxNgayHen.add(Box.createHorizontalStrut(6));
         boxNgayHen.add(btnChonNgay);
 
-        // Dòng giờ hẹn: ô chọn giờ trống + nút "Xem giờ trống"
         cmbGioHen = new JComboBox<>();
         btnXemGioTrong = new JButton("Xem giờ trống");
         Box boxGioHen = Box.createHorizontalBox();
         boxGioHen.add(cmbGioHen);
         boxGioHen.add(Box.createHorizontalStrut(6));
         boxGioHen.add(btnXemGioTrong);
-
-        lblGhiChuGio = new JLabel("Chọn bác sĩ và ngày, rồi bấm \"Xem giờ trống\". Mỗi lịch hẹn dài "
-                + LichHenService.THOI_LUONG_PHUT + " phút.");
-        lblGhiChuGio.setForeground(XAM);
 
         txaLyDo = new JTextArea(3, 20);
         txaLyDo.setLineWrap(true);
@@ -161,7 +139,6 @@ public class LichHenDialog extends JDialog {
         JLabel lblNhanGioHen = new JLabel("Giờ hẹn (*):");
         JLabel lblNhanLyDo = new JLabel("Lý do khám:");
 
-        // Cho các nhãn rộng bằng nhau
         Dimension doRongNhan = lblNhanTimBenhNhan.getPreferredSize();
         lblNhanBenhNhan.setPreferredSize(doRongNhan);
         lblNhanBacSi.setPreferredSize(doRongNhan);
@@ -178,18 +155,11 @@ public class LichHenDialog extends JDialog {
         themDong(boxForm, lblNhanNgayHen, boxNgayHen);
         themDong(boxForm, lblNhanGioHen, boxGioHen);
 
-        Box boxGhiChu = Box.createHorizontalBox();
-        boxGhiChu.add(lblGhiChuGio);
-        boxGhiChu.add(Box.createHorizontalGlue());
-        boxForm.add(boxGhiChu);
-        boxForm.add(Box.createVerticalStrut(10));
-
         themDong(boxForm, lblNhanLyDo, scrLyDo);
 
         pnlCenter.add(boxForm, BorderLayout.NORTH);
     }
 
-    // Thêm 1 dòng "nhãn : ô nhập" vào form
     private void themDong(Box boxForm, JLabel lblNhan, Component oNhap) {
         Box boxDong = Box.createHorizontalBox();
         boxDong.add(lblNhan);
@@ -202,14 +172,13 @@ public class LichHenDialog extends JDialog {
     private void taoSouth() {
         pnlSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btnLuu = new JButton("Lưu");
-        MauNut.toXanhDuong(btnLuu);   // nút lưu màu xanh dương
+        MauNut.toXanhDuong(btnLuu);
         btnHuy = new JButton("Hủy");
-        MauNut.toDo(btnHuy);   // nút hủy màu đỏ
+        MauNut.toDo(btnHuy);
         pnlSouth.add(btnHuy);
         pnlSouth.add(btnLuu);
     }
 
-    // Form ĐỔI LỊCH: bệnh nhân cố định (không tìm được), điền sẵn ngày và lý do cũ
     private void doDuLieuLichHenCu() {
         BenhNhanTomTat benhNhanCu = new BenhNhanTomTat(lichHenCanDoi.getMaBenhNhan(),
                 lichHenCanDoi.getTenBenhNhan(), null, null, lichHenCanDoi.getSoDienThoaiBenhNhan());
@@ -218,7 +187,6 @@ public class LichHenDialog extends JDialog {
         txtTimBenhNhan.setEnabled(false);
         btnTimBenhNhan.setEnabled(false);
 
-        // Ngày cũ đã qua thì mặc định hôm nay
         LocalDate ngayCu = lichHenCanDoi.getThoiGianHen().toLocalDate();
         if (ngayCu.isBefore(LocalDate.now())) {
             ngayCu = LocalDate.now();
@@ -230,21 +198,16 @@ public class LichHenDialog extends JDialog {
         }
     }
 
-    // ===================== Hàm hiển thị (Controller gọi) =====================
-
-    // Kết quả tìm bệnh nhân → đổ vào ô chọn bệnh nhân
     public void hienDanhSachBenhNhan(ArrayList<BenhNhanTomTat> danhSachBenhNhan) {
         cmbBenhNhan.removeAllItems();
         for (BenhNhanTomTat benhNhan : danhSachBenhNhan) {
             cmbBenhNhan.addItem(benhNhan);
         }
         if (danhSachBenhNhan.isEmpty()) {
-            hienLoi("Không tìm thấy bệnh nhân. Nếu là bệnh nhân mới, hãy tạo hồ sơ ở màn hình "
-                    + "Bệnh nhân → Danh sách bệnh nhân rồi đặt lịch lại.");
+            hienLoi("Không tìm thấy bệnh nhân.");
         }
     }
 
-    // Đổ danh sách bác sĩ vào ô chọn; maBacSiChonSan khác null thì chọn sẵn bác sĩ đó
     public void hienDanhSachBacSi(ArrayList<BacSi> danhSachBacSi, String maBacSiChonSan) {
         cmbBacSi.removeAllItems();
         for (BacSi bacSi : danhSachBacSi) {
@@ -255,39 +218,29 @@ public class LichHenDialog extends JDialog {
         }
     }
 
-    // Đổ các giờ còn trống vào ô chọn giờ
     public void hienGioTrong(ArrayList<LocalTime> danhSachGioTrong) {
         cmbGioHen.removeAllItems();
         for (LocalTime gioTrong : danhSachGioTrong) {
             cmbGioHen.addItem(gioTrong);
         }
         if (danhSachGioTrong.isEmpty()) {
-            lblGhiChuGio.setText("Bác sĩ không có ca làm việc hoặc đã kín lịch ngày này. Chọn bác sĩ / ngày khác.");
-        } else {
-            lblGhiChuGio.setText("Còn " + danhSachGioTrong.size() + " giờ trống. Mỗi lịch hẹn dài "
-                    + LichHenService.THOI_LUONG_PHUT + " phút.");
+            hienLoi("Không còn giờ trống trong ngày này.");
         }
     }
 
-    // Đổi bác sĩ hoặc ngày thì danh sách giờ cũ không còn đúng → xóa đi, bắt bấm "Xem giờ trống" lại
     public void xoaGioTrong() {
         cmbGioHen.removeAllItems();
-        lblGhiChuGio.setText("Chọn bác sĩ và ngày, rồi bấm \"Xem giờ trống\". Mỗi lịch hẹn dài "
-                + LichHenService.THOI_LUONG_PHUT + " phút.");
     }
 
-    // Bấm "Chọn" → mở lịch (từ hôm nay tới 1 năm sau) → điền ngày đã chọn
     public void moLichChonNgayHen() {
         LocalDate homNay = LocalDate.now();
         LocalDate ngayDaChon = ChonNgayDialog.chon(this, "Chọn ngày hẹn", layNgayHen(),
                 homNay, homNay.plusYears(LichHenService.SO_NAM_DAT_TRUOC_TOI_DA));
-        if (ngayDaChon != null) {          // null = bấm Hủy → giữ nguyên
+        if (ngayDaChon != null) {
             txtNgayHen.setText(ngayDaChon.format(DINH_DANG_NGAY));
             xoaGioTrong();
         }
     }
-
-    // ===================== Đọc dữ liệu trên form =====================
 
     public BenhNhanTomTat layBenhNhanDaChon() {
         return (BenhNhanTomTat) cmbBenhNhan.getSelectedItem();
@@ -297,7 +250,6 @@ public class LichHenDialog extends JDialog {
         return (BacSi) cmbBacSi.getSelectedItem();
     }
 
-    // Mã bác sĩ đang chọn, chưa chọn thì null
     public String layMaBacSiDaChon() {
         BacSi bacSi = layBacSiDaChon();
         if (bacSi == null) {
@@ -306,7 +258,6 @@ public class LichHenDialog extends JDialog {
         return bacSi.getMaNhanVien();
     }
 
-    // Ngày hẹn đang chọn, chưa chọn thì null
     public LocalDate layNgayHen() {
         if (txtNgayHen.getText().isEmpty()) {
             return null;
@@ -314,7 +265,6 @@ public class LichHenDialog extends JDialog {
         return LocalDate.parse(txtNgayHen.getText(), DINH_DANG_NGAY);
     }
 
-    // Ngày + giờ hẹn, chưa chọn đủ thì null
     public LocalDateTime layThoiGianHen() {
         LocalDate ngayHen = layNgayHen();
         LocalTime gioHen = (LocalTime) cmbGioHen.getSelectedItem();
@@ -332,9 +282,6 @@ public class LichHenDialog extends JDialog {
         return lichHenCanDoi;
     }
 
-    // ===================== Trạng thái đang xử lý =====================
-
-    // Đang đọc / ghi database: khóa các nút để không bấm 2 lần
     public void datDangXuLy(boolean dangXuLy) {
         boolean choPhepThaoTac = !dangXuLy;
         btnLuu.setEnabled(choPhepThaoTac);
@@ -343,7 +290,6 @@ public class LichHenDialog extends JDialog {
         btnChonNgay.setEnabled(choPhepThaoTac);
         cmbBacSi.setEnabled(choPhepThaoTac);
         if (lichHenCanDoi == null) {
-            // Form đổi lịch luôn khóa phần bệnh nhân
             btnTimBenhNhan.setEnabled(choPhepThaoTac);
         }
 
@@ -356,12 +302,9 @@ public class LichHenDialog extends JDialog {
         }
     }
 
-    // Hiện lỗi thành hộp thông báo giữa màn hình (form vẫn mở để sửa lại)
     public void hienLoi(String thongBao) {
         JOptionPane.showMessageDialog(this, thongBao, "Thông báo", JOptionPane.WARNING_MESSAGE);
     }
-
-    // ===================== Getter cho Controller =====================
 
     public JTextField getTxtTimBenhNhan() {
         return txtTimBenhNhan;

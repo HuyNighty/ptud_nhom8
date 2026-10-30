@@ -3,27 +3,21 @@ package com.quanlynhakhoa.benhnhan.model;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-// Lớp HoSoBenhAn: 1 dòng trong bảng dbo.HoSoBenhAn + danh sách các lần khám của bệnh nhân.
-// Mỗi bệnh nhân có đúng 1 hồ sơ bệnh án (maBenhNhan là UNIQUE trong database).
-// Theo báo cáo (thuật ngữ 22, UC009): hồ sơ bệnh án = lịch sử khám, chẩn đoán, điều trị.
 public class HoSoBenhAn {
     private String maHoSo;
     private String maBenhNhan;
     private LocalDate ngayLap;
-    private String tienSuBenh;    // tối đa 500 ký tự, có thể để trống
-    private String diUng;         // tối đa 300 ký tự, có thể để trống
-    private ArrayList<LuotKham> danhSachLuotKham = new ArrayList<>();   // các lần khám, mới nhất ở đầu
+    private String tienSuBenh;
+    private String diUng;
+    private ArrayList<LuotKham> danhSachLuotKham = new ArrayList<>();
 
-    // Hàm khởi tạo rỗng
     public HoSoBenhAn() {
     }
 
-    // Hàm khởi tạo chỉ có mã
     public HoSoBenhAn(String maHoSo) {
         this.maHoSo = maHoSo;
     }
 
-    // Hàm khởi tạo đầy đủ
     public HoSoBenhAn(String maHoSo, String maBenhNhan, LocalDate ngayLap,
                       String tienSuBenh, String diUng) {
         this.maHoSo = maHoSo;

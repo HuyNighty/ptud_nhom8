@@ -10,14 +10,12 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.Path2D;
 import javax.swing.Icon;
 
-// Icon nhỏ tự vẽ bằng Graphics2D (không cần file ảnh, không cần thư viện ngoài).
-// Cách dùng: btnLoc.setIcon(new BieuTuong(BieuTuong.TIM_KIEM));
 public class BieuTuong implements Icon {
-    public static final int TIM_KIEM = 1;   // kính lúp
-    public static final int LAM_MOI = 2;    // mũi tên vòng tròn
+    public static final int TIM_KIEM = 1;
+    public static final int LAM_MOI = 2;
 
-    private static final int KICH_THUOC = 16;            // icon 16x16 pixel
-    private static final Color MAU = new Color(29, 61, 102); // xanh navy giống tiêu đề
+    private static final int KICH_THUOC = 16;
+    private static final Color MAU = new Color(29, 61, 102);
 
     private int loai;
 
@@ -38,8 +36,7 @@ public class BieuTuong implements Icon {
     @Override
     public void paintIcon(Component nutChuaIcon, Graphics doHoa, int viTriX, int viTriY) {
         Graphics2D butVe = (Graphics2D) doHoa.create();
-        butVe.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // nét mịn
-        // Nút bị làm mờ thì icon cũng mờ theo
+        butVe.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         if (nutChuaIcon != null && !nutChuaIcon.isEnabled()) {
             butVe.setColor(Color.LIGHT_GRAY);
         } else {
@@ -56,17 +53,13 @@ public class BieuTuong implements Icon {
         butVe.dispose();
     }
 
-    // Kính lúp: 1 vòng tròn + 1 cán chéo xuống góc phải
     private void veKinhLup(Graphics2D butVe) {
-        butVe.drawOval(2, 2, 9, 9);      // mắt kính
-        butVe.drawLine(10, 10, 14, 14);  // cán kính
+        butVe.drawOval(2, 2, 9, 9);
+        butVe.drawLine(10, 10, 14, 14);
     }
 
-    // Làm mới: 1 cung tròn gần kín + 1 đầu mũi tên ở cuối cung
     private void veLamMoi(Graphics2D butVe) {
-        // Cung tròn từ 60° quay ngược chiều kim đồng hồ 280°
         butVe.draw(new Arc2D.Double(2.5, 2.5, 11, 11, 60, 280, Arc2D.OPEN));
-        // Đầu mũi tên (tam giác) ở điểm bắt đầu cung, phía trên bên phải
         Path2D muiTen = new Path2D.Double();
         muiTen.moveTo(13.5, 1.5);
         muiTen.lineTo(13.5, 6.5);

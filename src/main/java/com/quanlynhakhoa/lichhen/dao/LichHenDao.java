@@ -15,18 +15,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
-// DAO Lịch hẹn: chỉ làm việc với SQL Server, không kiểm tra quyền, không kiểm tra nghiệp vụ.
-// Kết nối bằng TeamDevConnection (tài khoản n08dev_*, KHÔNG dùng sa).
-//
-// Bảng dùng tới:
-//   dbo.LichHen      đọc + thêm + sửa trạng thái
-//   dbo.NhanVien     chỉ đọc (danh sách bác sĩ, tên bác sĩ)
-//   dbo.BenhNhan     chỉ đọc (tên + SĐT bệnh nhân để hiện trên bảng), KHÔNG ghi
-//   dbo.PhanCong, dbo.CaLamViec   chỉ đọc (ca làm việc của bác sĩ, BR02)
-//   dbo.NhatKyThaoTac             ghi nhật ký
-//
-// Dùng lại 2 hàm của BenhNhanDao: taoCauLenh (PreparedStatement có thời gian chờ)
-// và doiKyTuDacBietThanhKyTuThuong (cho LIKE).
 public class LichHenDao {
     private final BenhNhanDao.ConnectionProvider cachMoKetNoi;
 
@@ -38,15 +26,10 @@ public class LichHenDao {
         this.cachMoKetNoi = cachMoKetNoi;
     }
 
-    // Mở 1 kết nối mới (Service dùng khi cần nhiều câu SQL trên cùng 1 kết nối / transaction)
     public Connection moKetNoi() throws SQLException {
         return cachMoKetNoi.open();
     }
 
-    // ===================== DANH SÁCH LỊCH HẸN =====================
-
-    // Lịch hẹn của 1 ngày, sắp theo giờ hẹn.
-    // tuKhoa: lọc theo mã lịch hẹn, mã bệnh nhân, tên hoặc SĐT bệnh nhân ("" = không lọc)
     public ArrayList<LichHen> layDanhSachTheoNgay(LocalDate ngay, String tuKhoa) throws SQLException {
         ArrayList<LichHen> danhSachLichHen = new ArrayList<>();
         String sql = "SELECT TOP 500 l.maLichHen, l.thoiGianHen, l.maBenhNhan, b.hoTen, b.soDienThoai, "
@@ -59,7 +42,6 @@ public class LichHenDao {
                 + "     OR b.hoTen LIKE ? OR b.soDienThoai LIKE ?) "
                 + "ORDER BY l.thoiGianHen, l.maLichHen";
 
-        // Từ 00:00 của ngày đó tới 00:00 của ngày hôm sau
         Timestamp dauNgay = Timestamp.valueOf(ngay.atStartOfDay());
         Timestamp dauNgayHomSau = Timestamp.valueOf(ngay.plusDays(1).atStartOfDay());
         String mauTim = "%" + BenhNhanDao.doiKyTuDacBietThanhKyTuThuong(tuKhoa) + "%";
@@ -93,7 +75,6 @@ public class LichHenDao {
         return danhSachLichHen;
     }
 
-    // Danh sách bác sĩ đang làm việc (chucDanh = 'BS'), sắp theo tên
     public ArrayList<BacSi> layDanhSachBacSi() throws SQLException {
         ArrayList<BacSi> danhSachBacSi = new ArrayList<>();
         String sql = "SELECT maNhanVien, hoTen FROM dbo.NhanVien "
@@ -109,11 +90,6 @@ public class LichHenDao {
         return danhSachBacSi;
     }
 
-    // ===================== CA LÀM VIỆC + GIỜ ĐÃ HẸN (BR02) =====================
-    // 2 hàm dưới nhận Connection từ Service (dùng cả lúc xem giờ trống và lúc lưu trong transaction)
-
-    // Các ca làm việc của bác sĩ trong 1 ngày (bỏ ca đã hủy).
-    // Mỗi phần tử là mảng 2 giờ: [0] = giờ bắt đầu ca, [1] = giờ kết thúc ca.
     public ArrayList<LocalTime[]> layCaLamViec(Connection ketNoi, String maBacSi, LocalDate ngay)
             throws SQLException {
         ArrayList<LocalTime[]> danhSachCa = new ArrayList<>();
@@ -139,8 +115,6 @@ public class LichHenDao {
         return danhSachCa;
     }
 
-    // Giờ bắt đầu của các lịch hẹn CÒN HIỆU LỰC của bác sĩ trong 1 ngày
-    // (bỏ lịch đã hủy, đã đổi). maBoQua: mã lịch đang đổi (không tính chính nó), null nếu đặt mới.
     public ArrayList<LocalDateTime> layGioDaHen(Connection ketNoi, String maBacSi, LocalDate ngay,
                                                 String maBoQua) throws SQLException {
         ArrayList<LocalDateTime> danhSachGioDaHen = new ArrayList<>();
@@ -163,10 +137,6 @@ public class LichHenDao {
         return danhSachGioDaHen;
     }
 
-    // Đếm số lịch hẹn còn hiệu lực của bác sĩ CHỒNG GIỜ với khoảng [batDau, ketThuc).
-    // Mỗi lịch hẹn dài thoiLuongPhut phút → lịch có giờ bắt đầu s chồng với khoảng mới khi:
-    //   s < ketThuc  VÀ  s + thoiLuong > batDau   ⇔   batDau - thoiLuong < s < ketThuc
-    // UPDLOCK, HOLDLOCK: khóa khoảng giờ này tới khi transaction xong, để 2 máy không cùng đặt 1 giờ.
     public int demLichChongGio(Connection ketNoi, String maBacSi, LocalDateTime batDau, LocalDateTime ketThuc,
                                int thoiLuongPhut, String maBoQua) throws SQLException {
         String sql = "SELECT COUNT(*) FROM dbo.LichHen WITH (UPDLOCK, HOLDLOCK) "
@@ -186,10 +156,6 @@ public class LichHenDao {
         }
     }
 
-    // ===================== THÊM / ĐỔI / HỦY (trong transaction của Service) =====================
-
-    // Đọc lại 1 lịch hẹn và KHÓA dòng đó tới khi transaction xong (dùng trước khi đổi / hủy).
-    // Không có thì trả về null.
     public LichHen timTheoMaDeSua(Connection ketNoi, String maLichHen) throws SQLException {
         String sql = "SELECT maLichHen, maBenhNhan, maNhanVien, thoiGianHen, lyDoHen, trangThai "
                 + "FROM dbo.LichHen WITH (UPDLOCK, HOLDLOCK) WHERE maLichHen = ?";
@@ -210,8 +176,6 @@ public class LichHenDao {
         }
     }
 
-    // Sinh mã lịch hẹn mới: LH + 6 chữ số (LH000001, LH000002, ...)
-    // UPDLOCK, HOLDLOCK: khóa lại để 2 người bấm Lưu cùng lúc không bị trùng mã
     public String taoMaLichHenMoi(Connection ketNoi) throws SQLException {
         String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(maLichHen, 3, 6) AS INT)), 0) + 1 "
                 + "FROM dbo.LichHen WITH (UPDLOCK, HOLDLOCK) "
@@ -223,12 +187,10 @@ public class LichHenDao {
             if (soTiepTheo > 999999) {
                 throw new SQLException("Đã hết mã lịch hẹn");
             }
-            return "LH" + String.format("%06d", soTiepTheo);   // ví dụ 7 → LH000007
+            return "LH" + String.format("%06d", soTiepTheo);
         }
     }
 
-    // Thêm 1 lịch hẹn mới với trạng thái "Đã đặt" (CHO_XAC_NHAN).
-    // maLichHenGoc: mã lịch cũ nếu đây là lịch được tạo khi đổi lịch, null nếu đặt mới.
     public void themLichHen(Connection ketNoi, LichHen lichHen, String maTaiKhoanTao) throws SQLException {
         String sql = "INSERT INTO dbo.LichHen "
                 + "(maLichHen, maBenhNhan, maNhanVien, thoiGianHen, lyDoHen, trangThai, maLichHenGoc, maTaiKhoanTao) "
@@ -245,9 +207,6 @@ public class LichHenDao {
         }
     }
 
-    // Chuyển 1 lịch "Đã đặt" sang trạng thái mới (DA_HUY hoặc DA_DOI_LICH).
-    // Điều kiện "trangThai IN (...)" trong WHERE: lịch đã đổi trạng thái thì không sửa được (BR03).
-    // Trả về true nếu có dòng được sửa.
     public boolean doiTrangThai(Connection ketNoi, String maLichHen, String trangThaiMoi, String lyDoHuy)
             throws SQLException {
         String sql = "UPDATE dbo.LichHen SET trangThai = ?, lyDoHuy = ? "
@@ -261,10 +220,6 @@ public class LichHenDao {
         }
     }
 
-    // ===================== TIẾP ĐÓN BỆNH NHÂN (UC005, bệnh nhân có lịch hẹn) =====================
-
-    // Đếm lượt khám CHƯA HOÀN TẤT của bệnh nhân (Chờ khám / Đang khám) — BR09: không được có 2 lượt mở.
-    // Có khóa để 2 máy không cùng tạo lượt khám cho 1 bệnh nhân.
     public int demLuotKhamDangMo(Connection ketNoi, String maBenhNhan) throws SQLException {
         String sql = "SELECT COUNT(*) FROM dbo.PhieuKham WITH (UPDLOCK, HOLDLOCK) "
                 + "WHERE maBenhNhan = ? AND trangThai IN ('CHO_KHAM', 'DANG_KHAM')";
@@ -277,7 +232,6 @@ public class LichHenDao {
         }
     }
 
-    // Sinh mã phiếu khám (lượt khám) mới: PK + 6 chữ số (PK000001, ...)
     public String taoMaPhieuKhamMoi(Connection ketNoi) throws SQLException {
         String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(maPhieuKham, 3, 6) AS INT)), 0) + 1 "
                 + "FROM dbo.PhieuKham WITH (UPDLOCK, HOLDLOCK) "
@@ -293,8 +247,6 @@ public class LichHenDao {
         }
     }
 
-    // Tạo lượt khám "Chờ khám" từ lịch hẹn: gắn bệnh nhân, hồ sơ, bác sĩ và mã lịch hẹn.
-    // Triệu chứng / chẩn đoán để trống — bác sĩ ghi khi khám (UC006).
     public void themLuotKhamChoKham(Connection ketNoi, String maPhieuKham, LichHen lichHen, String maHoSo,
                                     LocalDateTime thoiGianTiepNhan) throws SQLException {
         String sql = "INSERT INTO dbo.PhieuKham "
@@ -311,7 +263,6 @@ public class LichHenDao {
         }
     }
 
-    // Ghi nhật ký thao tác trên lịch hẹn (đặt, đổi, hủy, tiếp đón)
     public void ghiNhatKy(Connection ketNoi, String maTaiKhoan, String hanhDong, String maLichHen,
                           String noiDung) throws SQLException {
         String sql = "INSERT INTO dbo.NhatKyThaoTac "

@@ -29,61 +29,47 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-// Controller màn hình Bệnh nhân (UC003): nhận sự kiện từ View → gọi Service → đưa kết quả về View.
-// Mọi việc đọc / ghi database đều chạy bằng SwingWorker (luồng nền) để app không bị đơ:
-//   doInBackground() chạy ở luồng nền (gọi Service), done() chạy lại trên giao diện (cập nhật View).
 public class BenhNhanController implements ActionListener, MouseListener {
     private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // 3 lựa chọn khi có hồ sơ nghi trùng (UC003 A2)
-    private static final int CHON_QUAY_LAI = 0;        // quay lại form để sửa tiếp
-    private static final int CHON_VAN_LUU = 1;         // "Vẫn tạo mới" (hoặc "Vẫn lưu" khi đang sửa)
-    private static final int CHON_DUNG_HO_SO_CU = 2;   // "Dùng hồ sơ này": không tạo mới
+    private static final int CHON_QUAY_LAI = 0;
+    private static final int CHON_VAN_LUU = 1;
+    private static final int CHON_DUNG_HO_SO_CU = 2;
 
     private BenhNhanPanel view;
     private BenhNhanService benhNhanService;
 
-    // ----- Form Thêm / Sửa -----
-    private BenhNhanDialog winBenhNhan;        // form Thêm/Sửa đang mở (null nếu chưa mở)
-    private String maDangSua;                  // null = đang THÊM, khác null = đang SỬA bệnh nhân này
-    private BenhNhan benhNhanLucMoForm;        // dữ liệu lúc mở form Sửa (để kiểm tra BR10 khi lưu)
-    private boolean dangLuu;                   // đang lưu → bỏ qua bấm Lưu thêm lần nữa
-    private String maHoSoCuDaChon;             // mã hồ sơ cũ lễ tân chọn ở hộp thoại nghi trùng
+    private BenhNhanDialog winBenhNhan;
+    private String maDangSua;
+    private BenhNhan benhNhanLucMoForm;
+    private boolean dangLuu;
+    private String maHoSoCuDaChon;
 
-    // ----- Danh sách -----
-    private boolean dangTaiDanhSach;           // đang đọc danh sách từ database
-    private boolean coYeuCauTaiLaiDangCho;     // trong lúc đang tải lại có người bấm Tìm/Làm mới nữa
-    private String maCanChonKhiTaiLai;         // mã cần chọn sẵn sau lần tải đang chờ đó
+    private boolean dangTaiDanhSach;
+    private boolean coYeuCauTaiLaiDangCho;
+    private String maCanChonKhiTaiLai;
 
-    // ----- Khung chi tiết -----
-    // Mỗi lần xem chi tiết tăng số này lên 1. Kết quả trả về mà không phải lần mới nhất → bỏ qua
-    // (tránh trường hợp click nhanh 2 dòng, kết quả của dòng cũ về sau đè lên dòng mới).
     private long soThuTuLanXemChiTiet;
 
     public BenhNhanController(BenhNhanPanel view, BenhNhanService benhNhanService) {
         this.view = view;
         this.benhNhanService = benhNhanService;
 
-        // Gắn sự kiện cho các nút và ô tìm kiếm (nhấn Enter)
         view.getBtnLoc().addActionListener(this);
         view.getBtnXoaLoc().addActionListener(this);
         view.getBtnTaiLai().addActionListener(this);
         view.getTxtTimKiem().addActionListener(this);
         view.getBtnThem().addActionListener(this);
         view.getBtnSua().addActionListener(this);
-        // Gắn sự kiện click chuột vào bảng
         view.getTblBenhNhan().addMouseListener(this);
 
-        // Không có quyền thêm/sửa thì làm mờ nút (Service vẫn kiểm tra lại khi lưu)
         boolean duocThem = benhNhanService.coQuyen(Permission.PATIENT_CREATE);
         boolean duocSua = benhNhanService.coQuyen(Permission.PATIENT_UPDATE);
         view.datQuyen(duocThem, duocSua);
 
-        // Mở màn hình là đọc dữ liệu từ database vào bảng luôn
         docDuLieuVaoTable(null);
     }
 
-    // Xử lý khi bấm nút hoặc nhấn Enter
     @Override
     public void actionPerformed(ActionEvent suKien) {
         Object nguonSuKien = suKien.getSource();
@@ -98,12 +84,11 @@ public class BenhNhanController implements ActionListener, MouseListener {
             docDuLieuVaoTable(null);
         }
         if (nguonSuKien.equals(view.getBtnThem())) {
-            moForm(null);                                   // form trống
+            moForm(null);
         }
         if (nguonSuKien.equals(view.getBtnSua()) && view.getBenhNhanDangXem() != null) {
-            moForm(view.getBenhNhanDangXem());              // form có sẵn dữ liệu
+            moForm(view.getBenhNhanDangXem());
         }
-        // Các nút trên form Thêm/Sửa
         if (winBenhNhan != null && nguonSuKien.equals(winBenhNhan.getBtnChonNgay())) {
             winBenhNhan.moLichChonNgaySinh();
         }
@@ -115,11 +100,10 @@ public class BenhNhanController implements ActionListener, MouseListener {
         }
     }
 
-    // Click 1 dòng trong bảng → đọc lại bệnh nhân từ database → hiện ở khung bên phải
     @Override
     public void mouseClicked(MouseEvent suKien) {
         if (dangTaiDanhSach) {
-            return;   // bảng đang hiện là danh sách cũ, chờ tải xong
+            return;
         }
         int dongDangChon = view.getTblBenhNhan().getSelectedRow();
         if (dongDangChon < 0) {
@@ -145,15 +129,10 @@ public class BenhNhanController implements ActionListener, MouseListener {
     public void mouseExited(MouseEvent suKien) {
     }
 
-    // ===================== DANH SÁCH =====================
-
-    // Đọc danh sách theo điều kiện lọc đang có trên View rồi đổ vào bảng.
-    // maCanChon: mã bệnh nhân cần chọn sẵn sau khi tải xong (null = không chọn)
     private void docDuLieuVaoTable(String maCanChon) {
-        soThuTuLanXemChiTiet++;          // bỏ kết quả xem chi tiết đang chờ (nếu có)
+        soThuTuLanXemChiTiet++;
         view.hienChiTiet(null);
         if (dangTaiDanhSach) {
-            // Đang tải dở → ghi nhớ lại, tải xong lần này thì tải tiếp lần nữa với điều kiện mới nhất
             coYeuCauTaiLaiDangCho = true;
             maCanChonKhiTaiLai = maCanChon;
             return;
@@ -162,7 +141,6 @@ public class BenhNhanController implements ActionListener, MouseListener {
     }
 
     private void taiDanhSach(String maCanChon) {
-        // Lấy điều kiện lọc NGAY BÂY GIỜ (trên giao diện), luồng nền chỉ dùng 2 biến này
         String tuKhoa = view.getTxtTimKiem().getText();
         String gioiTinh = view.layGioiTinhDangChon();
         dangTaiDanhSach = true;
@@ -178,7 +156,6 @@ public class BenhNhanController implements ActionListener, MouseListener {
             protected void done() {
                 dangTaiDanhSach = false;
                 if (coYeuCauTaiLaiDangCho) {
-                    // Có yêu cầu mới hơn → bỏ kết quả này, tải lại luôn
                     coYeuCauTaiLaiDangCho = false;
                     taiDanhSach(maCanChonKhiTaiLai);
                     return;
@@ -199,7 +176,6 @@ public class BenhNhanController implements ActionListener, MouseListener {
         }.execute();
     }
 
-    // Đọc chi tiết 1 bệnh nhân rồi hiện ở khung bên phải
     private void hienChiTiet(String maBenhNhan) {
         soThuTuLanXemChiTiet++;
         long lanXemNay = soThuTuLanXemChiTiet;
@@ -214,7 +190,7 @@ public class BenhNhanController implements ActionListener, MouseListener {
             @Override
             protected void done() {
                 if (lanXemNay != soThuTuLanXemChiTiet) {
-                    return;   // đã có lần xem mới hơn → bỏ kết quả cũ
+                    return;
                 }
                 try {
                     view.hienChiTiet(get());
@@ -225,9 +201,6 @@ public class BenhNhanController implements ActionListener, MouseListener {
         }.execute();
     }
 
-    // ===================== THÊM / SỬA =====================
-
-    // Mở form: benhNhanCanSua = null → Thêm; khác null → Sửa
     private void moForm(BenhNhan benhNhanCanSua) {
         if (benhNhanCanSua == null) {
             maDangSua = null;
@@ -240,7 +213,6 @@ public class BenhNhanController implements ActionListener, MouseListener {
         winBenhNhan.getBtnLuu().addActionListener(this);
         winBenhNhan.getBtnHuy().addActionListener(this);
         try {
-            // Form là modal: dòng này chờ tới khi form đóng (SwingWorker vẫn chạy bình thường)
             winBenhNhan.setVisible(true);
         } finally {
             winBenhNhan = null;
@@ -248,7 +220,6 @@ public class BenhNhanController implements ActionListener, MouseListener {
         }
     }
 
-    // Bấm Lưu: đọc form → kiểm tra nghi trùng (luồng nền) → hỏi lễ tân nếu trùng → lưu (luồng nền)
     private void luu() {
         if (winBenhNhan == null || dangLuu) {
             return;
@@ -258,7 +229,7 @@ public class BenhNhanController implements ActionListener, MouseListener {
         String maBenhNhanDangSua = maDangSua;
         BenhNhan benhNhanLucMo = benhNhanLucMoForm;
 
-        winDangLuu.boToDoTatCa();     // xóa viền đỏ của lần lưu trước
+        winDangLuu.boToDoTatCa();
         BenhNhan benhNhanTrenForm;
         try {
             benhNhanTrenForm = winDangLuu.layBenhNhanTuForm(maBenhNhanDangSua);
@@ -279,7 +250,7 @@ public class BenhNhanController implements ActionListener, MouseListener {
             protected void done() {
                 if (!winDangLuu.isDisplayable()) {
                     dangLuu = false;
-                    return;   // form đã bị đóng
+                    return;
                 }
                 ArrayList<BenhNhan> danhSachTrung;
                 try {
@@ -300,18 +271,16 @@ public class BenhNhanController implements ActionListener, MouseListener {
                 if (luaChon == CHON_VAN_LUU) {
                     luuTrongNen(winDangLuu, benhNhanTrenForm, maBenhNhanDangSua, benhNhanLucMo);
                 } else if (luaChon == CHON_DUNG_HO_SO_CU) {
-                    // Không tạo mới: đóng form, mở hồ sơ cũ trong danh sách
                     ketThucLuu(winDangLuu);
                     winDangLuu.dispose();
                     chonHoSoCu(maHoSoCuDaChon);
                 } else {
-                    ketThucLuu(winDangLuu);   // quay lại form
+                    ketThucLuu(winDangLuu);
                 }
             }
         }.execute();
     }
 
-    // Ghi vào database ở luồng nền (không bao giờ ghi trên luồng giao diện)
     private void luuTrongNen(BenhNhanDialog winDangLuu, BenhNhan benhNhanTrenForm,
                              String maBenhNhanDangSua, BenhNhan benhNhanLucMo) {
         new SwingWorker<String, Void>() {
@@ -333,7 +302,6 @@ public class BenhNhanController implements ActionListener, MouseListener {
                     ketThucLuu(winDangLuu);
                     Throwable loiGoc = layLoiGoc(loi);
                     if (loiGoc instanceof DuLieuDaThayDoiException) {
-                        // BR10 / UC003 E2: báo, tải lại dữ liệu mới nhất và không lưu
                         JOptionPane.showMessageDialog(winDangLuu, loiGoc.getMessage(),
                                 "Dữ liệu vừa bị thay đổi", JOptionPane.WARNING_MESSAGE);
                         winDangLuu.dispose();
@@ -367,7 +335,6 @@ public class BenhNhanController implements ActionListener, MouseListener {
         }
     }
 
-    // Báo lỗi trên form: lỗi nhập ở 1 ô thì tô đỏ ô đó (UC003 E1), rồi hiện hộp thông báo
     private void baoLoiTrenForm(BenhNhanDialog winDangLuu, Throwable loi) {
         Throwable loiGoc = layLoiGoc(loi);
         if (loiGoc instanceof LoiNhapLieuException) {
@@ -377,19 +344,14 @@ public class BenhNhanController implements ActionListener, MouseListener {
         winDangLuu.hienLoi(thongBaoLoi(loi));
     }
 
-    // Lễ tân chọn "Dùng hồ sơ này": hiện đúng hồ sơ cũ đó trong danh sách
     private void chonHoSoCu(String maBenhNhan) {
         view.xoaTrang();
         view.getTxtTimKiem().setText(maBenhNhan);
         docDuLieuVaoTable(maBenhNhan);
     }
 
-    // Hộp thoại cảnh báo hồ sơ nghi trùng (BR01, UC003 A2).
-    //   Đang THÊM: "Dùng hồ sơ này" / "Vẫn tạo mới" / "Quay lại"
-    //   Đang SỬA : "Vẫn lưu" / "Quay lại"
     private int hoiKhiCoHoSoNghiTrung(BenhNhanDialog winDangLuu, ArrayList<BenhNhan> danhSachTrung,
                                       boolean dangThemMoi) {
-        // Danh sách các hồ sơ nghi trùng, chọn sẵn dòng đầu tiên
         DefaultListModel<String> modelHoSoTrung = new DefaultListModel<>();
         for (BenhNhan benhNhanTrung : danhSachTrung) {
             modelHoSoTrung.addElement(benhNhanTrung.getMaBenhNhan()
@@ -438,7 +400,6 @@ public class BenhNhanController implements ActionListener, MouseListener {
         return CHON_QUAY_LAI;
     }
 
-    // SwingWorker bọc lỗi thật bên trong ExecutionException → lấy lỗi thật ra
     private Throwable layLoiGoc(Throwable loi) {
         while (loi instanceof ExecutionException && loi.getCause() != null) {
             loi = loi.getCause();
@@ -446,7 +407,6 @@ public class BenhNhanController implements ActionListener, MouseListener {
         return loi;
     }
 
-    // Đổi lỗi thành câu dễ hiểu (không hiện câu SQL ra màn hình)
     private String thongBaoLoi(Throwable loi) {
         Throwable loiGoc = layLoiGoc(loi);
         if (loiGoc instanceof AccessDeniedException) {

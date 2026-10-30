@@ -28,21 +28,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-// Màn hình HỒ SƠ BỆNH ÁN (menu Bệnh nhân → Hồ sơ bệnh án), theo UC009 trong báo cáo docs/tuan_cuoi:
-//   1. Tìm bệnh nhân  →  2. chọn bệnh nhân: ghi nhật ký + hiện các lần khám theo thời gian
-//   3. chọn 1 lần khám  →  4. hiện chi tiết lần khám đó.   CHỈ XEM.
-// View chỉ tạo giao diện và hiển thị. Sự kiện do HoSoBenhAnController xử lý.
-//
-//  ┌──────────────────── pnlNorth ────────────────────┐
-//  │ tiêu đề + ô tìm kiếm + nút                       │
-//  ├─ pnlWest ─┬──────── pnlCenter ───────┬─ pnlEast ─┤
-//  │ bệnh nhân │ thông tin hồ sơ          │ chi tiết  │
-//  │ tìm được  │ bảng các lần khám        │ lần khám  │
-//  ├───────────┴──────── pnlSouth ────────┴───────────┤
-//  │ dòng trạng thái                                  │
-//  └──────────────────────────────────────────────────┘
 public class HoSoBenhAnPanel extends JPanel {
-    // Màu giống BenhNhanPanel / AccountPanel
     private static final Color NAVY = new Color(29, 61, 102);
     private static final Color XAM = new Color(97, 115, 137);
     private static final Color VIEN = new Color(220, 231, 242);
@@ -50,21 +36,18 @@ public class HoSoBenhAnPanel extends JPanel {
     private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter DINH_DANG_NGAY_GIO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    // ----- NORTH -----
     private JPanel pnlNorth;
     private JLabel lblTieuDe;
     private JTextField txtTimKiem;
     private JButton btnTimKiem;
     private JButton btnLamMoi;
 
-    // ----- WEST: danh sách bệnh nhân -----
     private JPanel pnlWest;
     private DefaultTableModel modelBenhNhan;
     private JTable tblBenhNhan;
     private JScrollPane scrBenhNhan;
-    private ArrayList<BenhNhan> danhSachBenhNhan = new ArrayList<>();   // dữ liệu của bảng bên trái
+    private ArrayList<BenhNhan> danhSachBenhNhan = new ArrayList<>();
 
-    // ----- CENTER: thông tin hồ sơ + các lần khám -----
     private JPanel pnlCenter;
     private JLabel lblTenBenhNhan;
     private JLabel lblThongTinHoSo;
@@ -73,9 +56,8 @@ public class HoSoBenhAnPanel extends JPanel {
     private DefaultTableModel modelLuotKham;
     private JTable tblLuotKham;
     private JScrollPane scrLuotKham;
-    private ArrayList<LuotKham> danhSachLuotKham = new ArrayList<>();   // dữ liệu của bảng lần khám
+    private ArrayList<LuotKham> danhSachLuotKham = new ArrayList<>();
 
-    // ----- EAST: chi tiết lần khám -----
     private JPanel pnlEast;
     private JLabel lblMaPhieu;
     private JLabel lblNgayKham;
@@ -85,11 +67,9 @@ public class HoSoBenhAnPanel extends JPanel {
     private JTextArea txaChanDoan;
     private JTextArea txaKetLuan;
 
-    // ----- SOUTH -----
     private JPanel pnlSouth;
     private JLabel lblTrangThai;
 
-    // Hàm khởi tạo: Core gắn vào menu bằng .register(Module.MEDICAL_RECORDS, HoSoBenhAnPanel::new)
     public HoSoBenhAnPanel(DesktopSession phienDangNhap) {
         setLayout(new BorderLayout(14, 14));
         setBackground(NEN);
@@ -110,11 +90,8 @@ public class HoSoBenhAnPanel extends JPanel {
         hienHoSo(null, null);
         hienChiTietLuotKham(null);
 
-        // Tạo Service và Controller, Controller sẽ gắn sự kiện cho các nút
         new HoSoBenhAnController(this, new BenhNhanService(phienDangNhap), new HoSoBenhAnService(phienDangNhap));
     }
-
-    // ===================== Tạo các vùng =====================
 
     private void taoNorth() {
         pnlNorth = new JPanel(new BorderLayout(0, 10));
@@ -123,9 +100,6 @@ public class HoSoBenhAnPanel extends JPanel {
         lblTieuDe = new JLabel("Hồ sơ bệnh án");
         lblTieuDe.setFont(new Font("SansSerif", Font.BOLD, 23));
         lblTieuDe.setForeground(NAVY);
-        JLabel lblMoTa = new JLabel("Tìm bệnh nhân → chọn bệnh nhân → chọn một lần khám để xem chi tiết. "
-                + "Mỗi lần mở hồ sơ đều được ghi nhật ký.");
-        lblMoTa.setForeground(XAM);
 
         txtTimKiem = new JTextField(24);
         btnTimKiem = new JButton("Tìm kiếm");
@@ -136,17 +110,12 @@ public class HoSoBenhAnPanel extends JPanel {
         JPanel pnlNorthSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
         pnlNorthSouth.setBackground(Color.WHITE);
         pnlNorthSouth.setBorder(BorderFactory.createLineBorder(VIEN));
-        pnlNorthSouth.add(new JLabel("Tìm bệnh nhân (SĐT, mã BN, họ tên):"));
+        pnlNorthSouth.add(new JLabel("Tìm:"));
         pnlNorthSouth.add(txtTimKiem);
         pnlNorthSouth.add(btnTimKiem);
         pnlNorthSouth.add(btnLamMoi);
 
-        JPanel pnlNorthNorth = new JPanel(new BorderLayout(0, 4));
-        pnlNorthNorth.setOpaque(false);
-        pnlNorthNorth.add(lblTieuDe, BorderLayout.NORTH);
-        pnlNorthNorth.add(lblMoTa, BorderLayout.SOUTH);
-
-        pnlNorth.add(pnlNorthNorth, BorderLayout.NORTH);
+        pnlNorth.add(lblTieuDe, BorderLayout.NORTH);
         pnlNorth.add(pnlNorthSouth, BorderLayout.SOUTH);
     }
 
@@ -168,7 +137,7 @@ public class HoSoBenhAnPanel extends JPanel {
         scrBenhNhan = new JScrollPane(tblBenhNhan);
         scrBenhNhan.setBorder(BorderFactory.createLineBorder(VIEN));
 
-        pnlWest.add(taoTieuDeKhung("1. Chọn bệnh nhân"), BorderLayout.NORTH);
+        pnlWest.add(taoTieuDeKhung("Bệnh nhân"), BorderLayout.NORTH);
         pnlWest.add(scrBenhNhan, BorderLayout.CENTER);
     }
 
@@ -176,7 +145,6 @@ public class HoSoBenhAnPanel extends JPanel {
         pnlCenter = new JPanel(new BorderLayout(0, 6));
         pnlCenter.setOpaque(false);
 
-        // CENTER → NORTH: tên bệnh nhân, mã hồ sơ, tiền sử, dị ứng
         lblTenBenhNhan = new JLabel();
         lblTenBenhNhan.setFont(new Font("SansSerif", Font.BOLD, 17));
         lblTenBenhNhan.setForeground(NAVY);
@@ -193,7 +161,6 @@ public class HoSoBenhAnPanel extends JPanel {
         themDongNhieuChu(boxHoSo, "Tiền sử bệnh:", txaTienSuBenh);
         themDongNhieuChu(boxHoSo, "Dị ứng:", txaDiUng);
 
-        // CENTER → CENTER: bảng các lần khám
         String[] tenCotLuotKham = {"Mã phiếu", "Ngày khám", "Bác sĩ", "Chẩn đoán", "Trạng thái"};
         modelLuotKham = new DefaultTableModel(tenCotLuotKham, 0) {
             @Override
@@ -210,10 +177,9 @@ public class HoSoBenhAnPanel extends JPanel {
 
         JPanel pnlCenterCenter = new JPanel(new BorderLayout(0, 6));
         pnlCenterCenter.setOpaque(false);
-        pnlCenterCenter.add(taoTieuDeKhung("2. Chọn một lần khám (mới nhất ở trên)"), BorderLayout.NORTH);
+        pnlCenterCenter.add(taoTieuDeKhung("Lịch sử khám"), BorderLayout.NORTH);
         pnlCenterCenter.add(scrLuotKham, BorderLayout.CENTER);
 
-        // Box không tự tô nền → bọc trong JPanel nền trắng có viền
         JPanel pnlCenterNorth = new JPanel(new BorderLayout());
         pnlCenterNorth.setBackground(Color.WHITE);
         pnlCenterNorth.setBorder(BorderFactory.createCompoundBorder(
@@ -240,7 +206,7 @@ public class HoSoBenhAnPanel extends JPanel {
 
         Box boxChiTiet = Box.createVerticalBox();
         boxChiTiet.setBorder(new EmptyBorder(14, 14, 14, 14));
-        JLabel lblTieuDeChiTiet = new JLabel("3. Chi tiết lần khám");
+        JLabel lblTieuDeChiTiet = new JLabel("Chi tiết lần khám");
         lblTieuDeChiTiet.setFont(new Font("SansSerif", Font.BOLD, 15));
         lblTieuDeChiTiet.setForeground(NAVY);
         boxChiTiet.add(dongTrai(lblTieuDeChiTiet));
@@ -253,7 +219,7 @@ public class HoSoBenhAnPanel extends JPanel {
         themDongNhieuChu(boxChiTiet, "Chẩn đoán:", txaChanDoan);
         themDongNhieuChu(boxChiTiet, "Kết luận:", txaKetLuan);
 
-        pnlEast.add(boxChiTiet, BorderLayout.NORTH);   // NORTH để các dòng nằm sát phía trên
+        pnlEast.add(boxChiTiet, BorderLayout.NORTH);
     }
 
     private void taoSouth() {
@@ -263,8 +229,6 @@ public class HoSoBenhAnPanel extends JPanel {
         lblTrangThai.setForeground(XAM);
         pnlSouth.add(lblTrangThai, BorderLayout.CENTER);
     }
-
-    // ===================== Hàm tiện ích tạo giao diện =====================
 
     private JTable taoBang(DefaultTableModel modelCuaBang) {
         JTable tblMoi = new JTable(modelCuaBang);
@@ -289,7 +253,6 @@ public class HoSoBenhAnPanel extends JPanel {
         return lblGiaTri;
     }
 
-    // Ô chữ nhiều dòng CHỈ ĐỂ XEM: tự xuống dòng, không viền, nền trong suốt giống JLabel
     private JTextArea taoOChuChiXem() {
         JTextArea txaChiXem = new JTextArea("—");
         txaChiXem.setEditable(false);
@@ -302,7 +265,6 @@ public class HoSoBenhAnPanel extends JPanel {
         return txaChiXem;
     }
 
-    // 1 dòng chỉ có 1 nhãn, nằm sát bên trái
     private Box dongTrai(JLabel lblNoiDung) {
         Box boxDong = Box.createHorizontalBox();
         boxDong.add(lblNoiDung);
@@ -310,7 +272,6 @@ public class HoSoBenhAnPanel extends JPanel {
         return boxDong;
     }
 
-    // Thêm 1 dòng "nhãn : giá trị" vào Box dọc
     private void themDong(Box boxCha, String noiDungNhan, JLabel lblGiaTri) {
         JLabel lblNhan = new JLabel(noiDungNhan);
         lblNhan.setForeground(XAM);
@@ -324,7 +285,6 @@ public class HoSoBenhAnPanel extends JPanel {
         boxCha.add(Box.createVerticalStrut(10));
     }
 
-    // Thêm 1 dòng "nhãn : nội dung nhiều dòng" vào Box dọc
     private void themDongNhieuChu(Box boxCha, String noiDungNhan, JTextArea txaGiaTri) {
         JLabel lblNhan = new JLabel(noiDungNhan);
         lblNhan.setForeground(XAM);
@@ -339,9 +299,6 @@ public class HoSoBenhAnPanel extends JPanel {
         boxCha.add(Box.createVerticalStrut(10));
     }
 
-    // ===================== Hàm hiển thị (Controller gọi) =====================
-
-    // Bước 1: đổ danh sách bệnh nhân tìm được vào bảng bên trái
     public void hienDanhSachBenhNhan(ArrayList<BenhNhan> danhSachTimDuoc) {
         danhSachBenhNhan = danhSachTimDuoc;
         modelBenhNhan.setRowCount(0);
@@ -353,18 +310,17 @@ public class HoSoBenhAnPanel extends JPanel {
             });
         }
         lblTrangThai.setForeground(XAM);
-        lblTrangThai.setText("Tìm được " + danhSachBenhNhan.size() + " bệnh nhân. Chọn một bệnh nhân để mở hồ sơ.");
+        lblTrangThai.setText("Có " + danhSachBenhNhan.size() + " bệnh nhân.");
         hienHoSo(null, null);
     }
 
-    // Bước 2: hiện hồ sơ + danh sách các lần khám (benhNhan = null → xóa trắng)
     public void hienHoSo(BenhNhan benhNhan, HoSoBenhAn hoSoBenhAn) {
         modelLuotKham.setRowCount(0);
         danhSachLuotKham = new ArrayList<>();
         hienChiTietLuotKham(null);
         if (benhNhan == null || hoSoBenhAn == null) {
             lblTenBenhNhan.setText("Chưa chọn bệnh nhân");
-            lblThongTinHoSo.setText("Chọn một bệnh nhân ở danh sách bên trái.");
+            lblThongTinHoSo.setText("");
             txaTienSuBenh.setText("—");
             txaDiUng.setText("—");
             return;
@@ -393,11 +349,10 @@ public class HoSoBenhAnPanel extends JPanel {
         if (danhSachLuotKham.isEmpty()) {
             lblTrangThai.setText("Bệnh nhân chưa có lần khám nào.");
         } else {
-            lblTrangThai.setText("Có " + danhSachLuotKham.size() + " lần khám. Chọn một lần khám để xem chi tiết.");
+            lblTrangThai.setText("Có " + danhSachLuotKham.size() + " lần khám.");
         }
     }
 
-    // Bước 3–4: hiện chi tiết 1 lần khám (null → xóa trắng)
     public void hienChiTietLuotKham(LuotKham luotKham) {
         if (luotKham == null) {
             lblMaPhieu.setText("—");
@@ -418,7 +373,6 @@ public class HoSoBenhAnPanel extends JPanel {
         txaKetLuan.setText(hienGachNgangNeuTrong(luotKham.getKetLuan()));
     }
 
-    // Đang đọc database: làm mờ nút để không bấm chồng
     public void datDangTai(boolean dangTai, String thongBao) {
         btnTimKiem.setEnabled(!dangTai);
         btnLamMoi.setEnabled(!dangTai);
@@ -428,14 +382,12 @@ public class HoSoBenhAnPanel extends JPanel {
         }
     }
 
-    // Hiện lỗi: dòng chữ đỏ ở SOUTH + hộp thông báo giữa màn hình
     public void hienLoi(String thongBao) {
         lblTrangThai.setForeground(new Color(176, 32, 32));
         lblTrangThai.setText(thongBao);
         JOptionPane.showMessageDialog(this, thongBao, "Thông báo lỗi", JOptionPane.ERROR_MESSAGE);
     }
 
-    // Bệnh nhân ở dòng đang chọn (null nếu chưa chọn)
     public BenhNhan layBenhNhanDangChon() {
         int dongDangChon = tblBenhNhan.getSelectedRow();
         if (dongDangChon < 0 || dongDangChon >= danhSachBenhNhan.size()) {
@@ -444,7 +396,6 @@ public class HoSoBenhAnPanel extends JPanel {
         return danhSachBenhNhan.get(dongDangChon);
     }
 
-    // Lần khám ở dòng đang chọn (null nếu chưa chọn)
     public LuotKham layLuotKhamDangChon() {
         int dongDangChon = tblLuotKham.getSelectedRow();
         if (dongDangChon < 0 || dongDangChon >= danhSachLuotKham.size()) {
@@ -453,7 +404,6 @@ public class HoSoBenhAnPanel extends JPanel {
         return danhSachLuotKham.get(dongDangChon);
     }
 
-    // Ngày giờ khám dạng dd/MM/yyyy HH:mm; không có thì hiện chuỗi thayThe
     private String dinhDangNgayKham(LuotKham luotKham, String thayThe) {
         if (luotKham.getThoiGianTiepNhan() == null) {
             return thayThe;
@@ -474,8 +424,6 @@ public class HoSoBenhAnPanel extends JPanel {
         }
         return giaTri;
     }
-
-    // ===================== Getter cho Controller =====================
 
     public JTextField getTxtTimKiem() {
         return txtTimKiem;

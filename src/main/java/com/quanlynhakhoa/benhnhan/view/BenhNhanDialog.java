@@ -29,20 +29,10 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
-// Hộp thoại Thêm / Sửa bệnh nhân. Chỉ tạo giao diện và đọc dữ liệu trên form.
-// Các nút (Chọn ngày, Lưu, Hủy) do BenhNhanController xử lý.
-//
-//  ┌──────── pnlNorth ────────┐
-//  │ tiêu đề                  │
-//  ├──────── pnlCenter ───────┤
-//  │ các ô nhập               │
-//  ├──────── pnlSouth ────────┤
-//  │                Hủy  Lưu  │
-//  └──────────────────────────┘
 public class BenhNhanDialog extends JDialog {
     private static final Color NAVY = new Color(29, 61, 102);
     private static final Color XAM = new Color(97, 115, 137);
-    private static final Color DO = new Color(200, 40, 40);    // viền ô nhập bị lỗi
+    private static final Color DO = new Color(200, 40, 40);
     private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private JPanel pnlNorth;
@@ -51,27 +41,25 @@ public class BenhNhanDialog extends JDialog {
     private JPanel pnlCenter;
     private JTextField txtMaBenhNhan;
     private JTextField txtHoTen;
-    private JTextField txtNgaySinh;        // chỉ hiển thị ngày đã chọn, không cho gõ
-    private JButton btnChonNgay;           // mở lịch để chọn ngày sinh
+    private JTextField txtNgaySinh;
+    private JButton btnChonNgay;
     private JComboBox<String> cmbGioiTinh;
     private JTextField txtSoDienThoai;
     private JTextField txtDiaChi;
     private JTextField txtNguoiLienHe;
-    private JTextArea txaTienSuBenh;       // tiền sử bệnh (nhiều dòng, không bắt buộc)
+    private JTextArea txaTienSuBenh;
     private JScrollPane scrTienSuBenh;
-    private JTextArea txaDiUng;            // dị ứng (nhiều dòng, không bắt buộc)
+    private JTextArea txaDiUng;
     private JScrollPane scrDiUng;
 
     private JPanel pnlSouth;
     private JButton btnLuu;
     private JButton btnHuy;
 
-    // Viền ban đầu của từng ô nhập, để bỏ viền đỏ thì trả lại đúng viền cũ
     private HashMap<JComponent, Border> vienBanDau = new HashMap<>();
 
-    // benhNhanCanSua = null → form THÊM; khác null → form SỬA (đổ sẵn dữ liệu)
     public BenhNhanDialog(Window cuaSoCha, BenhNhan benhNhanCanSua) {
-        super(cuaSoCha, ModalityType.APPLICATION_MODAL); // mở form thì phải đóng mới bấm được màn hình chính
+        super(cuaSoCha, ModalityType.APPLICATION_MODAL);
         String tieuDe;
         if (benhNhanCanSua == null) {
             tieuDe = "Thêm bệnh nhân";
@@ -111,11 +99,10 @@ public class BenhNhanDialog extends JDialog {
     private void taoCenter() {
         pnlCenter = new JPanel(new BorderLayout());
 
-        txtMaBenhNhan = new JTextField("(tự sinh khi lưu)");
-        txtMaBenhNhan.setEditable(false);   // mã do hệ thống sinh, không cho nhập
+        txtMaBenhNhan = new JTextField();
+        txtMaBenhNhan.setEditable(false);
         txtHoTen = new JTextField();
 
-        // Ngày sinh: ô chỉ xem + nút "Chọn" mở lịch
         txtNgaySinh = new JTextField();
         txtNgaySinh.setEditable(false);
         btnChonNgay = new JButton("Chọn");
@@ -133,7 +120,6 @@ public class BenhNhanDialog extends JDialog {
         txaDiUng = taoOChuNhieuDong();
         scrDiUng = new JScrollPane(txaDiUng);
 
-        // Ghi nhớ viền ban đầu của các ô có thể bị tô đỏ
         vienBanDau.put(txtHoTen, txtHoTen.getBorder());
         vienBanDau.put(txtNgaySinh, txtNgaySinh.getBorder());
         vienBanDau.put(cmbGioiTinh, cmbGioiTinh.getBorder());
@@ -153,7 +139,6 @@ public class BenhNhanDialog extends JDialog {
         JLabel lblNhanTienSu = new JLabel("Tiền sử bệnh:");
         JLabel lblNhanDiUng = new JLabel("Dị ứng:");
 
-        // Cho các nhãn rộng bằng nhau (giống code cũ)
         Dimension doRongNhan = lblNhanSoDienThoai.getPreferredSize();
         lblNhanMa.setPreferredSize(doRongNhan);
         lblNhanHoTen.setPreferredSize(doRongNhan);
@@ -163,7 +148,7 @@ public class BenhNhanDialog extends JDialog {
         lblNhanNguoiLienHe.setPreferredSize(doRongNhan);
         lblNhanTienSu.setPreferredSize(doRongNhan);
         lblNhanDiUng.setPreferredSize(doRongNhan);
-        lblNhanTienSu.setAlignmentY(TOP_ALIGNMENT);   // nhãn nằm sát trên ô nhiều dòng
+        lblNhanTienSu.setAlignmentY(TOP_ALIGNMENT);
         lblNhanDiUng.setAlignmentY(TOP_ALIGNMENT);
         scrTienSuBenh.setAlignmentY(TOP_ALIGNMENT);
         scrDiUng.setAlignmentY(TOP_ALIGNMENT);
@@ -179,18 +164,9 @@ public class BenhNhanDialog extends JDialog {
         themDong(boxForm, lblNhanTienSu, scrTienSuBenh);
         themDong(boxForm, lblNhanDiUng, scrDiUng);
 
-        JLabel lblGhiChu = new JLabel("(*) bắt buộc · SĐT gồm 10 số, bắt đầu bằng 0 · tiền sử tối đa "
-                + BenhNhanService.TIEN_SU_TOI_DA + ", dị ứng tối đa " + BenhNhanService.DI_UNG_TOI_DA + " ký tự");
-        lblGhiChu.setForeground(XAM);
-        Box boxGhiChu = Box.createHorizontalBox();
-        boxGhiChu.add(lblGhiChu);
-        boxGhiChu.add(Box.createHorizontalGlue());
-        boxForm.add(boxGhiChu);
-
         pnlCenter.add(boxForm, BorderLayout.NORTH);
     }
 
-    // Ô nhập nhiều dòng, tự xuống dòng theo từ
     private JTextArea taoOChuNhieuDong() {
         JTextArea txaNhieuDong = new JTextArea(3, 20);
         txaNhieuDong.setLineWrap(true);
@@ -198,7 +174,6 @@ public class BenhNhanDialog extends JDialog {
         return txaNhieuDong;
     }
 
-    // Thêm 1 dòng "nhãn : ô nhập" vào form
     private void themDong(Box boxForm, JLabel lblNhan, Component oNhap) {
         Box boxDong = Box.createHorizontalBox();
         boxDong.add(lblNhan);
@@ -211,21 +186,18 @@ public class BenhNhanDialog extends JDialog {
     private void taoSouth() {
         pnlSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btnLuu = new JButton("Lưu");
-        MauNut.toXanhDuong(btnLuu);   // nút lưu màu xanh dương
+        MauNut.toXanhDuong(btnLuu);
         btnHuy = new JButton("Hủy");
-        MauNut.toDo(btnHuy);   // nút hủy màu đỏ
+        MauNut.toDo(btnHuy);
         pnlSouth.add(btnHuy);
         pnlSouth.add(btnLuu);
     }
 
-    // Form SỬA: đổ dữ liệu bệnh nhân lên các ô
     private void doDuLieuLenForm(BenhNhan benhNhan) {
         txtMaBenhNhan.setText(benhNhan.getMaBenhNhan());
         txtHoTen.setText(benhNhan.getHoTen());
         txtNgaySinh.setText(benhNhan.getNgaySinh().format(DINH_DANG_NGAY));
 
-        // Dữ liệu cũ có giới tính "Khác": thêm lựa chọn "Khác" riêng cho bệnh nhân này,
-        // nếu không ô chọn sẽ tự hiện "Nam" và bấm Lưu là giới tính bị đổi mà không ai biết.
         if ("KHAC".equals(benhNhan.getGioiTinh())) {
             cmbGioiTinh.addItem("Khác");
         }
@@ -245,25 +217,20 @@ public class BenhNhanDialog extends JDialog {
         return chuoi;
     }
 
-    // Bấm "Chọn" → mở lịch → điền ngày đã chọn vào ô ngày sinh
     public void moLichChonNgaySinh() {
         LocalDate ngayDangCo = null;
         if (!txtNgaySinh.getText().isEmpty()) {
             ngayDangCo = LocalDate.parse(txtNgaySinh.getText(), DINH_DANG_NGAY);
         }
         LocalDate ngayDaChon = ChonNgayDialog.chon(this, ngayDangCo);
-        if (ngayDaChon != null) {           // null = người dùng bấm Hủy → giữ nguyên
+        if (ngayDaChon != null) {
             txtNgaySinh.setText(ngayDaChon.format(DINH_DANG_NGAY));
         }
     }
 
-    // Đọc dữ liệu trên form thành 1 đối tượng BenhNhan.
-    // Việc kiểm tra quy tắc (bắt buộc, regex...) do Service làm.
     public BenhNhan layBenhNhanTuForm(String maBenhNhan) {
-        // Ngày sinh dạng dd/MM/yyyy → Service kiểm tra bằng regex rồi đổi sang LocalDate
         LocalDate ngaySinh = BenhNhanService.docNgaySinh(txtNgaySinh.getText());
 
-        // Đổi chữ trong ô chọn sang mã lưu trong database
         String gioiTinh;
         Object luaChonGioiTinh = cmbGioiTinh.getSelectedItem();
         if ("Nữ".equals(luaChonGioiTinh)) {
@@ -286,9 +253,6 @@ public class BenhNhanDialog extends JDialog {
         return benhNhan;
     }
 
-    // ===================== Tô đỏ ô lỗi (UC003 E1) =====================
-
-    // Tô đỏ ô có tên tenO (tên ô lấy từ LoiNhapLieuException) và đưa con trỏ vào ô đó
     public void toDoO(String tenO) {
         JComponent oBiLoi = layONhapTheoTen(tenO);
         if (oBiLoi == null) {
@@ -297,7 +261,6 @@ public class BenhNhanDialog extends JDialog {
         boToDoTatCa();
         oBiLoi.setBorder(BorderFactory.createLineBorder(DO, 2));
 
-        // Ô nhiều dòng nằm trong JScrollPane → đưa con trỏ vào ô chữ bên trong
         if (oBiLoi == scrTienSuBenh) {
             txaTienSuBenh.requestFocusInWindow();
         } else if (oBiLoi == scrDiUng) {
@@ -307,7 +270,6 @@ public class BenhNhanDialog extends JDialog {
         }
     }
 
-    // Trả lại viền ban đầu cho tất cả các ô
     public void boToDoTatCa() {
         for (JComponent oNhap : vienBanDau.keySet()) {
             oNhap.setBorder(vienBanDau.get(oNhap));
@@ -342,9 +304,6 @@ public class BenhNhanDialog extends JDialog {
         return null;
     }
 
-    // ===================== Trạng thái đang lưu =====================
-
-    // Đang lưu: khóa các ô và nút để không bấm Lưu 2 lần hay đóng form giữa chừng
     public void datDangLuu(boolean dangLuu) {
         boolean choPhepThaoTac = !dangLuu;
         btnLuu.setEnabled(choPhepThaoTac);
@@ -359,7 +318,7 @@ public class BenhNhanDialog extends JDialog {
         cmbGioiTinh.setEnabled(choPhepThaoTac);
 
         if (dangLuu) {
-            setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);           // không cho bấm X
+            setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         } else {
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -367,7 +326,6 @@ public class BenhNhanDialog extends JDialog {
         }
     }
 
-    // Hiện lỗi thành hộp thông báo giữa màn hình (form vẫn mở để sửa lại)
     public void hienLoi(String thongBao) {
         JOptionPane.showMessageDialog(this, thongBao, "Dữ liệu chưa hợp lệ", JOptionPane.WARNING_MESSAGE);
     }
