@@ -63,9 +63,6 @@ public class BenhNhanPanel extends JPanel {
     private BenhNhan benhNhanDangXem;
     private boolean duocSua;
 
-    private JPanel pnlSouth;
-    private JLabel lblTrangThai;
-
     public BenhNhanPanel(DesktopSession phienDangNhap) {
         setLayout(new BorderLayout(14, 14));
         setBackground(NEN);
@@ -74,12 +71,10 @@ public class BenhNhanPanel extends JPanel {
         taoNorth();
         taoCenter();
         taoEast();
-        taoSouth();
 
         add(pnlNorth, BorderLayout.NORTH);
         add(pnlCenter, BorderLayout.CENTER);
         add(pnlEast, BorderLayout.EAST);
-        add(pnlSouth, BorderLayout.SOUTH);
 
         new BenhNhanController(this, new BenhNhanService(phienDangNhap));
     }
@@ -259,14 +254,6 @@ public class BenhNhanPanel extends JPanel {
         return lblGiaTri;
     }
 
-    private void taoSouth() {
-        pnlSouth = new JPanel(new BorderLayout());
-        pnlSouth.setOpaque(false);
-        lblTrangThai = new JLabel("Chưa tải dữ liệu.");
-        lblTrangThai.setForeground(XAM);
-        pnlSouth.add(lblTrangThai, BorderLayout.CENTER);
-    }
-
     public void docDuLieuVaoTable(ArrayList<BenhNhan> danhSachBenhNhan) {
         modelBenhNhan.setRowCount(0);
         for (BenhNhan benhNhan : danhSachBenhNhan) {
@@ -278,8 +265,6 @@ public class BenhNhanPanel extends JPanel {
                     benhNhan.getSoDienThoai()
             });
         }
-        lblTrangThai.setForeground(XAM);
-        lblTrangThai.setText("Có " + danhSachBenhNhan.size() + " bệnh nhân.");
         hienChiTiet(null);
     }
 
@@ -320,15 +305,9 @@ public class BenhNhanPanel extends JPanel {
         btnLoc.setEnabled(!dangTai);
         btnXoaLoc.setEnabled(!dangTai);
         btnTaiLai.setEnabled(!dangTai);
-        if (dangTai) {
-            lblTrangThai.setForeground(XAM);
-            lblTrangThai.setText("Đang tải dữ liệu...");
-        }
     }
 
     public void hienLoi(String thongBao) {
-        lblTrangThai.setForeground(new Color(176, 32, 32));
-        lblTrangThai.setText(thongBao);
         JOptionPane.showMessageDialog(this, thongBao, "Thông báo lỗi", JOptionPane.ERROR_MESSAGE);
     }
 

@@ -84,7 +84,7 @@ public class HoSoBenhAnController implements ActionListener, MouseListener {
         dangTimBenhNhan = true;
         soThuTuLanMoHoSo++;
         String tuKhoa = view.getTxtTimKiem().getText();
-        view.datDangTai(true, "Đang tìm bệnh nhân...");
+        view.datDangTai(true);
 
         new SwingWorker<ArrayList<BenhNhan>, Void>() {
             @Override
@@ -95,7 +95,7 @@ public class HoSoBenhAnController implements ActionListener, MouseListener {
             @Override
             protected void done() {
                 dangTimBenhNhan = false;
-                view.datDangTai(false, null);
+                view.datDangTai(false);
                 try {
                     view.hienDanhSachBenhNhan(get());
                 } catch (Exception loi) {
@@ -109,7 +109,7 @@ public class HoSoBenhAnController implements ActionListener, MouseListener {
         soThuTuLanMoHoSo++;
         long lanMoNay = soThuTuLanMoHoSo;
         view.hienHoSo(null, null);
-        view.datDangTai(true, "Đang mở hồ sơ bệnh án của " + benhNhan.getHoTen() + "...");
+        view.datDangTai(true);
 
         new SwingWorker<HoSoBenhAn, Void>() {
             @Override
@@ -122,7 +122,7 @@ public class HoSoBenhAnController implements ActionListener, MouseListener {
                 if (lanMoNay != soThuTuLanMoHoSo) {
                     return;
                 }
-                view.datDangTai(false, null);
+                view.datDangTai(false);
                 try {
                     view.hienHoSo(benhNhan, get());
                 } catch (Exception loi) {

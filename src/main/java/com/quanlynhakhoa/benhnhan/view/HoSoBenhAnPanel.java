@@ -67,9 +67,6 @@ public class HoSoBenhAnPanel extends JPanel {
     private JTextArea txaChanDoan;
     private JTextArea txaKetLuan;
 
-    private JPanel pnlSouth;
-    private JLabel lblTrangThai;
-
     public HoSoBenhAnPanel(DesktopSession phienDangNhap) {
         setLayout(new BorderLayout(14, 14));
         setBackground(NEN);
@@ -79,13 +76,11 @@ public class HoSoBenhAnPanel extends JPanel {
         taoWest();
         taoCenter();
         taoEast();
-        taoSouth();
 
         add(pnlNorth, BorderLayout.NORTH);
         add(pnlWest, BorderLayout.WEST);
         add(pnlCenter, BorderLayout.CENTER);
         add(pnlEast, BorderLayout.EAST);
-        add(pnlSouth, BorderLayout.SOUTH);
 
         hienHoSo(null, null);
         hienChiTietLuotKham(null);
@@ -222,14 +217,6 @@ public class HoSoBenhAnPanel extends JPanel {
         pnlEast.add(boxChiTiet, BorderLayout.NORTH);
     }
 
-    private void taoSouth() {
-        pnlSouth = new JPanel(new BorderLayout());
-        pnlSouth.setOpaque(false);
-        lblTrangThai = new JLabel("Chưa tải dữ liệu.");
-        lblTrangThai.setForeground(XAM);
-        pnlSouth.add(lblTrangThai, BorderLayout.CENTER);
-    }
-
     private JTable taoBang(DefaultTableModel modelCuaBang) {
         JTable tblMoi = new JTable(modelCuaBang);
         tblMoi.setRowHeight(28);
@@ -309,8 +296,6 @@ public class HoSoBenhAnPanel extends JPanel {
                     benhNhan.getSoDienThoai()
             });
         }
-        lblTrangThai.setForeground(XAM);
-        lblTrangThai.setText("Có " + danhSachBenhNhan.size() + " bệnh nhân.");
         hienHoSo(null, null);
     }
 
@@ -345,12 +330,6 @@ public class HoSoBenhAnPanel extends JPanel {
                     luotKham.getTrangThaiHienThi()
             });
         }
-        lblTrangThai.setForeground(XAM);
-        if (danhSachLuotKham.isEmpty()) {
-            lblTrangThai.setText("Bệnh nhân chưa có lần khám nào.");
-        } else {
-            lblTrangThai.setText("Có " + danhSachLuotKham.size() + " lần khám.");
-        }
     }
 
     public void hienChiTietLuotKham(LuotKham luotKham) {
@@ -373,18 +352,12 @@ public class HoSoBenhAnPanel extends JPanel {
         txaKetLuan.setText(hienGachNgangNeuTrong(luotKham.getKetLuan()));
     }
 
-    public void datDangTai(boolean dangTai, String thongBao) {
+    public void datDangTai(boolean dangTai) {
         btnTimKiem.setEnabled(!dangTai);
         btnLamMoi.setEnabled(!dangTai);
-        if (dangTai) {
-            lblTrangThai.setForeground(XAM);
-            lblTrangThai.setText(thongBao);
-        }
     }
 
     public void hienLoi(String thongBao) {
-        lblTrangThai.setForeground(new Color(176, 32, 32));
-        lblTrangThai.setText(thongBao);
         JOptionPane.showMessageDialog(this, thongBao, "Thông báo lỗi", JOptionPane.ERROR_MESSAGE);
     }
 

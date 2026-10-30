@@ -68,9 +68,6 @@ public class LichHenPanel extends JPanel {
     private JScrollPane scrLichHen;
     private ArrayList<LichHen> danhSachLichHen = new ArrayList<>();
 
-    private JPanel pnlSouth;
-    private JLabel lblTrangThai;
-
     private LocalDate ngayDangXem = LocalDate.now();
 
     public LichHenPanel(DesktopSession phienDangNhap) {
@@ -81,11 +78,9 @@ public class LichHenPanel extends JPanel {
         taoNorth();
         taoCenter();
         taoEast();
-        taoSouth();
         add(pnlNorth, BorderLayout.NORTH);
         add(pnlCenter, BorderLayout.CENTER);
         add(pnlEast, BorderLayout.EAST);
-        add(pnlSouth, BorderLayout.SOUTH);
 
         datNgayDangXem(LocalDate.now());
         hienChiTiet(null);
@@ -216,14 +211,6 @@ public class LichHenPanel extends JPanel {
         pnlCenter.add(scrLichHen, BorderLayout.CENTER);
     }
 
-    private void taoSouth() {
-        pnlSouth = new JPanel(new BorderLayout());
-        pnlSouth.setOpaque(false);
-        lblTrangThai = new JLabel("Chưa tải dữ liệu.");
-        lblTrangThai.setForeground(XAM);
-        pnlSouth.add(lblTrangThai, BorderLayout.CENTER);
-    }
-
     private JLabel taoGiaTri() {
         JLabel lblGiaTri = new JLabel("—");
         lblGiaTri.setFont(new Font("SansSerif", Font.BOLD, 13));
@@ -265,8 +252,6 @@ public class LichHenPanel extends JPanel {
                     lichHen.getTrangThaiHienThi()
             });
         }
-        lblTrangThai.setForeground(XAM);
-        lblTrangThai.setText("Có " + danhSachLichHen.size() + " lịch hẹn.");
         hienChiTiet(null);
     }
 
@@ -333,10 +318,6 @@ public class LichHenPanel extends JPanel {
         btnTimKiem.setEnabled(!dangTai);
         btnHomNay.setEnabled(!dangTai);
         btnChonNgayXem.setEnabled(!dangTai);
-        if (dangTai) {
-            lblTrangThai.setForeground(XAM);
-            lblTrangThai.setText("Đang tải dữ liệu...");
-        }
     }
 
     public void datQuyen(boolean duocQuanLyLich, boolean duocTiepDon) {
@@ -347,8 +328,6 @@ public class LichHenPanel extends JPanel {
     }
 
     public void hienLoi(String thongBao) {
-        lblTrangThai.setForeground(DO);
-        lblTrangThai.setText(thongBao);
         JOptionPane.showMessageDialog(this, thongBao, "Thông báo lỗi", JOptionPane.ERROR_MESSAGE);
     }
 
