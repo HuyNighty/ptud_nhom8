@@ -4,6 +4,11 @@ import com.quanlynhakhoa.account.AccountDirectoryDao;
 import com.quanlynhakhoa.account.AccountDirectoryRow;
 import com.quanlynhakhoa.account.AccountDirectoryService;
 import com.quanlynhakhoa.account.AccountCreateService;
+import com.quanlynhakhoa.account.AccountStateService;
+import com.quanlynhakhoa.model.LockSource;
+import com.quanlynhakhoa.security.AuthorizationService;
+import com.quanlynhakhoa.security.Permission;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import com.quanlynhakhoa.dev.TeamDevConnection;
 import com.quanlynhakhoa.model.AccountStatus;
 import com.quanlynhakhoa.model.Role;
@@ -33,6 +38,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
@@ -48,12 +54,17 @@ public final class AccountPanel extends JPanel {
     private final DesktopSession session;
     private final AccountDirectoryService service;
     private final AccountCreateService creator;
+    private final AccountStateService stateService;
+    private final boolean configured;
+    private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
     private final JTextField txtKeyword = new JTextField(19);
     private final JComboBox<Role> cmbRoleFilter = new JComboBox<>();
     private final JComboBox<AccountStatus> cmbStatusFilter = new JComboBox<>();
     private final JButton btnSearch = new JButton("Tìm kiếm");
     private final JButton btnRefresh = new JButton("Làm mới");
     private final JButton btnCreate = new JButton("Tạo tài khoản");
+    private final JButton btnLock = new JButton("Khóa tài khoản...");
+    private final JButton btnUnlock = new JButton("Mở khóa");
     private final JLabel lblStatus = new JLabel("Chưa tải dữ liệu");
     private final JLabel lblDetail = new JLabel("Chọn một tài khoản để xem thông tin.");
     private final AccountTableModel model = new AccountTableModel();
@@ -61,6 +72,8 @@ public final class AccountPanel extends JPanel {
     private boolean loading;
     private boolean creating;
     private boolean reloadPending;
+    private boolean changingState;
+    private String stateMessage = "";
 
     public AccountPanel(DesktopSession session) {
         this(session, new AccountDirectoryService(session, TeamDevConnection::open),
@@ -73,6 +86,17 @@ public final class AccountPanel extends JPanel {
 
     private AccountPanel(DesktopSession session, AccountDirectoryService service,
                          boolean configured) {
+        this(session, service, new AccountStateService(session, TeamDevConnection::open), configured);
+    }
+
+    AccountPanel(DesktopSession session, AccountDirectoryService service, AccountStateService stateService) {
+        this(session, service, stateService, true);
+    }
+
+    private AccountPanel(DesktopSession session, AccountDirectoryService service,
+                         AccountStateService stateService, boolean configured) {
+        this.stateService = Objects.requireNonNull(stateService, "stateService");
+        this.configured = configured;
         this.session = Objects.requireNonNull(session, "session");
         this.service = Objects.requireNonNull(service, "service");
         this.creator = new AccountCreateService(session, TeamDevConnection::open);
@@ -86,7 +110,7 @@ public final class AccountPanel extends JPanel {
         lblTitle.setFont(new Font("SansSerif", Font.BOLD, 23));
         lblTitle.setForeground(NAVY);
         JLabel lblDescription = new JLabel(
-                "Danh sách và tạo tài khoản nhân viên · SQL Server development");
+                "Danh sách, tạo và khóa/mở khóa tài khoản nhân viên");
         lblDescription.setForeground(MUTED);
         pnlHeading.add(lblTitle, BorderLayout.NORTH);
         pnlHeading.add(lblDescription, BorderLayout.SOUTH);
@@ -113,17 +137,28 @@ public final class AccountPanel extends JPanel {
         lblStatus.setForeground(MUTED);
         lblDetail.setForeground(NAVY);
         pnlFooter.add(lblDetail, BorderLayout.NORTH);
+        JPanel pnlStateActions = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 0));
+        pnlStateActions.setOpaque(false);
+        pnlStateActions.add(btnLock);
+        pnlStateActions.add(btnUnlock);
+        JLabel lblLockScope = new JLabel("Khóa chỉ chặn đăng nhập mới; phiên đang mở không bị thu hồi.");
+        lblLockScope.setForeground(MUTED);
+        pnlStateActions.add(lblLockScope);
+        pnlFooter.add(pnlStateActions, BorderLayout.CENTER);
         pnlFooter.add(lblStatus, BorderLayout.SOUTH);
         pnlMain.add(pnlFooter, BorderLayout.SOUTH);
         add(pnlMain, BorderLayout.CENTER);
 
         btnCreate.addActionListener(event -> createAccount());
+        btnLock.addActionListener(event -> requestStateChange(true));
+        btnUnlock.addActionListener(event -> requestStateChange(false));
         btnSearch.addActionListener(event -> load());
         btnRefresh.addActionListener(event -> load());
         txtKeyword.addActionListener(event -> load());
         // Applying either filter is an immediate search, even during an in-flight load.
         cmbRoleFilter.addActionListener(event -> load());
         cmbStatusFilter.addActionListener(event -> load());
+        updateControls();
         if (configured) {
             load();
         } else {
@@ -177,7 +212,15 @@ public final class AccountPanel extends JPanel {
     }
 
     private void load() {
-        if (loading || creating) {
+        if (!configured) {
+        reloadPending = false;
+        lblStatus.setText(
+            "Chưa có cấu hình SQL Server development trong worktree."
+        );
+        return;
+    }
+    
+        if (loading || creating || changingState) {
             reloadPending = true; // newest filter selection wins after current operation
             return;
         }
@@ -193,9 +236,7 @@ public final class AccountPanel extends JPanel {
         Role role = (Role) cmbRoleFilter.getSelectedItem();
         AccountStatus status = (AccountStatus) cmbStatusFilter.getSelectedItem();
         loading = true;
-        btnSearch.setEnabled(false);
-        btnRefresh.setEnabled(false);
-        btnCreate.setEnabled(false);
+        updateControls();
         lblStatus.setText("Đang tải từ SQL Server...");
         new SwingWorker<AccountDirectoryDao.Result, Void>() {
             @Override protected AccountDirectoryDao.Result doInBackground() throws Exception {
@@ -207,6 +248,7 @@ public final class AccountPanel extends JPanel {
                     reloadPending = false;
                     model.setRows(List.of());
                     lblStatus.setText("Phiên đăng nhập đã kết thúc.");
+                    updateControls();
                     return;
                 }
                 try {
@@ -217,7 +259,7 @@ public final class AccountPanel extends JPanel {
                         lblDetail.setText("Chọn một tài khoản để xem thông tin.");
                         lblStatus.setText(result.rows().size() + " tài khoản"
                                 + (result.truncated() ? " (giới hạn 200; hãy lọc để tìm thêm)" : "")
-                                + " · Chỉ đọc danh sách; tạo tài khoản bằng biểu mẫu riêng.");
+                                + (stateMessage.isEmpty() ? "" : " · " + stateMessage));
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -233,9 +275,7 @@ public final class AccountPanel extends JPanel {
                         reloadPending = false;
                         load();
                     } else {
-                        btnSearch.setEnabled(true);
-                        btnRefresh.setEnabled(true);
-                        btnCreate.setEnabled(true);
+                        updateControls();
                     }
                 }
             }
@@ -243,7 +283,7 @@ public final class AccountPanel extends JPanel {
     }
 
     private void createAccount() {
-        if (loading || creating || !session.isActive()) return;
+        if (loading || creating || changingState || !session.isActive()) return;
 
         JTextField txtEmployeeId = new JTextField(16);
         JTextField txtUsername = new JTextField(16);
@@ -290,9 +330,7 @@ public final class AccountPanel extends JPanel {
                 return;
             }
             creating = true;
-            btnCreate.setEnabled(false);
-            btnSearch.setEnabled(false);
-            btnRefresh.setEnabled(false);
+            updateControls();
             lblStatus.setText("Đang tạo tài khoản trong SQL Server...");
             char[] workerSecret = secret.clone();
             new SwingWorker<String, Void>() {
@@ -305,9 +343,7 @@ public final class AccountPanel extends JPanel {
                 }
                 @Override protected void done() {
                     creating = false;
-                    btnCreate.setEnabled(true);
-                    btnSearch.setEnabled(true);
-                    btnRefresh.setEnabled(true);
+                    updateControls();
                     if (!session.isActive()) {
                         lblStatus.setText("Phiên đăng nhập đã kết thúc.");
                         return;
@@ -343,7 +379,99 @@ public final class AccountPanel extends JPanel {
         }
     }
 
+    private AccountDirectoryRow selectedAccount() {
+        int selected = tblAccounts.getSelectedRow();
+        return selected < 0 ? null : model.get(tblAccounts.convertRowIndexToModel(selected));
+    }
+
+    private void updateControls() {
+        boolean ready = configured && !loading && !creating && !changingState
+                && authorization.can(session, Permission.ACCOUNT_MANAGE);
+        btnSearch.setEnabled(ready);
+        btnRefresh.setEnabled(ready);
+        btnCreate.setEnabled(ready);
+        AccountDirectoryRow row = selectedAccount();
+        boolean targetAllowed = ready && row != null && row.role() != Role.SYSTEM_ADMIN;
+        btnLock.setEnabled(targetAllowed && row.status() == AccountStatus.HOAT_DONG
+                && !session.accountId().equalsIgnoreCase(row.accountId()));
+        btnUnlock.setEnabled(targetAllowed && row.status() == AccountStatus.BI_KHOA
+                && row.lockSource() == LockSource.ADMIN_ACTION);
+    }
+
+    private void requestStateChange(boolean locking) {
+        if (!(locking ? btnLock : btnUnlock).isEnabled()) return;
+        AccountDirectoryRow target = selectedAccount();
+        if (target == null) return;
+        String reason = null;
+        if (locking) {
+            JTextArea txtReason = new JTextArea(3, 32);
+            txtReason.setLineWrap(true);
+            txtReason.setWrapStyleWord(true);
+            JPanel fields = new JPanel(new BorderLayout(0, 8));
+            fields.add(new JLabel("Lý do khóa " + target.accountId() + " (1–300 ký tự):"), BorderLayout.NORTH);
+            fields.add(new JScrollPane(txtReason), BorderLayout.CENTER);
+            if (JOptionPane.showConfirmDialog(this, fields, "Khóa tài khoản",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.OK_OPTION) return;
+            reason = txtReason.getText().strip();
+            if (reason.isBlank() || reason.length() > 300) {
+                lblStatus.setText("Lý do khóa phải có từ 1 đến 300 ký tự.");
+                return;
+            }
+        } else if (JOptionPane.showConfirmDialog(this,
+                "Mở khóa tài khoản " + target.accountId() + "?", "Xác nhận mở khóa",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
+            return;
+        }
+        applyStateChange(target, locking, reason);
+    }
+
+    private void applyStateChange(AccountDirectoryRow target, boolean locking, String reason) {
+        if (loading || creating || changingState || !configured
+                || !authorization.can(session, Permission.ACCOUNT_MANAGE)) return;
+        changingState = true;
+        stateMessage = "";
+        tblAccounts.setEnabled(false);
+        updateControls();
+        lblStatus.setText(locking ? "Đang khóa tài khoản..." : "Đang mở khóa tài khoản...");
+        new SwingWorker<Void, Void>() {
+            @Override protected Void doInBackground() throws Exception {
+                if (locking) stateService.lock(target.accountId(), reason);
+                else stateService.unlock(target.accountId());
+                return null;
+            }
+            @Override protected void done() {
+                changingState = false;
+                tblAccounts.setEnabled(true);
+                if (!session.isActive()) {
+                    reloadPending = false;
+                    model.setRows(List.of());
+                    updateControls();
+                    lblStatus.setText("Phiên đăng nhập đã kết thúc.");
+                    return;
+                }
+                try {
+                    get();
+                    stateMessage = (locking ? "Đã khóa tài khoản " : "Đã mở khóa tài khoản ") + target.accountId() + ".";
+                    reloadPending = true;
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    stateMessage = "Thao tác bị gián đoạn; hãy làm mới để kiểm tra trạng thái.";
+                } catch (ExecutionException | CancellationException ex) {
+                    stateMessage = AccountStateFeedback.forFailure(ex);
+                } finally {
+                    lblStatus.setText(stateMessage);
+                    updateControls();
+                    if (reloadPending) {
+                        reloadPending = false;
+                        load();
+                    }
+                }
+            }
+        }.execute();
+    }
+
     private void updateDetail() {
+        updateControls();
         int selected = tblAccounts.getSelectedRow();
         if (selected < 0 || !session.isActive()) {
             lblDetail.setText("Chọn một tài khoản để xem thông tin.");
@@ -381,7 +509,7 @@ public final class AccountPanel extends JPanel {
     private static final class AccountTableModel extends AbstractTableModel {
         private final String[] columns = {
                 "Mã TK", "Tên đăng nhập", "Tên hiển thị", "Nhân viên",
-                "Vai trò", "Trạng thái", "Đăng nhập cuối"
+                "Vai trò", "Trạng thái", "Nguồn khóa", "Đăng nhập cuối"
         };
         private List<AccountDirectoryRow> rows = new ArrayList<>();
 
@@ -403,7 +531,11 @@ public final class AccountPanel extends JPanel {
                 case 3 -> show(row.employeeName());
                 case 4 -> roleLabel(row.role());
                 case 5 -> statusLabel(row.status());
-                case 6 -> row.lastLoginUtc() == null ? "—" :
+                case 6 -> row.lockSource() == null ? "—" : switch (row.lockSource()) {
+                    case ADMIN_ACTION -> "Quản trị viên";
+                    case FAILED_LOGIN -> "Sai mật khẩu";
+                };
+                case 7 -> row.lastLoginUtc() == null ? "—" :
                         row.lastLoginUtc().atOffset(ZoneOffset.UTC)
                                 .atZoneSameInstant(CLINIC_ZONE).format(DATE_TIME);
                 default -> "";
