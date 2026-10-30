@@ -28,16 +28,18 @@ import javax.swing.table.DefaultTableModel;
 // Màn hình LỊCH HẸN (menu Lịch hẹn → Danh sách lịch hẹn), theo UC004 trong báo cáo docs/tuan_cuoi.
 // View chỉ tạo giao diện và hiển thị. Sự kiện do LichHenController xử lý.
 //
-//  ┌──────────────────────── pnlNorth ────────────────────────┐
-//  │ Lịch hẹn            [+ Đặt lịch hẹn] [Đổi lịch] [Hủy lịch] │  ← hàng trên: tiêu đề + nút thao tác
-//  │ ┌──────────────────────────────────────────────────────┐ │
-//  │ │ Ngày [30/10/2026] Chọn... Hôm nay │ Tìm [......] Tìm  │ │  ← hàng dưới: thanh lọc
-//  │ └──────────────────────────────────────────────────────┘ │
-//  ├──────────────────────── pnlCenter ───────────────────────┤
-//  │ bảng lịch hẹn trong ngày                                 │
-//  ├──────────────────────── pnlSouth ────────────────────────┤
-//  │ dòng trạng thái                                          │
-//  └──────────────────────────────────────────────────────────┘
+//  ┌────────────────────────── pnlNorth ──────────────────────────┐
+//  │ Lịch hẹn                                                     │  ← tiêu đề
+//  │ ┌──────────────── khung trắng (pnlNorthSouth) ─────────────┐ │
+//  │ │ Ngày [30/10/2026] Chọn... Hôm nay   Tìm [.......] Tìm kiếm │ │  ← dòng 1: lọc + tìm
+//  │ │ ──────────────────────────────────────────────────────── │ │
+//  │ │ [+ Đặt lịch hẹn] [Đổi lịch...] [Hủy lịch...]              │ │  ← dòng 2: nút thao tác
+//  │ └──────────────────────────────────────────────────────────┘ │
+//  ├────────────────────────── pnlCenter ─────────────────────────┤
+//  │ bảng lịch hẹn trong ngày                                     │
+//  ├────────────────────────── pnlSouth ──────────────────────────┤
+//  │ dòng trạng thái                                              │
+//  └──────────────────────────────────────────────────────────────┘
 public class LichHenPanel extends JPanel {
     // Màu giống BenhNhanPanel / AccountPanel
     private static final Color NAVY = new Color(29, 61, 102);
@@ -51,7 +53,7 @@ public class LichHenPanel extends JPanel {
     // ----- NORTH -----
     private JPanel pnlNorth;
     private JLabel lblTieuDe;
-    private JButton btnDatLich;          // 3 nút thao tác: hàng trên, bên phải
+    private JButton btnDatLich;          // 3 nút thao tác: dòng 2 của khung tìm kiếm
     private JButton btnDoiLich;
     private JButton btnHuyLich;
     private JTextField txtNgayXem;       // ngày đang xem, chỉ hiển thị (chọn bằng nút "Chọn...")
@@ -95,29 +97,15 @@ public class LichHenPanel extends JPanel {
     // ===================== Tạo các vùng =====================
 
     private void taoNorth() {
-        pnlNorth = new JPanel(new BorderLayout(0, 12));
+        pnlNorth = new JPanel(new BorderLayout(0, 10));
         pnlNorth.setOpaque(false);
 
-        // ----- Hàng trên (NORTH của pnlNorth): tiêu đề bên trái, nút thao tác bên phải -----
+        // Tiêu đề (NORTH của pnlNorth)
         lblTieuDe = new JLabel("Lịch hẹn");
         lblTieuDe.setFont(new Font("SansSerif", Font.BOLD, 23));
         lblTieuDe.setForeground(NAVY);
 
-        btnDatLich = new JButton("+ Đặt lịch hẹn");
-        btnDoiLich = new JButton("Đổi lịch...");
-        btnHuyLich = new JButton("Hủy lịch...");
-        JPanel pnlNutThaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        pnlNutThaoTac.setOpaque(false);
-        pnlNutThaoTac.add(btnDatLich);
-        pnlNutThaoTac.add(btnDoiLich);
-        pnlNutThaoTac.add(btnHuyLich);
-
-        JPanel pnlNorthNorth = new JPanel(new BorderLayout());
-        pnlNorthNorth.setOpaque(false);
-        pnlNorthNorth.add(lblTieuDe, BorderLayout.WEST);
-        pnlNorthNorth.add(pnlNutThaoTac, BorderLayout.EAST);
-
-        // ----- Hàng dưới (SOUTH của pnlNorth): thanh lọc theo ngày + tìm kiếm -----
+        // ----- Dòng 1: lọc theo ngày + tìm kiếm -----
         txtNgayXem = new JTextField(9);
         txtNgayXem.setEditable(false);
         btnChonNgayXem = new JButton("Chọn...");
@@ -126,19 +114,37 @@ public class LichHenPanel extends JPanel {
         btnTimKiem = new JButton("Tìm kiếm");
         btnTimKiem.setIcon(new BieuTuong(BieuTuong.TIM_KIEM));   // dùng lại icon kính lúp
 
-        JPanel pnlNorthSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
+        JPanel pnlDongLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
+        pnlDongLoc.setOpaque(false);
+        pnlDongLoc.add(new JLabel("Ngày:"));
+        pnlDongLoc.add(txtNgayXem);
+        pnlDongLoc.add(btnChonNgayXem);
+        pnlDongLoc.add(btnHomNay);
+        pnlDongLoc.add(Box.createHorizontalStrut(18));   // khoảng cách giữa nhóm Ngày và nhóm Tìm
+        pnlDongLoc.add(new JLabel("Tìm (mã LH, mã BN, tên, SĐT):"));
+        pnlDongLoc.add(txtTimKiem);
+        pnlDongLoc.add(btnTimKiem);
+
+        // ----- Dòng 2: nút thao tác, có 1 đường kẻ mảnh phía trên để tách với dòng 1 -----
+        btnDatLich = new JButton("+ Đặt lịch hẹn");
+        btnDoiLich = new JButton("Đổi lịch...");
+        btnHuyLich = new JButton("Hủy lịch...");
+
+        JPanel pnlDongThaoTac = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 8));
+        pnlDongThaoTac.setOpaque(false);
+        pnlDongThaoTac.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, VIEN));   // đường kẻ trên
+        pnlDongThaoTac.add(btnDatLich);
+        pnlDongThaoTac.add(btnDoiLich);
+        pnlDongThaoTac.add(btnHuyLich);
+
+        // Khung trắng chứa 2 dòng (SOUTH của pnlNorth)
+        JPanel pnlNorthSouth = new JPanel(new BorderLayout());
         pnlNorthSouth.setBackground(Color.WHITE);
         pnlNorthSouth.setBorder(BorderFactory.createLineBorder(VIEN));
-        pnlNorthSouth.add(new JLabel("Ngày:"));
-        pnlNorthSouth.add(txtNgayXem);
-        pnlNorthSouth.add(btnChonNgayXem);
-        pnlNorthSouth.add(btnHomNay);
-        pnlNorthSouth.add(Box.createHorizontalStrut(18));   // khoảng cách giữa nhóm Ngày và nhóm Tìm
-        pnlNorthSouth.add(new JLabel("Tìm (mã LH, mã BN, tên, SĐT):"));
-        pnlNorthSouth.add(txtTimKiem);
-        pnlNorthSouth.add(btnTimKiem);
+        pnlNorthSouth.add(pnlDongLoc, BorderLayout.NORTH);
+        pnlNorthSouth.add(pnlDongThaoTac, BorderLayout.SOUTH);
 
-        pnlNorth.add(pnlNorthNorth, BorderLayout.NORTH);
+        pnlNorth.add(lblTieuDe, BorderLayout.NORTH);
         pnlNorth.add(pnlNorthSouth, BorderLayout.SOUTH);
     }
 
