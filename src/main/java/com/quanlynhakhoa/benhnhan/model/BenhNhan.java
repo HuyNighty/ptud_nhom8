@@ -3,25 +3,27 @@ package com.quanlynhakhoa.benhnhan.model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+// Lớp BenhNhan: mỗi đối tượng là 1 dòng trong bảng dbo.BenhNhan
 public class BenhNhan {
     private String maBenhNhan;
     private String hoTen;
     private LocalDate ngaySinh;
-    private String gioiTinh;
+    private String gioiTinh;      // NAM hoặc NU
     private String soDienThoai;
     private String diaChi;
     private String nguoiLienHe;
     private LocalDateTime ngayTao;
-    private String tienSuBenh;
-    private String diUng;
 
+    // Hàm khởi tạo rỗng
     public BenhNhan() {
     }
 
+    // Hàm khởi tạo chỉ có mã
     public BenhNhan(String maBenhNhan) {
         this.maBenhNhan = maBenhNhan;
     }
 
+    // Hàm khởi tạo đầy đủ
     public BenhNhan(String maBenhNhan, String hoTen, LocalDate ngaySinh, String gioiTinh,
                     String soDienThoai, String diaChi, String nguoiLienHe, LocalDateTime ngayTao) {
         this.maBenhNhan = maBenhNhan;
@@ -98,29 +100,10 @@ public class BenhNhan {
         this.ngayTao = ngayTao;
     }
 
-    public String getTienSuBenh() {
-        return tienSuBenh;
-    }
-
-    public void setTienSuBenh(String tienSuBenh) {
-        this.tienSuBenh = tienSuBenh;
-    }
-
-    public String getDiUng() {
-        return diUng;
-    }
-
-    public void setDiUng(String diUng) {
-        this.diUng = diUng;
-    }
-
+    // Đổi mã giới tính trong database sang chữ để hiển thị
     public String getGioiTinhHienThi() {
-        if ("NAM".equals(gioiTinh)) {
-            return "Nam";
-        }
-        if ("NU".equals(gioiTinh)) {
-            return "Nữ";
-        }
-        return "Khác";
+        if ("NAM".equals(gioiTinh)) return "Nam";
+        if ("NU".equals(gioiTinh)) return "Nữ";
+        return "Khác";   // chỉ gặp với dữ liệu cũ trong database (ứng dụng không cho chọn nữa)
     }
 }

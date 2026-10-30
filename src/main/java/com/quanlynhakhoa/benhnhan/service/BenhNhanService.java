@@ -1,7 +1,6 @@
 package com.quanlynhakhoa.benhnhan.service;
 
 import com.quanlynhakhoa.benhnhan.dao.BenhNhanDao;
-import com.quanlynhakhoa.benhnhan.dao.HoSoBenhAnDao;
 import com.quanlynhakhoa.benhnhan.model.BenhNhan;
 import com.quanlynhakhoa.dev.TeamDevConnection;
 import com.quanlynhakhoa.security.AuthorizationService;
@@ -10,334 +9,220 @@ import com.quanlynhakhoa.security.Permission;
 import com.quanlynhakhoa.security.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.Normalizer;
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+// Service: kiểm tra QUYỀN và kiểm tra DỮ LIỆU, rồi mới gọi DAO
 public class BenhNhanService {
+    // ===================== REGEX kiểm tra dữ liệu =====================
+    // (String.matches() luôn so CẢ chuỗi nên không cần ^ và $)
+
+    // 1 TỪ trong họ tên: 1 chữ IN HOA + các chữ thường phía sau.   Ví dụ: "Nguyễn", "Lan", "Đỗ"
+    //   \p{Lu} = 1 chữ in hoa (kể cả có dấu: Đ, Á, Ô...)
+    //   \p{Ll}* = 0 hoặc nhiều chữ thường (kể cả có dấu: ễ, ư, ị...)
     private static final String MOT_TU = "\\p{Lu}\\p{Ll}*";
 
+    // HỌ TÊN = 1 từ, rồi lặp lại ( khoảng trắng + 1 từ ).   Ví dụ: "Nguyễn" + " Thị" + " Lan"
     public static final String REGEX_HO_TEN = MOT_TU + "( " + MOT_TU + ")*";
 
+    // NGÀY SINH dd/MM/yyyy: ngày 01–31 / tháng 01–12 / năm 4 chữ số.   Ví dụ: "12/05/1998"
     public static final String REGEX_NGAY_SINH = "(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}";
 
+    // SỐ ĐIỆN THOẠI: số 0 + đúng 9 chữ số nữa (tổng 10 số, chỉ có chữ số).   Ví dụ: "0909123456"
     public static final String REGEX_SO_DIEN_THOAI = "0[0-9]{9}";
 
-    public static final int HO_TEN_TOI_DA = 100;
-    public static final int DIA_CHI_TOI_DA = 255;
-    public static final int NGUOI_LIEN_HE_TOI_DA = 200;
-    public static final int TIEN_SU_TOI_DA = 500;
-    public static final int DI_UNG_TOI_DA = 300;
-
-    private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-    private final DesktopSession phienDangNhap;
+    private final DesktopSession phien;
     private final AuthorizationService phanQuyen = new AuthorizationService(new RolePermissionPolicy());
-    private final BenhNhanDao benhNhanDao;
-    private final HoSoBenhAnDao hoSoBenhAnDao;
-    private final BenhNhanDao.ConnectionProvider cachMoKetNoi;
+    private final BenhNhanDao dao;
+    private final BenhNhanDao.ConnectionProvider connections;
 
-    public BenhNhanService(DesktopSession phienDangNhap) {
-        this(phienDangNhap, TeamDevConnection::open);
+    public BenhNhanService(DesktopSession phien) {
+        this(phien, TeamDevConnection::open);
     }
 
-    public BenhNhanService(DesktopSession phienDangNhap, BenhNhanDao.ConnectionProvider cachMoKetNoi) {
-        this.phienDangNhap = java.util.Objects.requireNonNull(phienDangNhap, "phienDangNhap");
-        this.cachMoKetNoi = java.util.Objects.requireNonNull(cachMoKetNoi, "cachMoKetNoi");
-        this.benhNhanDao = new BenhNhanDao(cachMoKetNoi);
-        this.hoSoBenhAnDao = new HoSoBenhAnDao(cachMoKetNoi);
+    public BenhNhanService(DesktopSession phien, BenhNhanDao.ConnectionProvider connections) {
+        this.phien = java.util.Objects.requireNonNull(phien, "phien");
+        this.connections = java.util.Objects.requireNonNull(connections, "connections");
+        this.dao = new BenhNhanDao(connections);
     }
 
+    // Người đang đăng nhập có quyền này không (View dùng để làm mờ nút)
     public boolean coQuyen(Permission quyen) {
-        return phanQuyen.can(phienDangNhap, quyen);
+        return phanQuyen.can(phien, quyen);
     }
+
+    // ===================== XEM / TÌM KIẾM =====================
 
     public ArrayList<BenhNhan> timKiem(String tuKhoa, String gioiTinh) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_READ);
+        // 1. Kiểm tra quyền: không có quyền xem bệnh nhân thì báo lỗi
+        phanQuyen.require(phien, Permission.PATIENT_READ);
 
+        // 2. Kiểm tra dữ liệu nhập
         tuKhoa = tuKhoa.trim();
         if (tuKhoa.length() > 100) {
             throw new IllegalArgumentException("Từ khóa tìm kiếm tối đa 100 ký tự.");
         }
-        String tuKhoaKhongKhoangTrang = tuKhoa.replace(" ", "");
-        if (!tuKhoaKhongKhoangTrang.isEmpty() && tuKhoaKhongKhoangTrang.matches("[0-9]+")) {
-            if (tuKhoaKhongKhoangTrang.length() > 10) {
+        // Nếu người dùng gõ số điện thoại có khoảng trắng (0909 123 456) thì bỏ khoảng trắng
+        String boKhoangTrang = tuKhoa.replace(" ", "");
+        if (!boKhoangTrang.isEmpty() && boKhoangTrang.matches("[0-9]+")) {
+            if (boKhoangTrang.length() > 10) {
                 throw new IllegalArgumentException("Số điện thoại không hợp lệ: gồm 10 chữ số và bắt đầu bằng 0.");
             }
-            tuKhoa = tuKhoaKhongKhoangTrang;
+            tuKhoa = boKhoangTrang;
         }
 
+        // 3. Gọi DAO lấy dữ liệu
         if (tuKhoa.isEmpty() && gioiTinh.isEmpty()) {
-            return benhNhanDao.getAllBenhNhan();
+            return dao.getAllBenhNhan();       // không lọc gì → lấy tất cả
         }
-        return benhNhanDao.timKiem(tuKhoa, gioiTinh);
+        return dao.timKiem(tuKhoa, gioiTinh);
     }
 
     public BenhNhan xemChiTiet(String maBenhNhan) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_READ);
-        return benhNhanDao.timTheoMa(maBenhNhan);
+        phanQuyen.require(phien, Permission.PATIENT_READ);
+        return dao.timTheoMa(maBenhNhan);
     }
 
-    public void kiemTraDuLieu(BenhNhan benhNhan) {
-        String hoTen = "";
-        if (benhNhan.getHoTen() != null) {
-            hoTen = benhNhan.getHoTen().trim().replaceAll("\\s+", " ");
-        }
-        hoTen = Normalizer.normalize(hoTen, Normalizer.Form.NFC);
+    // ===================== KIỂM TRA DỮ LIỆU =====================
+
+    // Kiểm tra và chuẩn hóa dữ liệu trên form. Sai thì ném IllegalArgumentException kèm câu báo lỗi.
+    public void kiemTraDuLieu(BenhNhan bn) {
+        // Họ tên: bắt buộc, tối đa 100 ký tự, bỏ khoảng trắng thừa
+        String hoTen = bn.getHoTen() == null ? "" : bn.getHoTen().trim().replaceAll("\\s+", " ");
+        // Đưa dấu tiếng Việt về 1 dạng chuẩn (NFC) để so trùng họ tên cho đúng
+        hoTen = java.text.Normalizer.normalize(hoTen, java.text.Normalizer.Form.NFC);
         if (hoTen.isEmpty()) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_HO_TEN, "Nhập họ tên.");
+            throw new IllegalArgumentException("Nhập họ tên.");
         }
-        if (hoTen.length() < 2 || hoTen.length() > HO_TEN_TOI_DA) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_HO_TEN,
-                    "Họ tên dài từ 2 đến " + HO_TEN_TOI_DA + " ký tự.");
+        if (hoTen.length() < 2 || hoTen.length() > 100) {
+            throw new IllegalArgumentException("Họ tên dài từ 2 đến 100 ký tự.");
         }
         if (!hoTen.matches(REGEX_HO_TEN)) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_HO_TEN,
-                    "Họ tên phải viết hoa chữ cái đầu mỗi từ, chỉ gồm chữ cái (ví dụ: Nguyễn Thị Lan).");
+            throw new IllegalArgumentException("Họ tên phải viết hoa chữ cái đầu mỗi từ, chỉ gồm chữ cái "
+                    + "(ví dụ: Nguyễn Thị Lan).");
         }
-        benhNhan.setHoTen(hoTen);
+        bn.setHoTen(hoTen);
 
-        LocalDate ngaySinh = benhNhan.getNgaySinh();
+        // Ngày sinh: bắt buộc, không ở tương lai, không quá 120 tuổi
+        LocalDate ngaySinh = bn.getNgaySinh();
         if (ngaySinh == null) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_NGAY_SINH, "Chọn ngày sinh.");
+            throw new IllegalArgumentException("Nhập ngày sinh.");
         }
         if (ngaySinh.isAfter(LocalDate.now())) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_NGAY_SINH, "Ngày sinh không được ở tương lai.");
+            throw new IllegalArgumentException("Ngày sinh không được ở tương lai.");
         }
         if (ngaySinh.isBefore(LocalDate.now().minusYears(120))) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_NGAY_SINH, "Ngày sinh không hợp lệ (quá 120 tuổi).");
+            throw new IllegalArgumentException("Ngày sinh không hợp lệ (quá 120 tuổi).");
         }
 
-        String gioiTinh = benhNhan.getGioiTinh();
-        if (!"NAM".equals(gioiTinh) && !"NU".equals(gioiTinh) && !"KHAC".equals(gioiTinh)) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_GIOI_TINH, "Chọn giới tính.");
+        // Giới tính: chỉ NAM hoặc NU (ứng dụng không cho chọn "Khác")
+        String gioiTinh = bn.getGioiTinh();
+        if (!"NAM".equals(gioiTinh) && !"NU".equals(gioiTinh)) {
+            throw new IllegalArgumentException("Chọn giới tính.");
         }
 
-        String soDienThoai = "";
-        if (benhNhan.getSoDienThoai() != null) {
-            soDienThoai = benhNhan.getSoDienThoai().trim();
+        // SĐT: chỉ bỏ khoảng trắng 2 đầu; bên trong phải toàn là chữ số (10 số, bắt đầu bằng 0)
+        String sdt = bn.getSoDienThoai() == null ? "" : bn.getSoDienThoai().trim();
+        if (!sdt.matches(REGEX_SO_DIEN_THOAI)) {
+            throw new IllegalArgumentException("Số điện thoại chỉ được nhập chữ số: đúng 10 số, bắt đầu bằng 0 "
+                    + "(không nhập chữ, khoảng trắng hay dấu chấm).");
         }
-        if (!soDienThoai.matches(REGEX_SO_DIEN_THOAI)) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_SO_DIEN_THOAI,
-                    "Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.");
-        }
-        benhNhan.setSoDienThoai(soDienThoai);
+        bn.setSoDienThoai(sdt);
 
-        benhNhan.setDiaChi(doiChuoiTrongThanhNull(benhNhan.getDiaChi()));
-        benhNhan.setNguoiLienHe(doiChuoiTrongThanhNull(benhNhan.getNguoiLienHe()));
-        if (benhNhan.getDiaChi() != null && benhNhan.getDiaChi().length() > DIA_CHI_TOI_DA) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_DIA_CHI,
-                    "Địa chỉ tối đa " + DIA_CHI_TOI_DA + " ký tự.");
+        // Địa chỉ, người liên hệ: không bắt buộc; để trống thì lưu NULL
+        bn.setDiaChi(boTrongThanhNull(bn.getDiaChi()));
+        bn.setNguoiLienHe(boTrongThanhNull(bn.getNguoiLienHe()));
+        if (bn.getDiaChi() != null && bn.getDiaChi().length() > 255) {
+            throw new IllegalArgumentException("Địa chỉ tối đa 255 ký tự.");
         }
-        if (benhNhan.getNguoiLienHe() != null && benhNhan.getNguoiLienHe().length() > NGUOI_LIEN_HE_TOI_DA) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_NGUOI_LIEN_HE,
-                    "Người liên hệ tối đa " + NGUOI_LIEN_HE_TOI_DA + " ký tự.");
-        }
-
-        benhNhan.setTienSuBenh(doiChuoiTrongThanhNull(benhNhan.getTienSuBenh()));
-        benhNhan.setDiUng(doiChuoiTrongThanhNull(benhNhan.getDiUng()));
-        if (benhNhan.getTienSuBenh() != null && benhNhan.getTienSuBenh().length() > TIEN_SU_TOI_DA) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_TIEN_SU_BENH,
-                    "Tiền sử bệnh tối đa " + TIEN_SU_TOI_DA + " ký tự "
-                    + "(đang nhập " + benhNhan.getTienSuBenh().length() + ").");
-        }
-        if (benhNhan.getDiUng() != null && benhNhan.getDiUng().length() > DI_UNG_TOI_DA) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_DI_UNG,
-                    "Dị ứng tối đa " + DI_UNG_TOI_DA + " ký tự "
-                    + "(đang nhập " + benhNhan.getDiUng().length() + ").");
+        if (bn.getNguoiLienHe() != null && bn.getNguoiLienHe().length() > 200) {
+            throw new IllegalArgumentException("Người liên hệ tối đa 200 ký tự.");
         }
     }
 
-    public static LocalDate docNgaySinh(String chuoiNgaySinh) {
-        if (!chuoiNgaySinh.matches(REGEX_NGAY_SINH)) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_NGAY_SINH,
-                    "Chọn ngày sinh (bấm nút \"Chọn\").");
+    // Đổi chuỗi ngày sinh "dd/MM/yyyy" (lấy từ ô ngày sinh đã chọn trên lịch) thành LocalDate.
+    // Kiểm tra bằng regex trước, sau đó kiểm tra ngày có thật không (ví dụ 31/02 là sai).
+    public static LocalDate docNgaySinh(String chuoi) {
+        if (!chuoi.matches(REGEX_NGAY_SINH)) {
+            throw new IllegalArgumentException("Chọn ngày sinh (bấm nút \"Chọn...\").");
         }
-        String[] ngayThangNam = chuoiNgaySinh.split("/");
-        int ngay = Integer.parseInt(ngayThangNam[0]);
-        int thang = Integer.parseInt(ngayThangNam[1]);
-        int nam = Integer.parseInt(ngayThangNam[2]);
+        String[] phan = chuoi.split("/");
         try {
-            return LocalDate.of(nam, thang, ngay);
-        } catch (DateTimeException loi) {
-            throw new LoiNhapLieuException(LoiNhapLieuException.O_NGAY_SINH,
-                    "Ngày sinh không tồn tại (ví dụ 31/02).");
+            return LocalDate.of(Integer.parseInt(phan[2]), Integer.parseInt(phan[1]), Integer.parseInt(phan[0]));
+        } catch (DateTimeException e) {
+            throw new IllegalArgumentException("Ngày sinh không tồn tại (ví dụ 31/02).");
         }
     }
 
-    private String doiChuoiTrongThanhNull(String chuoi) {
-        if (chuoi == null || chuoi.trim().isEmpty()) {
+    private String boTrongThanhNull(String s) {
+        if (s == null || s.trim().isEmpty()) {
             return null;
         }
-        return chuoi.trim();
+        return s.trim();
     }
 
-    public ArrayList<BenhNhan> timNghiTrung(BenhNhan benhNhan) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_READ);
-        kiemTraDuLieu(benhNhan);
-        return benhNhanDao.timNghiTrung(benhNhan.getSoDienThoai(), benhNhan.getHoTen(),
-                benhNhan.getNgaySinh(), benhNhan.getMaBenhNhan());
+    // Tìm hồ sơ nghi trùng (cùng SĐT, hoặc cùng họ tên + ngày sinh). Chỉ để CẢNH BÁO, không chặn.
+    public ArrayList<BenhNhan> timNghiTrung(BenhNhan bn) throws SQLException {
+        phanQuyen.require(phien, Permission.PATIENT_READ);
+        kiemTraDuLieu(bn);
+        return dao.timNghiTrung(bn.getSoDienThoai(), bn.getHoTen(), bn.getNgaySinh(), bn.getMaBenhNhan());
     }
 
-    public String themBenhNhan(BenhNhan benhNhan) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_CREATE);
-        kiemTraDuLieu(benhNhan);
+    // ===================== THÊM / SỬA =====================
 
-        try (Connection ketNoi = cachMoKetNoi.open()) {
-            if (!ketNoi.getAutoCommit()) {
-                throw new SQLException("Expected a fresh JDBC connection");
-            }
-            ketNoi.setAutoCommit(false);
+    // Thêm bệnh nhân mới + tạo hồ sơ bệnh án trống + ghi nhật ký, trong CÙNG 1 transaction.
+    // Trả về mã bệnh nhân mới (ví dụ BN000007).
+    public String themBenhNhan(BenhNhan bn) throws SQLException {
+        phanQuyen.require(phien, Permission.PATIENT_CREATE);
+        kiemTraDuLieu(bn);
+
+        try (Connection con = connections.open()) {
+            if (!con.getAutoCommit()) throw new SQLException("Expected a fresh JDBC connection");
+            con.setAutoCommit(false);          // bắt đầu transaction
             try {
-                String maBenhNhan = benhNhanDao.taoMaBenhNhanMoi(ketNoi);
-                benhNhan.setMaBenhNhan(maBenhNhan);
-                benhNhanDao.themBenhNhan(ketNoi, benhNhan, phienDangNhap.accountId());
+                String maBenhNhan = dao.taoMaBenhNhanMoi(con);
+                bn.setMaBenhNhan(maBenhNhan);
+                dao.themBenhNhan(con, bn, phien.accountId());
 
-                String maHoSo = benhNhanDao.taoMaHoSoMoi(ketNoi);
-                benhNhanDao.themHoSoBenhAn(ketNoi, maHoSo, maBenhNhan,
-                        benhNhan.getTienSuBenh(), benhNhan.getDiUng());
+                String maHoSo = dao.taoMaHoSoMoi(con);
+                dao.themHoSoBenhAn(con, maHoSo, maBenhNhan);
 
-                benhNhanDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Thêm bệnh nhân", maBenhNhan);
-                phanQuyen.require(phienDangNhap, Permission.PATIENT_CREATE);
+                dao.ghiNhatKy(con, phien.accountId(), "Thêm bệnh nhân", maBenhNhan);
+                phanQuyen.require(phien, Permission.PATIENT_CREATE);
 
-                ketNoi.commit();
+                con.commit();                  // tất cả thành công → lưu thật
                 return maBenhNhan;
             } catch (SQLException | RuntimeException loi) {
-                ketNoi.rollback();
-                benhNhan.setMaBenhNhan(null);
+                con.rollback();                // có lỗi → hủy hết, không lưu nửa chừng
+                bn.setMaBenhNhan(null);
                 throw loi;
             }
         }
     }
 
-    public void capNhatBenhNhan(BenhNhan benhNhanMoi, BenhNhan benhNhanLucMoForm) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_UPDATE);
-        if (benhNhanMoi.getMaBenhNhan() == null) {
+    // Sửa thông tin bệnh nhân + ghi nhật ký, trong cùng 1 transaction
+    public void capNhatBenhNhan(BenhNhan bn) throws SQLException {
+        phanQuyen.require(phien, Permission.PATIENT_UPDATE);
+        if (bn.getMaBenhNhan() == null) {
             throw new IllegalArgumentException("Chưa chọn bệnh nhân cần sửa.");
         }
-        if (benhNhanLucMoForm == null) {
-            throw new IllegalArgumentException("Thiếu dữ liệu lúc mở form sửa, hãy mở lại form.");
-        }
-        kiemTraDuLieu(benhNhanMoi);
-        String maBenhNhan = benhNhanMoi.getMaBenhNhan();
+        kiemTraDuLieu(bn);
 
-        try (Connection ketNoi = cachMoKetNoi.open()) {
-            if (!ketNoi.getAutoCommit()) {
-                throw new SQLException("Expected a fresh JDBC connection");
-            }
-            ketNoi.setAutoCommit(false);
+        try (Connection con = connections.open()) {
+            if (!con.getAutoCommit()) throw new SQLException("Expected a fresh JDBC connection");
+            con.setAutoCommit(false);
             try {
-                BenhNhan benhNhanTrongDatabase = benhNhanDao.timTheoMaDeSua(ketNoi, maBenhNhan);
-                if (benhNhanTrongDatabase == null) {
-                    throw new IllegalArgumentException("Không tìm thấy bệnh nhân " + maBenhNhan + ".");
+                if (!dao.capNhatBenhNhan(con, bn)) {
+                    throw new IllegalArgumentException("Không tìm thấy bệnh nhân " + bn.getMaBenhNhan() + ".");
                 }
-
-                if (!giongNhau(benhNhanTrongDatabase, benhNhanLucMoForm)) {
-                    throw new DuLieuDaThayDoiException("Bệnh nhân " + maBenhNhan
-                            + " vừa được người khác sửa. Dữ liệu mới nhất sẽ được tải lại, "
-                            + "hãy kiểm tra rồi sửa lại.");
-                }
-
-                if (!benhNhanDao.capNhatBenhNhan(ketNoi, benhNhanMoi)) {
-                    throw new IllegalArgumentException("Không tìm thấy bệnh nhân " + maBenhNhan + ".");
-                }
-                String maHoSo = hoSoBenhAnDao.timMaHoSo(ketNoi, maBenhNhan);
-                if (maHoSo == null) {
-                    String maHoSoMoi = benhNhanDao.taoMaHoSoMoi(ketNoi);
-                    benhNhanDao.themHoSoBenhAn(ketNoi, maHoSoMoi, maBenhNhan,
-                            benhNhanMoi.getTienSuBenh(), benhNhanMoi.getDiUng());
-                } else {
-                    hoSoBenhAnDao.capNhatTienSu(ketNoi, maHoSo,
-                            benhNhanMoi.getTienSuBenh(), benhNhanMoi.getDiUng());
-                }
-
-                String noiDungThayDoi = moTaThayDoi(benhNhanTrongDatabase, benhNhanMoi);
-                benhNhanDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Sửa thông tin bệnh nhân",
-                        maBenhNhan, noiDungThayDoi);
-
-                phanQuyen.require(phienDangNhap, Permission.PATIENT_UPDATE);
-                ketNoi.commit();
+                dao.ghiNhatKy(con, phien.accountId(), "Sửa thông tin bệnh nhân", bn.getMaBenhNhan());
+                phanQuyen.require(phien, Permission.PATIENT_UPDATE);
+                con.commit();
             } catch (SQLException | RuntimeException loi) {
-                ketNoi.rollback();
+                con.rollback();
                 throw loi;
             }
         }
-    }
-
-    private boolean giongNhau(BenhNhan benhNhanThuNhat, BenhNhan benhNhanThuHai) {
-        if (!haiChuoiGiongNhau(benhNhanThuNhat.getHoTen(), benhNhanThuHai.getHoTen())) {
-            return false;
-        }
-        if (!java.util.Objects.equals(benhNhanThuNhat.getNgaySinh(), benhNhanThuHai.getNgaySinh())) {
-            return false;
-        }
-        if (!haiChuoiGiongNhau(benhNhanThuNhat.getGioiTinh(), benhNhanThuHai.getGioiTinh())) {
-            return false;
-        }
-        if (!haiChuoiGiongNhau(benhNhanThuNhat.getSoDienThoai(), benhNhanThuHai.getSoDienThoai())) {
-            return false;
-        }
-        if (!haiChuoiGiongNhau(benhNhanThuNhat.getDiaChi(), benhNhanThuHai.getDiaChi())) {
-            return false;
-        }
-        if (!haiChuoiGiongNhau(benhNhanThuNhat.getNguoiLienHe(), benhNhanThuHai.getNguoiLienHe())) {
-            return false;
-        }
-        if (!haiChuoiGiongNhau(benhNhanThuNhat.getTienSuBenh(), benhNhanThuHai.getTienSuBenh())) {
-            return false;
-        }
-        if (!haiChuoiGiongNhau(benhNhanThuNhat.getDiUng(), benhNhanThuHai.getDiUng())) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean haiChuoiGiongNhau(String chuoiThuNhat, String chuoiThuHai) {
-        String giaTriThuNhat = doiChuoiTrongThanhNull(chuoiThuNhat);
-        String giaTriThuHai = doiChuoiTrongThanhNull(chuoiThuHai);
-        if (giaTriThuNhat == null && giaTriThuHai == null) {
-            return true;
-        }
-        if (giaTriThuNhat == null || giaTriThuHai == null) {
-            return false;
-        }
-        return giaTriThuNhat.equals(giaTriThuHai);
-    }
-
-    private String moTaThayDoi(BenhNhan benhNhanCu, BenhNhan benhNhanMoi) {
-        StringBuilder noiDung = new StringBuilder();
-        themMotThayDoi(noiDung, "Họ tên", benhNhanCu.getHoTen(), benhNhanMoi.getHoTen());
-        themMotThayDoi(noiDung, "Ngày sinh", benhNhanCu.getNgaySinh().format(DINH_DANG_NGAY),
-                benhNhanMoi.getNgaySinh().format(DINH_DANG_NGAY));
-        themMotThayDoi(noiDung, "Giới tính", benhNhanCu.getGioiTinh(), benhNhanMoi.getGioiTinh());
-        themMotThayDoi(noiDung, "SĐT", benhNhanCu.getSoDienThoai(), benhNhanMoi.getSoDienThoai());
-        themMotThayDoi(noiDung, "Địa chỉ", benhNhanCu.getDiaChi(), benhNhanMoi.getDiaChi());
-        themMotThayDoi(noiDung, "Người liên hệ", benhNhanCu.getNguoiLienHe(), benhNhanMoi.getNguoiLienHe());
-        themMotThayDoi(noiDung, "Tiền sử bệnh", benhNhanCu.getTienSuBenh(), benhNhanMoi.getTienSuBenh());
-        themMotThayDoi(noiDung, "Dị ứng", benhNhanCu.getDiUng(), benhNhanMoi.getDiUng());
-        if (noiDung.length() == 0) {
-            return "Không thay đổi thông tin.";
-        }
-        return noiDung.toString();
-    }
-
-    private void themMotThayDoi(StringBuilder noiDung, String tenO, String giaTriCu, String giaTriMoi) {
-        if (haiChuoiGiongNhau(giaTriCu, giaTriMoi)) {
-            return;
-        }
-        if (noiDung.length() > 0) {
-            noiDung.append("; ");
-        }
-        noiDung.append(tenO).append(": '").append(hienKhongCoNeuTrong(giaTriCu))
-                .append("' → '").append(hienKhongCoNeuTrong(giaTriMoi)).append("'");
-    }
-
-    private String hienKhongCoNeuTrong(String giaTri) {
-        if (giaTri == null || giaTri.trim().isEmpty()) {
-            return "(trống)";
-        }
-        return giaTri;
     }
 }

@@ -2,14 +2,10 @@ package com.quanlynhakhoa.benhnhan.controller;
 
 import com.quanlynhakhoa.benhnhan.model.BenhNhan;
 import com.quanlynhakhoa.benhnhan.service.BenhNhanService;
-import com.quanlynhakhoa.benhnhan.service.DuLieuDaThayDoiException;
-import com.quanlynhakhoa.benhnhan.service.LoiNhapLieuException;
 import com.quanlynhakhoa.benhnhan.view.BenhNhanDialog;
 import com.quanlynhakhoa.benhnhan.view.BenhNhanPanel;
 import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.security.Permission;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -19,409 +15,305 @@ import java.sql.SQLTimeoutException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
-import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
+// Controller: nhận sự kiện từ View → gọi Service → đưa kết quả về View
 public class BenhNhanController implements ActionListener, MouseListener {
-    private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-    private static final int CHON_QUAY_LAI = 0;
-    private static final int CHON_VAN_LUU = 1;
-    private static final int CHON_DUNG_HO_SO_CU = 2;
+    private static final DateTimeFormatter NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private BenhNhanPanel view;
-    private BenhNhanService benhNhanService;
+    private BenhNhanService service;
+    private BenhNhanDialog winBenhNhan;   // form Thêm/Sửa đang mở (null nếu chưa mở)
+    private String maDangSua;             // null = đang THÊM, khác null = đang SỬA bệnh nhân này
+    private boolean dangTai;
+    private RefreshRequest pendingRefresh;
 
-    private BenhNhanDialog winBenhNhan;
-    private String maDangSua;
-    private BenhNhan benhNhanLucMoForm;
-    private boolean dangLuu;
-    private String maHoSoCuDaChon;
+    private record RefreshRequest(String tuKhoa, String gioiTinh, String maCanChon) {}
+    private final BenhNhanUiState uiState = new BenhNhanUiState();
 
-    private boolean dangTaiDanhSach;
-    private boolean coYeuCauTaiLaiDangCho;
-    private String maCanChonKhiTaiLai;
-
-    private long soThuTuLanXemChiTiet;
-
-    public BenhNhanController(BenhNhanPanel view, BenhNhanService benhNhanService) {
+    public BenhNhanController(BenhNhanPanel view, BenhNhanService service) {
         this.view = view;
-        this.benhNhanService = benhNhanService;
+        this.service = service;
 
+        // Gắn sự kiện cho các nút và ô tìm kiếm (nhấn Enter)
         view.getBtnLoc().addActionListener(this);
         view.getBtnXoaLoc().addActionListener(this);
         view.getBtnTaiLai().addActionListener(this);
         view.getTxtTimKiem().addActionListener(this);
         view.getBtnThem().addActionListener(this);
         view.getBtnSua().addActionListener(this);
+        // Gắn sự kiện click chuột vào bảng
         view.getTblBenhNhan().addMouseListener(this);
 
-        boolean duocThem = benhNhanService.coQuyen(Permission.PATIENT_CREATE);
-        boolean duocSua = benhNhanService.coQuyen(Permission.PATIENT_UPDATE);
-        view.datQuyen(duocThem, duocSua);
+        // Không có quyền thêm/sửa thì làm mờ nút (Service vẫn kiểm tra lại khi lưu)
+        view.datQuyen(service.coQuyen(Permission.PATIENT_CREATE), service.coQuyen(Permission.PATIENT_UPDATE));
 
+        // Mở màn hình là đọc dữ liệu từ database vào bảng luôn
         docDuLieuVaoTable(null);
     }
 
+    // Xử lý khi bấm nút hoặc nhấn Enter
     @Override
-    public void actionPerformed(ActionEvent suKien) {
-        Object nguonSuKien = suKien.getSource();
-        if (nguonSuKien.equals(view.getBtnLoc()) || nguonSuKien.equals(view.getTxtTimKiem())) {
+    public void actionPerformed(ActionEvent e) {
+        Object o = e.getSource();
+        if (o.equals(view.getBtnLoc()) || o.equals(view.getTxtTimKiem())) {
             docDuLieuVaoTable(null);
         }
-        if (nguonSuKien.equals(view.getBtnXoaLoc())) {
+        if (o.equals(view.getBtnXoaLoc())) {
             view.xoaTrang();
             docDuLieuVaoTable(null);
         }
-        if (nguonSuKien.equals(view.getBtnTaiLai())) {
+        if (o.equals(view.getBtnTaiLai())) {
             docDuLieuVaoTable(null);
         }
-        if (nguonSuKien.equals(view.getBtnThem())) {
-            moForm(null);
+        if (o.equals(view.getBtnThem())) {
+            moForm(null);                       // form trống
         }
-        if (nguonSuKien.equals(view.getBtnSua()) && view.getBenhNhanDangXem() != null) {
-            moForm(view.getBenhNhanDangXem());
+        if (o.equals(view.getBtnSua()) && view.getBnDangXem() != null) {
+            moForm(view.getBnDangXem());        // form có sẵn dữ liệu
         }
-        if (winBenhNhan != null && nguonSuKien.equals(winBenhNhan.getBtnChonNgay())) {
+        // Các nút trên form Thêm/Sửa
+        if (winBenhNhan != null && o.equals(winBenhNhan.getBtnChonNgay())) {
             winBenhNhan.moLichChonNgaySinh();
         }
-        if (winBenhNhan != null && nguonSuKien.equals(winBenhNhan.getBtnLuu())) {
+        if (winBenhNhan != null && o.equals(winBenhNhan.getBtnLuu())) {
             luu();
         }
-        if (winBenhNhan != null && nguonSuKien.equals(winBenhNhan.getBtnHuy())) {
-            winBenhNhan.dispose();
+        if (winBenhNhan != null && o.equals(winBenhNhan.getBtnHuy())) {
+            dongForm();
         }
     }
 
+    // Click 1 dòng trong bảng → đọc lại bệnh nhân từ database → hiện ở khung bên phải
     @Override
-    public void mouseClicked(MouseEvent suKien) {
-        if (dangTaiDanhSach) {
+    public void mouseClicked(MouseEvent e) {
+        if (dangTai) return; // the displayed table belongs to the previous load
+        int row = view.getTblBenhNhan().getSelectedRow();
+        if (row < 0) {
             return;
         }
-        int dongDangChon = view.getTblBenhNhan().getSelectedRow();
-        if (dongDangChon < 0) {
-            return;
-        }
-        String maBenhNhan = view.getTblBenhNhan().getValueAt(dongDangChon, 0).toString();
+        String maBenhNhan = view.getTblBenhNhan().getValueAt(row, 0).toString();
         hienChiTiet(maBenhNhan);
     }
 
     @Override
-    public void mousePressed(MouseEvent suKien) {
+    public void mousePressed(MouseEvent e) {
     }
 
     @Override
-    public void mouseReleased(MouseEvent suKien) {
+    public void mouseReleased(MouseEvent e) {
     }
 
     @Override
-    public void mouseEntered(MouseEvent suKien) {
+    public void mouseEntered(MouseEvent e) {
     }
 
     @Override
-    public void mouseExited(MouseEvent suKien) {
+    public void mouseExited(MouseEvent e) {
     }
 
+    // ===================== DANH SÁCH =====================
+
+    // Lấy điều kiện lọc trên View → gọi Service → đổ kết quả vào bảng.
+    // Dùng SwingWorker: đọc database ở LUỒNG NỀN (doInBackground) để app không bị đơ,
+    // xong rồi mới cập nhật giao diện (done).
+    // maCanChon: mã bệnh nhân cần chọn sẵn sau khi tải xong (null = không chọn)
     private void docDuLieuVaoTable(String maCanChon) {
-        soThuTuLanXemChiTiet++;
+        // Snapshot the latest request on EDT, including its requested selection.
+        RefreshRequest request = new RefreshRequest(view.getTxtTimKiem().getText(),
+                view.layGioiTinhDangChon(), maCanChon);
+        uiState.nextDetailRequest();
         view.hienChiTiet(null);
-        if (dangTaiDanhSach) {
-            coYeuCauTaiLaiDangCho = true;
-            maCanChonKhiTaiLai = maCanChon;
+        if (dangTai) {
+            pendingRefresh = request;
             return;
         }
-        taiDanhSach(maCanChon);
+        taiDanhSach(request);
     }
 
-    private void taiDanhSach(String maCanChon) {
-        String tuKhoa = view.getTxtTimKiem().getText();
-        String gioiTinh = view.layGioiTinhDangChon();
-        dangTaiDanhSach = true;
+    private void taiDanhSach(RefreshRequest request) {
+        uiState.nextDetailRequest();
+        dangTai = true;
         view.datDangTai(true);
-
         new SwingWorker<ArrayList<BenhNhan>, Void>() {
             @Override
             protected ArrayList<BenhNhan> doInBackground() throws Exception {
-                return benhNhanService.timKiem(tuKhoa, gioiTinh);
+                return service.timKiem(request.tuKhoa(), request.gioiTinh());
             }
 
             @Override
             protected void done() {
-                dangTaiDanhSach = false;
-                if (coYeuCauTaiLaiDangCho) {
-                    coYeuCauTaiLaiDangCho = false;
-                    taiDanhSach(maCanChonKhiTaiLai);
-                    return;
-                }
-                view.datDangTai(false);
                 try {
-                    ArrayList<BenhNhan> danhSachBenhNhan = get();
-                    soThuTuLanXemChiTiet++;
-                    view.docDuLieuVaoTable(danhSachBenhNhan);
-                    if (maCanChon != null) {
-                        view.chonDongTheoMa(maCanChon);
-                        hienChiTiet(maCanChon);
+                    ArrayList<BenhNhan> rows = get();
+                    // A newer request supersedes both rows and selection from this load.
+                    if (pendingRefresh == null) {
+                        uiState.nextDetailRequest();
+                        view.docDuLieuVaoTable(rows);
+                        if (request.maCanChon() != null) {
+                            view.chonDongTheoMa(request.maCanChon());
+                            hienChiTiet(request.maCanChon());
+                        }
                     }
-                } catch (Exception loi) {
-                    view.hienLoi(thongBaoLoi(loi));
+                } catch (Exception ex) {
+                    if (pendingRefresh == null) view.hienLoi(thongBaoLoi(ex));
+                } finally {
+                    // Drain pending work even when the active load failed.
+                    dangTai = false;
+                    RefreshRequest next = pendingRefresh;
+                    pendingRefresh = null;
+                    if (next != null) {
+                        taiDanhSach(next);
+                    } else {
+                        view.datDangTai(false);
+                    }
                 }
             }
         }.execute();
     }
 
+    // Detail requests are asynchronous; never render a response for an old selection.
     private void hienChiTiet(String maBenhNhan) {
-        soThuTuLanXemChiTiet++;
-        long lanXemNay = soThuTuLanXemChiTiet;
+        long request = uiState.nextDetailRequest();
         view.hienChiTiet(null);
-
         new SwingWorker<BenhNhan, Void>() {
             @Override
             protected BenhNhan doInBackground() throws Exception {
-                return benhNhanService.xemChiTiet(maBenhNhan);
+                return service.xemChiTiet(maBenhNhan);
             }
 
             @Override
             protected void done() {
-                if (lanXemNay != soThuTuLanXemChiTiet) {
-                    return;
-                }
+                if (!uiState.isLatestDetail(request)) return;
+                int row = view.getTblBenhNhan().getSelectedRow();
+                if (row < 0 || !maBenhNhan.equals(
+                        String.valueOf(view.getTblBenhNhan().getValueAt(row, 0)))) return;
                 try {
                     view.hienChiTiet(get());
-                } catch (Exception loi) {
-                    view.hienLoi(thongBaoLoi(loi));
+                } catch (Exception ex) {
+                    view.hienLoi(thongBaoLoi(ex));
                 }
             }
         }.execute();
     }
 
-    private void moForm(BenhNhan benhNhanCanSua) {
-        if (benhNhanCanSua == null) {
-            maDangSua = null;
-        } else {
-            maDangSua = benhNhanCanSua.getMaBenhNhan();
-        }
-        benhNhanLucMoForm = benhNhanCanSua;
-        winBenhNhan = new BenhNhanDialog(SwingUtilities.getWindowAncestor(view), benhNhanCanSua);
+    // ===================== THÊM / SỬA =====================
+
+    // Mở form: bnCanSua = null → Thêm; khác null → Sửa
+    private void moForm(BenhNhan bnCanSua) {
+        maDangSua = bnCanSua == null ? null : bnCanSua.getMaBenhNhan();
+        winBenhNhan = new BenhNhanDialog(SwingUtilities.getWindowAncestor(view), bnCanSua);
         winBenhNhan.getBtnChonNgay().addActionListener(this);
         winBenhNhan.getBtnLuu().addActionListener(this);
         winBenhNhan.getBtnHuy().addActionListener(this);
         try {
-            winBenhNhan.setVisible(true);
+            winBenhNhan.setVisible(true); // modal nested event loop still processes SwingWorker.done
         } finally {
             winBenhNhan = null;
-            benhNhanLucMoForm = null;
         }
     }
 
+    private void dongForm() {
+        winBenhNhan.dispose();
+    }
+
+    // Snapshot Swing inputs on EDT, then check duplicates on a worker.
     private void luu() {
-        if (winBenhNhan == null || dangLuu) {
-            return;
-        }
-        dangLuu = true;
-        BenhNhanDialog winDangLuu = winBenhNhan;
-        String maBenhNhanDangSua = maDangSua;
-        BenhNhan benhNhanLucMo = benhNhanLucMoForm;
-
-        winDangLuu.boToDoTatCa();
-        BenhNhan benhNhanTrenForm;
+        if (winBenhNhan == null || !uiState.beginSave()) return;
+        BenhNhanDialog dialog = winBenhNhan;
+        final BenhNhan bn;
+        final String maSua = maDangSua;
         try {
-            benhNhanTrenForm = winDangLuu.layBenhNhanTuForm(maBenhNhanDangSua);
-        } catch (RuntimeException loi) {
-            dangLuu = false;
-            baoLoiTrenForm(winDangLuu, loi);
+            bn = dialog.layBenhNhanTuForm(maSua);
+        } catch (RuntimeException ex) {
+            uiState.finishSave();
+            dialog.hienLoi(thongBaoLoi(ex));
             return;
         }
-        winDangLuu.datDangLuu(true);
-
+        dialog.datDangLuu(true);
         new SwingWorker<ArrayList<BenhNhan>, Void>() {
-            @Override
-            protected ArrayList<BenhNhan> doInBackground() throws Exception {
-                return benhNhanService.timNghiTrung(benhNhanTrenForm);
+            @Override protected ArrayList<BenhNhan> doInBackground() throws Exception {
+                return service.timNghiTrung(bn);
             }
-
-            @Override
-            protected void done() {
-                if (!winDangLuu.isDisplayable()) {
-                    dangLuu = false;
-                    return;
-                }
-                ArrayList<BenhNhan> danhSachTrung;
+            @Override protected void done() {
+                if (!dialog.isDisplayable()) { uiState.finishSave(); return; }
                 try {
-                    danhSachTrung = get();
-                } catch (Exception loi) {
-                    ketThucLuu(winDangLuu);
-                    baoLoiTrenForm(winDangLuu, loi);
-                    return;
-                }
-
-                if (danhSachTrung.isEmpty()) {
-                    luuTrongNen(winDangLuu, benhNhanTrenForm, maBenhNhanDangSua, benhNhanLucMo);
-                    return;
-                }
-
-                boolean dangThemMoi = maBenhNhanDangSua == null;
-                int luaChon = hoiKhiCoHoSoNghiTrung(winDangLuu, danhSachTrung, dangThemMoi);
-                if (luaChon == CHON_VAN_LUU) {
-                    luuTrongNen(winDangLuu, benhNhanTrenForm, maBenhNhanDangSua, benhNhanLucMo);
-                } else if (luaChon == CHON_DUNG_HO_SO_CU) {
-                    ketThucLuu(winDangLuu);
-                    winDangLuu.dispose();
-                    chonHoSoCu(maHoSoCuDaChon);
-                } else {
-                    ketThucLuu(winDangLuu);
-                }
-            }
-        }.execute();
-    }
-
-    private void luuTrongNen(BenhNhanDialog winDangLuu, BenhNhan benhNhanTrenForm,
-                             String maBenhNhanDangSua, BenhNhan benhNhanLucMo) {
-        new SwingWorker<String, Void>() {
-            @Override
-            protected String doInBackground() throws Exception {
-                if (maBenhNhanDangSua == null) {
-                    return benhNhanService.themBenhNhan(benhNhanTrenForm);
-                }
-                benhNhanService.capNhatBenhNhan(benhNhanTrenForm, benhNhanLucMo);
-                return maBenhNhanDangSua;
-            }
-
-            @Override
-            protected void done() {
-                String maDaLuu;
-                try {
-                    maDaLuu = get();
-                } catch (Exception loi) {
-                    ketThucLuu(winDangLuu);
-                    Throwable loiGoc = layLoiGoc(loi);
-                    if (loiGoc instanceof DuLieuDaThayDoiException) {
-                        JOptionPane.showMessageDialog(winDangLuu, loiGoc.getMessage(),
-                                "Dữ liệu vừa bị thay đổi", JOptionPane.WARNING_MESSAGE);
-                        winDangLuu.dispose();
-                        docDuLieuVaoTable(maBenhNhanDangSua);
+                    ArrayList<BenhNhan> dsTrung = get();
+                    if (!dsTrung.isEmpty() && !xacNhanLuuKhiTrung(dsTrung)) {
+                        ketThucLuu(dialog);
                         return;
                     }
-                    if (winDangLuu.isDisplayable()) {
-                        baoLoiTrenForm(winDangLuu, loi);
-                    }
-                    return;
+                    luuTrongNen(dialog, bn, maSua);
+                } catch (Exception ex) {
+                    ketThucLuu(dialog);
+                    dialog.hienLoi(thongBaoLoi(ex));
                 }
-
-                ketThucLuu(winDangLuu);
-                String thongBao;
-                if (maBenhNhanDangSua == null) {
-                    thongBao = "Đã thêm bệnh nhân " + maDaLuu + ".";
-                } else {
-                    thongBao = "Đã cập nhật bệnh nhân " + maDaLuu + ".";
-                }
-                JOptionPane.showMessageDialog(winDangLuu, thongBao);
-                winDangLuu.dispose();
-                docDuLieuVaoTable(maDaLuu);
             }
         }.execute();
     }
 
-    private void ketThucLuu(BenhNhanDialog winDangLuu) {
-        dangLuu = false;
-        if (winDangLuu.isDisplayable()) {
-            winDangLuu.datDangLuu(false);
-        }
-    }
-
-    private void baoLoiTrenForm(BenhNhanDialog winDangLuu, Throwable loi) {
-        Throwable loiGoc = layLoiGoc(loi);
-        if (loiGoc instanceof LoiNhapLieuException) {
-            LoiNhapLieuException loiNhapLieu = (LoiNhapLieuException) loiGoc;
-            winDangLuu.toDoO(loiNhapLieu.getTenO());
-        }
-        winDangLuu.hienLoi(thongBaoLoi(loi));
-    }
-
-    private void chonHoSoCu(String maBenhNhan) {
-        view.xoaTrang();
-        view.getTxtTimKiem().setText(maBenhNhan);
-        docDuLieuVaoTable(maBenhNhan);
-    }
-
-    private int hoiKhiCoHoSoNghiTrung(BenhNhanDialog winDangLuu, ArrayList<BenhNhan> danhSachTrung,
-                                      boolean dangThemMoi) {
-        DefaultListModel<String> modelHoSoTrung = new DefaultListModel<>();
-        for (BenhNhan benhNhanTrung : danhSachTrung) {
-            modelHoSoTrung.addElement(benhNhanTrung.getMaBenhNhan()
-                    + " · " + benhNhanTrung.getHoTen()
-                    + " · " + benhNhanTrung.getNgaySinh().format(DINH_DANG_NGAY)
-                    + " · " + benhNhanTrung.getSoDienThoai());
-        }
-        JList<String> lstHoSoTrung = new JList<>(modelHoSoTrung);
-        lstHoSoTrung.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        lstHoSoTrung.setSelectedIndex(0);
-        JScrollPane scrHoSoTrung = new JScrollPane(lstHoSoTrung);
-        scrHoSoTrung.setPreferredSize(new Dimension(460, 110));
-
-        JLabel lblCanhBao = new JLabel("Đã có hồ sơ trùng họ tên, ngày sinh và số điện thoại:");
-        JPanel pnlCanhBao = new JPanel(new BorderLayout(0, 8));
-        pnlCanhBao.add(lblCanhBao, BorderLayout.NORTH);
-        pnlCanhBao.add(scrHoSoTrung, BorderLayout.CENTER);
-
-        String[] cacNut;
-        if (dangThemMoi) {
-            cacNut = new String[]{"Dùng hồ sơ này", "Vẫn tạo mới", "Quay lại"};
-        } else {
-            cacNut = new String[]{"Vẫn lưu", "Quay lại"};
-        }
-        int nutDaBam = JOptionPane.showOptionDialog(winDangLuu, pnlCanhBao, "Cảnh báo hồ sơ nghi trùng",
-                JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null,
-                cacNut, cacNut[cacNut.length - 1]);
-
-        if (dangThemMoi) {
-            if (nutDaBam == 0) {
-                int dongDaChon = lstHoSoTrung.getSelectedIndex();
-                if (dongDaChon < 0) {
-                    dongDaChon = 0;
+    // SQL write and audit execute only in doInBackground(), never on EDT.
+    private void luuTrongNen(BenhNhanDialog dialog, BenhNhan bn, String maSua) {
+        new SwingWorker<String, Void>() {
+            @Override protected String doInBackground() throws Exception {
+                if (maSua == null) return service.themBenhNhan(bn);
+                service.capNhatBenhNhan(bn);
+                return maSua;
+            }
+            @Override protected void done() {
+                try {
+                    String maDaLuu = get();
+                    ketThucLuu(dialog);
+                    JOptionPane.showMessageDialog(dialog,
+                            (maSua == null ? "Đã thêm bệnh nhân " : "Đã cập nhật bệnh nhân ") + maDaLuu + ".");
+                    dialog.dispose();
+                    docDuLieuVaoTable(maDaLuu);
+                } catch (Exception ex) {
+                    ketThucLuu(dialog);
+                    if (dialog.isDisplayable()) dialog.hienLoi(thongBaoLoi(ex));
                 }
-                maHoSoCuDaChon = danhSachTrung.get(dongDaChon).getMaBenhNhan();
-                return CHON_DUNG_HO_SO_CU;
             }
-            if (nutDaBam == 1) {
-                return CHON_VAN_LUU;
-            }
-            return CHON_QUAY_LAI;
-        }
-        if (nutDaBam == 0) {
-            return CHON_VAN_LUU;
-        }
-        return CHON_QUAY_LAI;
+        }.execute();
     }
 
-    private Throwable layLoiGoc(Throwable loi) {
-        while (loi instanceof ExecutionException && loi.getCause() != null) {
-            loi = loi.getCause();
-        }
-        return loi;
+    private void ketThucLuu(BenhNhanDialog dialog) {
+        uiState.finishSave();
+        if (dialog.isDisplayable()) dialog.datDangLuu(false);
     }
 
-    private String thongBaoLoi(Throwable loi) {
-        Throwable loiGoc = layLoiGoc(loi);
-        if (loiGoc instanceof AccessDeniedException) {
+    // Hiện danh sách hồ sơ nghi trùng, trả về true nếu người dùng vẫn muốn lưu
+    private boolean xacNhanLuuKhiTrung(ArrayList<BenhNhan> dsTrung) {
+        StringBuilder noiDung = new StringBuilder("Có hồ sơ NGHI TRÙNG (cùng SĐT, hoặc cùng họ tên + ngày sinh):\n\n");
+        for (BenhNhan t : dsTrung) {
+            noiDung.append("• ").append(t.getMaBenhNhan())
+                    .append(" · ").append(t.getHoTen())
+                    .append(" · ").append(t.getNgaySinh().format(NGAY))
+                    .append(" · ").append(t.getSoDienThoai())
+                    .append("\n");
+        }
+        noiDung.append("\nVẫn lưu hồ sơ này?");
+        int chon = JOptionPane.showConfirmDialog(winBenhNhan, noiDung.toString(),
+                "Cảnh báo hồ sơ nghi trùng", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        return chon == JOptionPane.YES_OPTION;
+    }
+
+    // Đổi lỗi thành câu dễ hiểu (không hiện câu SQL ra màn hình)
+    private String thongBaoLoi(Throwable ex) {
+        // SwingWorker exceptions may be wrapped more than once.
+        while (ex instanceof ExecutionException && ex.getCause() != null) {
+            ex = ex.getCause();
+        }
+        if (ex instanceof AccessDeniedException) {
             return "Tài khoản không có quyền thực hiện thao tác này.";
         }
-        if (loiGoc instanceof IllegalArgumentException) {
-            return loiGoc.getMessage();
+        if (ex instanceof IllegalArgumentException) {
+            return ex.getMessage();
         }
-        if (loiGoc instanceof DuLieuDaThayDoiException) {
-            return loiGoc.getMessage();
-        }
-        if (loiGoc instanceof SQLTimeoutException) {
+        if (ex instanceof SQLTimeoutException) {
             return "SQL Server phản hồi quá lâu. Vui lòng thử lại.";
         }
-        if (loiGoc instanceof SQLException) {
+        if (ex instanceof SQLException) {
             return "Lỗi khi làm việc với SQL Server. Kiểm tra kết nối rồi thử lại.";
         }
         return "Có lỗi xảy ra, vui lòng thử lại.";
