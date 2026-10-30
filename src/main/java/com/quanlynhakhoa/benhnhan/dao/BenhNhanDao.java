@@ -12,6 +12,23 @@ import java.util.ArrayList;
 // DAO: chỉ làm việc với SQL Server, không kiểm tra quyền, không kiểm tra nghiệp vụ
 // Kết nối bằng TeamDevConnection (tài khoản n08dev_*, KHÔNG dùng sa)
 public class BenhNhanDao {
+    // Seconds per statement, including lock waits inside the service transaction.
+    private static final int QUERY_TIMEOUT_SECONDS = 15;
+
+    @FunctionalInterface
+    public interface ConnectionProvider {
+        Connection open() throws SQLException;
+    }
+
+    private final ConnectionProvider connections;
+
+    public BenhNhanDao() {
+        this(TeamDevConnection::open);
+    }
+
+    public BenhNhanDao(ConnectionProvider connections) {
+        this.connections = java.util.Objects.requireNonNull(connections, "connections");
+    }
 
     // Liệt kê rõ tên cột (không dùng SELECT *) để thứ tự cột luôn đúng khi đọc rs.getXxx(1..8)
     private static final String COT =
@@ -23,8 +40,8 @@ public class BenhNhanDao {
         String sql = "SELECT TOP 200 " + COT + "FROM dbo.BenhNhan ORDER BY maBenhNhan DESC";
 
         // try (...) tự đóng kết nối sau khi dùng xong
-        try (Connection con = TeamDevConnection.open();
-             PreparedStatement stmt = con.prepareStatement(sql);
+        try (Connection con = connections.open();
+             PreparedStatement stmt = prepareStatement(con, sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 dsBenhNhan.add(docMotDong(rs));
@@ -43,8 +60,8 @@ public class BenhNhanDao {
                 + "AND (? = '' OR gioiTinh = ?) "
                 + "ORDER BY maBenhNhan DESC";
 
-        try (Connection con = TeamDevConnection.open();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (Connection con = connections.open();
+             PreparedStatement stmt = prepareStatement(con, sql)) {
             String mau = "%" + tuKhoa + "%";
             stmt.setNString(1, mau);
             stmt.setString(2, mau);
@@ -65,8 +82,8 @@ public class BenhNhanDao {
     public BenhNhan timTheoMa(String maBenhNhan) throws SQLException {
         String sql = "SELECT " + COT + "FROM dbo.BenhNhan WHERE maBenhNhan = ?";
 
-        try (Connection con = TeamDevConnection.open();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (Connection con = connections.open();
+             PreparedStatement stmt = prepareStatement(con, sql)) {
             stmt.setString(1, maBenhNhan);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -91,8 +108,8 @@ public class BenhNhanDao {
                 + "WHERE (soDienThoai = ? OR (hoTen = ? AND ngaySinh = ?)) "
                 + "AND (? IS NULL OR maBenhNhan <> ?)";
 
-        try (Connection con = TeamDevConnection.open();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (Connection con = connections.open();
+             PreparedStatement stmt = prepareStatement(con, sql)) {
             stmt.setString(1, soDienThoai);
             stmt.setNString(2, hoTen);
             stmt.setDate(3, java.sql.Date.valueOf(ngaySinh));
@@ -125,7 +142,7 @@ public class BenhNhanDao {
     }
 
     private String taoMa(Connection con, String sql, String tienTo) throws SQLException {
-        try (PreparedStatement stmt = con.prepareStatement(sql);
+        try (PreparedStatement stmt = prepareStatement(con, sql);
              ResultSet rs = stmt.executeQuery()) {
             rs.next();
             int soTiepTheo = rs.getInt(1);
@@ -141,7 +158,7 @@ public class BenhNhanDao {
         String sql = "INSERT INTO dbo.BenhNhan "
                 + "(maBenhNhan, hoTen, ngaySinh, gioiTinh, soDienThoai, diaChi, nguoiLienHe, maTaiKhoanTao) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (PreparedStatement stmt = prepareStatement(con, sql)) {
             stmt.setString(1, bn.getMaBenhNhan());
             stmt.setNString(2, bn.getHoTen());
             stmt.setDate(3, java.sql.Date.valueOf(bn.getNgaySinh()));
@@ -158,7 +175,7 @@ public class BenhNhanDao {
     public void themHoSoBenhAn(Connection con, String maHoSo, String maBenhNhan) throws SQLException {
         String sql = "INSERT INTO dbo.HoSoBenhAn (maHoSo, maBenhNhan, ngayLap) "
                 + "VALUES (?, ?, CAST(GETDATE() AS DATE))";
-        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (PreparedStatement stmt = prepareStatement(con, sql)) {
             stmt.setString(1, maHoSo);
             stmt.setString(2, maBenhNhan);
             stmt.executeUpdate();
@@ -170,7 +187,7 @@ public class BenhNhanDao {
         String sql = "UPDATE dbo.BenhNhan SET hoTen = ?, ngaySinh = ?, gioiTinh = ?, "
                 + "soDienThoai = ?, diaChi = ?, nguoiLienHe = ? "
                 + "WHERE maBenhNhan = ?";
-        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (PreparedStatement stmt = prepareStatement(con, sql)) {
             stmt.setNString(1, bn.getHoTen());
             stmt.setDate(2, java.sql.Date.valueOf(bn.getNgaySinh()));
             stmt.setString(3, bn.getGioiTinh());
@@ -188,11 +205,26 @@ public class BenhNhanDao {
         String sql = "INSERT INTO dbo.NhatKyThaoTac "
                 + "(loaiTacNhan, maTaiKhoan, chucNang, hanhDong, ketQua, doiTuong, maDoiTuong) "
                 + "VALUES ('ACCOUNT', ?, N'BenhNhan', ?, 'SUCCESS', 'BenhNhan', ?)";
-        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (PreparedStatement stmt = prepareStatement(con, sql)) {
             stmt.setString(1, maTaiKhoan);
             stmt.setNString(2, hanhDong);
             stmt.setString(3, maBenhNhan);
             stmt.executeUpdate();
+        }
+    }
+
+    private PreparedStatement prepareStatement(Connection con, String sql) throws SQLException {
+        PreparedStatement stmt = con.prepareStatement(sql);
+        try {
+            stmt.setQueryTimeout(QUERY_TIMEOUT_SECONDS);
+            return stmt;
+        } catch (SQLException | RuntimeException ex) {
+            try {
+                stmt.close();
+            } catch (SQLException closeError) {
+                ex.addSuppressed(closeError);
+            }
+            throw ex;
         }
     }
 
