@@ -35,7 +35,7 @@ public final class TeamM1Permissions {
             new Grant("HoaDon", "SELECT"),
             new Grant("ChiTietHoaDon", "SELECT"),
             new Grant("ThanhToan", "SELECT"),
-            new Grant("NhatKyThaoTac", "INSERT")
+            new Grant("NhatKyThaoTac", "SELECT, INSERT")
     );
 
     private TeamM1Permissions() { }
