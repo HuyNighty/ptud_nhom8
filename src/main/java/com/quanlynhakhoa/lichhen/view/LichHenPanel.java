@@ -56,11 +56,10 @@ public class LichHenPanel extends JPanel {
     private JLabel lblBacSi;
     private JLabel lblTrangThaiLichHen;
     private JTextArea txaLyDo;
-    private JButton btnTiepDon;
+    private JButton btnXacNhan;
     private JButton btnDoiLich;
     private JButton btnHuyLich;
     private boolean duocQuanLyLich;
-    private boolean duocTiepDon;
 
     private JPanel pnlCenter;
     private DefaultTableModel modelLichHen;
@@ -164,8 +163,8 @@ public class LichHenPanel extends JPanel {
         boxThongTin.add(Box.createVerticalStrut(4));
         boxThongTin.add(txaLyDo);
 
-        btnTiepDon = new JButton("Tiếp đón bệnh nhân");
-        MauNut.toXanhLa(btnTiepDon);
+        btnXacNhan = new JButton("Xác nhận lịch hẹn");
+        MauNut.toXanhLa(btnXacNhan);
         btnDoiLich = new JButton("Đổi lịch");
         MauNut.toCam(btnDoiLich);
         btnHuyLich = new JButton("Hủy lịch");
@@ -173,7 +172,7 @@ public class LichHenPanel extends JPanel {
         JPanel pnlNutThaoTac = new JPanel(new GridLayout(3, 1, 0, 8));
         pnlNutThaoTac.setOpaque(false);
         pnlNutThaoTac.setBorder(new EmptyBorder(10, 14, 14, 14));
-        pnlNutThaoTac.add(btnTiepDon);
+        pnlNutThaoTac.add(btnXacNhan);
         pnlNutThaoTac.add(btnDoiLich);
         pnlNutThaoTac.add(btnHuyLich);
 
@@ -264,7 +263,7 @@ public class LichHenPanel extends JPanel {
             lblBacSi.setText("—");
             lblTrangThaiLichHen.setText("—");
             txaLyDo.setText("—");
-            btnTiepDon.setEnabled(false);
+            btnXacNhan.setEnabled(false);
             btnDoiLich.setEnabled(false);
             btnHuyLich.setEnabled(false);
             return;
@@ -281,7 +280,7 @@ public class LichHenPanel extends JPanel {
             txaLyDo.setText(lichHen.getLyDoHen());
         }
 
-        btnTiepDon.setEnabled(duocTiepDon && lichHen.duocTiepDon());
+        btnXacNhan.setEnabled(duocQuanLyLich && lichHen.laChoXacNhan());
         btnDoiLich.setEnabled(duocQuanLyLich && lichHen.laDaDat());
         btnHuyLich.setEnabled(duocQuanLyLich && lichHen.laDaDat());
     }
@@ -320,9 +319,8 @@ public class LichHenPanel extends JPanel {
         btnChonNgayXem.setEnabled(!dangTai);
     }
 
-    public void datQuyen(boolean duocQuanLyLich, boolean duocTiepDon) {
+    public void datQuyen(boolean duocQuanLyLich) {
         this.duocQuanLyLich = duocQuanLyLich;
-        this.duocTiepDon = duocTiepDon;
         btnDatLich.setEnabled(duocQuanLyLich);
         hienChiTiet(layLichHenDangChon());
     }
@@ -362,8 +360,8 @@ public class LichHenPanel extends JPanel {
         return tblLichHen;
     }
 
-    public JButton getBtnTiepDon() {
-        return btnTiepDon;
+    public JButton getBtnXacNhan() {
+        return btnXacNhan;
     }
 
     public JButton getBtnDoiLich() {

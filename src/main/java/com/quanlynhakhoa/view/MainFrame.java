@@ -149,9 +149,6 @@ public final class MainFrame extends JFrame {
         JMenu mnuPlanning = menu("Kế hoạch");
         item(mnuPlanning, "Danh sách lịch hẹn", Module.APPOINTMENTS);
         item(mnuPlanning, "Lịch làm việc của tôi", Module.MY_SCHEDULE);
-        if (allowed.contains(Module.APPOINTMENTS)) {
-            pending(mnuPlanning, "Đặt lịch hẹn");
-        }
         if (allowed.contains(Module.WORKFORCE)) {
             pending(mnuPlanning, "Phân công ca");
         }
@@ -160,9 +157,7 @@ public final class MainFrame extends JFrame {
         // 3. Tiếp nhận: thông tin ban đầu của bệnh nhân.
         JMenu mnuReception = menu("Tiếp nhận");
         item(mnuReception, "Danh sách bệnh nhân", Module.PATIENTS);
-        if (allowed.contains(Module.PATIENTS)) {
-            pending(mnuReception, "Tiếp nhận mới");
-        }
+        item(mnuReception, "Tiếp nhận bệnh nhân", Module.RECEPTION);
         addIfNotEmpty(mnuBar, mnuReception);
 
         // 4. Hoạt động: hồ sơ, khám chữa bệnh, thuốc và vật tư.
@@ -328,6 +323,7 @@ public final class MainFrame extends JFrame {
             case SUPPLY_REQUESTS -> "Yêu cầu cấp phát";
             case MY_SCHEDULE -> "Lịch làm việc của tôi";
             case EMERGENCY_KIT -> "Kiểm tra hộp cấp cứu";
+            case RECEPTION -> "Tiếp nhận bệnh nhân";
         };
     }
 

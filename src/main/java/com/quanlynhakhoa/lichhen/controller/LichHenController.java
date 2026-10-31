@@ -42,14 +42,13 @@ public class LichHenController implements ActionListener, MouseListener {
         view.getTxtTimKiem().addActionListener(this);
         view.getBtnTimKiem().addActionListener(this);
         view.getBtnDatLich().addActionListener(this);
-        view.getBtnTiepDon().addActionListener(this);
+        view.getBtnXacNhan().addActionListener(this);
         view.getBtnDoiLich().addActionListener(this);
         view.getBtnHuyLich().addActionListener(this);
         view.getTblLichHen().addMouseListener(this);
 
         boolean duocQuanLyLich = lichHenService.coQuyen(Permission.APPOINTMENT_MANAGE);
-        boolean duocTiepDon = lichHenService.coQuyen(Permission.PATIENT_CHECK_IN);
-        view.datQuyen(duocQuanLyLich, duocTiepDon);
+        view.datQuyen(duocQuanLyLich);
 
         taiDanhSach(null);
     }
@@ -71,8 +70,8 @@ public class LichHenController implements ActionListener, MouseListener {
         if (nguonSuKien.equals(view.getBtnDatLich())) {
             moForm(null);
         }
-        if (nguonSuKien.equals(view.getBtnTiepDon())) {
-            tiepDonBenhNhan();
+        if (nguonSuKien.equals(view.getBtnXacNhan())) {
+            xacNhanLichHen();
         }
         if (nguonSuKien.equals(view.getBtnDoiLich())) {
             LichHen lichHen = layLichHenDaDatDangChon("đổi");
@@ -180,46 +179,44 @@ public class LichHenController implements ActionListener, MouseListener {
         }
         if (!lichHen.laDaDat()) {
             view.hienLoi("Lịch hẹn " + lichHen.getMaLichHen() + " đang ở trạng thái \""
-                    + lichHen.getTrangThaiHienThi() + "\". Chỉ lịch \"Đã đặt\" mới được " + viecCanLam + ".");
+                    + lichHen.getTrangThaiHienThi() + "\". Chỉ lịch \"Chờ xác nhận\" hoặc \"Đã xác nhận\" mới được " + viecCanLam + ".");
             return null;
         }
         return lichHen;
     }
 
-    private void tiepDonBenhNhan() {
+    private void xacNhanLichHen() {
         LichHen lichHen = view.layLichHenDangChon();
         if (lichHen == null) {
-            view.hienLoi("Chọn 1 lịch hẹn trong bảng để tiếp đón bệnh nhân.");
+            view.hienLoi("Chọn 1 lịch hẹn trong bảng để xác nhận.");
             return;
         }
-        if (!lichHen.duocTiepDon()) {
-            view.hienLoi("Chỉ tiếp đón bệnh nhân có lịch hẹn \"Đã đặt\" của hôm nay.");
+        if (!lichHen.laChoXacNhan()) {
+            view.hienLoi("Chỉ xác nhận được lịch hẹn đang \"Chờ xác nhận\".");
             return;
         }
-        String cauHoi = "Tiếp đón bệnh nhân " + lichHen.getTenBenhNhan() + "?\n"
-                + "Lịch hẹn chuyển \"Đã đến\" và hệ thống tạo lượt khám \"Chờ khám\" với bác sĩ "
-                + lichHen.getTenBacSi() + ".";
-        int luaChon = JOptionPane.showConfirmDialog(view, cauHoi, "Tiếp đón bệnh nhân", JOptionPane.YES_NO_OPTION);
+        String cauHoi = "Bệnh nhân " + lichHen.getTenBenhNhan() + " đã xác nhận qua điện thoại sẽ đến lúc "
+                + lichHen.getThoiGianHen().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + "?";
+        int luaChon = JOptionPane.showConfirmDialog(view, cauHoi, "Xác nhận lịch hẹn", JOptionPane.YES_NO_OPTION);
         if (luaChon != JOptionPane.YES_OPTION) {
             return;
         }
         String maLichHen = lichHen.getMaLichHen();
-        String tenBacSi = lichHen.getTenBacSi();
         view.datDangTai(true);
 
-        new SwingWorker<String, Void>() {
+        new SwingWorker<Void, Void>() {
             @Override
-            protected String doInBackground() throws Exception {
-                return lichHenService.tiepDonBenhNhan(maLichHen);
+            protected Void doInBackground() throws Exception {
+                lichHenService.xacNhanLichHen(maLichHen);
+                return null;
             }
 
             @Override
             protected void done() {
                 view.datDangTai(false);
                 try {
-                    String maPhieuKham = get();
-                    JOptionPane.showMessageDialog(view, "Đã tạo lượt khám " + maPhieuKham
-                            + " (Chờ khám). Bệnh nhân vào danh sách chờ của bác sĩ " + tenBacSi + ".");
+                    get();
+                    JOptionPane.showMessageDialog(view, "Đã xác nhận lịch hẹn " + maLichHen + ".");
                 } catch (Exception loi) {
                     view.hienLoi(thongBaoLoi(loi));
                 }

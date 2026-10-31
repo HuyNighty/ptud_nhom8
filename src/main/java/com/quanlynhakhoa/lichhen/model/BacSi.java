@@ -3,6 +3,7 @@ package com.quanlynhakhoa.lichhen.model;
 public class BacSi {
     private String maNhanVien;
     private String hoTen;
+    private int soNguoiDangCho = -1;
 
     public BacSi(String maNhanVien, String hoTen) {
         this.maNhanVien = maNhanVien;
@@ -17,8 +18,19 @@ public class BacSi {
         return hoTen;
     }
 
+    public int getSoNguoiDangCho() {
+        return soNguoiDangCho;
+    }
+
+    public void setSoNguoiDangCho(int soNguoiDangCho) {
+        this.soNguoiDangCho = soNguoiDangCho;
+    }
+
     @Override
     public String toString() {
-        return hoTen + " (" + maNhanVien + ")";
+        if (soNguoiDangCho < 0) {
+            return hoTen + " (" + maNhanVien + ")";
+        }
+        return hoTen + " (" + maNhanVien + ") - " + soNguoiDangCho + " người đang chờ";
     }
 }

@@ -247,18 +247,67 @@ public class LichHenDao {
         }
     }
 
-    public void themLuotKhamChoKham(Connection ketNoi, String maPhieuKham, LichHen lichHen, String maHoSo,
-                                    LocalDateTime thoiGianTiepNhan) throws SQLException {
+    public void themLuotKhamChoKham(Connection ketNoi, String maPhieuKham, String maBenhNhan, String maHoSo,
+                                    String maBacSi, String maLichHen, LocalDateTime thoiGianTiepNhan,
+                                    String lyDoDen) throws SQLException {
         String sql = "INSERT INTO dbo.PhieuKham "
-                + "(maPhieuKham, maBenhNhan, maHoSo, maNhanVien, maLichHen, thoiGianTiepNhan, trangThai) "
-                + "VALUES (?, ?, ?, ?, ?, ?, 'CHO_KHAM')";
+                + "(maPhieuKham, maBenhNhan, maHoSo, maNhanVien, maLichHen, thoiGianTiepNhan, trieuChung, trangThai) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, 'CHO_KHAM')";
         try (PreparedStatement cauLenh = BenhNhanDao.taoCauLenh(ketNoi, sql)) {
             cauLenh.setString(1, maPhieuKham);
-            cauLenh.setString(2, lichHen.getMaBenhNhan());
+            cauLenh.setString(2, maBenhNhan);
             cauLenh.setString(3, maHoSo);
-            cauLenh.setString(4, lichHen.getMaBacSi());
-            cauLenh.setString(5, lichHen.getMaLichHen());
+            cauLenh.setString(4, maBacSi);
+            cauLenh.setString(5, maLichHen);
             cauLenh.setTimestamp(6, Timestamp.valueOf(thoiGianTiepNhan));
+            cauLenh.setNString(7, lyDoDen);
+            cauLenh.executeUpdate();
+        }
+    }
+
+    public int demNguoiDangCho(Connection ketNoi, String maBacSi, LocalDate ngay) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM dbo.PhieuKham "
+                + "WHERE maNhanVien = ? AND trangThai = 'CHO_KHAM' "
+                + "AND thoiGianTiepNhan >= ? AND thoiGianTiepNhan < ?";
+        try (PreparedStatement cauLenh = BenhNhanDao.taoCauLenh(ketNoi, sql)) {
+            cauLenh.setString(1, maBacSi);
+            cauLenh.setTimestamp(2, Timestamp.valueOf(ngay.atStartOfDay()));
+            cauLenh.setTimestamp(3, Timestamp.valueOf(ngay.plusDays(1).atStartOfDay()));
+            try (ResultSet ketQua = cauLenh.executeQuery()) {
+                ketQua.next();
+                return ketQua.getInt(1);
+            }
+        }
+    }
+
+    public String timLichHenChuaDenTrongNgay(Connection ketNoi, String maBenhNhan, LocalDate ngay)
+            throws SQLException {
+        String sql = "SELECT TOP 1 maLichHen FROM dbo.LichHen "
+                + "WHERE maBenhNhan = ? AND thoiGianHen >= ? AND thoiGianHen < ? "
+                + "AND trangThai IN ('CHO_XAC_NHAN', 'DA_XAC_NHAN') "
+                + "ORDER BY thoiGianHen";
+        try (PreparedStatement cauLenh = BenhNhanDao.taoCauLenh(ketNoi, sql)) {
+            cauLenh.setString(1, maBenhNhan);
+            cauLenh.setTimestamp(2, Timestamp.valueOf(ngay.atStartOfDay()));
+            cauLenh.setTimestamp(3, Timestamp.valueOf(ngay.plusDays(1).atStartOfDay()));
+            try (ResultSet ketQua = cauLenh.executeQuery()) {
+                if (!ketQua.next()) {
+                    return null;
+                }
+                return ketQua.getString(1);
+            }
+        }
+    }
+
+    public void ghiNhatKyTiepNhan(Connection ketNoi, String maTaiKhoan, String maPhieuKham, String noiDung)
+            throws SQLException {
+        String sql = "INSERT INTO dbo.NhatKyThaoTac "
+                + "(loaiTacNhan, maTaiKhoan, chucNang, hanhDong, ketQua, doiTuong, maDoiTuong, noiDung) "
+                + "VALUES ('ACCOUNT', ?, N'TiepNhan', N'Tiếp nhận không hẹn', 'SUCCESS', 'PhieuKham', ?, ?)";
+        try (PreparedStatement cauLenh = BenhNhanDao.taoCauLenh(ketNoi, sql)) {
+            cauLenh.setString(1, maTaiKhoan);
+            cauLenh.setString(2, maPhieuKham);
+            cauLenh.setNString(3, noiDung);
             cauLenh.executeUpdate();
         }
     }

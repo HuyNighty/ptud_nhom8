@@ -4,6 +4,7 @@ import com.quanlynhakhoa.account.ui.AccountPanel;
 import com.quanlynhakhoa.benhnhan.view.BenhNhanPanel;
 import com.quanlynhakhoa.benhnhan.view.HoSoBenhAnPanel;
 import com.quanlynhakhoa.lichhen.view.LichHenPanel;
+import com.quanlynhakhoa.lichhen.view.TiepNhanPanel;
 import com.quanlynhakhoa.workforce.ui.EmployeePanel;
 import com.quanlynhakhoa.roles.ui.RolePanel;
 import com.quanlynhakhoa.examination.ui.ExamQueuePanel;
@@ -25,6 +26,7 @@ public final class FeatureBootstrap {
                 .register(Module.EXAMINATIONS, ExamQueuePanel::new)
                 .register(Module.PATIENTS, BenhNhanPanel::new)
                 .register(Module.APPOINTMENTS, LichHenPanel::new)
+                .register(Module.RECEPTION, TiepNhanPanel::new)
                 .register(Module.MEDICAL_RECORDS, HoSoBenhAnPanel::new)
                 .register(Module.SERVICE_CATALOG, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session) {
