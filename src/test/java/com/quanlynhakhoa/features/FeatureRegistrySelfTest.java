@@ -34,6 +34,12 @@ public final class FeatureRegistrySelfTest {
 
     public static void main(String[] args) {
         FeatureRegistry empty = FeatureBootstrap.createRegistry();
+        check(empty.contains(Module.AUDIT), "audit registered");
+        check(empty.contains(Module.WORKFORCE), "workforce registered");
+        check(empty.contains(Module.ROLES), "roles registered");
+        check(empty.contains(Module.EXAMINATIONS), "examinations registered");
+        check(empty.contains(Module.RECEPTION), "reception registered");
+        check(!empty.contains(Module.INVENTORY), "inventory not yet registered");
         check(empty.contains(Module.SERVICE_CATALOG), "service catalogue integrated in main shell");
         check(empty.contains(Module.BILLING), "billing integrated in main shell");
         check(empty.contains(Module.ACCOUNTS), "existing accounts registration preserved");
@@ -58,6 +64,23 @@ public final class FeatureRegistrySelfTest {
         check(created.get() == 0, "factory not called during registration");
 
         NavigationPolicy navigation = new NavigationPolicy();
+        check(navigation.canOpen(session(Role.SYSTEM_ADMIN), Module.AUDIT),
+                "admin can open audit");
+        check(navigation.canOpen(session(Role.CLINIC_MANAGER), Module.AUDIT),
+                "manager can open audit");
+        check(!navigation.canOpen(session(Role.RECEPTIONIST), Module.AUDIT),
+                "receptionist cannot open audit");
+        check(!navigation.canOpen(session(Role.DOCTOR), Module.AUDIT),
+                "doctor cannot open audit");
+
+        check(navigation.canOpen(session(Role.RECEPTIONIST), Module.RECEPTION),
+                "receptionist can open reception");
+        check(navigation.canOpen(session(Role.SYSTEM_ADMIN), Module.RECEPTION),
+                "admin can open reception");
+        check(!navigation.canOpen(session(Role.DOCTOR), Module.RECEPTION),
+                "doctor cannot open reception");
+        check(!navigation.canOpen(session(Role.CLINIC_MANAGER), Module.RECEPTION),
+                "manager cannot open reception");
         DesktopSession receptionist = session(Role.RECEPTIONIST);
         check(navigation.canOpen(receptionist, Module.APPOINTMENTS), "receptionist can open appointments");
         check(!navigation.canOpen(receptionist, Module.MEDICAL_RECORDS), "receptionist cannot open medical records");
