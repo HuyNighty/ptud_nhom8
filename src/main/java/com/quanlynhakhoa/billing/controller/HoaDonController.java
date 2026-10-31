@@ -64,7 +64,7 @@ public final class HoaDonController {
             protected void succeeded(List<HoaDon> rows) {
                 // Keep selection listeners idle while replacing the model.
                 busy = true; view.showRows(rows); busy = false;
-                view.status((followingPayment?"Đã thu tiền thành công. ":"")+(rows.isEmpty() ? "Không có hóa đơn phù hợp." : rows.size() + " hóa đơn. Chọn một dòng để xem."));
+                view.status((followingPayment?"Đã thu tiền thành công. ":"")+(rows.isEmpty() ? keyword.isBlank()&&from==null&&to==null&&filter==null?"Chưa có hóa đơn.":"Không tìm thấy hóa đơn phù hợp." : rows.size() + " hóa đơn. Chọn một dòng để xem."));
                 if(followingPayment&&!reloadPending)afterPayment=false;
                 if (createdId != null) { String id=createdId;createdId=null;view.selectInvoice(id); }
                 if(selectionAfterLoad!=null&&keyword.trim().equals(selectionAfterLoad)){String id=selectionAfterLoad;selectionAfterLoad=null;view.selectInvoice(id);}
@@ -95,8 +95,6 @@ public final class HoaDonController {
         }.execute();
     }
     private static LocalDate date(String text) {
-        if (text == null || text.isBlank()) return null;
-        try { return LocalDate.parse(text.trim()); }
-        catch (DateTimeParseException failure) { throw new IllegalArgumentException("Ngày phải có dạng yyyy-MM-dd và tồn tại; để trống nếu không lọc."); }
+        return BillingUi.parseDate(text);
     }
 }
