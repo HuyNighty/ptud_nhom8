@@ -4,6 +4,9 @@ import com.quanlynhakhoa.account.AccountDirectoryDao;
 import com.quanlynhakhoa.account.AccountDirectoryRow;
 import com.quanlynhakhoa.account.AccountDirectoryService;
 import com.quanlynhakhoa.account.AccountCreateService;
+import com.quanlynhakhoa.account.EligibleEmployee;
+import com.quanlynhakhoa.account.EligibleEmployeeDao;
+import com.quanlynhakhoa.account.EligibleEmployeeService;
 import com.quanlynhakhoa.account.AccountStateService;
 import com.quanlynhakhoa.model.LockSource;
 import com.quanlynhakhoa.security.AuthorizationService;
@@ -54,6 +57,7 @@ public final class AccountPanel extends JPanel {
     private final DesktopSession session;
     private final AccountDirectoryService service;
     private final AccountCreateService creator;
+    private final EligibleEmployeeService eligibleEmployees;
     private final AccountStateService stateService;
     private final boolean configured;
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
@@ -100,6 +104,7 @@ public final class AccountPanel extends JPanel {
         this.session = Objects.requireNonNull(session, "session");
         this.service = Objects.requireNonNull(service, "service");
         this.creator = new AccountCreateService(session, TeamDevConnection::open);
+        this.eligibleEmployees = new EligibleEmployeeService(session, TeamDevConnection::open);
         setLayout(new BorderLayout(0, 16));
         setBackground(new Color(245, 248, 252));
         setBorder(new EmptyBorder(24, 26, 24, 26));
@@ -283,27 +288,91 @@ public final class AccountPanel extends JPanel {
     }
 
     private void createAccount() {
-        if (loading || creating || changingState || !session.isActive()) return;
+        if (!configured || loading || creating || changingState ||
+                !authorization.can(session, Permission.ACCOUNT_MANAGE)) return;
+        creating = true;
+        updateControls();
+        lblStatus.setText("Đang tìm nhân viên chưa có tài khoản...");
+        new SwingWorker<EligibleEmployeeDao.Result, Void>() {
+            @Override protected EligibleEmployeeDao.Result doInBackground() throws Exception {
+                return eligibleEmployees.listEligible();
+            }
+            @Override protected void done() {
+                creating = false;
+                updateControls();
+                if (!session.isActive()) {
+                    lblStatus.setText("Phiên đăng nhập đã kết thúc.");
+                    return;
+                }
+                try {
+                    EligibleEmployeeDao.Result result = get();
+                    if (result.employees().isEmpty()) {
+                        lblStatus.setText("Không có nhân viên đủ điều kiện cấp tài khoản.");
+                        JOptionPane.showMessageDialog(AccountPanel.this,
+                                "Chưa có nhân viên đang làm việc mà chưa có tài khoản.\n"
+                                + "Hãy tạo nhân viên tại Tổ chức → Danh sách nhân viên trước.",
+                                "Không có nhân viên", JOptionPane.INFORMATION_MESSAGE);
+                        return;
+                    }
+                    if (result.truncated()) {
+                        JOptionPane.showMessageDialog(AccountPanel.this,
+                                "Danh sách chỉ hiển thị 200 nhân viên đầu tiên.\n"
+                                + "Nếu không thấy nhân viên cần cấp tài khoản, hãy liên hệ quản trị viên.",
+                                "Danh sách giới hạn", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                    showCreateAccountDialog(result.employees());
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    lblStatus.setText("Không thể tải danh sách nhân viên.");
+                } catch (ExecutionException | CancellationException ex) {
+                    lblStatus.setText("Không thể tải nhân viên. Kiểm tra kết nối và quyền SQL.");
+                    JOptionPane.showMessageDialog(AccountPanel.this,
+                            "Không thể tải danh sách nhân viên đủ điều kiện.",
+                            "Không thể tạo tài khoản", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        }.execute();
+    }
 
-        JTextField txtEmployeeId = new JTextField(16);
+    private void showCreateAccountDialog(List<EligibleEmployee> employees) {
+        if (!authorization.can(session, Permission.ACCOUNT_MANAGE)) return;
+        JComboBox<EligibleEmployee> cmbEmployee =
+                new JComboBox<>(employees.toArray(new EligibleEmployee[0]));
+        cmbEmployee.setRenderer(new DefaultListCellRenderer() {
+            @Override public java.awt.Component getListCellRendererComponent(
+                    javax.swing.JList<?> list, Object value, int index,
+                    boolean selected, boolean focused) {
+                super.getListCellRendererComponent(list, value, index, selected, focused);
+                setText(value instanceof EligibleEmployee employee
+                        ? employee.displayLabel() : "Chọn nhân viên");
+                return this;
+            }
+        });
         JTextField txtUsername = new JTextField(16);
         JTextField txtDisplayName = new JTextField(16);
-        JComboBox<Role> cmbNewRole = new JComboBox<>();
-        for (Role role : Role.values()) {
-            if (role != Role.SYSTEM_ADMIN) cmbNewRole.addItem(role);
-        }
-        cmbNewRole.setRenderer(roleRenderer()); // show Vietnamese; keep Role enum for DB
+        JLabel lblAssignedRole = new JLabel();
+        EligibleEmployee initial = (EligibleEmployee) cmbEmployee.getSelectedItem();
+        if (initial == null) return;
+        txtDisplayName.setText(initial.fullName());
+        lblAssignedRole.setText(roleLabel(initial.role()));
+        cmbEmployee.addActionListener(event -> {
+            EligibleEmployee employee = (EligibleEmployee) cmbEmployee.getSelectedItem();
+            if (employee != null) {
+                txtDisplayName.setText(employee.fullName());
+                lblAssignedRole.setText(roleLabel(employee.role()));
+            }
+        });
         JPasswordField txtPassword = new JPasswordField(16);
         JPasswordField txtConfirmation = new JPasswordField(16);
         JPanel pnlFields = new JPanel(new GridLayout(0, 2, 10, 9));
-        pnlFields.add(new JLabel("Mã nhân viên đang làm việc:"));
-        pnlFields.add(txtEmployeeId);
+        pnlFields.add(new JLabel("Nhân viên chưa có tài khoản:"));
+        pnlFields.add(cmbEmployee);
         pnlFields.add(new JLabel("Tên đăng nhập:"));
         pnlFields.add(txtUsername);
         pnlFields.add(new JLabel("Tên hiển thị:"));
         pnlFields.add(txtDisplayName);
-        pnlFields.add(new JLabel("Vai trò:"));
-        pnlFields.add(cmbNewRole);
+        pnlFields.add(new JLabel("Vai trò theo chức danh:"));
+        pnlFields.add(lblAssignedRole);
         pnlFields.add(new JLabel("Mật khẩu (12–72 byte):"));
         pnlFields.add(txtPassword);
         pnlFields.add(new JLabel("Nhập lại mật khẩu:"));
@@ -320,10 +389,12 @@ public final class AccountPanel extends JPanel {
                         "Dữ liệu chưa hợp lệ", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            String staff = txtEmployeeId.getText().trim();
+            EligibleEmployee employee = (EligibleEmployee) cmbEmployee.getSelectedItem();
+            if (employee == null) return;
+            String staff = employee.employeeId();
             String login = txtUsername.getText().trim();
             String display = txtDisplayName.getText().trim();
-            Role role = (Role) cmbNewRole.getSelectedItem();
+            Role role = employee.role();
             if (staff.isBlank() || login.isBlank() || display.isBlank() || secret.length == 0) {
                 JOptionPane.showMessageDialog(this, "Vui lòng nhập đủ thông tin.",
                         "Dữ liệu chưa hợp lệ", JOptionPane.WARNING_MESSAGE);
