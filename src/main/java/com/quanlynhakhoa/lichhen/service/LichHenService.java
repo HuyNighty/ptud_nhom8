@@ -3,6 +3,7 @@ package com.quanlynhakhoa.lichhen.service;
 import com.quanlynhakhoa.benhnhan.hopdong.BenhNhanTomTat;
 import com.quanlynhakhoa.benhnhan.hopdong.TraCuuBenhNhan;
 import com.quanlynhakhoa.benhnhan.hopdong.TraCuuBenhNhanService;
+import com.quanlynhakhoa.benhnhan.dao.BenhNhanDao;
 import com.quanlynhakhoa.benhnhan.dao.HoSoBenhAnDao;
 import com.quanlynhakhoa.benhnhan.service.DuLieuDaThayDoiException;
 import com.quanlynhakhoa.lichhen.dao.LichHenDao;
@@ -34,6 +35,7 @@ public class LichHenService {
     private final AuthorizationService phanQuyen = new AuthorizationService(new RolePermissionPolicy());
     private final LichHenDao lichHenDao = new LichHenDao();
     private final HoSoBenhAnDao hoSoBenhAnDao = new HoSoBenhAnDao();
+    private final BenhNhanDao benhNhanDao = new BenhNhanDao();
     private final TraCuuBenhNhan traCuuBenhNhan;
 
     public LichHenService(DesktopSession phienDangNhap) {
@@ -217,6 +219,53 @@ public class LichHenService {
         }
     }
 
+    public void xacNhanLichHen(String maLichHen) throws SQLException {
+        phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+        if (maLichHen == null || maLichHen.isBlank()) {
+            throw new IllegalArgumentException("Chọn lịch hẹn cần xác nhận.");
+        }
+
+        try (Connection ketNoi = lichHenDao.moKetNoi()) {
+            ketNoi.setAutoCommit(false);
+            try {
+                LichHen lichHen = layLichHenConDaDat(ketNoi, maLichHen);
+                if (!lichHen.laChoXacNhan()) {
+                    throw new DuLieuDaThayDoiException("Lịch hẹn " + maLichHen + " đã được xác nhận trước đó.");
+                }
+                yeuCauDaCapNhatTrangThai(lichHenDao.doiTrangThai(ketNoi, maLichHen, LichHen.DA_XAC_NHAN, null), maLichHen);
+                lichHenDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Xác nhận lịch hẹn", maLichHen,
+                        "Đã gọi bệnh nhân, bệnh nhân xác nhận sẽ đến");
+
+                phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+                ketNoi.commit();
+            } catch (SQLException | RuntimeException loi) {
+                ketNoi.rollback();
+                throw loi;
+            }
+        }
+    }
+
+    public ArrayList<LichHen> layLichHenHomNay(String tuKhoa) throws SQLException {
+        phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+        if (tuKhoa == null) {
+            tuKhoa = "";
+        }
+        tuKhoa = tuKhoa.trim();
+        if (tuKhoa.length() > 100) {
+            throw new IllegalArgumentException("Từ khóa tìm kiếm tối đa 100 ký tự.");
+        }
+        ArrayList<LichHen> tatCaLichHen = lichHenDao.layDanhSachTheoNgay(LocalDate.now(), tuKhoa);
+        ArrayList<LichHen> danhSachCanTiepNhan = new ArrayList<>();
+        for (LichHen lichHen : tatCaLichHen) {
+            boolean daHuy = LichHen.DA_HUY.equals(lichHen.getTrangThai());
+            boolean daDoiLich = LichHen.DA_DOI_LICH.equals(lichHen.getTrangThai());
+            if (!daHuy && !daDoiLich) {
+                danhSachCanTiepNhan.add(lichHen);
+            }
+        }
+        return danhSachCanTiepNhan;
+    }
+
     public String tiepDonBenhNhan(String maLichHen) throws SQLException {
         phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
         if (maLichHen == null || maLichHen.isBlank()) {
@@ -228,7 +277,7 @@ public class LichHenService {
             try {
                 LichHen lichHen = layLichHenConDaDat(ketNoi, maLichHen);
                 if (!lichHen.getThoiGianHen().toLocalDate().equals(LocalDate.now())) {
-                    throw new IllegalArgumentException("Chỉ tiếp đón bệnh nhân có lịch hẹn hôm nay (lịch này hẹn ngày "
+                    throw new IllegalArgumentException("Chỉ check-in bệnh nhân có lịch hẹn hôm nay (lịch này hẹn ngày "
                             + lichHen.getThoiGianHen().format(DINH_DANG_NGAY_GIO) + ").");
                 }
 
@@ -236,16 +285,13 @@ public class LichHenService {
                     throw new IllegalArgumentException("Bệnh nhân đang có lượt khám chưa hoàn tất.");
                 }
 
-                String maHoSo = hoSoBenhAnDao.timMaHoSo(ketNoi, lichHen.getMaBenhNhan());
-                if (maHoSo == null) {
-                    throw new IllegalArgumentException("Bệnh nhân " + lichHen.getMaBenhNhan()
-                            + " chưa có hồ sơ bệnh án. Mở màn hình Bệnh nhân, bấm Sửa rồi Lưu để tạo hồ sơ.");
-                }
+                String maHoSo = layHoacTaoMaHoSo(ketNoi, lichHen.getMaBenhNhan());
 
                 String maPhieuKham = lichHenDao.taoMaPhieuKhamMoi(ketNoi);
-                lichHenDao.themLuotKhamChoKham(ketNoi, maPhieuKham, lichHen, maHoSo, LocalDateTime.now());
+                lichHenDao.themLuotKhamChoKham(ketNoi, maPhieuKham, lichHen.getMaBenhNhan(), maHoSo,
+                        lichHen.getMaBacSi(), maLichHen, LocalDateTime.now(), lichHen.getLyDoHen());
                 yeuCauDaCapNhatTrangThai(lichHenDao.doiTrangThai(ketNoi, maLichHen, LichHen.DA_DEN, null), maLichHen);
-                lichHenDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Tiếp đón bệnh nhân", maLichHen,
+                lichHenDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Check-in bệnh nhân", maLichHen,
                         "Tạo lượt khám " + maPhieuKham + " (Chờ khám), bác sĩ " + lichHen.getMaBacSi());
 
                 phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
@@ -256,6 +302,100 @@ public class LichHenService {
                 throw loi;
             }
         }
+    }
+
+    public ArrayList<BenhNhanTomTat> timBenhNhanDeTiepNhan(String tuKhoa) throws SQLException {
+        phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+        return traCuuBenhNhan.timBenhNhan(tuKhoa);
+    }
+
+    public ArrayList<BacSi> layBacSiDangTrongCa() throws SQLException {
+        phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+        ArrayList<BacSi> tatCaBacSi = lichHenDao.layDanhSachBacSi();
+        ArrayList<BacSi> danhSachBacSiTrongCa = new ArrayList<>();
+        LocalDateTime bayGio = LocalDateTime.now();
+
+        try (Connection ketNoi = lichHenDao.moKetNoi()) {
+            for (BacSi bacSi : tatCaBacSi) {
+                if (dangTrongCa(ketNoi, bacSi.getMaNhanVien(), bayGio)) {
+                    int soNguoiDangCho = lichHenDao.demNguoiDangCho(ketNoi, bacSi.getMaNhanVien(), bayGio.toLocalDate());
+                    bacSi.setSoNguoiDangCho(soNguoiDangCho);
+                    danhSachBacSiTrongCa.add(bacSi);
+                }
+            }
+        }
+        return danhSachBacSiTrongCa;
+    }
+
+    public String tiepNhanKhongHen(String maBenhNhan, String maBacSi, String lyDoDen) throws SQLException {
+        phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+        if (maBenhNhan == null || maBenhNhan.isBlank()) {
+            throw new IllegalArgumentException("Chọn bệnh nhân.");
+        }
+        if (maBacSi == null || maBacSi.isBlank()) {
+            throw new IllegalArgumentException("Chọn bác sĩ.");
+        }
+        lyDoDen = kiemTraLyDo(lyDoDen, true);
+
+        BenhNhanTomTat benhNhan = traCuuBenhNhan.layTheoMa(maBenhNhan);
+        if (benhNhan == null) {
+            throw new IllegalArgumentException("Bệnh nhân " + maBenhNhan + " không còn tồn tại, hãy chọn lại.");
+        }
+
+        LocalDateTime bayGio = LocalDateTime.now();
+        try (Connection ketNoi = lichHenDao.moKetNoi()) {
+            ketNoi.setAutoCommit(false);
+            try {
+                if (!dangTrongCa(ketNoi, maBacSi, bayGio)) {
+                    throw new IllegalArgumentException("Bác sĩ đã chọn hiện không trong ca làm việc. Hãy chọn bác sĩ khác.");
+                }
+
+                String maLichHenHomNay = lichHenDao.timLichHenChuaDenTrongNgay(ketNoi, maBenhNhan, bayGio.toLocalDate());
+                if (maLichHenHomNay != null) {
+                    throw new IllegalArgumentException("Bệnh nhân có lịch hẹn hôm nay (" + maLichHenHomNay
+                            + "). Hãy chọn lịch hẹn đó trong bảng và bấm \"Check-in\".");
+                }
+
+                if (lichHenDao.demLuotKhamDangMo(ketNoi, maBenhNhan) > 0) {
+                    throw new IllegalArgumentException("Bệnh nhân đang có lượt khám chưa hoàn tất.");
+                }
+
+                String maHoSo = layHoacTaoMaHoSo(ketNoi, maBenhNhan);
+                String maPhieuKham = lichHenDao.taoMaPhieuKhamMoi(ketNoi);
+                lichHenDao.themLuotKhamChoKham(ketNoi, maPhieuKham, maBenhNhan, maHoSo, maBacSi, null, bayGio, lyDoDen);
+                lichHenDao.ghiNhatKyTiepNhan(ketNoi, phienDangNhap.accountId(), maPhieuKham,
+                        "Bệnh nhân " + maBenhNhan + ", bác sĩ " + maBacSi + ", lý do: " + lyDoDen);
+
+                phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+                ketNoi.commit();
+                return maPhieuKham;
+            } catch (SQLException | RuntimeException loi) {
+                ketNoi.rollback();
+                throw loi;
+            }
+        }
+    }
+
+    private boolean dangTrongCa(Connection ketNoi, String maBacSi, LocalDateTime thoiDiem) throws SQLException {
+        ArrayList<LocalTime[]> danhSachCa = lichHenDao.layCaLamViec(ketNoi, maBacSi, thoiDiem.toLocalDate());
+        for (LocalTime[] motCa : danhSachCa) {
+            LocalTime gioBatDauCa = motCa[0];
+            LocalTime gioKetThucCa = motCa[1];
+            LocalTime gioHienTai = thoiDiem.toLocalTime();
+            if (!gioHienTai.isBefore(gioBatDauCa) && gioHienTai.isBefore(gioKetThucCa)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String layHoacTaoMaHoSo(Connection ketNoi, String maBenhNhan) throws SQLException {
+        String maHoSo = hoSoBenhAnDao.timMaHoSo(ketNoi, maBenhNhan);
+        if (maHoSo == null) {
+            maHoSo = benhNhanDao.taoMaHoSoMoi(ketNoi);
+            benhNhanDao.themHoSoBenhAn(ketNoi, maHoSo, maBenhNhan);
+        }
+        return maHoSo;
     }
 
     private void kiemTraBacSiVaNgay(String maBacSi, LocalDate ngay) {
@@ -337,7 +477,7 @@ public class LichHenService {
         }
         if (!lichHen.laDaDat()) {
             throw new DuLieuDaThayDoiException("Lịch hẹn " + maLichHen + " đang ở trạng thái \""
-                    + lichHen.getTrangThaiHienThi() + "\", chỉ lịch \"Đã đặt\" mới được đổi hoặc hủy.");
+                    + lichHen.getTrangThaiHienThi() + "\", chỉ lịch \"Chờ xác nhận\" hoặc \"Đã xác nhận\" mới được thao tác.");
         }
         return lichHen;
     }

@@ -126,6 +126,10 @@ public class LichHen {
         return false;
     }
 
+    public boolean laChoXacNhan() {
+        return CHO_XAC_NHAN.equals(trangThai);
+    }
+
     public boolean duocTiepDon() {
         if (!laDaDat()) {
             return false;
@@ -135,10 +139,10 @@ public class LichHen {
 
     public String getTrangThaiHienThi() {
         if (CHO_XAC_NHAN.equals(trangThai)) {
-            return "Đã đặt";
+            return "Chờ xác nhận";
         }
         if (DA_XAC_NHAN.equals(trangThai)) {
-            return "Đã đặt (đã xác nhận)";
+            return "Đã xác nhận";
         }
         if (DA_DEN.equals(trangThai)) {
             return "Đã đến";

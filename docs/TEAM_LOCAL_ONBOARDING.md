@@ -40,6 +40,22 @@ The local configuration stores a machine-specific SQL login password as **plaint
 4. Username: `dev.admin`; password: **the Swing password you personally set during setup** (not the SQL admin password). Successful login opens MainFrame.
 5. Repeat Run later: no additional setup or PowerShell prompt needed as long as SQL Server is running on the same port and the local configuration exists.
 
+## Sau mỗi lần cập nhật `main` hoặc tạo nhánh mới từ `main`
+
+Mỗi module mới (Bệnh nhân, Lịch hẹn, Hóa đơn, Nhân viên, Phiếu khám…) cần thêm quyền SQL cho tài khoản ứng dụng `n08dev_*`. Nếu thiếu, app vẫn đăng nhập được nhưng mở màn hình sẽ báo lỗi SQL hoặc lỗi quyền.
+
+```powershell
+git checkout main
+git pull origin main
+.\scripts\grant-dev-all.ps1 -Check            # chỉ xem, liệt kê dòng THIEU
+.\scripts\grant-dev-all.ps1 -Apply            # cấp đúng những quyền còn thiếu
+```
+
+- Script hỏi mật khẩu tài khoản quản trị SQL đã dùng khi chạy `setup-local.ps1` (mặc định `sa`, đổi bằng `-SqlAdminUser`). Dùng Windows Authentication thì thêm `-WindowsAuth`.
+- Chỉ cấp SELECT, INSERT và UPDATE theo cột mà các DAO đang dùng; không cấp DELETE, không cho `db_owner`, không đổi dữ liệu hay cấu trúc bảng. Chạy lại nhiều lần vẫn an toàn.
+- Module nào thêm câu SQL mới trên bảng hoặc cột mới thì người làm module cập nhật danh sách trong `scripts/grant-dev-all.ps1` cùng Pull Request đó.
+- Không đánh dấu `skip-worktree` hoặc sửa riêng trên máy các file chung như `FeatureBootstrap.java`; khi `main` thêm màn hình mới, bản sửa riêng sẽ che mất các màn hình đó.
+
 Optional verification before IntelliJ Run:
 
 ```powershell
@@ -58,7 +74,8 @@ Optional verification before IntelliJ Run:
 | App says config missing | Check IntelliJ working directory, run setup once |
 | App says DB connection failed | Check local port, SQL login and password file; no need to reset Git |
 | Login rejected | Use `dev.admin` + chosen Swing password, not SQL login password; 5 wrong attempts may trigger temporary account lock |
-| Missing feature SQL permission | Expected for M0; feature owner + Core owner must approve a new grant/schema migration |
+| Mở màn hình báo lỗi SQL / thiếu quyền | Chạy `.\scripts\grant-dev-all.ps1 -Check` rồi `-Apply` |
+| Menu có mục nhưng mở ra trang trống | Chạy `git ls-files -v | findstr "^S"`; nếu có file bị `skip-worktree` thì gỡ bằng `git update-index --no-skip-worktree <file>` rồi `git checkout -- <file>` |
 
 ## Explicit limitations
 
