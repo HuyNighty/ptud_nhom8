@@ -12,7 +12,7 @@ import javax.swing.*;
 /** Collection workspace: compact invoice picker, collection form and history, not an invoice list clone. */
 public final class PaymentPanel extends JPanel implements RefreshableFeature {
     public final JTextField txtTimHoaDon=new JTextField(22);
-    public final JButton btnTim=new JButton("Tìm hóa đơn còn nợ"),btnTaiLai=new JButton("Tải lại");
+    public final JButton btnTim=new JButton("Tìm hóa đơn"),btnTaiLai=new JButton("Làm mới");
     public final JComboBox<BillingChoice> cmbHoaDon=new JComboBox<>();
     public final JLabel lblTrangThai=new JLabel("Tìm mã hóa đơn, mã/tên/số điện thoại bệnh nhân; chọn chứng từ để thu tiền.");
     private final JPanel pnlCollection=new JPanel(new BorderLayout());
@@ -21,10 +21,10 @@ public final class PaymentPanel extends JPanel implements RefreshableFeature {
         new AuthorizationService(new RolePermissionPolicy()).require(session,Permission.BILLING_MANAGE);
         setLayout(new BorderLayout(12,12));setBorder(BorderFactory.createEmptyBorder(16,16,16,16));
         JLabel lblTitle=new JLabel("THANH TOÁN");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
-        JPanel pnlSearch=new JPanel(new FlowLayout(FlowLayout.LEFT));pnlSearch.add(txtTimHoaDon);pnlSearch.add(btnTim);pnlSearch.add(btnTaiLai);
-        cmbHoaDon.setPrototypeDisplayValue(new BillingChoice("HD00000000","Bệnh nhân · Còn nợ 999.999.999 ₫"));pnlSearch.add(cmbHoaDon);
+        cmbHoaDon.setPrototypeDisplayValue(new BillingChoice("HD00000000","Bệnh nhân · Còn nợ 999.999.999 ₫"));
+        JPanel pnlSearch=BillingUi.filters(BillingUi.field("Mã hóa đơn / bệnh nhân / SĐT",txtTimHoaDon),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)),BillingUi.field("Chọn hóa đơn còn nợ",cmbHoaDon));
         JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);pnlTop.add(pnlSearch,BorderLayout.CENTER);pnlTop.add(lblTrangThai,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
-        pnlCollection.add(new JLabel("Chưa chọn hóa đơn để thu tiền.",SwingConstants.CENTER));add(pnlCollection,BorderLayout.CENTER);
+        pnlCollection.add(new PaymentForm());add(pnlCollection,BorderLayout.CENTER);
         controller=new PaymentScreenController(this,session,connections);
         BillingUi.style(this);
     }

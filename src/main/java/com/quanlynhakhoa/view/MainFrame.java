@@ -270,7 +270,9 @@ public final class MainFrame extends JFrame {
             if(pnlPage instanceof com.quanlynhakhoa.billing.ui.DebtPanel debts)debts.setPaymentNavigation(paymentNavigation);
             JPanel pnlSlot = slots.get(module);
             pnlSlot.removeAll();
-            pnlSlot.add(scroll(pnlPage), BorderLayout.CENTER);
+            // Responsive business pages own their table/long-content scrolling.
+            pnlSlot.add(pnlPage instanceof com.quanlynhakhoa.features.RefreshableFeature
+                    ? pnlPage : scroll(pnlPage), BorderLayout.CENTER);
             pnlSlot.revalidate();
             pnlSlot.repaint();
             loaded.add(module);

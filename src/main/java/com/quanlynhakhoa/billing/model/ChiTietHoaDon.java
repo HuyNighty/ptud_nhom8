@@ -3,7 +3,10 @@ package com.quanlynhakhoa.billing.model;
 import java.math.BigDecimal;
 
 public record ChiTietHoaDon(int maChiTiet, String maHoaDon, String maDichVu, String maThuoc,
-                            String maVatTu, int soLuong, BigDecimal donGiaApDung) {
+                            String maVatTu, int soLuong, BigDecimal donGiaApDung, String tenHang) {
+    public ChiTietHoaDon(int id,String invoice,String service,String medicine,String material,int quantity,BigDecimal price){
+        this(id,invoice,service,medicine,material,quantity,price,null);
+    }
     public ChiTietHoaDon {
         int kinds = (maDichVu == null ? 0 : 1) + (maThuoc == null ? 0 : 1) + (maVatTu == null ? 0 : 1);
         if (kinds != 1 || soLuong <= 0 || donGiaApDung == null || donGiaApDung.signum() < 0
@@ -14,4 +17,5 @@ public record ChiTietHoaDon(int maChiTiet, String maHoaDon, String maDichVu, Str
     public BigDecimal thanhTien() { return donGiaApDung.multiply(BigDecimal.valueOf(soLuong)); }
     public String loaiHang() { return maDichVu != null ? "Dịch vụ" : maThuoc != null ? "Thuốc" : "Vật tư"; }
     public String maHang() { return maDichVu != null ? maDichVu : maThuoc != null ? maThuoc : maVatTu; }
+    public String tenHienThi() { return tenHang==null||tenHang.isBlank()?maHang():tenHang; }
 }

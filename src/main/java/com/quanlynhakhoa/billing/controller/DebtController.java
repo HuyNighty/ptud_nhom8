@@ -24,22 +24,22 @@ public final class DebtController {
         Task(){super(DebtController.this.session);}
         protected void finished(){busy=false;view.busy(false);}
         protected void expired(){view.expired();}
-        protected void failed(Throwable failure){view.lblTrangThai.setText(BillingUi.error(failure));if(reloadPending){reloadPending=false;load();}}
+        protected void failed(Throwable failure){view.failed(BillingUi.error(failure));if(reloadPending){reloadPending=false;load();}}
         protected void next(){if(reloadPending){reloadPending=false;load();}}
     }
     public void load(){
         if(busy){reloadPending=true;return;}if(!session.isActive()){view.expired();return;}
         final String keyword=view.txtTuKhoa.getText();final LocalDate from,to;
-        try{from=date(view.txtTuNgay.getText());to=date(view.txtDenNgay.getText());}catch(RuntimeException e){view.lblTrangThai.setText("Ngày phải có dạng yyyy-MM-dd và tồn tại.");return;}
-        busy=true;view.busy(true);
+        try{from=date(view.txtTuNgay.getText());to=date(view.txtDenNgay.getText());}catch(RuntimeException e){view.lblTrangThai.setText("Ngày phải có dạng dd/MM/yyyy và tồn tại.");return;}
+        busy=true;view.busy(true);view.loading();
         new Task<List<PatientDebt>>(){
             protected List<PatientDebt> doInBackground()throws Exception{return DebtService.byPatient(invoices.find(keyword,from,to,null));}
-            protected void succeeded(List<PatientDebt> rows){busy=true;view.showPatients(rows);busy=false;view.lblTrangThai.setText(rows.isEmpty()?"Không có khoản còn phải thu phù hợp.":"Chọn bệnh nhân rồi chọn hóa đơn để xem chi tiết hoặc thu nợ.");next();}
+            protected void succeeded(List<PatientDebt> rows){busy=true;view.showPatients(rows);busy=false;view.lblTrangThai.setText(rows.isEmpty()?"Tổng hợp theo bộ lọc ngày lập hóa đơn hiện tại.":"Chọn bệnh nhân rồi chọn hóa đơn để xem chi tiết hoặc thu nợ.");next();}
         }.execute();
     }
     private void detail(){final String id=view.selectedInvoice();if(id==null)return;busy=true;view.busy(true);new Task<ChiTietBilling>(){
         protected ChiTietBilling doInBackground()throws Exception{return invoices.detail(id);}
         protected void succeeded(ChiTietBilling value){if(id.equals(view.selectedInvoice()))view.showDetail(value);next();}
     }.execute();}
-    private static LocalDate date(String text){return text==null||text.isBlank()?null:LocalDate.parse(text.trim());}
+    private static LocalDate date(String text){return BillingUi.parseDate(text);}
 }

@@ -29,19 +29,22 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.featu
     private final JLabel lblTongCongNo = new JLabel("Tổng công nợ theo bộ lọc: —");
     private final JTextField txtTuKhoa = new JTextField(15), txtTuNgay = new JTextField(10), txtDenNgay = new JTextField(10);
     private final JComboBox<Object> cmbTrangThai = new JComboBox<>();
-    private final JButton btnTim = new JButton("Tìm"), btnTaiLai = new JButton("Tải lại");
+    private final JButton btnTim = new JButton("Tìm"), btnTaiLai = new JButton("Làm mới");
     private final JButton btnTaoHoaDon = new JButton("Tạo hóa đơn");
     private final boolean canCreate;
     private final JLabel lblTrangThai = new JLabel("Chọn hóa đơn để xem chi tiết."), lblTongTien = new JLabel("Tổng: —");
     private final JLabel lblDaThu = new JLabel("Đã thu: —"), lblConNo = new JLabel("Còn nợ: —"), lblCongNoBenhNhan = new JLabel("Công nợ BN: —");
     private final JLabel lblCanhBao = new JLabel(" ");
+    private final JLabel lblCanhBaoDanhSach=new JLabel(" ");
     private final DefaultTableModel invoiceModel = BillingUi.model("Mã hóa đơn", "Mã BN", "Bệnh nhân", "Ngày lập", "Trạng thái", "Tổng tiền", "Đã thu", "Còn nợ", "Đối soát");
-    private final DefaultTableModel lineModel = BillingUi.model("Mã dòng", "Loại", "Mã hàng", "Số lượng", "Giá chốt", "Thành tiền");
+    private final DefaultTableModel lineModel = BillingUi.model("Loại", "Mã hàng", "Tên dịch vụ / hàng", "Số lượng", "Đơn giá đã chốt", "Thành tiền");
     private final DefaultTableModel paymentModel = BillingUi.model("Mã thu", "Thời gian", "Số tiền", "Phương thức", "Mã giao dịch", "Khách đưa", "Trạng thái", "Nhân viên", "TK hủy", "Lúc hủy", "Lý do hủy");
     private final JTable tblHoaDon = BillingUi.table(invoiceModel), tblChiTietHoaDon = BillingUi.table(lineModel), tblThanhToan = BillingUi.table(paymentModel);
     private final HoaDonController controller;
     private List<HoaDon> rows = List.of();
     private boolean loaded;
+    private boolean working;
+    private HoaDon selectedDetail;
 
     public HoaDonPanel(DesktopSession session) { this(session, TeamDevConnection::open); }
     public HoaDonPanel(DesktopSession session, ConnectionProvider connections) {
@@ -77,31 +80,29 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.featu
         for (int column = 0; column < tblThanhToan.getColumnCount(); column++) {
             tblThanhToan.getColumnModel().getColumn(column).setPreferredWidth(column == 10 ? 260 : 150);
         }
-        JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        pnlFilter.add(new JLabel("Mã HĐ / mã, tên BN")); pnlFilter.add(txtTuKhoa);
-        pnlFilter.add(new JLabel("Từ (yyyy-MM-dd)")); pnlFilter.add(txtTuNgay);
-        pnlFilter.add(new JLabel("Đến")); pnlFilter.add(txtDenNgay); pnlFilter.add(cmbTrangThai); pnlFilter.add(btnTim); pnlFilter.add(btnTaiLai);
-        JPanel pnlActions=new JPanel(new FlowLayout(FlowLayout.LEFT));
-        pnlActions.add(btnTaoHoaDon);pnlActions.add(btnThanhToan);pnlActions.add(btnYeuCauHuy);
-        JPanel pnlToolbar=new JPanel(new BorderLayout());pnlToolbar.add(pnlFilter,BorderLayout.NORTH);pnlToolbar.add(pnlActions,BorderLayout.SOUTH);
+        JPanel pnlFilter = BillingUi.filters(BillingUi.field("Hóa đơn / bệnh nhân / SĐT",txtTuKhoa),BillingUi.dateField(txtTuNgay,"Ngày lập từ"),BillingUi.dateField(txtDenNgay,"Đến ngày"),BillingUi.field("Trạng thái",cmbTrangThai),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)));
+        JPanel pnlActions=BillingUi.actions(BillingUi.primary(btnTaoHoaDon),btnThanhToan,BillingUi.danger(btnYeuCauHuy));
+        // Keep reconciliation in the model/service; show an explained warning only when needed.
+        tblHoaDon.removeColumn(tblHoaDon.getColumnModel().getColumn(8));
+        JPanel pnlToolbar=new JPanel(new BorderLayout(0,8));pnlToolbar.add(pnlFilter,BorderLayout.NORTH);pnlToolbar.add(pnlActions,BorderLayout.SOUTH);lblCanhBaoDanhSach.setVisible(false);pnlToolbar.add(lblCanhBaoDanhSach,BorderLayout.CENTER);
         pnlTop.add(pnlToolbar, BorderLayout.SOUTH); add(pnlTop, BorderLayout.NORTH);
-        JScrollPane scrHoaDon = BillingUi.scroll(tblHoaDon); scrHoaDon.setPreferredSize(new Dimension(1050, 240));
+        JScrollPane scrHoaDon = BillingUi.scroll(tblHoaDon);
         JScrollPane scrChiTiet = BillingUi.scroll(tblChiTietHoaDon), scrThanhToan = BillingUi.scroll(tblThanhToan);
-        JTabbedPane tabBilling = new JTabbedPane(); tabBilling.addTab("Chi tiết · giá tại thời điểm lập", scrChiTiet); tabBilling.addTab("Lịch sử thanh toán", scrThanhToan);
-        tabBilling.setPreferredSize(new Dimension(1050, 200));
-        JPanel pnlBody = new JPanel(new BorderLayout(0, 8)); pnlBody.add(scrHoaDon, BorderLayout.NORTH); pnlBody.add(tabBilling, BorderLayout.CENTER);
-        add(pnlBody, BorderLayout.CENTER);
-        JPanel pnlBottom = new JPanel(new GridLayout(0, 1, 0, 6));
-        JPanel pnlTotals = new JPanel(new GridLayout(1, 4, 12, 0));
-        pnlTotals.add(lblTongTien); pnlTotals.add(lblDaThu); pnlTotals.add(lblConNo);
+        JTabbedPane tabBilling = new JTabbedPane(); tabBilling.addTab("Chi tiết hóa đơn", scrChiTiet); tabBilling.addTab("Lịch sử thanh toán", scrThanhToan);
+        add(BillingUi.split(JSplitPane.VERTICAL_SPLIT,scrHoaDon,tabBilling,.58), BorderLayout.CENTER);
+        JPanel pnlBottom = new JPanel(new BorderLayout(0,6));
+        JPanel pnlTotals = new JPanel(new GridLayout(1, 3, 12, 0));
+        pnlTotals.add(BillingUi.card("Tổng tiền hóa đơn đang chọn",lblTongTien)); pnlTotals.add(BillingUi.card("Đã thu · hóa đơn đang chọn",lblDaThu)); pnlTotals.add(BillingUi.card("Còn nợ · hóa đơn đang chọn",lblConNo));
         if(mode==ViewMode.DEBTS)pnlTotals.add(lblTongCongNo);
-        pnlBottom.add(pnlTotals); pnlBottom.add(lblCanhBao);
-        if(mode==ViewMode.DEBTS)pnlBottom.add(new JLabel("Chỉ hiện hóa đơn chưa hủy, còn phải thu > 0; tổng tính trên kết quả lọc hiện tại."));
-        pnlBottom.add(new JLabel("Thu tiền mặt/chuyển khoản/phối hợp; kiểm tra đã nhận tiền thực tế trước khi xác nhận."));
-        pnlBottom.add(lblTrangThai); add(pnlBottom, BorderLayout.SOUTH);
+        pnlBottom.add(pnlTotals,BorderLayout.NORTH);pnlBottom.add(lblCanhBao,BorderLayout.CENTER);
+        pnlBottom.add(lblTrangThai,BorderLayout.SOUTH); add(pnlBottom, BorderLayout.SOUTH);
         controller = new HoaDonController(this, session, source == null || ids == null
                 ? new HoaDonService(session, connections) : new HoaDonService(session, connections, source, ids));
         BillingUi.style(this);
+        BillingUi.columns(tblHoaDon,110,85,290,110,180,150,150,150);BillingUi.dateColumn(tblHoaDon,3);
+        BillingUi.columns(tblChiTietHoaDon,85,100,330,85,160,165);
+        BillingUi.tableState(tblChiTietHoaDon,"Chọn hóa đơn để xem chi tiết.");BillingUi.tableState(tblThanhToan,"Chọn hóa đơn để xem lịch sử thanh toán.");
+        updateActions();
     }
     @Override public void addNotify() {
         super.addNotify();
@@ -156,17 +157,21 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.featu
         for (HoaDon value : rows) invoiceModel.addRow(new Object[]{value.maHoaDon(), value.maBenhNhan(), value.tenBenhNhan(),
                 value.ngayLap(), value.trangThai(), value.tongTien(), value.daThu(), value.conNo(), value.canhBao()});
         clearDetail();
+        int warnings=0;for(HoaDon invoice:values)if(invoice.canhBao().startsWith("BẤT NHẤT"))warnings++;
+        lblCanhBaoDanhSach.setText(warnings+" hóa đơn có số tiền hoặc trạng thái cần đối soát. Chọn hóa đơn để xem cảnh báo.");lblCanhBaoDanhSach.setForeground(new Color(147,69,20));lblCanhBaoDanhSach.setVisible(warnings>0);
         java.math.BigDecimal debt=java.math.BigDecimal.ZERO;
         for(HoaDon h:values)debt=debt.add(h.noTheoDoi());
         lblTongCongNo.setText("Tổng công nợ theo bộ lọc: "+BillingUi.vnd(debt));
     }
     public void clearDetail() {
+        selectedDetail=null;updateActions();
         lineModel.setRowCount(0); paymentModel.setRowCount(0);
-        lblTongTien.setText("Tổng: —"); lblDaThu.setText("Đã thu: —"); lblConNo.setText("Còn nợ: —"); lblCongNoBenhNhan.setText("Công nợ BN: —"); lblCanhBao.setText(" ");
+        BillingUi.tableState(tblChiTietHoaDon,"Chọn hóa đơn để xem chi tiết.");BillingUi.tableState(tblThanhToan,"Chọn hóa đơn để xem lịch sử thanh toán.");
+        lblTongTien.setText("Tổng: —"); lblDaThu.setText("Đã thu: —"); lblConNo.setText("Còn nợ: —"); lblCongNoBenhNhan.setText("Công nợ BN: —"); lblCanhBao.setText(" ");lblCanhBao.setVisible(false);
     }
     public void showDetail(ChiTietBilling value) {
         clearDetail();
-        for (ChiTietHoaDon line : value.chiTiet()) lineModel.addRow(new Object[]{line.maChiTiet(), line.loaiHang(), line.maHang(), line.soLuong(), line.donGiaApDung(), line.thanhTien()});
+        for (ChiTietHoaDon line : value.chiTiet()) lineModel.addRow(new Object[]{line.loaiHang(), line.maHang(), line.tenHienThi(), line.soLuong(), line.donGiaApDung(), line.thanhTien()});
         for (ThanhToan payment : value.thanhToan()) paymentModel.addRow(new Object[]{payment.maThanhToan(), payment.thoiGian(),
                 payment.soTien(), payment.phuongThuc(), payment.maGiaoDich(), payment.tienKhachDua(), payment.trangThai(),
                 payment.maNhanVien(), payment.maTaiKhoanHuy(), BillingUi.time(payment.thoiGianHuy()), payment.lyDoHuy()});
@@ -174,13 +179,18 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.featu
         lblTongTien.setText("Tổng: " + BillingUi.vnd(invoice.tongTien())); lblDaThu.setText("Đã thu: " + BillingUi.vnd(invoice.daThu()));
         lblConNo.setText("Còn nợ: " + BillingUi.vnd(invoice.conNo())); lblCongNoBenhNhan.setText("Công nợ BN: " + BillingUi.vnd(invoice.congNoBenhNhan()));
         lblCanhBao.setText(invoice.canhBao());
+        lblCanhBao.setToolTipText("Đã thu và tổng chi tiết được đối chiếu với trạng thái chứng từ. Cần kiểm tra trước khi thu nếu có bất nhất.");
+        lblCanhBao.setVisible(!invoice.canhBao().isBlank());
+        selectedDetail=invoice;updateActions();
+        BillingUi.tableState(tblChiTietHoaDon,"Hóa đơn chưa có dòng chi tiết.");BillingUi.tableState(tblThanhToan,"Chưa có khoản thanh toán.");
     }
     public void setBusy(boolean busy) {
+        working=busy;
         for (Component control : new Component[]{txtTuKhoa, txtTuNgay, txtDenNgay, cmbTrangThai, btnTim, btnTaiLai, tblHoaDon}) control.setEnabled(!busy);
         btnTaoHoaDon.setEnabled(!busy && canCreate);
-        btnThanhToan.setEnabled(!busy && canPay);
-        btnYeuCauHuy.setEnabled(!busy&&canRequestCancellation);
+        updateActions();
     }
-    public void status(String text) { lblTrangThai.setText(text); }
+    private void updateActions(){boolean valid=selectedDetail!=null&&selectedDetail.maHoaDon().equals(selectedId())&&selectedDetail.trangThai()!=TrangThaiHoaDon.DA_HUY;btnThanhToan.setEnabled(!working&&valid&&canPay&&selectedDetail.conNo().signum()>0&&selectedDetail.canhBao().isEmpty());btnYeuCauHuy.setEnabled(!working&&valid&&canRequestCancellation);}
+    public void status(String text) { lblTrangThai.setText(text);lblTrangThai.setToolTipText(text);BillingUi.tableState(tblHoaDon,text);if(invoiceModel.getRowCount()==0&&(text.startsWith("Chưa có hóa đơn")||text.startsWith("Không tìm thấy")))lblTrangThai.setText("Dùng bộ lọc hoặc Tạo hóa đơn để tiếp tục."); }
     public void expired() { showRows(List.of()); setBusy(true); status("Phiên đã đăng xuất."); }
 }

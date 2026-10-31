@@ -14,11 +14,13 @@ import javax.swing.table.DefaultTableModel;
 public final class CancellationPanel extends JPanel implements RefreshableFeature {
     public final JTextField txtTuKhoa=new JTextField(14),txtTuNgay=new JTextField(10),txtDenNgay=new JTextField(10);
     public final JComboBox<Object> cmbTrangThai=new JComboBox<>();
-    public final JButton btnTim=new JButton("Tìm"),btnTaiLai=new JButton("Tải lại"),btnDuyet=new JButton("Duyệt hủy"),btnTuChoi=new JButton("Từ chối");
+    public final JButton btnTim=new JButton("Tìm"),btnTaiLai=new JButton("Làm mới"),btnDuyet=new JButton("Duyệt hủy"),btnTuChoi=new JButton("Từ chối");
+    public final JButton btnThuLai=new JButton("Thử lại");
     public final JTextArea txaThongTin=new JTextArea(4,50),txaLyDoDuyet=new JTextArea(3,45);
-    public final JLabel lblTrangThai=new JLabel("Chọn một yêu cầu để kiểm tra hóa đơn và lịch sử thu trước khi xét duyệt.");
+    public final JLabel lblTrangThai=new JLabel("Lọc yêu cầu hủy theo ngày gửi và trạng thái.");
+    private final JLabel lblSoKyTu=new JLabel("0/500 ký tự · Bắt buộc khi từ chối");
     private final DefaultTableModel requestModel=BillingUi.model("Mã yêu cầu","Hóa đơn","Bệnh nhân","Tổng tiền","Đã thu","Người gửi","Thời điểm gửi","Trạng thái","Lý do yêu cầu");
-    private final DefaultTableModel lineModel=BillingUi.model("Loại","Mã hàng","Số lượng","Giá chốt","Thành tiền");
+    private final DefaultTableModel lineModel=BillingUi.model("Loại","Mã hàng","Tên dịch vụ / hàng","Số lượng","Đơn giá đã chốt","Thành tiền");
     private final DefaultTableModel paymentModel=BillingUi.model("Mã thu","Thời gian","Số tiền","Phương thức","Tham chiếu","Trạng thái");
     public final JTable tblYeuCau=BillingUi.table(requestModel);
     private final CancellationController controller;private List<YeuCauHuyHoaDon> rows=List.of();private boolean loaded;
@@ -28,29 +30,38 @@ public final class CancellationPanel extends JPanel implements RefreshableFeatur
         JLabel lblTitle=new JLabel("DUYỆT HỦY HÓA ĐƠN");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
         JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);
         cmbTrangThai.addItem("Tất cả");for(YeuCauHuyHoaDon.TrangThai status:YeuCauHuyHoaDon.TrangThai.values())cmbTrangThai.addItem(status);
-        JPanel pnlFilter=new JPanel(new FlowLayout(FlowLayout.LEFT));pnlFilter.add(new JLabel("Yêu cầu/HĐ/BN/người gửi"));pnlFilter.add(txtTuKhoa);pnlFilter.add(new JLabel("Từ yyyy-MM-dd"));pnlFilter.add(txtTuNgay);pnlFilter.add(new JLabel("Đến"));pnlFilter.add(txtDenNgay);pnlFilter.add(cmbTrangThai);pnlFilter.add(btnTim);pnlFilter.add(btnTaiLai);pnlTop.add(pnlFilter,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
-        JScrollPane scrRequests=BillingUi.scroll(tblYeuCau);scrRequests.setPreferredSize(new Dimension(1150,220));
-        JTabbedPane tabDetails=new JTabbedPane();tabDetails.addTab("Chi tiết hóa đơn",BillingUi.scroll(BillingUi.table(lineModel)));tabDetails.addTab("Lịch sử thanh toán",BillingUi.scroll(BillingUi.table(paymentModel)));tabDetails.setPreferredSize(new Dimension(1150,170));
-        JPanel pnlCenter=new JPanel(new BorderLayout(0,8));pnlCenter.add(scrRequests,BorderLayout.NORTH);pnlCenter.add(tabDetails,BorderLayout.CENTER);add(pnlCenter,BorderLayout.CENTER);
+        JPanel pnlFilter=BillingUi.filters(BillingUi.field("Yêu cầu / hóa đơn / người gửi",txtTuKhoa),BillingUi.dateField(txtTuNgay,"Ngày gửi từ"),BillingUi.dateField(txtDenNgay,"Đến ngày"),BillingUi.field("Trạng thái yêu cầu",cmbTrangThai),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)));pnlTop.add(pnlFilter,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
+        JScrollPane scrRequests=BillingUi.scroll(tblYeuCau);
+        JTabbedPane tabDetails=new JTabbedPane();
         txaThongTin.setEditable(false);txaThongTin.setLineWrap(true);txaThongTin.setWrapStyleWord(true);txaLyDoDuyet.setLineWrap(true);txaLyDoDuyet.setWrapStyleWord(true);
-        JPanel pnlTexts=new JPanel(new GridLayout(1,2,8,0));JScrollPane scrInfo=new JScrollPane(txaThongTin),scrReason=new JScrollPane(txaLyDoDuyet);scrInfo.setBorder(BorderFactory.createTitledBorder("Lý do, thông tin yêu cầu và kết quả xử lý"));scrReason.setBorder(BorderFactory.createTitledBorder("Ý kiến xét duyệt (bắt buộc khi từ chối, tối đa 500 ký tự)"));pnlTexts.add(scrInfo);pnlTexts.add(scrReason);
-        JPanel pnlActions=new JPanel(new FlowLayout(FlowLayout.RIGHT));pnlActions.add(btnTuChoi);pnlActions.add(btnDuyet);
-        JPanel pnlBottom=new JPanel(new BorderLayout(0,8));pnlBottom.add(pnlTexts,BorderLayout.NORTH);pnlBottom.add(lblTrangThai,BorderLayout.CENTER);pnlBottom.add(pnlActions,BorderLayout.SOUTH);add(pnlBottom,BorderLayout.SOUTH);
+        JPanel pnlTexts=new JPanel(new GridLayout(1,2,8,0));JScrollPane scrInfo=new JScrollPane(txaThongTin),scrReason=new JScrollPane(txaLyDoDuyet);scrInfo.setBorder(BorderFactory.createTitledBorder("Thông tin và lý do yêu cầu"));scrReason.setBorder(BorderFactory.createTitledBorder("Ý kiến xét duyệt"));scrInfo.setPreferredSize(new Dimension(400,140));scrReason.setPreferredSize(new Dimension(400,120));scrInfo.setMinimumSize(new Dimension(100,80));scrReason.setMinimumSize(new Dimension(100,60));
+        JPanel pnlOpinion=new JPanel(new BorderLayout(0,4));pnlOpinion.add(scrReason);pnlOpinion.add(lblSoKyTu,BorderLayout.SOUTH);pnlTexts.add(scrInfo);pnlTexts.add(pnlOpinion);
+        txaLyDoDuyet.getDocument().addDocumentListener(new javax.swing.event.DocumentListener(){private void update(){int count=txaLyDoDuyet.getDocument().getLength();lblSoKyTu.setText(count+"/500 ký tự · Bắt buộc khi từ chối");lblSoKyTu.setForeground(count>500?new Color(161,38,45):BillingUi.NAVY);}public void insertUpdate(javax.swing.event.DocumentEvent e){update();}public void removeUpdate(javax.swing.event.DocumentEvent e){update();}public void changedUpdate(javax.swing.event.DocumentEvent e){update();}});
+        tabDetails.addTab("Thông tin & xét duyệt",BillingUi.topAligned(pnlTexts));tabDetails.addTab("Chi tiết hóa đơn",BillingUi.scroll(BillingUi.table(lineModel)));tabDetails.addTab("Lịch sử thanh toán",BillingUi.scroll(BillingUi.table(paymentModel)));tabDetails.setPreferredSize(new Dimension(1000,185));
+        tabDetails.putClientProperty("billing.initialDetailHeight",185);add(BillingUi.split(JSplitPane.VERTICAL_SPLIT,scrRequests,tabDetails,1.0),BorderLayout.CENTER);
+        JPanel pnlActions=new JPanel(new FlowLayout(FlowLayout.RIGHT,8,0));pnlActions.add(BillingUi.danger(btnTuChoi));pnlActions.add(BillingUi.primary(btnDuyet));
+        JPanel pnlStatus=new JPanel(new BorderLayout(8,0));pnlStatus.add(lblTrangThai);pnlStatus.add(btnThuLai,BorderLayout.EAST);btnThuLai.setVisible(false);
+        JPanel pnlBottom=new JPanel(new BorderLayout(0,8));pnlBottom.add(pnlStatus,BorderLayout.NORTH);pnlBottom.add(pnlActions,BorderLayout.SOUTH);add(pnlBottom,BorderLayout.SOUTH);
         controller=new CancellationController(this,session,new CancellationService(session,connections));buttons(false,false);
         BillingUi.style(this);
+        BillingUi.columns(tblYeuCau,110,110,200,140,140,120,175,125,250);
+        clearDetail();
     }
     @Override public void addNotify(){super.addNotify();if(!loaded){loaded=true;SwingUtilities.invokeLater(new Runnable(){public void run(){refreshData();}});}}
     @Override public void refreshData(){controller.load();}
     public String selectedId(){int index=tblYeuCau.getSelectedRow();if(index<0)return null;index=tblYeuCau.convertRowIndexToModel(index);return index<rows.size()?rows.get(index).maYeuCau():null;}
     public void showRows(List<YeuCauHuyHoaDon> values){rows=List.of();requestModel.setRowCount(0);rows=List.copyOf(values);for(var y:rows)requestModel.addRow(new Object[]{y.maYeuCau(),y.maHoaDon(),y.maBenhNhan()+" · "+y.tenBenhNhan(),y.tongTien(),y.daThu(),y.maTaiKhoanTao(),y.thoiGianTao(),y.trangThai(),y.lyDo()});clearDetail();}
-    public void clearDetail(){lineModel.setRowCount(0);paymentModel.setRowCount(0);txaThongTin.setText("");txaLyDoDuyet.setText("");buttons(false,false);}
+    public void clearDetail(){lineModel.setRowCount(0);paymentModel.setRowCount(0);txaThongTin.setText("Chọn yêu cầu để xem và xét duyệt");txaLyDoDuyet.setText("");buttons(false,false);}
     public void showDetail(CancellationService.Detail detail){
         clearDetail();var y=detail.request();var h=detail.invoice().hoaDon();
-        txaThongTin.setText("Yêu cầu "+y.maYeuCau()+" · Hóa đơn "+h.maHoaDon()+" · "+h.trangThai()+"\nTổng: "+BillingUi.vnd(h.tongTien())+" · Đã thu: "+BillingUi.vnd(h.daThu())+" · Còn nợ: "+BillingUi.vnd(h.conNo())+"\nNgười gửi: "+y.maTaiKhoanTao()+" · "+BillingUi.time(y.thoiGianTao())+"\nLý do: "+y.lyDo()+"\nKết quả: "+y.trangThai()+" · Người xử lý: "+y.maTaiKhoanDuyet()+" · "+BillingUi.time(y.thoiGianDuyet())+"\nÝ kiến: "+(y.lyDoDuyet()==null?"":y.lyDoDuyet()));
-        for(var line:detail.invoice().chiTiet())lineModel.addRow(new Object[]{line.loaiHang(),line.maHang(),line.soLuong(),line.donGiaApDung(),line.thanhTien()});
+        txaThongTin.setText("Yêu cầu "+y.maYeuCau()+" · Hóa đơn "+h.maHoaDon()+" · "+h.trangThai()+"\nBệnh nhân: "+h.maBenhNhan()+" · "+h.tenBenhNhan()+"\nTổng: "+BillingUi.vnd(h.tongTien())+" · Đã thu: "+BillingUi.vnd(h.daThu())+" · Còn nợ: "+BillingUi.vnd(h.conNo())+"\nNgười gửi: "+y.maTaiKhoanTao()+" · "+BillingUi.time(y.thoiGianTao())+"\nLý do: "+y.lyDo()+"\nKết quả: "+y.trangThai()+" · Người xử lý: "+(y.maTaiKhoanDuyet()==null?"—":y.maTaiKhoanDuyet())+" · "+BillingUi.time(y.thoiGianDuyet())+"\nÝ kiến: "+(y.lyDoDuyet()==null?"":y.lyDoDuyet()));
+        txaThongTin.setCaretPosition(0);
+        for(var line:detail.invoice().chiTiet())lineModel.addRow(new Object[]{line.loaiHang(),line.maHang(),line.tenHienThi(),line.soLuong(),line.donGiaApDung(),line.thanhTien()});
         for(var payment:detail.invoice().thanhToan())paymentModel.addRow(new Object[]{payment.maThanhToan(),payment.thoiGian(),payment.soTien(),payment.phuongThuc(),payment.maGiaoDich(),payment.trangThai()});
     }
-    public void buttons(boolean approve,boolean reject){btnDuyet.setEnabled(approve);btnTuChoi.setEnabled(reject);}
-    public void busy(boolean busy){for(Component control:new Component[]{txtTuKhoa,txtTuNgay,txtDenNgay,cmbTrangThai,btnTim,btnTaiLai,tblYeuCau,txaLyDoDuyet})control.setEnabled(!busy);if(busy)buttons(false,false);}
+    public void buttons(boolean approve,boolean reject){btnDuyet.setEnabled(approve);btnTuChoi.setEnabled(reject);txaLyDoDuyet.setEnabled(reject);txaLyDoDuyet.setEditable(reject);}
+    public void tableStatus(String message){BillingUi.tableState(tblYeuCau,message);}
+    public void loadFailed(String message){lblTrangThai.setText(message);tableStatus("Chưa tải được yêu cầu. Bấm Thử lại để tải dữ liệu.");btnThuLai.setVisible(true);}
+    public void busy(boolean busy){for(Component control:new Component[]{txtTuKhoa,txtTuNgay,txtDenNgay,cmbTrangThai,btnTim,btnTaiLai,btnThuLai,tblYeuCau,txaLyDoDuyet})control.setEnabled(!busy);if(busy){buttons(false,false);btnThuLai.setVisible(false);}}
     public void expired(){showRows(List.of());busy(true);lblTrangThai.setText("Phiên đã đăng xuất.");}
 }

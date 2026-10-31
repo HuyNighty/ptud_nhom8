@@ -19,6 +19,7 @@ public final class CancellationController {
         this.view=view;this.session=session;this.service=service;
         view.btnTim.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
         view.btnTaiLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
+        view.btnThuLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
         view.txtTuKhoa.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
         view.cmbTrangThai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
         view.tblYeuCau.getSelectionModel().addListSelectionListener(new ListSelectionListener(){public void valueChanged(ListSelectionEvent e){if(!busy&&!e.getValueIsAdjusting())detail();}});
@@ -33,16 +34,16 @@ public final class CancellationController {
         Task(){super(CancellationController.this.session);}
         protected void finished(){busy=false;view.busy(false);buttons();}
         protected void expired(){selected=null;view.expired();}
-        protected void failed(Throwable failure){view.lblTrangThai.setText(writeMessage+BillingUi.error(failure));if(reloadPending){reloadPending=false;load();}}
+        protected void failed(Throwable failure){view.loadFailed(writeMessage+BillingUi.error(failure));if(reloadPending){reloadPending=false;load();}}
     }
     public void load(){
         if(busy){reloadPending=true;return;}final String keyword=view.txtTuKhoa.getText();final LocalDate from,to;
         try{from=date(view.txtTuNgay.getText());to=date(view.txtDenNgay.getText());}catch(IllegalArgumentException e){view.lblTrangThai.setText(e.getMessage());return;}
         final YeuCauHuyHoaDon.TrangThai status=view.cmbTrangThai.getSelectedItem() instanceof YeuCauHuyHoaDon.TrangThai value?value:null;
-        if(!start())return;selected=null;view.clearDetail();
+        if(!start())return;selected=null;view.clearDetail();view.lblTrangThai.setText("Đang tải yêu cầu hủy…");view.tableStatus("Đang tải yêu cầu hủy…");
         new Task<List<YeuCauHuyHoaDon>>(){
             protected List<YeuCauHuyHoaDon> doInBackground()throws Exception{return service.find(keyword,from,to,status);}
-            protected void succeeded(List<YeuCauHuyHoaDon> rows){busy=true;view.showRows(rows);busy=false;view.lblTrangThai.setText(writeMessage+(rows.isEmpty()?"Không có yêu cầu phù hợp.":rows.size()+" yêu cầu. Chọn dòng để xem chi tiết và lịch sử thu."));writeMessage="";if(reloadPending){reloadPending=false;load();}}
+            protected void succeeded(List<YeuCauHuyHoaDon> rows){busy=true;view.showRows(rows);busy=false;view.tableStatus(rows.isEmpty()?"Không có yêu cầu hủy phù hợp.":"");view.lblTrangThai.setText(writeMessage+(rows.isEmpty()?"Lọc theo ngày gửi và trạng thái yêu cầu.":rows.size()+" yêu cầu. Chọn dòng để xem và xét duyệt."));writeMessage="";if(reloadPending){reloadPending=false;load();}}
         }.execute();
     }
     private void detail(){
@@ -71,5 +72,5 @@ public final class CancellationController {
             }
         }.execute();
     }
-    private static LocalDate date(String text){if(text==null||text.isBlank())return null;try{return LocalDate.parse(text.trim());}catch(DateTimeParseException e){throw new IllegalArgumentException("Ngày phải có dạng yyyy-MM-dd và tồn tại.");}}
+    private static LocalDate date(String text){return BillingUi.parseDate(text);}
 }
