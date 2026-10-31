@@ -1,6 +1,7 @@
 package com.quanlynhakhoa.features;
 
 import com.quanlynhakhoa.account.ui.AccountPanel;
+import com.quanlynhakhoa.audit.ui.AuditPanel;
 import com.quanlynhakhoa.benhnhan.view.BenhNhanPanel;
 import com.quanlynhakhoa.benhnhan.view.HoSoBenhAnPanel;
 import com.quanlynhakhoa.lichhen.view.LichHenPanel;
@@ -22,6 +23,7 @@ public final class FeatureBootstrap {
                 .register(Module.ACCOUNTS, AccountPanel::new)
                 .register(Module.WORKFORCE, EmployeePanel::new)
                 .register(Module.ROLES, RolePanel::new)
+                .register(Module.AUDIT, AuditPanel::new)
                 .register(Module.EXAMINATIONS, ExamQueuePanel::new)
                 .register(Module.PATIENTS, BenhNhanPanel::new)
                 .register(Module.APPOINTMENTS, LichHenPanel::new)
