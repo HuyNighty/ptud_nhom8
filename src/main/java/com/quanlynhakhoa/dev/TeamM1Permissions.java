@@ -21,6 +21,7 @@ public final class TeamM1Permissions {
     private record Grant(String table, String privileges) { }
 
     private static final List<Grant> GRANTS = List.of(
+            new Grant("NhanVien", "INSERT"),
             new Grant("BenhNhan", "SELECT, INSERT, UPDATE"),
             new Grant("HoSoBenhAn", "SELECT, INSERT, UPDATE"),
             new Grant("LichHen", "SELECT"),

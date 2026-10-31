@@ -8,9 +8,17 @@ import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.workforce.EmployeeDirectoryDao;
 import com.quanlynhakhoa.workforce.EmployeeDirectoryRow;
 import com.quanlynhakhoa.workforce.EmployeeDirectoryService;
+import com.quanlynhakhoa.workforce.EmployeeCreateService;
+import com.quanlynhakhoa.workforce.EmployeeCreateRequest;
+import com.quanlynhakhoa.security.AuthorizationService;
+import com.quanlynhakhoa.security.Permission;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.awt.Font;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -23,6 +31,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -33,7 +42,7 @@ import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 
-/** Workforce list only. Creating/editing staff is explicitly deferred to CORE-W1B. */
+/** Workforce directory and scoped staff creation; account creation remains separate. */
 public final class EmployeePanel extends JPanel implements RefreshableFeature {
     private static final Color NAVY = new Color(29, 61, 102);
     private static final Color MUTED = new Color(99, 115, 134);
@@ -41,15 +50,19 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
 
     private final DesktopSession session;
     private final EmployeeDirectoryService service;
+    private final EmployeeCreateService creator;
+    private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
     private final JTextField txtKeyword = new JTextField(20);
     private final JComboBox<EmployeeStatus> cmbStatus = new JComboBox<>();
     private final JButton btnSearch = new JButton("Tìm kiếm");
     private final JButton btnRefresh = new JButton("Làm mới");
+    private final JButton btnCreate = new JButton("Thêm nhân viên");
     private final JLabel lblStatus = new JLabel("Chưa tải dữ liệu");
     private final JLabel lblDetail = new JLabel("Chọn một nhân viên để xem thông tin.");
     private final EmployeeTableModel tableModel = new EmployeeTableModel();
     private final JTable table = new JTable(tableModel);
     private boolean loading;
+    private boolean creating;
     private boolean reloadPending;
 
     public EmployeePanel(DesktopSession session) {
@@ -59,6 +72,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
     EmployeePanel(DesktopSession session, EmployeeDirectoryService service, boolean autoLoad) {
         this.session = Objects.requireNonNull(session, "session");
         this.service = Objects.requireNonNull(service, "service");
+        this.creator = new EmployeeCreateService(session, TeamDevConnection::open);
         setLayout(new BorderLayout(0, 16));
         setBackground(new Color(245, 248, 252));
         setBorder(new EmptyBorder(24, 26, 24, 26));
@@ -69,7 +83,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         title.setFont(new Font("SansSerif", Font.BOLD, 23));
         title.setForeground(NAVY);
         heading.add(title, BorderLayout.NORTH);
-        JLabel description = new JLabel("Thông tin nhân sự và tài khoản đã liên kết · Chỉ xem");
+        JLabel description = new JLabel("Thông tin nhân sự, tài khoản liên kết và tạo nhân viên mới");
         description.setForeground(MUTED);
         heading.add(description, BorderLayout.SOUTH);
         add(heading, BorderLayout.NORTH);
@@ -97,6 +111,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         filters.add(cmbStatus);
         filters.add(btnSearch);
         filters.add(btnRefresh);
+        filters.add(btnCreate);
         body.add(filters, BorderLayout.NORTH);
 
         table.setRowHeight(30);
@@ -120,6 +135,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         body.add(footer, BorderLayout.SOUTH);
         add(body, BorderLayout.CENTER);
 
+        btnCreate.addActionListener(event -> createEmployee());
         btnSearch.addActionListener(event -> load());
         btnRefresh.addActionListener(event -> load());
         txtKeyword.addActionListener(event -> load());
@@ -142,7 +158,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
             updateControls();
             return;
         }
-        if (loading) {
+        if (loading || creating) {
             reloadPending = true;
             return;
         }
@@ -175,7 +191,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
                         lblDetail.setText("Chọn một nhân viên để xem thông tin.");
                         lblStatus.setText(result.rows().size() + " nhân viên"
                                 + (result.truncated() ? " (giới hạn 200, hãy lọc thêm)" : "")
-                                + " · Chức năng tạo nhân viên sẽ có ở W1B.");
+                                + " · Chỉ người có quyền quản lý nhân sự mới được thêm nhân viên.");
                     }
                 } catch (InterruptedException failure) {
                     Thread.currentThread().interrupt();
@@ -199,11 +215,109 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
     }
 
     private void updateControls() {
-        boolean canSearch = session.isActive() && !loading;
-        btnSearch.setEnabled(canSearch);
-        btnRefresh.setEnabled(canSearch);
-        txtKeyword.setEnabled(canSearch);
-        cmbStatus.setEnabled(canSearch);
+        boolean ready = session.isActive() && !loading && !creating;
+        btnSearch.setEnabled(ready);
+        btnRefresh.setEnabled(ready);
+        txtKeyword.setEnabled(ready);
+        cmbStatus.setEnabled(ready);
+        btnCreate.setEnabled(ready && authorization.can(session, Permission.WORKFORCE_MANAGE));
+    }
+
+    private void createEmployee() {
+        if (!session.isActive() || loading || creating ||
+                !authorization.can(session, Permission.WORKFORCE_MANAGE)) return;
+
+        JTextField txtId = new JTextField(16);
+        JTextField txtName = new JTextField(24);
+        JTextField txtPhone = new JTextField(16);
+        JComboBox<String> cmbJob = new JComboBox<>(new String[] {"LT", "BS", "YT", "QL", "KHO"});
+        JTextField txtBirth = new JTextField(10);
+        JComboBox<String> cmbGender = new JComboBox<>(new String[] {"", "NAM", "NU", "KHAC"});
+        JTextField txtEmail = new JTextField(24);
+        JTextField txtJoined = new JTextField(LocalDate.now().toString(), 10);
+        JTextField txtSpecialty = new JTextField(24);
+
+        JPanel form = new JPanel(new GridLayout(0, 2, 10, 9));
+        form.add(new JLabel("Mã nhân viên (*):")); form.add(txtId);
+        form.add(new JLabel("Họ tên (*):")); form.add(txtName);
+        form.add(new JLabel("Số điện thoại (*):")); form.add(txtPhone);
+        form.add(new JLabel("Chức danh (*):")); form.add(cmbJob);
+        form.add(new JLabel("Ngày sinh (yyyy-MM-dd):")); form.add(txtBirth);
+        form.add(new JLabel("Giới tính:")); form.add(cmbGender);
+        form.add(new JLabel("Email:")); form.add(txtEmail);
+        form.add(new JLabel("Ngày vào làm (yyyy-MM-dd):")); form.add(txtJoined);
+        form.add(new JLabel("Chuyên môn:")); form.add(txtSpecialty);
+
+        int choice = JOptionPane.showConfirmDialog(this, form, "Thêm nhân viên (chưa cấp tài khoản)",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (choice != JOptionPane.OK_OPTION) return;
+
+        final EmployeeCreateRequest request;
+        try {
+            request = EmployeeCreateService.validate(new EmployeeCreateRequest(
+                    txtId.getText(), txtName.getText(), txtPhone.getText(),
+                    (String) cmbJob.getSelectedItem(), parseOptionalDate(txtBirth.getText()),
+                    (String) cmbGender.getSelectedItem(), txtEmail.getText(),
+                    parseOptionalDate(txtJoined.getText()), txtSpecialty.getText()));
+        } catch (IllegalArgumentException error) {
+            JOptionPane.showMessageDialog(this, error.getMessage(),
+                    "Dữ liệu nhân viên chưa hợp lệ", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        creating = true;
+        updateControls();
+        lblStatus.setText("Đang tạo nhân viên...");
+        new SwingWorker<String, Void>() {
+            @Override protected String doInBackground() throws Exception {
+                return creator.create(request);
+            }
+
+            @Override protected void done() {
+                creating = false;
+                updateControls();
+                if (!session.isActive()) {
+                    lblStatus.setText("Phiên đăng nhập đã kết thúc. Hãy tải lại ở phiên mới.");
+                    return;
+                }
+                try {
+                    String employeeId = get();
+                    JOptionPane.showMessageDialog(EmployeePanel.this,
+                            "Đã tạo nhân viên " + employeeId
+                                    + ".\nChuyển sang Tài khoản để cấp tài khoản cho nhân viên này.",
+                            "Tạo nhân viên thành công", JOptionPane.INFORMATION_MESSAGE);
+                    reloadPending = false;
+                    load();
+                } catch (InterruptedException failure) {
+                    Thread.currentThread().interrupt();
+                    lblStatus.setText("Thao tác bị gián đoạn; hãy làm mới để xác minh.");
+                } catch (CancellationException failure) {
+                    lblStatus.setText("Thao tác bị gián đoạn; hãy làm mới để xác minh.");
+                } catch (ExecutionException failure) {
+                    Throwable cause = failure.getCause();
+                    String message = cause instanceof IllegalArgumentException
+                            ? cause.getMessage()
+                            : "Không thể tạo nhân viên. Kiểm tra quyền INSERT, kết nối SQL và thử lại.";
+                    lblStatus.setText(message);
+                    JOptionPane.showMessageDialog(EmployeePanel.this, message,
+                            "Tạo nhân viên thất bại", JOptionPane.WARNING_MESSAGE);
+                } finally {
+                    if (reloadPending && session.isActive()) {
+                        reloadPending = false;
+                        load();
+                    }
+                }
+            }
+        }.execute();
+    }
+
+    private static LocalDate parseOptionalDate(String text) {
+        if (text == null || text.isBlank()) return null;
+        try {
+            return LocalDate.parse(text.trim());
+        } catch (DateTimeParseException failure) {
+            throw new IllegalArgumentException("Ngày tháng phải có dạng yyyy-MM-dd.");
+        }
     }
 
     private void showSelected() {
