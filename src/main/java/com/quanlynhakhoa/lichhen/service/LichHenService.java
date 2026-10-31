@@ -168,7 +168,7 @@ public class LichHenService {
 
                 kiemTraKhungGioConTrong(ketNoi, maBacSiMoi, thoiGianMoi, maLichHenCu);
 
-                lichHenDao.doiTrangThai(ketNoi, maLichHenCu, LichHen.DA_DOI_LICH, null);
+                yeuCauDaCapNhatTrangThai(lichHenDao.doiTrangThai(ketNoi, maLichHenCu, LichHen.DA_DOI_LICH, null), maLichHenCu);
 
                 LichHen lichHenMoi = new LichHen(lichHenDao.taoMaLichHenMoi(ketNoi));
                 lichHenMoi.setMaBenhNhan(lichHenCu.getMaBenhNhan());
@@ -204,7 +204,7 @@ public class LichHenService {
             ketNoi.setAutoCommit(false);
             try {
                 layLichHenConDaDat(ketNoi, maLichHen);
-                lichHenDao.doiTrangThai(ketNoi, maLichHen, LichHen.DA_HUY, lyDoHuy);
+                yeuCauDaCapNhatTrangThai(lichHenDao.doiTrangThai(ketNoi, maLichHen, LichHen.DA_HUY, lyDoHuy), maLichHen);
                 lichHenDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Hủy lịch hẹn", maLichHen,
                         "Lý do: " + lyDoHuy);
 
@@ -244,7 +244,7 @@ public class LichHenService {
 
                 String maPhieuKham = lichHenDao.taoMaPhieuKhamMoi(ketNoi);
                 lichHenDao.themLuotKhamChoKham(ketNoi, maPhieuKham, lichHen, maHoSo, LocalDateTime.now());
-                lichHenDao.doiTrangThai(ketNoi, maLichHen, LichHen.DA_DEN, null);
+                yeuCauDaCapNhatTrangThai(lichHenDao.doiTrangThai(ketNoi, maLichHen, LichHen.DA_DEN, null), maLichHen);
                 lichHenDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Tiếp đón bệnh nhân", maLichHen,
                         "Tạo lượt khám " + maPhieuKham + " (Chờ khám), bác sĩ " + lichHen.getMaBacSi());
 
@@ -323,6 +323,13 @@ public class LichHenService {
         }
     }
 
+    static void yeuCauDaCapNhatTrangThai(boolean daCapNhat, String maLichHen) {
+        if (!daCapNhat) {
+            throw new DuLieuDaThayDoiException(
+                    "Lịch hẹn " + maLichHen
+                    + " đã thay đổi trạng thái. Hãy tải lại danh sách và thử lại.");
+        }
+    }
     private LichHen layLichHenConDaDat(Connection ketNoi, String maLichHen) throws SQLException {
         LichHen lichHen = lichHenDao.timTheoMaDeSua(ketNoi, maLichHen);
         if (lichHen == null) {
