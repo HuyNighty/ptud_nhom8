@@ -39,7 +39,7 @@ public final class FeatureRegistrySelfTest {
         check(empty.contains(Module.ROLES), "roles registered");
         check(empty.contains(Module.EXAMINATIONS), "examinations registered");
         check(empty.contains(Module.RECEPTION), "reception registered");
-        check(!empty.contains(Module.INVENTORY), "inventory not yet registered");
+        check(empty.contains(Module.INVENTORY), "inventory registered");
         check(empty.contains(Module.SERVICE_CATALOG), "service catalogue integrated in main shell");
         check(empty.contains(Module.BILLING), "billing integrated in main shell");
         check(empty.contains(Module.ACCOUNTS), "existing accounts registration preserved");
