@@ -6,6 +6,7 @@ import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
 import com.quanlynhakhoa.hethong.giaodien.MainFrame;
 import com.quanlynhakhoa.hethong.giaodien.MainNavigationModel;
+import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Set;
@@ -52,7 +53,11 @@ public final class R4FinalShellSelfTest {
     public static void main(String[] args) {
         check(Role.values().length == 6, "unreviewed role added");
         check(Permission.values().length == 24, "unreviewed permission added");
-        check(Module.values().length == 19, "unreviewed navigation destination added");
+        check(Module.values().length == 20, "unreviewed navigation destination added");
+        check(Module.RECEPTION.openPermission() == Permission.PATIENT_CHECK_IN,
+                "reception requires patient check-in permission");
+        check(FeatureBootstrap.createRegistry().contains(Module.RECEPTION),
+                "reception feature remains registered");
         AuthorizationService auth = new AuthorizationService(new RolePermissionPolicy());
         AuthorizedActionGate actions = new AuthorizedActionGate(auth);
         NavigationPolicy nav = new NavigationPolicy(auth);
@@ -63,9 +68,19 @@ public final class R4FinalShellSelfTest {
         denied(() -> actions.run(user(Role.SYSTEM_ADMIN), null, () -> {}), "null privilege blocked");
         denied(() -> actions.query(user(Role.SYSTEM_ADMIN), null, () -> "never"), "null query privilege blocked");
 
+        check(!nav.canOpen(null, Module.RECEPTION), "anonymous reception denied");
+        denied(() -> nav.requireOpen(null, Module.RECEPTION), "anonymous reception forced route denied");
         for (Role role : Role.values()) {
             DesktopSession session = user(role);
             MainNavigationModel model = new MainNavigationModel(session);
+            // Explicit business expectation, independent of Module.openPermission().
+            boolean receptionAllowed = role == Role.RECEPTIONIST || role == Role.SYSTEM_ADMIN;
+            check(auth.can(session, Permission.PATIENT_CHECK_IN) == receptionAllowed,
+                    "check-in role matrix: " + role);
+            check(nav.canOpen(session, Module.RECEPTION) == receptionAllowed,
+                    "reception route role matrix: " + role);
+            check(model.availableModules().contains(Module.RECEPTION) == receptionAllowed,
+                    "reception visibility role matrix: " + role);
             check(session.isActive(), "session starts active: " + role);
             check(nav.canOpen(session, Module.HOME), "home is allowed only with session");
             for (Permission p : Permission.values()) {
@@ -106,6 +121,8 @@ public final class R4FinalShellSelfTest {
             }
             session.logout();
             check(!session.isActive(), "logout deactivates session");
+            check(!auth.can(session, Permission.PATIENT_CHECK_IN), "logout check-in denied: " + role);
+            check(!nav.canOpen(session, Module.RECEPTION), "logout reception denied: " + role);
             check(nav.visibleModules(session).isEmpty(), "logout hides all navigation");
             for (Permission p : Permission.values()) {
                 AtomicInteger count = new AtomicInteger();
