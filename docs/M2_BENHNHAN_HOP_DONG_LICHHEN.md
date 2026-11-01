@@ -10,7 +10,7 @@ Căn cứ: `docs/tuan_cuoi/9_REPORT_ApplicationDevelopment.docx`
 
 ## 1. Hợp đồng: phần Lịch hẹn được dùng gì
 
-Package `com.quanlynhakhoa.benhnhan.hopdong`:
+Package `com.quanlynhakhoa.nghiepvu.benhnhan.hopdong`:
 
 | File | Vai trò |
 |---|---|
@@ -78,7 +78,7 @@ if (benhNhan == null) {
 3. Phần Bệnh nhân giữ nguyên tên và ý nghĩa 2 hàm trên; muốn đổi phải báo trước.
 4. Các quy tắc của lịch hẹn (BR02 không chồng giờ + trong ca, BR03 chỉ đổi/hủy lịch "Đã đặt") do phần Lịch hẹn tự kiểm tra.
 
-## 4. Phần Lịch hẹn đã làm (package `com.quanlynhakhoa.lichhen`)
+## 4. Phần Lịch hẹn đã làm (package `com.quanlynhakhoa.nghiepvu.lichhen`)
 
 | File | Nội dung |
 |---|---|

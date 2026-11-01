@@ -53,7 +53,7 @@ try {
     [Environment]::SetEnvironmentVariable('N08_M1_SQL_ADMIN_PASSWORD', $plain, 'Process')
     $plain = $null
     $mode = if ($Apply) { '--apply' } else { '--check' }
-    & java -cp $javaClassPath 'com.quanlynhakhoa.dev.TeamM1Permissions' $mode
+    & java -cp $javaClassPath 'com.quanlynhakhoa.hatang.phattrien.TeamM1Permissions' $mode
     if ($LASTEXITCODE -ne 0) { throw 'M1 permission tool failed. Inspect SQL before retrying.' }
 } finally {
     [Environment]::SetEnvironmentVariable('N08_M1_SQL_ADMIN_USER', $oldUser, 'Process')

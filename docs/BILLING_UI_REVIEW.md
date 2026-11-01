@@ -54,16 +54,16 @@ giao dịch hoặc trạng thái. BillingChangeBus vẫn cập nhật các trang
 
 | Nhóm | File |
 |---|---|
-| Shell | `src/main/java/com/quanlynhakhoa/view/MainFrame.java` |
-| UI dùng chung | `src/main/java/com/quanlynhakhoa/billing/ui/BillingUi.java`, `InvoiceHistoryPanel.java` trong cùng thư mục |
-| Các màn hình | `billing/ui/HoaDonPanel.java`, `TaoHoaDonDialog.java`, `PaymentPanel.java`, `PaymentForm.java`, `CancellationPanel.java`, `DebtPanel.java` (dưới `src/main/java/com/quanlynhakhoa/`) |
-| Yêu cầu hủy | `src/main/java/com/quanlynhakhoa/billing/ui/CancellationRequestDialog.java`, `billing/controller/CancellationRequestController.java` |
-| Điều khiển | `src/main/java/com/quanlynhakhoa/billing/controller/HoaDonController.java`, `TaoHoaDonController.java`, `PaymentController.java`, `PaymentScreenController.java`, `CancellationController.java`, `DebtController.java` trong cùng thư mục |
-| Dịch vụ | `src/main/java/com/quanlynhakhoa/dichvu/ui/DichVuPanel.java`, `dichvu/controller/DichVuController.java` |
-| Đọc dữ liệu | `src/main/java/com/quanlynhakhoa/billing/dao/HoaDonDao.java`, `InvoiceCreateDao.java` trong cùng thư mục |
-| Model | `src/main/java/com/quanlynhakhoa/billing/model/ChiTietHoaDon.java` — bổ sung tên hàng để hiển thị; constructor cũ vẫn dùng được |
-| Kiểm thử đã cập nhật | `src/test/java/com/quanlynhakhoa/billing/FeatureJdbcDouble.java`, `ServiceBillingSelfTest.java`, `ServiceBillingUiSelfTest.java` |
-| Kiểm thử mới | `src/test/java/com/quanlynhakhoa/billing/BillingLayoutSelfTest.java`, `BillingUiSqlPreflight.java` |
+| Shell | `src/main/java/com/quanlynhakhoa/hethong/giaodien/MainFrame.java` |
+| UI dùng chung | `src/main/java/com/quanlynhakhoa/nghiepvu/hoadon/ui/BillingUi.java`, `InvoiceHistoryPanel.java` trong cùng thư mục |
+| Các màn hình | `nghiepvu/hoadon/ui/HoaDonPanel.java`, `TaoHoaDonDialog.java`, `PaymentPanel.java`, `PaymentForm.java`, `CancellationPanel.java`, `DebtPanel.java` (dưới `src/main/java/com/quanlynhakhoa/`) |
+| Yêu cầu hủy | `src/main/java/com/quanlynhakhoa/nghiepvu/hoadon/ui/CancellationRequestDialog.java`, `nghiepvu/hoadon/controller/CancellationRequestController.java` |
+| Điều khiển | `src/main/java/com/quanlynhakhoa/nghiepvu/hoadon/controller/HoaDonController.java`, `TaoHoaDonController.java`, `PaymentController.java`, `PaymentScreenController.java`, `CancellationController.java`, `DebtController.java` trong cùng thư mục |
+| Dịch vụ | `src/main/java/com/quanlynhakhoa/nghiepvu/dichvu/ui/DichVuPanel.java`, `nghiepvu/dichvu/controller/DichVuController.java` |
+| Đọc dữ liệu | `src/main/java/com/quanlynhakhoa/nghiepvu/hoadon/dao/HoaDonDao.java`, `InvoiceCreateDao.java` trong cùng thư mục |
+| Model | `src/main/java/com/quanlynhakhoa/nghiepvu/hoadon/model/ChiTietHoaDon.java` — bổ sung tên hàng để hiển thị; constructor cũ vẫn dùng được |
+| Kiểm thử đã cập nhật | `src/test/java/com/quanlynhakhoa/nghiepvu/hoadon/FeatureJdbcDouble.java`, `ServiceBillingSelfTest.java`, `ServiceBillingUiSelfTest.java` |
+| Kiểm thử mới | `src/test/java/com/quanlynhakhoa/nghiepvu/hoadon/BillingLayoutSelfTest.java`, `BillingUiSqlPreflight.java` |
 | Bàn giao | `docs/BILLING_UI_REVIEW.md` |
 
 ## Kiểm tra đã chạy
@@ -89,7 +89,7 @@ cửa sổ khỏi chiều cao quy ước. Thư mục target/logs không đưa v�
 Lệnh tái tạo ảnh sau `test-compile`:
 
 ```powershell
-java -Djava.awt.headless=false -cp 'target/classes;target/test-classes' com.quanlynhakhoa.billing.BillingLayoutSelfTest
+java -Djava.awt.headless=false -cp 'target/classes;target/test-classes' com.quanlynhakhoa.nghiepvu.hoadon.BillingLayoutSelfTest
 ```
 
 ## SQL development thực tế và giới hạn

@@ -94,12 +94,12 @@ hóa đơn, nhân viên hợp lệ, chạy App để nghiệm thu bằng dữ li
 
 | Nhóm | File |
 |---|---|
-| Menu/Core | navigation/Module.java; view/MainFrame.java; features/FeatureBootstrap.java; features/RefreshableFeature.java (mới) |
-| Chứng từ/công nợ | billing/ui/HoaDonPanel.java; billing/controller/HoaDonController.java; billing/dao/HoaDonDao.java; billing/service/DebtService.java (mới) |
-| Thu tiền mới | billing/model/PaymentRequest.java; billing/dao/PaymentDao.java; billing/service/PaymentService.java; billing/ui/PaymentDialog.java; billing/controller/PaymentController.java |
-| Danh mục | dichvu/ui/DichVuPanel.java; dichvu/controller/DichVuController.java; dichvu/service/DichVuService.java; dichvu/dao/DichVuDao.java |
-| Kiểm thử mới | billing/PaymentSelfTest.java; billing/CatalogSeparationSelfTest.java |
-| Kiểm thử cập nhật | billing/ServiceBillingPreview.java; features/FeatureRegistrySelfTest.java; security/R4RoleSessionSelfTest.java; security/R4FinalShellSelfTest.java; view/R4MainNavigationSelfTest.java; scripts/test-service-billing-m1.ps1 |
+| Menu/Core | hethong/dieuhuong/Module.java; hethong/giaodien/MainFrame.java; hethong/tinhnang/FeatureBootstrap.java; hethong/tinhnang/RefreshableFeature.java (mới) |
+| Chứng từ/công nợ | nghiepvu/hoadon/ui/HoaDonPanel.java; nghiepvu/hoadon/controller/HoaDonController.java; nghiepvu/hoadon/dao/HoaDonDao.java; nghiepvu/hoadon/service/DebtService.java (mới) |
+| Thu tiền mới | nghiepvu/hoadon/model/PaymentRequest.java; nghiepvu/hoadon/dao/PaymentDao.java; nghiepvu/hoadon/service/PaymentService.java; nghiepvu/hoadon/ui/PaymentDialog.java; nghiepvu/hoadon/controller/PaymentController.java |
+| Danh mục | nghiepvu/dichvu/ui/DichVuPanel.java; nghiepvu/dichvu/controller/DichVuController.java; nghiepvu/dichvu/service/DichVuService.java; nghiepvu/dichvu/dao/DichVuDao.java |
+| Kiểm thử mới | nghiepvu/hoadon/PaymentSelfTest.java; nghiepvu/hoadon/CatalogSeparationSelfTest.java |
+| Kiểm thử cập nhật | nghiepvu/hoadon/ServiceBillingPreview.java; hethong/tinhnang/FeatureRegistrySelfTest.java; hethong/phanquyen/R4RoleSessionSelfTest.java; hethong/phanquyen/R4FinalShellSelfTest.java; hethong/giaodien/R4MainNavigationSelfTest.java; scripts/test-service-billing-m1.ps1 |
 
 Đường dẫn Java trong bảng tính từ src/main/java/com/quanlynhakhoa hoặc src/test/java/
 com/quanlynhakhoa. Những file tạo hóa đơn còn uncommitted từ yêu cầu trước được giữ nguyên.

@@ -13,9 +13,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Maven compile failed.' }
     $destination = Join-Path $repo 'target/r3-a3-gate-test'
     [System.IO.Directory]::CreateDirectory($destination) | Out-Null
-    & javac --release 21 -encoding UTF-8 -cp 'target/classes' -d $destination 'src/test/java/com/quanlynhakhoa/auth/DesktopLoginGateSelfTest.java'
+    & javac --release 21 -encoding UTF-8 -cp 'target/classes' -d $destination 'src/test/java/com/quanlynhakhoa/hethong/xacthuc/DesktopLoginGateSelfTest.java'
     if ($LASTEXITCODE -ne 0) { throw 'Gate self-test compile failed.' }
     $classpath = (Join-Path $repo 'target/classes') + ';' + $destination
-    & java -cp $classpath com.quanlynhakhoa.auth.DesktopLoginGateSelfTest
+    & java -cp $classpath com.quanlynhakhoa.hethong.xacthuc.DesktopLoginGateSelfTest
     if ($LASTEXITCODE -ne 0) { throw 'Gate self-test failed.' }
 } finally { Pop-Location }

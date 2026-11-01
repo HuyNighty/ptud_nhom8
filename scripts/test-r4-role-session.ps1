@@ -14,9 +14,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Maven compile failed.' }
     $destination = Join-Path $repo 'target/r4-a1-self-test'
     [System.IO.Directory]::CreateDirectory($destination) | Out-Null
-    & javac --release 21 -encoding UTF-8 -cp 'target/classes' -d $destination 'src/test/java/com/quanlynhakhoa/security/R4RoleSessionSelfTest.java'
+    & javac --release 21 -encoding UTF-8 -cp 'target/classes' -d $destination 'src/test/java/com/quanlynhakhoa/hethong/phanquyen/R4RoleSessionSelfTest.java'
     if ($LASTEXITCODE -ne 0) { throw 'R4-A1 test compile failed.' }
     $classpath = (Join-Path $repo 'target/classes') + ';' + $destination
-    & java -cp $classpath com.quanlynhakhoa.security.R4RoleSessionSelfTest
+    & java -cp $classpath com.quanlynhakhoa.hethong.phanquyen.R4RoleSessionSelfTest
     if ($LASTEXITCODE -ne 0) { throw 'R4-A1 self-test failed.' }
 } finally { Pop-Location }

@@ -4,7 +4,7 @@ This step creates a pure Java policy foundation. It does NOT modify LoginFrame,
 MainFrame, App, pom.xml, database, Git history, Docker or runtime launch scripts.
 
 ## Basis and restrictions
-- The six SQL-constrained roles come from `com.quanlynhakhoa.model.Role`.
+- The six SQL-constrained roles come from `com.quanlynhakhoa.quantri.vaitro.model.Role`.
 - The 16 permissions and grants are a conservative framework-free port of the old
   `RolePermissionPolicy`: RECEPTIONIST = patient read/create/update; DOCTOR =
   patient read, medical record read/update; SYSTEM_ADMIN = all; NURSE,

@@ -69,15 +69,15 @@ và chuyển DPI giữa nhiều màn hình Windows.
 
 Đường dẫn Java UI/controller tính từ `src/main/java/com/quanlynhakhoa/`:
 
-- `billing/ui/FilterBar.java` (mới), `BillingUi.java`.
-- `billing/ui/HoaDonPanel.java`, `PaymentPanel.java`, `PaymentForm.java`,
+- `nghiepvu/hoadon/ui/FilterBar.java` (mới), `BillingUi.java`.
+- `nghiepvu/hoadon/ui/HoaDonPanel.java`, `PaymentPanel.java`, `PaymentForm.java`,
   `TaoHoaDonDialog.java`, `CancellationPanel.java`, `DebtPanel.java`.
-- `dichvu/ui/DichVuPanel.java`.
-- `billing/controller/PaymentController.java`, `PaymentScreenController.java`,
+- `nghiepvu/dichvu/ui/DichVuPanel.java`.
+- `nghiepvu/hoadon/controller/PaymentController.java`, `PaymentScreenController.java`,
   `TaoHoaDonController.java`, `CancellationController.java`, `DebtController.java`.
-- `src/test/java/com/quanlynhakhoa/billing/BillingRefinementSelfTest.java`,
+- `src/test/java/com/quanlynhakhoa/nghiepvu/hoadon/BillingRefinementSelfTest.java`,
   `CreationStepsSelfTest.java`, `BillingActualUiPreview.java` (mới).
-- `src/test/java/com/quanlynhakhoa/billing/BillingLayoutSelfTest.java` (cập nhật).
+- `src/test/java/com/quanlynhakhoa/nghiepvu/hoadon/BillingLayoutSelfTest.java` (cập nhật).
 - `scripts/test-service-billing-m1.ps1`, `docs/BILLING_UI_REFINEMENT.md`.
 
 Ứng dụng đang chạy cần được mở lại để nạp các class giao diện mới.

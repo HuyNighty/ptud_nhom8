@@ -88,13 +88,13 @@ chung SQL login. Có thể cần chủ SQL kiểm tra quyền đối với lock 
 
 ## File chính
 
-- billing/model/YeuCauHuyHoaDon.java
-- billing/dao/CancellationDao.java
-- billing/service/CancellationService.java
-- billing/ui/CancellationRequestDialog.java, CancellationPanel.java
-- billing/controller/CancellationRequestController.java, CancellationController.java
+- nghiepvu/hoadon/model/YeuCauHuyHoaDon.java
+- nghiepvu/hoadon/dao/CancellationDao.java
+- nghiepvu/hoadon/service/CancellationService.java
+- nghiepvu/hoadon/ui/CancellationRequestDialog.java, CancellationPanel.java
+- nghiepvu/hoadon/controller/CancellationRequestController.java, CancellationController.java
 - Cập nhật HoaDonPanel/HoaDonController (gửi), PaymentDao/PaymentService/PaymentController
-  (khóa thu khi chờ), navigation/Module.java, view/MainFrame.java, features/FeatureBootstrap.java.
+  (khóa thu khi chờ), hethong/dieuhuong/Module.java, hethong/giaodien/MainFrame.java, hethong/tinhnang/FeatureBootstrap.java.
 - Kiểm thử CancellationSelfTest, CancellationConcurrencySelfTest; cập nhật registry,
   role/navigation/shell tests, PaymentSelfTest, ServiceBillingPreview và script self-test.
 

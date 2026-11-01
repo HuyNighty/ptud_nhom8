@@ -22,6 +22,6 @@ if (-not (Test-Path -LiteralPath $bcryptJar -PathType Leaf)) {
 }
 $classpath = (Join-Path $root 'target\test-classes') + ';' +
              (Join-Path $root 'target\classes') + ';' + $bcryptJar
-& java -cp $classpath com.quanlynhakhoa.auth.AuthPolicySelfTest
+& java -cp $classpath com.quanlynhakhoa.hethong.xacthuc.AuthPolicySelfTest
 if ($LASTEXITCODE -ne 0) { throw 'R3-A2 policy self-test failed.' }
 Write-Host 'R3-A2 SYNTHETIC TEST ACCEPTANCE COMPLETE.' -ForegroundColor Green

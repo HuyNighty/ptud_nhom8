@@ -66,7 +66,7 @@ try {
                 throw 'STOP: dependency classpath is empty. No SQL calls made by setup.'
             }
             $classPath = (Join-Path $repo 'target/classes') + ';' + $dependencies
-            & java -cp $classPath 'com.quanlynhakhoa.dev.DevSetup'
+            & java -cp $classPath 'com.quanlynhakhoa.hatang.phattrien.DevSetup'
             if ($LASTEXITCODE -ne 0) {
                 throw 'STOP: DevSetup failed; SQL resources may exist. Do NOT retry automatically.'
             }
