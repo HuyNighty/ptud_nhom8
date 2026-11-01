@@ -32,7 +32,7 @@ public final class R4RoleSessionSelfTest {
         NavigationPolicy nav = new NavigationPolicy(service);
         check(Role.values().length == 6, "Unexpected new role requires policy review");
         check(Permission.values().length == 24, "Unexpected new permission requires policy review");
-        check(Module.values().length == 20, "Unexpected module requires policy review");
+        check(Module.values().length == 21, "Unexpected module requires policy review");
 
         Set<Permission> receptionist = Set.of(
                 Permission.PATIENT_READ, Permission.PATIENT_CREATE, Permission.PATIENT_UPDATE,
@@ -138,7 +138,7 @@ public final class R4RoleSessionSelfTest {
         check(nav.visibleModules(session(Role.CLINIC_MANAGER)).equals(
                 List.of(Module.HOME, Module.BILLING, Module.WORKFORCE,
                         Module.ACCOUNTS, Module.ROLES, Module.AUDIT,
-                        Module.SERVICE_CATALOG, Module.MY_SCHEDULE, Module.SERVICES, Module.DEBTS, Module.INVOICE_CANCELLATIONS)), "Manager allowed modules");
+                        Module.SERVICE_CATALOG, Module.MY_SCHEDULE, Module.SERVICES, Module.DEBTS, Module.INVOICE_CANCELLATIONS, Module.SHIFT_ASSIGNMENTS)), "Manager allowed modules");
         check(nav.visibleModules(session(Role.INVENTORY_MANAGER)).equals(
                 List.of(Module.HOME, Module.INVENTORY, Module.MY_SCHEDULE)), "Inventory allowed modules");
         check(nav.visibleModules(session(Role.SYSTEM_ADMIN)).size() == Module.values().length,

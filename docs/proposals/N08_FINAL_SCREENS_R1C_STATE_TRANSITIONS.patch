@@ -1,0 +1,108 @@
+diff --git a/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/service/PhanCongService.java b/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/service/PhanCongService.java
+index d47545c..1e24a2a 100644
+--- a/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/service/PhanCongService.java
++++ b/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/service/PhanCongService.java
+@@ -49,6 +49,8 @@ public final class PhanCongService {
+             dao.insert(c,id,nv,ca,day,work);dao.audit(c,session.accountId(),id,"Tạo phân công");return id;
+         });
+     }
++    /** Proposed policy only: UI hint; DAO conditional UPDATE remains authoritative. */
++    public static boolean canCancelStatus(String status) { return "CHO_HIEU_LUC".equals(status); }
+     public void cancel(String id,String reason) throws SQLException {
+         auth.require(session,Permission.WORKFORCE_MANAGE);
+         String key=required(id,10,"Chọn phân công."),why=required(reason,300,"Lý do hủy phải có 1–300 ký tự.");
+diff --git a/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/dao/PhanCongDao.java b/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/dao/PhanCongDao.java
+index dd44909..babd3c5 100644
+--- a/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/dao/PhanCongDao.java
++++ b/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/dao/PhanCongDao.java
+@@ -73,11 +73,10 @@ public final class PhanCongDao {
+             p.setString(1,id);try(var r=p.executeQuery()){if(!r.next())throw new IllegalArgumentException("Phân công không còn tồn tại.");return r.getString(1);}
+         }
+     }
+-    // OPEN BUSINESS DECISION: HOAN_THANH cancellation has no approved transition rule.
+-    // Preserve the existing predicate for review; do not treat schema permissiveness as business approval.
++    // Proposed PO policy: source-state check is atomic with the UPDATE, never a SELECT-then-write gate.
+     public void cancel(Connection c,String id,String reason) throws SQLException {
+-        try(var p=query(c,"UPDATE dbo.PhanCong SET trangThai='DA_HUY',lyDoHuy=? WHERE maPhanCong=? AND trangThai<>'DA_HUY'")){
+-            p.setNString(1,reason);p.setString(2,id);if(p.executeUpdate()!=1)throw new IllegalArgumentException("Phân công đã hủy hoặc đã thay đổi. Hãy tải lại.");
++        try(var p=query(c,"UPDATE dbo.PhanCong SET trangThai='DA_HUY',lyDoHuy=? WHERE maPhanCong=? AND trangThai='CHO_HIEU_LUC'")){
++            p.setNString(1,reason);p.setString(2,id);if(p.executeUpdate()!=1)throw new IllegalArgumentException("Chỉ hủy phân công chờ hiệu lực. Trạng thái có thể đã thay đổi; hãy tải lại.");
+         }
+     }
+     public void audit(Connection c,String account,String id,String action) throws SQLException {
+diff --git a/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/view/LichLamViecPanel.java b/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/view/LichLamViecPanel.java
+index 22f6af2..b889c73 100644
+--- a/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/view/LichLamViecPanel.java
++++ b/src/main/java/com/quanlynhakhoa/quantri/lichlamviec/view/LichLamViecPanel.java
+@@ -65,7 +65,7 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
+         boolean active=service.isActive(),write=management&&service.canManage();
+         for(Component c:new Component[]{from,to,keyword,employees,previous,next,today,refresh,table})c.setEnabled(!busy&&active);
+         create.setEnabled(!busy&&active&&write&&!shifts.isEmpty()&&employees.getItemCount()>1);
+-        PhanCong p=selected();detail.setEnabled(!busy&&active&&p!=null);cancel.setEnabled(!busy&&write&&p!=null&&!"DA_HUY".equals(p.trangThai()));
++        PhanCong p=selected();detail.setEnabled(!busy&&active&&p!=null);cancel.setEnabled(!busy&&write&&p!=null&&PhanCongService.canCancelStatus(p.trangThai()));
+     }
+     private void clear(){model.rows=List.of();model.fireTableDataChanged();shifts=List.of();employees.removeAllItems();employees.addItem(null);}
+     @Override public void refreshData(){
+@@ -106,6 +106,7 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
+     }
+     private void cancel(){
+         PhanCong p=selected();if(p==null||busy||!service.canManage())return;
++        if(!PhanCongService.canCancelStatus(p.trangThai())){status.setText("Chỉ hủy phân công chờ hiệu lực. Hãy tải lại.");return;}
+         String reason=JOptionPane.showInputDialog(this,"Lý do hủy phân công "+p.id()+" (bắt buộc, tối đa 300 ký tự):");if(reason==null)return;
+         if(reason.isBlank()||reason.trim().length()>300){status.setText("Lý do hủy phải có 1–300 ký tự.");return;}
+         write(()->{service.cancel(p.id(),reason);return p.id();},"Đã hủy phân công, giữ nguyên lịch sử. ");
+diff --git a/src/test/java/com/quanlynhakhoa/quantri/lichlamviec/ShiftJdbcDouble.java b/src/test/java/com/quanlynhakhoa/quantri/lichlamviec/ShiftJdbcDouble.java
+index 2f93085..06b1a81 100644
+--- a/src/test/java/com/quanlynhakhoa/quantri/lichlamviec/ShiftJdbcDouble.java
++++ b/src/test/java/com/quanlynhakhoa/quantri/lichlamviec/ShiftJdbcDouble.java
+@@ -12,6 +12,7 @@ public final class ShiftJdbcDouble {
+     public String database="N08Dev_1234abcd",linkedEmployee="NV1",employeeStatus="DANG_LAM_VIEC";
+     public boolean failAudit,failCommit,missingShift,missingEmployee;
+     public int maximum=2,opens,commits,rollbacks;
++    public String concurrentCancelState;
+     public Runnable onAudit=()->{};
+     public String queriedAccount,queriedEmployee;
+     public static Map<String,Object> row(Object...pairs){Map<String,Object> m=new LinkedHashMap<>();for(int i=0;i<pairs.length;i+=2)m.put((String)pairs[i],pairs[i+1]);return m;}
+@@ -56,7 +57,13 @@ public final class ShiftJdbcDouble {
+             if(n.equals("executeUpdate")){
+                 events.add(sql);
+                 if(sql.startsWith("INSERT INTO dbo.PhanCong")){var r=assignment((String)params.get(1),(String)params.get(2),"CHO_HIEU_LUC");r.put("maCa",params.get(3));r.put("ngayLam",params.get(4));r.put("nhiemVu",params.get(5));local.add(r);return 1;}
+-                if(sql.startsWith("UPDATE dbo.PhanCong")){for(var r:local)if(r.get("maPhanCong").equals(params.get(2))&&!r.get("trangThai").equals("DA_HUY")){r.put("trangThai","DA_HUY");r.put("lyDoHuy",params.get(1));return 1;}return 0;}
++                if(sql.startsWith("UPDATE dbo.PhanCong")){
++                    if(concurrentCancelState!=null){
++                        // Simulate another writer changing the state immediately before UPDATE evaluation.
++                        for(var r:assignments)if(r.get("maPhanCong").equals(params.get(2)))r.put("trangThai",concurrentCancelState);
++                        for(var r:local)if(r.get("maPhanCong").equals(params.get(2)))r.put("trangThai",concurrentCancelState);
++                    }
++                    for(var r:local)if(r.get("maPhanCong").equals(params.get(2))&&r.get("trangThai").equals("CHO_HIEU_LUC")){r.put("trangThai","DA_HUY");r.put("lyDoHuy",params.get(1));return 1;}return 0;}
+                 if(sql.startsWith("INSERT INTO dbo.NhatKyThaoTac")){onAudit.run();if(failAudit)throw new SQLException("synthetic audit failure");return 1;}
+                 throw new AssertionError("Unexpected update "+sql);
+             }
+diff --git a/src/test/java/com/quanlynhakhoa/quantri/lichlamviec/PhanCongSelfTest.java b/src/test/java/com/quanlynhakhoa/quantri/lichlamviec/PhanCongSelfTest.java
+index 1010911..b06c715 100644
+--- a/src/test/java/com/quanlynhakhoa/quantri/lichlamviec/PhanCongSelfTest.java
++++ b/src/test/java/com/quanlynhakhoa/quantri/lichlamviec/PhanCongSelfTest.java
+@@ -50,6 +50,23 @@ public final class PhanCongSelfTest {
+         rejects(IllegalArgumentException.class,()->PhanCongService.checkAssignment(adjacent,List.of(p),1));rejects(IllegalArgumentException.class,()->PhanCongService.checkAssignment(ca,List.of(p),2));
+         var cancelled=new PhanCong("P","N","Tên",ca,day,"task","DA_HUY","lý do");PhanCongService.checkAssignment(ca,List.of(cancelled),2);check(true,"cancelled excluded");
+         rejects(IllegalArgumentException.class,()->PhanCongService.checkAssignment(new CaLamViec("N","Đêm",LocalTime.of(22,0),LocalTime.of(6,0)),List.of(),2));
++        // Proposed transition matrix: only CHO_HIEU_LUC may be cancelled.
++        for(String state:List.of("CHO_HIEU_LUC","DANG_THUC_HIEN","HOAN_THANH","DA_HUY")){
++            var d=new ShiftJdbcDouble();d.assignments.add(ShiftJdbcDouble.assignment("STATE1","NV1",state));
++            var svc=new PhanCongService(session(Role.CLINIC_MANAGER),d::open);
++            boolean allowed=state.equals("CHO_HIEU_LUC");
++            check(PhanCongService.canCancelStatus(state)==allowed,"cancel policy "+state);
++            if(allowed){svc.cancel("STATE1","Lý do");check(d.commits==1&&d.assignments.getFirst().get("trangThai").equals("DA_HUY"),"allowed transition commits");}
++            else{rejects(IllegalArgumentException.class,()->svc.cancel("STATE1","Lý do"));check(d.commits==0&&d.rollbacks==1&&d.assignments.getFirst().get("trangThai").equals(state),"forbidden state unchanged "+state);check(d.events.stream().noneMatch(e->e.startsWith("INSERT INTO dbo.NhatKyThaoTac")),"no success audit on denied transition");}
++        }
++        for(String advanced:List.of("DANG_THUC_HIEN","HOAN_THANH","DA_HUY")){
++            var d=new ShiftJdbcDouble();d.assignments.add(ShiftJdbcDouble.assignment("RACE1","NV1","CHO_HIEU_LUC"));d.concurrentCancelState=advanced;
++            var svc=new PhanCongService(session(Role.SYSTEM_ADMIN),d::open);
++            rejects(IllegalArgumentException.class,()->svc.cancel("RACE1","UI selected stale row"));
++            check(d.commits==0&&d.rollbacks==1&&d.assignments.getFirst().get("trangThai").equals(advanced),"atomic UPDATE protects concurrent transition "+advanced);
++            check(d.events.stream().noneMatch(e->e.startsWith("INSERT INTO dbo.NhatKyThaoTac")),"no cancellation audit on lost race");
++        }
++        check(!PhanCongService.canCancelStatus(null)&&!PhanCongService.canCancelStatus("UNKNOWN"),"unknown state denied");
+         System.out.println("PASS: PhanCongSelfTest "+checks+" synthetic checks; no real SQL; transaction/identity/roles/overlap/history.");
+     }
+ }
