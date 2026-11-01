@@ -41,16 +41,19 @@ public final class R4MainNavigationSelfTest {
         MainNavigationModel reception = new MainNavigationModel(session(Role.RECEPTIONIST));
         check(reception.availableModules().equals(List.of(
                 Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING,
-                Module.MY_SCHEDULE, Module.DEBTS, Module.PAYMENTS)));
+                Module.MY_SCHEDULE, Module.DEBTS, Module.PAYMENTS, Module.RECEPTION)));
         reception.select(Module.PATIENTS);
         check(reception.selected() == Module.PATIENTS);
         reception.select(Module.BILLING);
         check(reception.selected() == Module.BILLING);
         reception.select(Module.APPOINTMENTS);
         check(reception.selected() == Module.APPOINTMENTS);
+        reception.select(Module.RECEPTION);
+        check(reception.selected() == Module.RECEPTION);
         denied(() -> reception.select(Module.INVENTORY));
         reception.logout();
         denied(() -> reception.select(Module.PATIENTS));
+        denied(() -> reception.select(Module.RECEPTION));
 
         MainNavigationModel doctor = new MainNavigationModel(session(Role.DOCTOR));
         check(doctor.availableModules().equals(List.of(
