@@ -308,6 +308,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
             case SERVICE_CATALOG_MANAGE -> "Quản lý danh mục dịch vụ";
             case INVOICE_CANCEL_REQUEST -> "Yêu cầu hủy hóa đơn";
             case INVOICE_CANCEL_APPROVE -> "Duyệt hủy hóa đơn";
+            case SHIFT_HANDOVER_MANAGE -> "Bàn giao ca theo phân công";
         };
     }
 
