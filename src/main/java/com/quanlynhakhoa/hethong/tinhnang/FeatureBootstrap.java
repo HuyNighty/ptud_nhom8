@@ -10,6 +10,7 @@ import com.quanlynhakhoa.nghiepvu.kho.InventoryPanel;
 import com.quanlynhakhoa.quantri.nhanvien.ui.EmployeePanel;
 import com.quanlynhakhoa.quantri.vaitro.ui.RolePanel;
 import com.quanlynhakhoa.nghiepvu.phieukham.view.PhieuKhamPanel;
+import com.quanlynhakhoa.nghiepvu.dieutri.view.TreatmentPlanPanel;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.DichVuPanel;
@@ -30,6 +31,7 @@ public final class FeatureBootstrap {
                 .register(Module.ROLES, RolePanel::new)
                 .register(Module.AUDIT, AuditPanel::new)
                 .register(Module.EXAMINATIONS, PhieuKhamPanel::new)
+                .register(Module.TREATMENT_PLANS, TreatmentPlanPanel::new)
                 .register(Module.PATIENTS, BenhNhanPanel::new)
                 .register(Module.APPOINTMENTS, LichHenPanel::new)
                 .register(Module.RECEPTION, TiepNhanPanel::new)

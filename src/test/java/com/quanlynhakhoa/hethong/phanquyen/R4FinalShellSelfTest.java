@@ -53,7 +53,9 @@ public final class R4FinalShellSelfTest {
     public static void main(String[] args) {
         check(Role.values().length == 6, "unreviewed role added");
         check(Permission.values().length == 24, "unreviewed permission added");
-        check(Module.values().length == 21, "unreviewed navigation destination added");
+        check(Module.values().length == 22, "unreviewed navigation destination added");
+        check(Module.TREATMENT_PLANS.openPermission() == Permission.MEDICAL_RECORD_READ,
+                "treatment plan navigation requires medical record read permission");
         check(Module.RECEPTION.openPermission() == Permission.PATIENT_CHECK_IN,
                 "reception requires patient check-in permission");
         check(FeatureBootstrap.createRegistry().contains(Module.RECEPTION),

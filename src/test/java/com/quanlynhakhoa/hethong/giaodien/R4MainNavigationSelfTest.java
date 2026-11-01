@@ -58,7 +58,9 @@ public final class R4MainNavigationSelfTest {
         MainNavigationModel doctor = new MainNavigationModel(session(Role.DOCTOR));
         check(doctor.availableModules().equals(List.of(
                 Module.HOME, Module.PATIENTS, Module.MEDICAL_RECORDS,
-                Module.EXAMINATIONS, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE)));
+                Module.EXAMINATIONS, Module.TREATMENT_PLANS, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE)));
+        doctor.select(Module.TREATMENT_PLANS);
+        check(doctor.selected() == Module.TREATMENT_PLANS);
         doctor.select(Module.MEDICAL_RECORDS);
         check(doctor.selected() == Module.MEDICAL_RECORDS);
         denied(() -> doctor.select(Module.WORKFORCE));
