@@ -1,0 +1,2738 @@
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/config/DashboardClockConfig.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/config/DashboardClockConfig.java
+new file mode 100644
+index 0000000..740bea5
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/config/DashboardClockConfig.java
+@@ -0,0 +1,19 @@
++package com.manage.nhakhoa.features.dashboard.config;
++
++import com.manage.nhakhoa.features.dashboard.service.DashboardQueryService;
++import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++
++import java.time.Clock;
++
++/** Cung cấp {@link Clock} theo múi giờ nghiệp vụ nếu ứng dụng chưa khai báo bean Clock khác (BA V1 Q02). */
++@Configuration
++public class DashboardClockConfig {
++
++    @Bean
++    @ConditionalOnMissingBean(Clock.class)
++    public Clock businessClock() {
++        return Clock.system(DashboardQueryService.BUSINESS_ZONE);
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/AdminDashboardResponse.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/AdminDashboardResponse.java
+new file mode 100644
+index 0000000..d690885
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/AdminDashboardResponse.java
+@@ -0,0 +1,27 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++import java.time.LocalDate;
++import java.time.OffsetDateTime;
++import java.util.List;
++
++/** Read model Dashboard Admin theo contract 03-DASHBOARD-API-CONTRACT-V1. Không chứa Entity JPA, PII hoặc PHI. */
++public record AdminDashboardResponse(
++        String source,
++        LocalDate businessDate,
++        String zoneId,
++        OffsetDateTime generatedAt,
++        PeriodDto period,
++        AppointmentSummary appointments,
++        ExamSummary exams,
++        CollectionSummary collections,
++        ReceivableSummary receivables,
++        StaffingSummary staffing,
++        InventorySummary inventory,
++        EmergencyKitSummary emergencyKit,
++        TreatmentDueSummary treatmentDue,
++        WorkQueueDto workQueue,
++        List<DashboardWarning> warnings) {
++    public AdminDashboardResponse {
++        warnings = List.copyOf(warnings);
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/AppointmentSummary.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/AppointmentSummary.java
+new file mode 100644
+index 0000000..c93e0b7
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/AppointmentSummary.java
+@@ -0,0 +1,18 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++import com.manage.nhakhoa.features.lichhen.enums.TrangThaiLichHen;
++
++import java.util.Map;
++
++/**
++ * Lịch hẹn theo thoiGianHen trong ngày D (BA V1 Q05).
++ * totalRecords = tổng byStatus (đủ 7 trạng thái, gồm DA_HUY/DA_DOI_LICH) và là số BẢN GHI, không phải số bệnh nhân.
++ * activeCount = CHO_XAC_NHAN + DA_XAC_NHAN + DA_DEN, trường riêng.
++ */
++public record AppointmentSummary(long totalRecords, long activeCount, Map<TrangThaiLichHen, Long> byStatus) {
++    public AppointmentSummary {
++        java.util.EnumMap<TrangThaiLichHen, Long> copy = new java.util.EnumMap<>(TrangThaiLichHen.class);
++        copy.putAll(byStatus);
++        byStatus = java.util.Collections.unmodifiableMap(copy);
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/CollectionSummary.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/CollectionSummary.java
+new file mode 100644
+index 0000000..9c9ace5
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/CollectionSummary.java
+@@ -0,0 +1,14 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++import com.manage.nhakhoa.features.hoadon.enums.PhuongThucThanhToan;
++
++import java.util.Map;
++
++/** Thu hợp lệ trong ngày (ThanhToan THANH_CONG theo thoiGian trong D). Số tiền là chuỗi số nguyên VND. */
++public record CollectionSummary(String amountVnd, Map<PhuongThucThanhToan, String> byMethodVnd, String definition) {
++    public CollectionSummary {
++        java.util.EnumMap<PhuongThucThanhToan, String> copy = new java.util.EnumMap<>(PhuongThucThanhToan.class);
++        copy.putAll(byMethodVnd);
++        byMethodVnd = java.util.Collections.unmodifiableMap(copy);
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/DashboardWarning.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/DashboardWarning.java
+new file mode 100644
+index 0000000..ee33018
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/DashboardWarning.java
+@@ -0,0 +1,5 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++/** Cảnh báo không nhạy cảm (không chứa PII/PHI, không chứa nội dung lỗi SQL). */
++public record DashboardWarning(String code, String section, String message) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/EmergencyCheckState.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/EmergencyCheckState.java
+new file mode 100644
+index 0000000..15269b8
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/EmergencyCheckState.java
+@@ -0,0 +1,13 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++/**
++ * Kết quả đánh giá lịch kiểm tra hộp cấp cứu (BA V1 Q11).
++ * Không có giá trị "ĐẠT/AN TOÀN": {@link #TRONG_CHU_KY} chỉ nghĩa là đã kiểm tra trong chu kỳ
++ * và không phát hiện mục cần bổ sung, không phải chứng nhận an toàn lâm sàng.
++ */
++public enum EmergencyCheckState {
++    CHUA_CO_KIEM_TRA,
++    QUA_CHU_KY,
++    CAN_XU_LY,
++    TRONG_CHU_KY
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/EmergencyKitSummary.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/EmergencyKitSummary.java
+new file mode 100644
+index 0000000..ab24d6b
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/EmergencyKitSummary.java
+@@ -0,0 +1,13 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++import java.time.OffsetDateTime;
++
++/** Hộp cấp cứu (BA V1 Q11). Không bao giờ kết luận "đạt/an toàn". */
++public record EmergencyKitSummary(
++        SectionStatus status,
++        EmergencyCheckState checkState,
++        OffsetDateTime lastCheckedAt,
++        Long daysSinceLastCheck,
++        Integer checkCycleDays,
++        String message) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ExamSummary.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ExamSummary.java
+new file mode 100644
+index 0000000..988055a
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ExamSummary.java
+@@ -0,0 +1,5 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++/** Phiếu khám tiếp nhận trong ngày D theo trạng thái — đếm PHIẾU, nhãn UI "Phiếu chờ khám" (BA V1 Q04). */
++public record ExamSummary(long waiting, long inProgress, long concluded, String unit) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/InventorySummary.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/InventorySummary.java
+new file mode 100644
+index 0000000..b337e92
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/InventorySummary.java
+@@ -0,0 +1,15 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++/**
++ * Tồn kho (BA V1 Q09/Q10). Khi status != AVAILABLE các số là null (không thay bằng 0).
++ * anomalyLotCount: lô tồn âm hoặc không trỏ đúng một trong Thuoc/VatTu — loại khỏi phép tính, báo bất thường.
++ */
++public record InventorySummary(
++        SectionStatus status,
++        Integer belowMinimumItemCount,
++        Integer nearExpiryLotCount,
++        Integer expiredLotCount,
++        Integer unknownExpiryLotCount,
++        Integer thresholdDays,
++        Integer anomalyLotCount) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/PeriodDto.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/PeriodDto.java
+new file mode 100644
+index 0000000..9d3a813
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/PeriodDto.java
+@@ -0,0 +1,7 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++import java.time.OffsetDateTime;
++
++/** Khoảng ngày nghiệp vụ nửa mở [startInclusive, endExclusive). */
++public record PeriodDto(OffsetDateTime startInclusive, OffsetDateTime endExclusive) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ReceivableSummary.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ReceivableSummary.java
+new file mode 100644
+index 0000000..8ea0dc5
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ReceivableSummary.java
+@@ -0,0 +1,8 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++/**
++ * Công nợ hiện tại trên mọi hóa đơn khác DA_HUY (BA V1 Q07, V1.1 #05: hóa đơn đang chờ duyệt hủy vẫn tính).
++ * overpaidInvoiceCount: số hóa đơn đã thu vượt tổng tiền — anomaly, không làm công nợ âm.
++ */
++public record ReceivableSummary(String amountVnd, long invoiceCount, String scope, long overpaidInvoiceCount) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/RoleCount.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/RoleCount.java
+new file mode 100644
+index 0000000..4d91801
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/RoleCount.java
+@@ -0,0 +1,6 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++/** Số người theo chức danh BS / YT / LT. */
++public record RoleCount(int bacSi, int yTa, int leTan) {
++    public static final RoleCount ZERO = new RoleCount(0, 0, 0);
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/SectionStatus.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/SectionStatus.java
+new file mode 100644
+index 0000000..03ce2be
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/SectionStatus.java
+@@ -0,0 +1,11 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++/** Trạng thái của từng section Dashboard (contract 03). Không dùng zero để che lỗi. */
++public enum SectionStatus {
++    /** Truy vấn thành công; các số đếm (kể cả 0) là hợp lệ. */
++    AVAILABLE,
++    /** Không tính được chính xác (lỗi truy vấn hoặc thiếu dữ liệu nguồn); các trường số là null. */
++    UNAVAILABLE,
++    /** Nghiệp vụ chưa có danh mục/cấu hình thật để kết luận. */
++    UNCONFIGURED
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ShiftStaffingDto.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ShiftStaffingDto.java
+new file mode 100644
+index 0000000..2dfc041
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ShiftStaffingDto.java
+@@ -0,0 +1,16 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++import java.time.LocalTime;
++
++/** Định mức và số phân công DISTINCT nhân viên của một ca trong ngày D (BA V1 Q08). Không có tên nhân viên. */
++public record ShiftStaffingDto(
++        String shiftCode,
++        String shiftName,
++        LocalTime startTime,
++        LocalTime endTime,
++        boolean overnight,
++        ShiftState state,
++        RoleCount required,
++        RoleCount assigned,
++        RoleCount missing) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ShiftState.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ShiftState.java
+new file mode 100644
+index 0000000..9f3823c
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/ShiftState.java
+@@ -0,0 +1,9 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++/** Trạng thái định mức của một ca trong ngày nghiệp vụ (theo lịch phân công, không phải chấm công). */
++public enum ShiftState {
++    DU_NHAN_SU,
++    THIEU_NHAN_SU,
++    /** Giờ ca hoặc định mức không hợp lệ (ví dụ giờ bắt đầu = giờ kết thúc, định mức âm). */
++    LOI_CAU_HINH
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/StaffingSummary.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/StaffingSummary.java
+new file mode 100644
+index 0000000..a38fabc
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/StaffingSummary.java
+@@ -0,0 +1,10 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++import java.util.List;
++
++/** Nhân sự theo lịch phân công. Khi status != AVAILABLE: shifts rỗng và understaffedShiftCount null. */
++public record StaffingSummary(SectionStatus status, List<ShiftStaffingDto> shifts, Integer understaffedShiftCount) {
++    public StaffingSummary {
++        shifts = List.copyOf(shifts);
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/TreatmentDueSummary.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/TreatmentDueSummary.java
+new file mode 100644
+index 0000000..e9012c9
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/TreatmentDueSummary.java
+@@ -0,0 +1,5 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++/** "Kế hoạch điều trị đến hạn" (BA V1 Q12): DISTINCT maKeHoach, không phải số dòng/số lịch. */
++public record TreatmentDueSummary(SectionStatus status, Long duePlanCount, Long overduePlanCount, Integer horizonDays) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/WorkPriority.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/WorkPriority.java
+new file mode 100644
+index 0000000..e368613
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/WorkPriority.java
+@@ -0,0 +1,8 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++/** Thứ tự ưu tiên của hàng việc: khẩn → chờ duyệt → theo dõi (BA V1 Q03). */
++public enum WorkPriority {
++    KHAN,
++    CHO_DUYET,
++    THEO_DOI
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/WorkQueueDto.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/WorkQueueDto.java
+new file mode 100644
+index 0000000..bbf0c86
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/WorkQueueDto.java
+@@ -0,0 +1,13 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++import java.util.List;
++
++/**
++ * workGroupCount = số nhóm có objectCount > 0; relatedObjectCount = tổng objectCount (có thể trùng giữa nhóm).
++ * Badge sidebar KHÔNG được tính từ hai số này (BA V1 Q03).
++ */
++public record WorkQueueDto(int workGroupCount, long relatedObjectCount, List<WorkQueueItem> items) {
++    public WorkQueueDto {
++        items = List.copyOf(items);
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/WorkQueueItem.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/WorkQueueItem.java
+new file mode 100644
+index 0000000..4b41f5d
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/dto/response/WorkQueueItem.java
+@@ -0,0 +1,11 @@
++package com.manage.nhakhoa.features.dashboard.dto.response;
++
++/** Một nhóm việc có nguồn truy vấn thật; chỉ xuất khi objectCount > 0. */
++public record WorkQueueItem(
++        String code,
++        WorkPriority priority,
++        String title,
++        long objectCount,
++        String targetScreen,
++        String sourceMetric) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/DashboardReadRepository.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/DashboardReadRepository.java
+new file mode 100644
+index 0000000..e5c70e5
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/DashboardReadRepository.java
+@@ -0,0 +1,80 @@
++package com.manage.nhakhoa.features.dashboard.repository;
++
++import com.manage.nhakhoa.features.hoadon.enums.PhuongThucThanhToan;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiPhieuKham;
++import com.manage.nhakhoa.features.lichhen.enums.TrangThaiLichHen;
++
++import java.math.BigDecimal;
++import java.time.LocalDate;
++import java.time.LocalDateTime;
++import java.util.List;
++import java.util.Map;
++import java.util.Optional;
++
++/**
++ * Cổng đọc dữ liệu cho Dashboard Admin. CHỈ ĐỌC: không có phương thức ghi.
++ * Mọi khoảng thời gian là nửa mở [startInclusive, endExclusive) theo giờ địa phương phòng khám.
++ * Implementation gốc: {@link JpaDashboardReadRepository}; unit test dùng bản giả lập trong bộ nhớ.
++ */
++public interface DashboardReadRepository {
++
++    /** Số bản ghi LichHen theo trạng thái với thoiGianHen trong khoảng. Trạng thái không có bản ghi có thể vắng mặt. */
++    Map<TrangThaiLichHen, Long> countAppointmentsByStatus(LocalDateTime startInclusive, LocalDateTime endExclusive);
++
++    /** Số PhieuKham theo trạng thái với thoiGianTiepNhan trong khoảng. */
++    Map<TrangThaiPhieuKham, Long> countExamsByStatus(LocalDateTime startInclusive, LocalDateTime endExclusive);
++
++    /** Tổng ThanhToan.soTien THANH_CONG theo phương thức với thoiGian trong khoảng. */
++    Map<PhuongThucThanhToan, BigDecimal> sumSuccessfulPaymentsByMethod(LocalDateTime startInclusive, LocalDateTime endExclusive);
++
++    /** SUM(soLuong * donGiaApDung) theo từng hóa đơn khác DA_HUY (aggregate riêng, không join thanh toán). */
++    List<InvoiceAmountRow> sumBilledAmountPerActiveInvoice();
++
++    /** SUM(soTien) THANH_CONG theo từng hóa đơn khác DA_HUY (aggregate riêng, không join chi tiết). */
++    List<InvoiceAmountRow> sumSuccessfulPaymentsPerActiveInvoice();
++
++    /** Số giao dịch THANH_CONG thuộc hóa đơn DA_HUY — anomaly theo BA V1 Q06. */
++    long countSuccessfulPaymentsOnCancelledInvoices();
++
++    /** Số YeuCauHuyHoaDon đang CHO_DUYET. */
++    long countPendingInvoiceCancellationRequests();
++
++    /** Số PhieuDieuChinhKho đang CHO_DUYET. */
++    long countPendingStockAdjustments();
++
++    /** Giá trị thô của ThamSoHeThong theo khóa; rỗng nếu chưa cấu hình. */
++    Optional<String> findSystemParameter(String key);
++
++    /** Toàn bộ CaLamViec. */
++    List<ShiftRow> findShifts();
++
++    /**
++     * COUNT(DISTINCT NhanVien) theo (maCa, chucDanh) cho ngayLam, chỉ PhanCong CHO_HIEU_LUC/DANG_THUC_HIEN/HOAN_THANH,
++     * NhanVien DANG_LAM_VIEC và chucDanh BS/YT/LT.
++     */
++    List<ShiftAssignmentRow> countAssignedStaffByShiftAndRole(LocalDate workDate);
++
++    /** Các LoHang có soLuongTon khác 0 (kể cả âm để phát hiện bất thường). */
++    List<StockLotRow> findNonEmptyStockLots();
++
++    /** Toàn bộ Thuoc và VatTu với định mức tối thiểu. */
++    List<StockItemRow> findStockItems();
++
++    /** Số DanhMucCapCuu dangApDung = true và laDuLieuMau = false. */
++    long countActiveRealEmergencyCatalogItems();
++
++    /** KiemTraCapCuu có thoiGian lớn nhất và <= thời điểm cho trước. */
++    Optional<EmergencyCheckRow> findLatestEmergencyCheckAtOrBefore(LocalDateTime atOrBefore);
++
++    /** Số ChiTietKiemTraCapCuu của lần kiểm tra có dat = false hoặc hanSuDung <= safeUntilInclusive. */
++    long countFailingEmergencyCheckItems(String checkId, LocalDate safeUntilInclusive);
++
++    /**
++     * COUNT(DISTINCT maKeHoach) của KeHoachDieuTri DANG_THUC_HIEN có ít nhất một ChiTietDieuTri CHUA_THUC_HIEN
++     * với ngayDuKien <= dueOnOrBefore.
++     */
++    long countPlansWithPendingItemsDueOnOrBefore(LocalDate dueOnOrBefore);
++
++    /** Như trên nhưng ngayDuKien < dueBefore (quá hạn). */
++    long countPlansWithPendingItemsDueBefore(LocalDate dueBefore);
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/EmergencyCheckRow.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/EmergencyCheckRow.java
+new file mode 100644
+index 0000000..c18cb0b
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/EmergencyCheckRow.java
+@@ -0,0 +1,9 @@
++package com.manage.nhakhoa.features.dashboard.repository;
++
++import com.manage.nhakhoa.features.capcuu.enums.KetQuaKiemTra;
++
++import java.time.LocalDateTime;
++
++/** Bản KiemTraCapCuu gần nhất (không gồm người kiểm tra/ghi chú). */
++public record EmergencyCheckRow(String checkId, LocalDateTime checkedAt, KetQuaKiemTra result) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/InvoiceAmountRow.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/InvoiceAmountRow.java
+new file mode 100644
+index 0000000..d516abc
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/InvoiceAmountRow.java
+@@ -0,0 +1,7 @@
++package com.manage.nhakhoa.features.dashboard.repository;
++
++import java.math.BigDecimal;
++
++/** Tổng tiền đã gộp theo từng hóa đơn (chỉ mã nội bộ, không có thông tin bệnh nhân). */
++public record InvoiceAmountRow(String invoiceId, BigDecimal amount) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/JpaDashboardReadRepository.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/JpaDashboardReadRepository.java
+new file mode 100644
+index 0000000..5c692da
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/JpaDashboardReadRepository.java
+@@ -0,0 +1,313 @@
++package com.manage.nhakhoa.features.dashboard.repository;
++
++import com.manage.nhakhoa.features.capcuu.enums.KetQuaKiemTra;
++import com.manage.nhakhoa.features.hoadon.enums.PhuongThucThanhToan;
++import com.manage.nhakhoa.features.hoadon.enums.TrangThaiHoaDon;
++import com.manage.nhakhoa.features.hoadon.enums.TrangThaiThanhToan;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiChiTietDieuTri;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiKeHoach;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiPhieuKham;
++import com.manage.nhakhoa.features.lichhen.enums.TrangThaiLichHen;
++import com.manage.nhakhoa.features.nhansu.enums.TrangThaiNhanVien;
++import com.manage.nhakhoa.features.nhansu.enums.TrangThaiPhanCong;
++import com.manage.nhakhoa.shared.enums.TrangThaiDuyet;
++import com.manage.nhakhoa.shared.enums.VaiTro;
++import jakarta.persistence.EntityManager;
++import jakarta.persistence.PersistenceContext;
++import org.springframework.stereotype.Repository;
++import org.springframework.transaction.annotation.Transactional;
++
++import java.math.BigDecimal;
++import java.time.LocalDate;
++import java.time.LocalDateTime;
++import java.time.LocalTime;
++import java.util.ArrayList;
++import java.util.EnumMap;
++import java.util.List;
++import java.util.Map;
++import java.util.Optional;
++
++/**
++ * Truy vấn JPQL chỉ đọc trên các Entity hiện hành (không sửa Entity/schema).
++ * Mỗi chỉ số là một aggregate riêng để tránh nhân dòng khi JOIN 1-N.
++ */
++@Repository
++@Transactional(readOnly = true)
++public class JpaDashboardReadRepository implements DashboardReadRepository {
++
++    private static final List<TrangThaiPhanCong> COUNTED_ASSIGNMENT_STATUSES = List.of(
++            TrangThaiPhanCong.CHO_HIEU_LUC, TrangThaiPhanCong.DANG_THUC_HIEN, TrangThaiPhanCong.HOAN_THANH);
++    private static final List<VaiTro> STAFFED_ROLES = List.of(VaiTro.BS, VaiTro.YT, VaiTro.LT);
++
++    @PersistenceContext
++    private EntityManager entityManager;
++
++    public JpaDashboardReadRepository() {
++    }
++
++    JpaDashboardReadRepository(EntityManager entityManager) {
++        this.entityManager = entityManager;
++    }
++
++    @Override
++    public Map<TrangThaiLichHen, Long> countAppointmentsByStatus(LocalDateTime startInclusive, LocalDateTime endExclusive) {
++        List<Object[]> rows = entityManager.createQuery(
++                        "select lh.trangThai, count(lh) from LichHen lh"
++                                + " where lh.thoiGianHen >= :start and lh.thoiGianHen < :end"
++                                + " group by lh.trangThai", Object[].class)
++                .setParameter("start", startInclusive)
++                .setParameter("end", endExclusive)
++                .getResultList();
++        Map<TrangThaiLichHen, Long> result = new EnumMap<>(TrangThaiLichHen.class);
++        for (Object[] row : rows) {
++            result.put((TrangThaiLichHen) row[0], toLong(row[1]));
++        }
++        return result;
++    }
++
++    @Override
++    public Map<TrangThaiPhieuKham, Long> countExamsByStatus(LocalDateTime startInclusive, LocalDateTime endExclusive) {
++        List<Object[]> rows = entityManager.createQuery(
++                        "select pk.trangThai, count(pk) from PhieuKham pk"
++                                + " where pk.thoiGianTiepNhan >= :start and pk.thoiGianTiepNhan < :end"
++                                + " group by pk.trangThai", Object[].class)
++                .setParameter("start", startInclusive)
++                .setParameter("end", endExclusive)
++                .getResultList();
++        Map<TrangThaiPhieuKham, Long> result = new EnumMap<>(TrangThaiPhieuKham.class);
++        for (Object[] row : rows) {
++            result.put((TrangThaiPhieuKham) row[0], toLong(row[1]));
++        }
++        return result;
++    }
++
++    @Override
++    public Map<PhuongThucThanhToan, BigDecimal> sumSuccessfulPaymentsByMethod(LocalDateTime startInclusive, LocalDateTime endExclusive) {
++        List<Object[]> rows = entityManager.createQuery(
++                        "select tt.phuongThuc, sum(tt.soTien) from ThanhToan tt"
++                                + " where tt.trangThai = :success"
++                                + " and tt.thoiGian >= :start and tt.thoiGian < :end"
++                                + " group by tt.phuongThuc", Object[].class)
++                .setParameter("success", TrangThaiThanhToan.THANH_CONG)
++                .setParameter("start", startInclusive)
++                .setParameter("end", endExclusive)
++                .getResultList();
++        Map<PhuongThucThanhToan, BigDecimal> result = new EnumMap<>(PhuongThucThanhToan.class);
++        for (Object[] row : rows) {
++            result.put((PhuongThucThanhToan) row[0], toBigDecimal(row[1]));
++        }
++        return result;
++    }
++
++    @Override
++    public List<InvoiceAmountRow> sumBilledAmountPerActiveInvoice() {
++        List<Object[]> rows = entityManager.createQuery(
++                        "select hd.maHoaDon, sum(ct.donGiaApDung * ct.soLuong)"
++                                + " from ChiTietHoaDon ct join ct.hoaDon hd"
++                                + " where hd.trangThai <> :cancelled"
++                                + " group by hd.maHoaDon", Object[].class)
++                .setParameter("cancelled", TrangThaiHoaDon.DA_HUY)
++                .getResultList();
++        return toInvoiceRows(rows);
++    }
++
++    @Override
++    public List<InvoiceAmountRow> sumSuccessfulPaymentsPerActiveInvoice() {
++        List<Object[]> rows = entityManager.createQuery(
++                        "select hd.maHoaDon, sum(tt.soTien)"
++                                + " from ThanhToan tt join tt.hoaDon hd"
++                                + " where hd.trangThai <> :cancelled and tt.trangThai = :success"
++                                + " group by hd.maHoaDon", Object[].class)
++                .setParameter("cancelled", TrangThaiHoaDon.DA_HUY)
++                .setParameter("success", TrangThaiThanhToan.THANH_CONG)
++                .getResultList();
++        return toInvoiceRows(rows);
++    }
++
++    @Override
++    public long countSuccessfulPaymentsOnCancelledInvoices() {
++        return entityManager.createQuery(
++                        "select count(tt) from ThanhToan tt join tt.hoaDon hd"
++                                + " where hd.trangThai = :cancelled and tt.trangThai = :success", Long.class)
++                .setParameter("cancelled", TrangThaiHoaDon.DA_HUY)
++                .setParameter("success", TrangThaiThanhToan.THANH_CONG)
++                .getSingleResult();
++    }
++
++    @Override
++    public long countPendingInvoiceCancellationRequests() {
++        return entityManager.createQuery(
++                        "select count(yc) from YeuCauHuyHoaDon yc where yc.trangThai = :pending", Long.class)
++                .setParameter("pending", TrangThaiDuyet.CHO_DUYET)
++                .getSingleResult();
++    }
++
++    @Override
++    public long countPendingStockAdjustments() {
++        return entityManager.createQuery(
++                        "select count(p) from PhieuDieuChinhKho p where p.trangThai = :pending", Long.class)
++                .setParameter("pending", TrangThaiDuyet.CHO_DUYET)
++                .getSingleResult();
++    }
++
++    @Override
++    public Optional<String> findSystemParameter(String key) {
++        return entityManager.createQuery(
++                        "select ts.giaTri from ThamSoHeThong ts where ts.ten = :key", String.class)
++                .setParameter("key", key)
++                .getResultList()
++                .stream()
++                .findFirst();
++    }
++
++    @Override
++    public List<ShiftRow> findShifts() {
++        List<Object[]> rows = entityManager.createQuery(
++                        "select ca.maCa, ca.tenCa, ca.gioBatDau, ca.gioKetThuc, ca.soBacSi, ca.soYTa, ca.soLeTan"
++                                + " from CaLamViec ca order by ca.gioBatDau, ca.maCa", Object[].class)
++                .getResultList();
++        List<ShiftRow> result = new ArrayList<>(rows.size());
++        for (Object[] row : rows) {
++            result.add(new ShiftRow((String) row[0], (String) row[1], (LocalTime) row[2], (LocalTime) row[3],
++                    (Integer) row[4], (Integer) row[5], (Integer) row[6]));
++        }
++        return result;
++    }
++
++    @Override
++    public List<ShiftAssignmentRow> countAssignedStaffByShiftAndRole(LocalDate workDate) {
++        List<Object[]> rows = entityManager.createQuery(
++                        "select ca.maCa, nv.chucDanh, count(distinct nv.maNhanVien)"
++                                + " from PhanCong pc join pc.caLamViec ca join pc.nhanVien nv"
++                                + " where pc.ngayLam = :workDate"
++                                + " and pc.trangThai in :assignmentStatuses"
++                                + " and nv.trangThai = :working"
++                                + " and nv.chucDanh in :roles"
++                                + " group by ca.maCa, nv.chucDanh", Object[].class)
++                .setParameter("workDate", workDate)
++                .setParameter("assignmentStatuses", COUNTED_ASSIGNMENT_STATUSES)
++                .setParameter("working", TrangThaiNhanVien.DANG_LAM_VIEC)
++                .setParameter("roles", STAFFED_ROLES)
++                .getResultList();
++        List<ShiftAssignmentRow> result = new ArrayList<>(rows.size());
++        for (Object[] row : rows) {
++            result.add(new ShiftAssignmentRow((String) row[0], (VaiTro) row[1], toLong(row[2])));
++        }
++        return result;
++    }
++
++    @Override
++    public List<StockLotRow> findNonEmptyStockLots() {
++        List<Object[]> rows = entityManager.createQuery(
++                        "select lo.maLo, t.maThuoc, v.maVatTu, lo.hanSuDung, lo.soLuongTon"
++                                + " from LoHang lo left join lo.thuoc t left join lo.vatTu v"
++                                + " where lo.soLuongTon <> 0 order by lo.maLo", Object[].class)
++                .getResultList();
++        List<StockLotRow> result = new ArrayList<>(rows.size());
++        for (Object[] row : rows) {
++            result.add(new StockLotRow((String) row[0], (String) row[1], (String) row[2],
++                    (LocalDate) row[3], ((Number) row[4]).intValue()));
++        }
++        return result;
++    }
++
++    @Override
++    public List<StockItemRow> findStockItems() {
++        List<StockItemRow> result = new ArrayList<>();
++        for (Object[] row : entityManager.createQuery(
++                "select t.maThuoc, t.dinhMucToiThieu from Thuoc t order by t.maThuoc", Object[].class).getResultList()) {
++            result.add(new StockItemRow(StockItemType.THUOC, (String) row[0], toInt(row[1])));
++        }
++        for (Object[] row : entityManager.createQuery(
++                "select v.maVatTu, v.dinhMucToiThieu from VatTu v order by v.maVatTu", Object[].class).getResultList()) {
++            result.add(new StockItemRow(StockItemType.VAT_TU, (String) row[0], toInt(row[1])));
++        }
++        return result;
++    }
++
++    @Override
++    public long countActiveRealEmergencyCatalogItems() {
++        return entityManager.createQuery(
++                        "select count(dm) from DanhMucCapCuu dm"
++                                + " where dm.dangApDung = true and dm.laDuLieuMau = false", Long.class)
++                .getSingleResult();
++    }
++
++    @Override
++    public Optional<EmergencyCheckRow> findLatestEmergencyCheckAtOrBefore(LocalDateTime atOrBefore) {
++        return entityManager.createQuery(
++                        "select kt.maKiemTra, kt.thoiGian, kt.ketQua from KiemTraCapCuu kt"
++                                + " where kt.thoiGian <= :at order by kt.thoiGian desc, kt.maKiemTra desc", Object[].class)
++                .setParameter("at", atOrBefore)
++                .setMaxResults(1)
++                .getResultList()
++                .stream()
++                .findFirst()
++                .map(row -> new EmergencyCheckRow((String) row[0], (LocalDateTime) row[1], (KetQuaKiemTra) row[2]));
++    }
++
++    @Override
++    public long countFailingEmergencyCheckItems(String checkId, LocalDate safeUntilInclusive) {
++        return entityManager.createQuery(
++                        "select count(ct) from ChiTietKiemTraCapCuu ct"
++                                + " where ct.kiemTra.maKiemTra = :checkId"
++                                + " and (ct.dat = false or (ct.hanSuDung is not null and ct.hanSuDung <= :safeUntil))",
++                        Long.class)
++                .setParameter("checkId", checkId)
++                .setParameter("safeUntil", safeUntilInclusive)
++                .getSingleResult();
++    }
++
++    @Override
++    public long countPlansWithPendingItemsDueOnOrBefore(LocalDate dueOnOrBefore) {
++        return entityManager.createQuery(
++                        "select count(distinct kh.maKeHoach) from ChiTietDieuTri ct join ct.keHoach kh"
++                                + " where kh.trangThai = :planActive and ct.trangThai = :itemPending"
++                                + " and ct.ngayDuKien <= :due", Long.class)
++                .setParameter("planActive", TrangThaiKeHoach.DANG_THUC_HIEN)
++                .setParameter("itemPending", TrangThaiChiTietDieuTri.CHUA_THUC_HIEN)
++                .setParameter("due", dueOnOrBefore)
++                .getSingleResult();
++    }
++
++    @Override
++    public long countPlansWithPendingItemsDueBefore(LocalDate dueBefore) {
++        return entityManager.createQuery(
++                        "select count(distinct kh.maKeHoach) from ChiTietDieuTri ct join ct.keHoach kh"
++                                + " where kh.trangThai = :planActive and ct.trangThai = :itemPending"
++                                + " and ct.ngayDuKien < :due", Long.class)
++                .setParameter("planActive", TrangThaiKeHoach.DANG_THUC_HIEN)
++                .setParameter("itemPending", TrangThaiChiTietDieuTri.CHUA_THUC_HIEN)
++                .setParameter("due", dueBefore)
++                .getSingleResult();
++    }
++
++    private static List<InvoiceAmountRow> toInvoiceRows(List<Object[]> rows) {
++        List<InvoiceAmountRow> result = new ArrayList<>(rows.size());
++        for (Object[] row : rows) {
++            result.add(new InvoiceAmountRow((String) row[0], toBigDecimal(row[1])));
++        }
++        return result;
++    }
++
++    private static long toLong(Object value) {
++        return value == null ? 0L : ((Number) value).longValue();
++    }
++
++    private static int toInt(Object value) {
++        return value == null ? 0 : ((Number) value).intValue();
++    }
++
++    private static BigDecimal toBigDecimal(Object value) {
++        if (value == null) {
++            return BigDecimal.ZERO;
++        }
++        if (value instanceof BigDecimal decimal) {
++            return decimal;
++        }
++        if (value instanceof Long || value instanceof Integer) {
++            return BigDecimal.valueOf(((Number) value).longValue());
++        }
++        return new BigDecimal(value.toString());
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/ShiftAssignmentRow.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/ShiftAssignmentRow.java
+new file mode 100644
+index 0000000..0ef825e
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/ShiftAssignmentRow.java
+@@ -0,0 +1,7 @@
++package com.manage.nhakhoa.features.dashboard.repository;
++
++import com.manage.nhakhoa.shared.enums.VaiTro;
++
++/** COUNT(DISTINCT maNhanVien) theo (maCa, chucDanh) trong một ngayLam. */
++public record ShiftAssignmentRow(String shiftCode, VaiTro role, long distinctEmployeeCount) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/ShiftRow.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/ShiftRow.java
+new file mode 100644
+index 0000000..6ebc73e
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/ShiftRow.java
+@@ -0,0 +1,8 @@
++package com.manage.nhakhoa.features.dashboard.repository;
++
++import java.time.LocalTime;
++
++/** Định mức nhân sự của CaLamViec. Các định mức có thể null nếu dữ liệu bất thường. */
++public record ShiftRow(String shiftCode, String shiftName, LocalTime startTime, LocalTime endTime,
++                       Integer requiredBacSi, Integer requiredYTa, Integer requiredLeTan) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/StockItemRow.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/StockItemRow.java
+new file mode 100644
+index 0000000..7a0f553
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/StockItemRow.java
+@@ -0,0 +1,5 @@
++package com.manage.nhakhoa.features.dashboard.repository;
++
++/** Mặt hàng kho với định mức tối thiểu. */
++public record StockItemRow(StockItemType type, String itemId, int minimumQuantity) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/StockItemType.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/StockItemType.java
+new file mode 100644
+index 0000000..152623f
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/StockItemType.java
+@@ -0,0 +1,7 @@
++package com.manage.nhakhoa.features.dashboard.repository;
++
++/** Loại mặt hàng kho. */
++public enum StockItemType {
++    THUOC,
++    VAT_TU
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/StockLotRow.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/StockLotRow.java
+new file mode 100644
+index 0000000..8a17da8
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/repository/StockLotRow.java
+@@ -0,0 +1,7 @@
++package com.manage.nhakhoa.features.dashboard.repository;
++
++import java.time.LocalDate;
++
++/** Một lô có soLuongTon khác 0. drugId/supplyId: đúng một trong hai phải khác null, nếu không là bất thường. */
++public record StockLotRow(String lotId, String drugId, String supplyId, LocalDate expiryDate, int quantity) {
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardDataUnavailableException.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardDataUnavailableException.java
+new file mode 100644
+index 0000000..2ee3a4d
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardDataUnavailableException.java
+@@ -0,0 +1,21 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++/**
++ * Lỗi truy vấn ở section lõi (lịch hẹn, phiếu khám, thu, công nợ). Contract 03: không trả payload toàn 0,
++ * tầng HTTP (khi được phép bật) phải map sang 503. Message không chứa SQL, tham số hay dữ liệu cá nhân.
++ */
++public class DashboardDataUnavailableException extends RuntimeException {
++
++    private static final long serialVersionUID = 1L;
++
++    private final String section;
++
++    public DashboardDataUnavailableException(String section, Throwable cause) {
++        super("Không tải được số liệu Dashboard ở section " + section, cause);
++        this.section = section;
++    }
++
++    public String getSection() {
++        return section;
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardQueryService.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardQueryService.java
+new file mode 100644
+index 0000000..cefd642
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardQueryService.java
+@@ -0,0 +1,351 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++import com.manage.nhakhoa.features.capcuu.enums.KetQuaKiemTra;
++import com.manage.nhakhoa.features.dashboard.dto.response.AdminDashboardResponse;
++import com.manage.nhakhoa.features.dashboard.dto.response.AppointmentSummary;
++import com.manage.nhakhoa.features.dashboard.dto.response.CollectionSummary;
++import com.manage.nhakhoa.features.dashboard.dto.response.DashboardWarning;
++import com.manage.nhakhoa.features.dashboard.dto.response.EmergencyCheckState;
++import com.manage.nhakhoa.features.dashboard.dto.response.EmergencyKitSummary;
++import com.manage.nhakhoa.features.dashboard.dto.response.ExamSummary;
++import com.manage.nhakhoa.features.dashboard.dto.response.InventorySummary;
++import com.manage.nhakhoa.features.dashboard.dto.response.PeriodDto;
++import com.manage.nhakhoa.features.dashboard.dto.response.ReceivableSummary;
++import com.manage.nhakhoa.features.dashboard.dto.response.SectionStatus;
++import com.manage.nhakhoa.features.dashboard.dto.response.ShiftStaffingDto;
++import com.manage.nhakhoa.features.dashboard.dto.response.ShiftState;
++import com.manage.nhakhoa.features.dashboard.dto.response.StaffingSummary;
++import com.manage.nhakhoa.features.dashboard.dto.response.TreatmentDueSummary;
++import com.manage.nhakhoa.features.dashboard.dto.response.WorkPriority;
++import com.manage.nhakhoa.features.dashboard.repository.DashboardReadRepository;
++import com.manage.nhakhoa.features.dashboard.repository.EmergencyCheckRow;
++import com.manage.nhakhoa.features.hoadon.enums.PhuongThucThanhToan;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiPhieuKham;
++import com.manage.nhakhoa.features.lichhen.enums.TrangThaiLichHen;
++import org.springframework.stereotype.Service;
++import org.springframework.transaction.annotation.Transactional;
++
++import java.math.BigDecimal;
++import java.time.Clock;
++import java.time.LocalDate;
++import java.time.LocalDateTime;
++import java.time.ZoneId;
++import java.time.ZonedDateTime;
++import java.time.temporal.ChronoUnit;
++import java.util.ArrayList;
++import java.util.EnumMap;
++import java.util.List;
++import java.util.Map;
++import java.util.Optional;
++
++/**
++ * Tổng hợp Dashboard Admin chỉ đọc theo BA V1/V1.1 và contract 03.
++ *
++ * <p>Không phụ thuộc HTTP: endpoint REST CHƯA được tạo vì AUTH-R1 chưa có trong checkout (GATE_AUTH=BLOCKED).
++ * Ngày nghiệp vụ lấy từ {@link Clock} inject theo {@code Asia/Ho_Chi_Minh}, khoảng nửa mở [D 00:00, D+1 00:00).</p>
++ *
++ * <p>Section lõi (lịch hẹn, phiếu khám, thu, công nợ) lỗi → {@link DashboardDataUnavailableException}
++ * (không trả payload toàn 0). Section phụ (ca làm, kho, cấp cứu, kế hoạch điều trị) lỗi → UNAVAILABLE + cảnh báo,
++ * số liệu null.</p>
++ */
++@Service
++@Transactional(readOnly = true)
++public class DashboardQueryService {
++
++    public static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
++    public static final String SOURCE_LIVE = "LIVE";
++    public static final String EXAM_UNIT = "PHIEU_KHAM_TIEP_NHAN_TRONG_NGAY";
++    public static final String COLLECTION_DEFINITION = "THANH_TOAN_THANH_CONG_TRONG_NGAY_THEO_TRANG_THAI_HIEN_TAI";
++    public static final String RECEIVABLE_SCOPE = "TAT_CA_HOA_DON_CON_HIEU_LUC_HIEN_TAI";
++
++    static final String SECTION_STAFFING = "staffing";
++    static final String SECTION_INVENTORY = "inventory";
++    static final String SECTION_EMERGENCY = "emergencyKit";
++    static final String SECTION_TREATMENT = "treatmentDue";
++    static final String SECTION_COLLECTIONS = "collections";
++    static final String SECTION_RECEIVABLES = "receivables";
++    static final String SECTION_WORK_QUEUE = "workQueue";
++
++    private final DashboardReadRepository repository;
++    private final Clock clock;
++    private final ThresholdResolver thresholds;
++
++    public DashboardQueryService(DashboardReadRepository repository, Clock clock) {
++        this.repository = repository;
++        this.clock = clock;
++        this.thresholds = new ThresholdResolver(repository);
++    }
++
++    public AdminDashboardResponse getAdminDashboard() {
++        ZonedDateTime now = ZonedDateTime.now(clock.withZone(BUSINESS_ZONE));
++        LocalDate businessDate = now.toLocalDate();
++        ZonedDateTime start = businessDate.atStartOfDay(BUSINESS_ZONE);
++        ZonedDateTime end = businessDate.plusDays(1).atStartOfDay(BUSINESS_ZONE);
++        LocalDateTime startLocal = start.toLocalDateTime();
++        LocalDateTime endLocal = end.toLocalDateTime();
++
++        List<DashboardWarning> warnings = new ArrayList<>();
++        WorkQueueBuilder workQueue = new WorkQueueBuilder();
++
++        AppointmentSummary appointments = loadAppointments(startLocal, endLocal);
++        ExamSummary exams = loadExams(startLocal, endLocal);
++        CollectionSummary collections = loadCollections(startLocal, endLocal, warnings);
++        ReceivableSummary receivables = loadReceivables(warnings, workQueue);
++
++        StaffingSummary staffing = loadStaffing(businessDate, warnings, workQueue);
++        InventorySummary inventory = loadInventory(businessDate, warnings, workQueue);
++        EmergencyKitSummary emergencyKit = loadEmergencyKit(now.toLocalDateTime(), businessDate, warnings, workQueue);
++        TreatmentDueSummary treatmentDue = loadTreatmentDue(businessDate, warnings, workQueue);
++
++        workQueue.add("LICH_HEN_CHO_XAC_NHAN", WorkPriority.CHO_DUYET, "Lịch hẹn chờ xác nhận",
++                appointments.byStatus().get(TrangThaiLichHen.CHO_XAC_NHAN),
++                DashboardTargetScreens.LICH_HEN, "appointments.byStatus.CHO_XAC_NHAN");
++        workQueue.add("PHIEU_CHO_KHAM", WorkPriority.THEO_DOI, "Phiếu chờ khám",
++                exams.waiting(), DashboardTargetScreens.PHIEU_KHAM, "exams.waiting");
++        addPendingApprovals(warnings, workQueue);
++
++        return new AdminDashboardResponse(
++                SOURCE_LIVE,
++                businessDate,
++                BUSINESS_ZONE.getId(),
++                now.toOffsetDateTime(),
++                new PeriodDto(start.toOffsetDateTime(), end.toOffsetDateTime()),
++                appointments,
++                exams,
++                collections,
++                receivables,
++                staffing,
++                inventory,
++                emergencyKit,
++                treatmentDue,
++                workQueue.build(),
++                warnings);
++    }
++
++    // ---------------------------------------------------------------- core sections
++
++    private AppointmentSummary loadAppointments(LocalDateTime start, LocalDateTime end) {
++        try {
++            Map<TrangThaiLichHen, Long> raw = repository.countAppointmentsByStatus(start, end);
++            Map<TrangThaiLichHen, Long> byStatus = new EnumMap<>(TrangThaiLichHen.class);
++            long total = 0;
++            for (TrangThaiLichHen status : TrangThaiLichHen.values()) {
++                long count = nonNegative(raw.get(status));
++                byStatus.put(status, count);
++                total += count;
++            }
++            long active = byStatus.get(TrangThaiLichHen.CHO_XAC_NHAN)
++                    + byStatus.get(TrangThaiLichHen.DA_XAC_NHAN)
++                    + byStatus.get(TrangThaiLichHen.DA_DEN);
++            return new AppointmentSummary(total, active, byStatus);
++        } catch (RuntimeException ex) {
++            throw new DashboardDataUnavailableException("appointments", ex);
++        }
++    }
++
++    private ExamSummary loadExams(LocalDateTime start, LocalDateTime end) {
++        try {
++            Map<TrangThaiPhieuKham, Long> raw = repository.countExamsByStatus(start, end);
++            return new ExamSummary(
++                    nonNegative(raw.get(TrangThaiPhieuKham.CHO_KHAM)),
++                    nonNegative(raw.get(TrangThaiPhieuKham.DANG_KHAM)),
++                    nonNegative(raw.get(TrangThaiPhieuKham.DA_KET_LUAN)),
++                    EXAM_UNIT);
++        } catch (RuntimeException ex) {
++            throw new DashboardDataUnavailableException("exams", ex);
++        }
++    }
++
++    private CollectionSummary loadCollections(LocalDateTime start, LocalDateTime end, List<DashboardWarning> warnings) {
++        Map<PhuongThucThanhToan, String> byMethod = new EnumMap<>(PhuongThucThanhToan.class);
++        BigDecimal total = BigDecimal.ZERO;
++        long paymentsOnCancelled;
++        try {
++            Map<PhuongThucThanhToan, BigDecimal> raw = repository.sumSuccessfulPaymentsByMethod(start, end);
++            for (PhuongThucThanhToan method : PhuongThucThanhToan.values()) {
++                BigDecimal amount = Money.vnd(raw.get(method));
++                byMethod.put(method, amount.toPlainString());
++                total = total.add(amount);
++            }
++            paymentsOnCancelled = repository.countSuccessfulPaymentsOnCancelledInvoices();
++        } catch (RuntimeException ex) {
++            throw new DashboardDataUnavailableException(SECTION_COLLECTIONS, ex);
++        }
++        if (paymentsOnCancelled > 0) {
++            warnings.add(new DashboardWarning("THU_TREN_HOA_DON_DA_HUY", SECTION_COLLECTIONS,
++                    "Có " + paymentsOnCancelled + " giao dịch thành công thuộc hóa đơn đã hủy; cần đối soát."));
++        }
++        return new CollectionSummary(Money.format(total), byMethod, COLLECTION_DEFINITION);
++    }
++
++    private ReceivableSummary loadReceivables(List<DashboardWarning> warnings, WorkQueueBuilder workQueue) {
++        ReceivableCalculator.Result result;
++        try {
++            result = ReceivableCalculator.calculate(
++                    repository.sumBilledAmountPerActiveInvoice(),
++                    repository.sumSuccessfulPaymentsPerActiveInvoice());
++        } catch (RuntimeException ex) {
++            throw new DashboardDataUnavailableException(SECTION_RECEIVABLES, ex);
++        }
++        if (result.overpaidInvoiceCount() > 0) {
++            warnings.add(new DashboardWarning("HOA_DON_THU_VUOT", SECTION_RECEIVABLES,
++                    "Có " + result.overpaidInvoiceCount() + " hóa đơn đã thu vượt tổng tiền; không tính công nợ âm."));
++        }
++        workQueue.add("HOA_DON_THU_VUOT", WorkPriority.KHAN, "Hóa đơn thu vượt cần đối soát",
++                result.overpaidInvoiceCount(), DashboardTargetScreens.HOA_DON, "receivables.overpaidInvoiceCount");
++        return new ReceivableSummary(Money.format(result.amount()), result.invoiceCount(), RECEIVABLE_SCOPE,
++                result.overpaidInvoiceCount());
++    }
++
++    // ---------------------------------------------------------------- optional sections
++
++    private StaffingSummary loadStaffing(LocalDate businessDate, List<DashboardWarning> warnings, WorkQueueBuilder workQueue) {
++        List<ShiftStaffingDto> shifts;
++        try {
++            shifts = StaffingCalculator.calculate(repository.findShifts(),
++                    repository.countAssignedStaffByShiftAndRole(businessDate));
++        } catch (RuntimeException ex) {
++            warnings.add(unavailable(SECTION_STAFFING, "Không tải được dữ liệu ca làm/phân công."));
++            return new StaffingSummary(SectionStatus.UNAVAILABLE, List.of(), null);
++        }
++        if (shifts.isEmpty()) {
++            warnings.add(new DashboardWarning("CHUA_CAU_HINH_CA_LAM", SECTION_STAFFING, "Chưa có ca làm việc nào được cấu hình."));
++            return new StaffingSummary(SectionStatus.UNCONFIGURED, List.of(), null);
++        }
++        int understaffed = (int) shifts.stream().filter(s -> s.state() == ShiftState.THIEU_NHAN_SU).count();
++        long misconfigured = shifts.stream().filter(s -> s.state() == ShiftState.LOI_CAU_HINH).count();
++        if (misconfigured > 0) {
++            warnings.add(new DashboardWarning("CA_LAM_LOI_CAU_HINH", SECTION_STAFFING,
++                    "Có " + misconfigured + " ca có giờ hoặc định mức không hợp lệ."));
++        }
++        workQueue.add("CA_THIEU_NHAN_SU", WorkPriority.KHAN, "Ca thiếu nhân sự theo phân công",
++                understaffed, DashboardTargetScreens.PHAN_CONG_CA, "staffing.understaffedShiftCount");
++        workQueue.add("CA_LOI_CAU_HINH", WorkPriority.THEO_DOI, "Ca làm cấu hình chưa hợp lệ",
++                misconfigured, DashboardTargetScreens.PHAN_CONG_CA, "staffing.shifts[state=LOI_CAU_HINH]");
++        return new StaffingSummary(SectionStatus.AVAILABLE, shifts, understaffed);
++    }
++
++    private InventorySummary loadInventory(LocalDate businessDate, List<DashboardWarning> warnings, WorkQueueBuilder workQueue) {
++        int thresholdDays = thresholds.resolveDays(DashboardThresholds.KEY_NEAR_EXPIRY_DAYS,
++                DashboardThresholds.DEFAULT_NEAR_EXPIRY_DAYS, SECTION_INVENTORY, warnings);
++        InventoryCalculator.Result result;
++        try {
++            result = InventoryCalculator.calculate(repository.findNonEmptyStockLots(), repository.findStockItems(),
++                    businessDate, thresholdDays);
++        } catch (RuntimeException ex) {
++            warnings.add(unavailable(SECTION_INVENTORY, "Không tải được dữ liệu tồn kho."));
++            return new InventorySummary(SectionStatus.UNAVAILABLE, null, null, null, null, thresholdDays, null);
++        }
++        if (result.anomalyLotCount() > 0) {
++            warnings.add(new DashboardWarning("LO_HANG_BAT_THUONG", SECTION_INVENTORY,
++                    "Có " + result.anomalyLotCount() + " lô tồn âm hoặc không gắn đúng một thuốc/vật tư; đã loại khỏi phép tính."));
++        }
++        workQueue.add("KHO_HET_HAN", WorkPriority.KHAN, "Lô còn tồn đã hết hạn",
++                result.expiredLotCount(), DashboardTargetScreens.TON_KHO, "inventory.expiredLotCount");
++        workQueue.add("KHO_DUOI_DINH_MUC", WorkPriority.KHAN, "Mặt hàng dưới định mức",
++                result.belowMinimumItemCount(), DashboardTargetScreens.TON_KHO, "inventory.belowMinimumItemCount");
++        workQueue.add("KHO_CAN_HAN", WorkPriority.THEO_DOI, "Lô cận hạn sử dụng",
++                result.nearExpiryLotCount(), DashboardTargetScreens.TON_KHO, "inventory.nearExpiryLotCount");
++        workQueue.add("KHO_CHUA_RO_HSD", WorkPriority.THEO_DOI, "Lô chưa xác định hạn dùng",
++                result.unknownExpiryLotCount(), DashboardTargetScreens.TON_KHO, "inventory.unknownExpiryLotCount");
++        return new InventorySummary(SectionStatus.AVAILABLE, result.belowMinimumItemCount(), result.nearExpiryLotCount(),
++                result.expiredLotCount(), result.unknownExpiryLotCount(), thresholdDays, result.anomalyLotCount());
++    }
++
++    private EmergencyKitSummary loadEmergencyKit(LocalDateTime nowLocal, LocalDate businessDate,
++                                                 List<DashboardWarning> warnings, WorkQueueBuilder workQueue) {
++        int cycleDays = thresholds.resolveDays(DashboardThresholds.KEY_EMERGENCY_CHECK_CYCLE_DAYS,
++                DashboardThresholds.DEFAULT_EMERGENCY_CHECK_CYCLE_DAYS, SECTION_EMERGENCY, warnings);
++        int safeDays = thresholds.resolveDays(DashboardThresholds.KEY_EMERGENCY_SAFE_EXPIRY_DAYS,
++                DashboardThresholds.DEFAULT_EMERGENCY_SAFE_EXPIRY_DAYS, SECTION_EMERGENCY, warnings);
++        try {
++            if (repository.countActiveRealEmergencyCatalogItems() == 0) {
++                workQueue.add("CAP_CUU_CHUA_CAU_HINH", WorkPriority.THEO_DOI, "Chưa có danh mục cấp cứu chính thức",
++                        1, DashboardTargetScreens.CAP_CUU, "emergencyKit.status");
++                return new EmergencyKitSummary(SectionStatus.UNCONFIGURED, null, null, null, cycleDays,
++                        "Chưa có danh mục cấp cứu chính thức");
++            }
++            Optional<EmergencyCheckRow> latest = repository.findLatestEmergencyCheckAtOrBefore(nowLocal);
++            if (latest.isEmpty()) {
++                workQueue.add("CAP_CUU_CAN_KIEM_TRA", WorkPriority.KHAN, "Hộp cấp cứu cần kiểm tra",
++                        1, DashboardTargetScreens.CAP_CUU, "emergencyKit.checkState");
++                return new EmergencyKitSummary(SectionStatus.AVAILABLE, EmergencyCheckState.CHUA_CO_KIEM_TRA, null, null,
++                        cycleDays, "Chưa có lần kiểm tra nào — cần kiểm tra");
++            }
++            EmergencyCheckRow check = latest.get();
++            long days = ChronoUnit.DAYS.between(check.checkedAt().toLocalDate(), businessDate);
++            long failing = repository.countFailingEmergencyCheckItems(check.checkId(), businessDate.plusDays(safeDays));
++            var lastCheckedAt = check.checkedAt().atZone(BUSINESS_ZONE).toOffsetDateTime();
++
++            if (check.result() == KetQuaKiemTra.CAN_BO_SUNG || failing > 0) {
++                workQueue.add("CAP_CUU_CAN_XU_LY", WorkPriority.KHAN, "Hộp cấp cứu cần bổ sung/xử lý",
++                        1, DashboardTargetScreens.CAP_CUU, "emergencyKit.checkState");
++                return new EmergencyKitSummary(SectionStatus.AVAILABLE, EmergencyCheckState.CAN_XU_LY, lastCheckedAt, days,
++                        cycleDays, "Lần kiểm tra gần nhất có mục cần bổ sung hoặc sắp hết hạn");
++            }
++            if (days > cycleDays) {
++                workQueue.add("CAP_CUU_CAN_KIEM_TRA", WorkPriority.KHAN, "Hộp cấp cứu cần kiểm tra",
++                        1, DashboardTargetScreens.CAP_CUU, "emergencyKit.checkState");
++                return new EmergencyKitSummary(SectionStatus.AVAILABLE, EmergencyCheckState.QUA_CHU_KY, lastCheckedAt, days,
++                        cycleDays, "Đã quá chu kỳ kiểm tra — cần kiểm tra");
++            }
++            return new EmergencyKitSummary(SectionStatus.AVAILABLE, EmergencyCheckState.TRONG_CHU_KY, lastCheckedAt, days,
++                    cycleDays, "Đã kiểm tra trong chu kỳ; không phải chứng nhận an toàn lâm sàng");
++        } catch (RuntimeException ex) {
++            warnings.add(unavailable(SECTION_EMERGENCY, "Không tải được dữ liệu kiểm tra cấp cứu."));
++            return new EmergencyKitSummary(SectionStatus.UNAVAILABLE, null, null, null, cycleDays,
++                    "Không tải được dữ liệu kiểm tra cấp cứu");
++        }
++    }
++
++    private TreatmentDueSummary loadTreatmentDue(LocalDate businessDate, List<DashboardWarning> warnings,
++                                                 WorkQueueBuilder workQueue) {
++        int horizonDays = thresholds.resolveDays(DashboardThresholds.KEY_TREATMENT_HORIZON_DAYS,
++                DashboardThresholds.DEFAULT_TREATMENT_HORIZON_DAYS, SECTION_TREATMENT, warnings);
++        long due;
++        long overdue;
++        try {
++            due = repository.countPlansWithPendingItemsDueOnOrBefore(businessDate.plusDays(horizonDays));
++            overdue = repository.countPlansWithPendingItemsDueBefore(businessDate);
++        } catch (RuntimeException ex) {
++            warnings.add(unavailable(SECTION_TREATMENT, "Không tải được dữ liệu kế hoạch điều trị."));
++            return new TreatmentDueSummary(SectionStatus.UNAVAILABLE, null, null, horizonDays);
++        }
++        workQueue.add("KE_HOACH_QUA_HAN", WorkPriority.KHAN, "Kế hoạch điều trị có hạng mục quá hạn",
++                overdue, DashboardTargetScreens.KE_HOACH_DIEU_TRI, "treatmentDue.overduePlanCount");
++        workQueue.add("KE_HOACH_DEN_HAN", WorkPriority.THEO_DOI, "Kế hoạch điều trị đến hạn",
++                due, DashboardTargetScreens.KE_HOACH_DIEU_TRI, "treatmentDue.duePlanCount");
++        return new TreatmentDueSummary(SectionStatus.AVAILABLE, due, overdue, horizonDays);
++    }
++
++    private void addPendingApprovals(List<DashboardWarning> warnings, WorkQueueBuilder workQueue) {
++        try {
++            workQueue.add("HOA_DON_CHO_DUYET_HUY", WorkPriority.CHO_DUYET, "Yêu cầu hủy hóa đơn chờ duyệt",
++                    repository.countPendingInvoiceCancellationRequests(), DashboardTargetScreens.HOA_DON,
++                    "YeuCauHuyHoaDon[trangThai=CHO_DUYET]");
++        } catch (RuntimeException ex) {
++            warnings.add(unavailable(SECTION_WORK_QUEUE, "Không tải được yêu cầu hủy hóa đơn chờ duyệt."));
++        }
++        try {
++            workQueue.add("KHO_CHO_DUYET_DIEU_CHINH", WorkPriority.CHO_DUYET, "Phiếu điều chỉnh kho chờ duyệt",
++                    repository.countPendingStockAdjustments(), DashboardTargetScreens.DIEU_CHINH_KHO,
++                    "PhieuDieuChinhKho[trangThai=CHO_DUYET]");
++        } catch (RuntimeException ex) {
++            warnings.add(unavailable(SECTION_WORK_QUEUE, "Không tải được phiếu điều chỉnh kho chờ duyệt."));
++        }
++    }
++
++    private static DashboardWarning unavailable(String section, String message) {
++        return new DashboardWarning("SECTION_KHONG_TAI_DUOC", section, message);
++    }
++
++    private static long nonNegative(Long value) {
++        if (value == null) {
++            return 0L;
++        }
++        if (value < 0) {
++            throw new IllegalStateException("Số đếm âm từ nguồn dữ liệu");
++        }
++        return value;
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardTargetScreens.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardTargetScreens.java
+new file mode 100644
+index 0000000..2dc4ac9
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardTargetScreens.java
+@@ -0,0 +1,20 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++/**
++ * Khóa màn hình đích của hàng việc. CHƯA ĐỐI CHIẾU với 21 khóa menu của UI-M1 vì thư mục
++ * admin-desktop-preview/ không có trong checkout main 4d25dbf; phải đối chiếu lại ở UI-M2-B.
++ */
++public final class DashboardTargetScreens {
++
++    public static final String LICH_HEN = "LICH_HEN";
++    public static final String PHIEU_KHAM = "PHIEU_KHAM";
++    public static final String HOA_DON = "HOA_DON";
++    public static final String PHAN_CONG_CA = "PHAN_CONG_CA";
++    public static final String TON_KHO = "TON_KHO";
++    public static final String DIEU_CHINH_KHO = "DIEU_CHINH_KHO";
++    public static final String CAP_CUU = "CAP_CUU";
++    public static final String KE_HOACH_DIEU_TRI = "KE_HOACH_DIEU_TRI";
++
++    private DashboardTargetScreens() {
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardThresholds.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardThresholds.java
+new file mode 100644
+index 0000000..e18433c
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/DashboardThresholds.java
+@@ -0,0 +1,33 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++/**
++ * Khóa tham số (ThamSoHeThong.ten) và giá trị fallback đã công bố trong BA V1.
++ * Service chỉ ĐỌC tham số; thiếu/không hợp lệ thì dùng fallback và phát cảnh báo, không tự ghi DB.
++ */
++public final class DashboardThresholds {
++
++    /** BA V1 Q10. */
++    public static final String KEY_NEAR_EXPIRY_DAYS = "SO_NGAY_CANH_BAO_HSD";
++    public static final int DEFAULT_NEAR_EXPIRY_DAYS = 30;
++
++    /** BA V1 Q11. */
++    public static final String KEY_EMERGENCY_CHECK_CYCLE_DAYS = "CHU_KY_KIEM_TRA_CAP_CUU_NGAY";
++    public static final int DEFAULT_EMERGENCY_CHECK_CYCLE_DAYS = 7;
++
++    /** BA V1 Q11. */
++    public static final String KEY_EMERGENCY_SAFE_EXPIRY_DAYS = "SO_NGAY_AN_TOAN_CAP_CUU";
++    public static final int DEFAULT_EMERGENCY_SAFE_EXPIRY_DAYS = 30;
++
++    /**
++     * BA V1 Q12 chỉ chốt giá trị 14 ngày, CHƯA chốt tên khóa. Tên dưới đây là đề xuất của UI-M2-A,
++     * cần BA xác nhận trước khi cấu hình thật.
++     */
++    public static final String KEY_TREATMENT_HORIZON_DAYS = "SO_NGAY_KE_HOACH_DEN_HAN";
++    public static final int DEFAULT_TREATMENT_HORIZON_DAYS = 14;
++
++    /** Giới hạn trên hợp lý cho mọi ngưỡng ngày (10 năm), chặn cấu hình sai. */
++    static final int MAX_DAYS = 3650;
++
++    private DashboardThresholds() {
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/InventoryCalculator.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/InventoryCalculator.java
+new file mode 100644
+index 0000000..9195ea0
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/InventoryCalculator.java
+@@ -0,0 +1,82 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++import com.manage.nhakhoa.features.dashboard.repository.StockItemRow;
++import com.manage.nhakhoa.features.dashboard.repository.StockItemType;
++import com.manage.nhakhoa.features.dashboard.repository.StockLotRow;
++
++import java.time.LocalDate;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++
++/**
++ * BA V1 Q09/Q10 (bảo thủ):
++ * - expired: hanSuDung <= D; near: D < hanSuDung <= D + threshold; null HSD: unknown, không tính khả dụng.
++ * - Tồn khả dụng theo mã mặt hàng = tổng soLuongTon của lô còn hạn (hanSuDung > D).
++ * - Dưới định mức: dinhMucToiThieu > 0 và tồn khả dụng < định mức, đếm mã duy nhất.
++ * - Lô tồn âm hoặc không trỏ đúng một trong Thuoc/VatTu: bất thường, loại khỏi phép tính.
++ */
++final class InventoryCalculator {
++
++    record Result(int belowMinimumItemCount, int nearExpiryLotCount, int expiredLotCount,
++                  int unknownExpiryLotCount, int anomalyLotCount) {
++    }
++
++    private record ItemKey(StockItemType type, String id) {
++    }
++
++    private InventoryCalculator() {
++    }
++
++    static Result calculate(List<StockLotRow> lots, List<StockItemRow> items, LocalDate businessDate, int thresholdDays) {
++        LocalDate nearLimit = businessDate.plusDays(thresholdDays);
++        Set<String> seenLots = new HashSet<>();
++        Map<ItemKey, Long> available = new HashMap<>();
++        int near = 0;
++        int expired = 0;
++        int unknown = 0;
++        int anomaly = 0;
++
++        for (StockLotRow lot : lots) {
++            if (!seenLots.add(lot.lotId()) || lot.quantity() == 0) {
++                continue;
++            }
++            boolean hasDrug = lot.drugId() != null;
++            boolean hasSupply = lot.supplyId() != null;
++            if (lot.quantity() < 0 || hasDrug == hasSupply) {
++                anomaly++;
++                continue;
++            }
++            LocalDate expiry = lot.expiryDate();
++            if (expiry == null) {
++                unknown++;
++                continue;
++            }
++            if (!expiry.isAfter(businessDate)) {
++                expired++;
++                continue;
++            }
++            if (!expiry.isAfter(nearLimit)) {
++                near++;
++            }
++            ItemKey key = hasDrug
++                    ? new ItemKey(StockItemType.THUOC, lot.drugId())
++                    : new ItemKey(StockItemType.VAT_TU, lot.supplyId());
++            available.merge(key, (long) lot.quantity(), Long::sum);
++        }
++
++        Set<ItemKey> below = new HashSet<>();
++        for (StockItemRow item : items) {
++            if (item.minimumQuantity() <= 0) {
++                continue;
++            }
++            ItemKey key = new ItemKey(item.type(), item.itemId());
++            if (available.getOrDefault(key, 0L) < item.minimumQuantity()) {
++                below.add(key);
++            }
++        }
++        return new Result(below.size(), near, expired, unknown, anomaly);
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/Money.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/Money.java
+new file mode 100644
+index 0000000..c33ddec
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/Money.java
+@@ -0,0 +1,19 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++import java.math.BigDecimal;
++import java.math.RoundingMode;
++
++/** Tiền VND: BigDecimal scale 0; không làm tròn âm thầm (ArithmeticException nếu dữ liệu có phần lẻ). */
++final class Money {
++
++    private Money() {
++    }
++
++    static BigDecimal vnd(BigDecimal value) {
++        return (value == null ? BigDecimal.ZERO : value).setScale(0, RoundingMode.UNNECESSARY);
++    }
++
++    static String format(BigDecimal value) {
++        return vnd(value).toPlainString();
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/ReceivableCalculator.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/ReceivableCalculator.java
+new file mode 100644
+index 0000000..9c877c4
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/ReceivableCalculator.java
+@@ -0,0 +1,56 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++import com.manage.nhakhoa.features.dashboard.repository.InvoiceAmountRow;
++
++import java.math.BigDecimal;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++
++/**
++ * BA V1 Q07: receivable(hóa đơn) = max(tổng chi tiết − tổng thanh toán THANH_CONG, 0); cộng theo từng hóa đơn.
++ * Hai nguồn đã aggregate riêng nên không có nhân chéo dòng chi tiết × dòng thanh toán.
++ */
++final class ReceivableCalculator {
++
++    record Result(BigDecimal amount, long invoiceCount, long overpaidInvoiceCount) {
++    }
++
++    private ReceivableCalculator() {
++    }
++
++    static Result calculate(List<InvoiceAmountRow> billedPerInvoice, List<InvoiceAmountRow> paidPerInvoice) {
++        Map<String, BigDecimal> billed = sumById(billedPerInvoice);
++        Map<String, BigDecimal> paid = sumById(paidPerInvoice);
++        Set<String> invoiceIds = new HashSet<>(billed.keySet());
++        invoiceIds.addAll(paid.keySet());
++
++        BigDecimal total = BigDecimal.ZERO;
++        long withDebt = 0;
++        long overpaid = 0;
++        for (String id : invoiceIds) {
++            BigDecimal remaining = billed.getOrDefault(id, BigDecimal.ZERO)
++                    .subtract(paid.getOrDefault(id, BigDecimal.ZERO));
++            int sign = remaining.signum();
++            if (sign > 0) {
++                total = total.add(remaining);
++                withDebt++;
++            } else if (sign < 0) {
++                overpaid++;
++            }
++        }
++        return new Result(Money.vnd(total), withDebt, overpaid);
++    }
++
++    private static Map<String, BigDecimal> sumById(List<InvoiceAmountRow> rows) {
++        Map<String, BigDecimal> result = new HashMap<>();
++        for (InvoiceAmountRow row : rows) {
++            if (row.amount() != null) {
++                result.merge(row.invoiceId(), row.amount(), BigDecimal::add);
++            }
++        }
++        return result;
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/StaffingCalculator.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/StaffingCalculator.java
+new file mode 100644
+index 0000000..370fa7f
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/StaffingCalculator.java
+@@ -0,0 +1,81 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++import com.manage.nhakhoa.features.dashboard.dto.response.RoleCount;
++import com.manage.nhakhoa.features.dashboard.dto.response.ShiftStaffingDto;
++import com.manage.nhakhoa.features.dashboard.dto.response.ShiftState;
++import com.manage.nhakhoa.features.dashboard.repository.ShiftAssignmentRow;
++import com.manage.nhakhoa.features.dashboard.repository.ShiftRow;
++import com.manage.nhakhoa.shared.enums.VaiTro;
++
++import java.util.ArrayList;
++import java.util.Comparator;
++import java.util.EnumMap;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++/**
++ * BA V1 Q08: missing = max(định mức − số nhân viên DISTINCT đã phân công, 0) theo từng chức danh BS/YT/LT.
++ * Đây là lịch phân công, không phải chấm công/hiện diện. Ca không có phân công vẫn báo thiếu nếu định mức dương.
++ * Ca qua đêm (gioKetThuc < gioBatDau) hợp lệ, quy thuộc ngày bắt đầu; giờ bằng nhau hoặc định mức âm/null = lỗi cấu hình.
++ */
++final class StaffingCalculator {
++
++    private StaffingCalculator() {
++    }
++
++    static List<ShiftStaffingDto> calculate(List<ShiftRow> shifts, List<ShiftAssignmentRow> assignments) {
++        Map<String, Map<VaiTro, Long>> assignedByShift = new HashMap<>();
++        for (ShiftAssignmentRow row : assignments) {
++            assignedByShift.computeIfAbsent(row.shiftCode(), k -> new EnumMap<>(VaiTro.class))
++                    .merge(row.role(), row.distinctEmployeeCount(), Long::sum);
++        }
++
++        List<ShiftStaffingDto> result = new ArrayList<>(shifts.size());
++        for (ShiftRow shift : shifts) {
++            Map<VaiTro, Long> assignedMap = assignedByShift.getOrDefault(shift.shiftCode(), Map.of());
++            RoleCount assigned = new RoleCount(
++                    toInt(assignedMap.get(VaiTro.BS)), toInt(assignedMap.get(VaiTro.YT)), toInt(assignedMap.get(VaiTro.LT)));
++
++            boolean validHours = shift.startTime() != null && shift.endTime() != null
++                    && !shift.startTime().equals(shift.endTime());
++            boolean validRequirement = isValidRequirement(shift.requiredBacSi())
++                    && isValidRequirement(shift.requiredYTa())
++                    && isValidRequirement(shift.requiredLeTan());
++            boolean overnight = validHours && shift.endTime().isBefore(shift.startTime());
++
++            if (!validHours || !validRequirement) {
++                RoleCount required = new RoleCount(nonNull(shift.requiredBacSi()), nonNull(shift.requiredYTa()),
++                        nonNull(shift.requiredLeTan()));
++                result.add(new ShiftStaffingDto(shift.shiftCode(), shift.shiftName(), shift.startTime(), shift.endTime(),
++                        overnight, ShiftState.LOI_CAU_HINH, required, assigned, RoleCount.ZERO));
++                continue;
++            }
++
++            RoleCount required = new RoleCount(shift.requiredBacSi(), shift.requiredYTa(), shift.requiredLeTan());
++            RoleCount missing = new RoleCount(
++                    Math.max(required.bacSi() - assigned.bacSi(), 0),
++                    Math.max(required.yTa() - assigned.yTa(), 0),
++                    Math.max(required.leTan() - assigned.leTan(), 0));
++            ShiftState state = missing.bacSi() + missing.yTa() + missing.leTan() > 0
++                    ? ShiftState.THIEU_NHAN_SU : ShiftState.DU_NHAN_SU;
++            result.add(new ShiftStaffingDto(shift.shiftCode(), shift.shiftName(), shift.startTime(), shift.endTime(),
++                    overnight, state, required, assigned, missing));
++        }
++        result.sort(Comparator.comparing(ShiftStaffingDto::startTime, Comparator.nullsLast(Comparator.naturalOrder()))
++                .thenComparing(ShiftStaffingDto::shiftCode, Comparator.nullsLast(Comparator.naturalOrder())));
++        return result;
++    }
++
++    private static boolean isValidRequirement(Integer value) {
++        return value != null && value >= 0;
++    }
++
++    private static int nonNull(Integer value) {
++        return value == null ? 0 : value;
++    }
++
++    private static int toInt(Long value) {
++        return value == null ? 0 : Math.toIntExact(value);
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/ThresholdResolver.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/ThresholdResolver.java
+new file mode 100644
+index 0000000..21ba718
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/ThresholdResolver.java
+@@ -0,0 +1,44 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++import com.manage.nhakhoa.features.dashboard.dto.response.DashboardWarning;
++import com.manage.nhakhoa.features.dashboard.repository.DashboardReadRepository;
++
++import java.util.List;
++import java.util.Optional;
++
++/** Đọc ngưỡng ngày từ ThamSoHeThong; fallback + cảnh báo khi thiếu, sai định dạng hoặc lỗi đọc. */
++final class ThresholdResolver {
++
++    private final DashboardReadRepository repository;
++
++    ThresholdResolver(DashboardReadRepository repository) {
++        this.repository = repository;
++    }
++
++    int resolveDays(String key, int fallback, String section, List<DashboardWarning> warnings) {
++        Optional<String> raw;
++        try {
++            raw = repository.findSystemParameter(key);
++        } catch (RuntimeException ex) {
++            warnings.add(new DashboardWarning("THAM_SO_KHONG_DOC_DUOC", section,
++                    "Không đọc được tham số " + key + "; dùng mặc định " + fallback + " ngày."));
++            return fallback;
++        }
++        if (raw.isEmpty() || raw.get().isBlank()) {
++            warnings.add(new DashboardWarning("THAM_SO_CHUA_CAU_HINH", section,
++                    "Chưa cấu hình " + key + "; dùng mặc định " + fallback + " ngày."));
++            return fallback;
++        }
++        try {
++            int value = Integer.parseInt(raw.get().trim());
++            if (value <= 0 || value > DashboardThresholds.MAX_DAYS) {
++                throw new NumberFormatException("out of range");
++            }
++            return value;
++        } catch (NumberFormatException ex) {
++            warnings.add(new DashboardWarning("THAM_SO_KHONG_HOP_LE", section,
++                    "Giá trị " + key + " không hợp lệ; dùng mặc định " + fallback + " ngày."));
++            return fallback;
++        }
++    }
++}
+diff --git a/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/WorkQueueBuilder.java b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/WorkQueueBuilder.java
+new file mode 100644
+index 0000000..5bb48a4
+--- /dev/null
++++ b/nhakhoa/src/main/java/com/manage/nhakhoa/features/dashboard/service/WorkQueueBuilder.java
+@@ -0,0 +1,30 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++import com.manage.nhakhoa.features.dashboard.dto.response.WorkPriority;
++import com.manage.nhakhoa.features.dashboard.dto.response.WorkQueueDto;
++import com.manage.nhakhoa.features.dashboard.dto.response.WorkQueueItem;
++
++import java.util.ArrayList;
++import java.util.Comparator;
++import java.util.List;
++
++/** Gom nhóm việc có nguồn truy vấn thật; bỏ nhóm count = 0; sắp xếp khẩn → chờ duyệt → theo dõi, rồi theo code. */
++final class WorkQueueBuilder {
++
++    private final List<WorkQueueItem> items = new ArrayList<>();
++
++    WorkQueueBuilder add(String code, WorkPriority priority, String title, long objectCount,
++                         String targetScreen, String sourceMetric) {
++        if (objectCount > 0) {
++            items.add(new WorkQueueItem(code, priority, title, objectCount, targetScreen, sourceMetric));
++        }
++        return this;
++    }
++
++    WorkQueueDto build() {
++        List<WorkQueueItem> sorted = new ArrayList<>(items);
++        sorted.sort(Comparator.comparing(WorkQueueItem::priority).thenComparing(WorkQueueItem::code));
++        long related = sorted.stream().mapToLong(WorkQueueItem::objectCount).sum();
++        return new WorkQueueDto(sorted.size(), related, sorted);
++    }
++}
+diff --git a/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/repository/JpaDashboardReadRepositoryTest.java b/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/repository/JpaDashboardReadRepositoryTest.java
+new file mode 100644
+index 0000000..7ed48b6
+--- /dev/null
++++ b/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/repository/JpaDashboardReadRepositoryTest.java
+@@ -0,0 +1,181 @@
++package com.manage.nhakhoa.features.dashboard.repository;
++
++import com.manage.nhakhoa.features.hoadon.enums.PhuongThucThanhToan;
++import com.manage.nhakhoa.features.hoadon.enums.TrangThaiHoaDon;
++import com.manage.nhakhoa.features.hoadon.enums.TrangThaiThanhToan;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiChiTietDieuTri;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiKeHoach;
++import com.manage.nhakhoa.features.lichhen.enums.TrangThaiLichHen;
++import com.manage.nhakhoa.features.nhansu.enums.TrangThaiNhanVien;
++import com.manage.nhakhoa.features.nhansu.enums.TrangThaiPhanCong;
++import com.manage.nhakhoa.shared.enums.VaiTro;
++import jakarta.persistence.EntityManager;
++import jakarta.persistence.TypedQuery;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++
++import java.lang.reflect.Proxy;
++import java.math.BigDecimal;
++import java.time.LocalDate;
++import java.time.LocalDateTime;
++import java.util.ArrayDeque;
++import java.util.ArrayList;
++import java.util.Deque;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertFalse;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++/**
++ * Kiểm tra cấu trúc JPQL (bộ lọc, toán tử biên, tham số enum) và ánh xạ kết quả, bằng EntityManager giả qua Proxy.
++ * KHÔNG thay thế integration test trên SQL Server/Hibernate thật (chưa có môi trường test DB).
++ */
++class JpaDashboardReadRepositoryTest {
++
++    private final List<String> queries = new ArrayList<>();
++    private final List<Map<String, Object>> parameters = new ArrayList<>();
++    private final Deque<List<?>> cannedResults = new ArrayDeque<>();
++    private JpaDashboardReadRepository repository;
++
++    @BeforeEach
++    void setUp() {
++        EntityManager em = (EntityManager) Proxy.newProxyInstance(getClass().getClassLoader(),
++                new Class<?>[]{EntityManager.class}, (proxy, method, args) -> {
++                    if (!method.getName().equals("createQuery")) {
++                        throw new UnsupportedOperationException("Repository chỉ được tạo truy vấn đọc: " + method.getName());
++                    }
++                    queries.add((String) args[0]);
++                    Map<String, Object> params = new HashMap<>();
++                    parameters.add(params);
++                    List<?> result = cannedResults.isEmpty() ? List.of() : cannedResults.poll();
++                    return typedQuery(params, result);
++                });
++        repository = new JpaDashboardReadRepository(em);
++    }
++
++    private TypedQuery<?> typedQuery(Map<String, Object> params, List<?> result) {
++        return (TypedQuery<?>) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{TypedQuery.class},
++                (proxy, method, args) -> switch (method.getName()) {
++                    case "setParameter" -> {
++                        params.put((String) args[0], args[1]);
++                        yield proxy;
++                    }
++                    case "setMaxResults" -> proxy;
++                    case "getResultList" -> result;
++                    case "getSingleResult" -> result.isEmpty() ? 0L : result.get(0);
++                    default -> throw new UnsupportedOperationException(method.getName());
++                });
++    }
++
++    @Test
++    void appointmentQueryUsesHalfOpenRangeOnThoiGianHen() {
++        cannedResults.add(List.<Object[]>of(new Object[]{TrangThaiLichHen.DA_HUY, 3L}));
++        LocalDateTime start = LocalDate.of(2026, 10, 19).atStartOfDay();
++        Map<TrangThaiLichHen, Long> result = repository.countAppointmentsByStatus(start, start.plusDays(1));
++
++        assertEquals(3L, result.get(TrangThaiLichHen.DA_HUY));
++        String q = queries.get(0);
++        assertTrue(q.contains("lh.thoiGianHen >= :start"));
++        assertTrue(q.contains("lh.thoiGianHen < :end"));
++        assertFalse(q.contains("<= :end"));
++        assertFalse(q.contains("trangThai <>"), "không được loại trạng thái nào khỏi tổng lịch hẹn");
++        assertEquals(start, parameters.get(0).get("start"));
++    }
++
++    @Test
++    void paymentQueriesFilterSuccessfulAndAggregateSeparately() {
++        cannedResults.add(List.<Object[]>of(new Object[]{PhuongThucThanhToan.TIEN_MAT, new BigDecimal("1000")}));
++        LocalDateTime start = LocalDate.of(2026, 10, 19).atStartOfDay();
++        assertEquals(new BigDecimal("1000"),
++                repository.sumSuccessfulPaymentsByMethod(start, start.plusDays(1)).get(PhuongThucThanhToan.TIEN_MAT));
++        assertEquals(TrangThaiThanhToan.THANH_CONG, parameters.get(0).get("success"));
++        assertTrue(queries.get(0).contains("tt.thoiGian >= :start and tt.thoiGian < :end"));
++
++        cannedResults.add(List.<Object[]>of(new Object[]{"HD1", new BigDecimal("500000")}));
++        cannedResults.add(List.<Object[]>of(new Object[]{"HD1", 250000L}));
++        List<InvoiceAmountRow> billed = repository.sumBilledAmountPerActiveInvoice();
++        List<InvoiceAmountRow> paid = repository.sumSuccessfulPaymentsPerActiveInvoice();
++
++        assertEquals(new InvoiceAmountRow("HD1", new BigDecimal("500000")), billed.get(0));
++        assertEquals(new InvoiceAmountRow("HD1", new BigDecimal("250000")), paid.get(0));
++        String billedQuery = queries.get(1);
++        String paidQuery = queries.get(2);
++        assertTrue(billedQuery.contains("from ChiTietHoaDon") && !billedQuery.contains("ThanhToan"),
++                "tổng chi tiết không được join thanh toán (tránh nhân dòng)");
++        assertTrue(paidQuery.contains("from ThanhToan") && !paidQuery.contains("ChiTietHoaDon"));
++        assertEquals(TrangThaiHoaDon.DA_HUY, parameters.get(1).get("cancelled"));
++        assertEquals(TrangThaiHoaDon.DA_HUY, parameters.get(2).get("cancelled"));
++        assertEquals(TrangThaiThanhToan.THANH_CONG, parameters.get(2).get("success"));
++    }
++
++    @Test
++    void staffingQueryCountsDistinctEmployeesWithBaStatuses() {
++        cannedResults.add(List.<Object[]>of(new Object[]{"CA01", VaiTro.BS, 2L}));
++        List<ShiftAssignmentRow> rows = repository.countAssignedStaffByShiftAndRole(LocalDate.of(2026, 10, 19));
++
++        assertEquals(new ShiftAssignmentRow("CA01", VaiTro.BS, 2L), rows.get(0));
++        assertTrue(queries.get(0).contains("count(distinct nv.maNhanVien)"));
++        Map<String, Object> p = parameters.get(0);
++        assertEquals(List.of(TrangThaiPhanCong.CHO_HIEU_LUC, TrangThaiPhanCong.DANG_THUC_HIEN, TrangThaiPhanCong.HOAN_THANH),
++                p.get("assignmentStatuses"));
++        assertEquals(TrangThaiNhanVien.DANG_LAM_VIEC, p.get("working"));
++        assertEquals(List.of(VaiTro.BS, VaiTro.YT, VaiTro.LT), p.get("roles"));
++    }
++
++    @Test
++    void treatmentQueriesCountDistinctPlans() {
++        cannedResults.add(List.of(4L));
++        cannedResults.add(List.of(1L));
++        LocalDate d = LocalDate.of(2026, 10, 19);
++        assertEquals(4L, repository.countPlansWithPendingItemsDueOnOrBefore(d.plusDays(14)));
++        assertEquals(1L, repository.countPlansWithPendingItemsDueBefore(d));
++
++        assertTrue(queries.get(0).contains("count(distinct kh.maKeHoach)"));
++        assertTrue(queries.get(0).contains("ct.ngayDuKien <= :due"));
++        assertTrue(queries.get(1).contains("ct.ngayDuKien < :due"));
++        assertEquals(TrangThaiKeHoach.DANG_THUC_HIEN, parameters.get(0).get("planActive"));
++        assertEquals(TrangThaiChiTietDieuTri.CHUA_THUC_HIEN, parameters.get(0).get("itemPending"));
++    }
++
++    @Test
++    void stockLotQueryKeepsNegativeQuantitiesForAnomalyDetection() {
++        cannedResults.add(List.<Object[]>of(new Object[]{"L1", "T1", null, null, -2}));
++        List<StockLotRow> rows = repository.findNonEmptyStockLots();
++        assertEquals(new StockLotRow("L1", "T1", null, null, -2), rows.get(0));
++        assertTrue(queries.get(0).contains("lo.soLuongTon <> 0"));
++    }
++
++    @Test
++    void allQueriesAreSelects() {
++        LocalDateTime t = LocalDateTime.of(2026, 10, 19, 0, 0);
++        LocalDate d = t.toLocalDate();
++        repository.countAppointmentsByStatus(t, t.plusDays(1));
++        repository.countExamsByStatus(t, t.plusDays(1));
++        repository.sumSuccessfulPaymentsByMethod(t, t.plusDays(1));
++        repository.sumBilledAmountPerActiveInvoice();
++        repository.sumSuccessfulPaymentsPerActiveInvoice();
++        repository.countSuccessfulPaymentsOnCancelledInvoices();
++        repository.countPendingInvoiceCancellationRequests();
++        repository.countPendingStockAdjustments();
++        repository.findSystemParameter("SO_NGAY_CANH_BAO_HSD");
++        repository.findShifts();
++        repository.countAssignedStaffByShiftAndRole(d);
++        repository.findNonEmptyStockLots();
++        repository.findStockItems();
++        repository.countActiveRealEmergencyCatalogItems();
++        repository.findLatestEmergencyCheckAtOrBefore(t);
++        repository.countFailingEmergencyCheckItems("KT1", d);
++        repository.countPlansWithPendingItemsDueOnOrBefore(d);
++        repository.countPlansWithPendingItemsDueBefore(d);
++
++        assertEquals(19, queries.size());
++        for (String q : queries) {
++            String lower = q.toLowerCase();
++            assertTrue(lower.startsWith("select "), q);
++            assertFalse(lower.contains("update ") || lower.contains("delete ") || lower.contains("insert "), q);
++        }
++    }
++}
+diff --git a/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/service/DashboardDtoPrivacyTest.java b/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/service/DashboardDtoPrivacyTest.java
+new file mode 100644
+index 0000000..03a0019
+--- /dev/null
++++ b/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/service/DashboardDtoPrivacyTest.java
+@@ -0,0 +1,60 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++import com.manage.nhakhoa.features.dashboard.dto.response.AdminDashboardResponse;
++import org.junit.jupiter.api.Test;
++
++import java.lang.reflect.ParameterizedType;
++import java.lang.reflect.RecordComponent;
++import java.lang.reflect.Type;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Locale;
++import java.util.Set;
++
++import static org.junit.jupiter.api.Assertions.assertFalse;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++/** DTO Dashboard không được có trường PII/PHI và không được tham chiếu Entity JPA (BA V1 Q15). */
++class DashboardDtoPrivacyTest {
++
++    private static final List<String> FORBIDDEN = List.of(
++            "hoten", "sodienthoai", "phone", "ngaysinh", "birth", "email", "diachi", "address",
++            "chandoan", "diagnos", "trieuchung", "ketluan", "donthuoc", "prescription", "benhnhan", "patient",
++            "matkhau", "password", "token", "cccd", "cmnd");
++
++    @Test
++    void dashboardDtoGraphHasNoPersonalOrClinicalFieldsAndNoEntities() {
++        Set<Class<?>> visited = new HashSet<>();
++        walk(AdminDashboardResponse.class, visited);
++        assertTrue(visited.size() >= 10, "phải duyệt toàn bộ cây DTO");
++        for (Class<?> type : visited) {
++            assertFalse(type.getPackageName().contains(".entity"), "DTO tham chiếu entity: " + type);
++            if (type.isRecord()) {
++                for (RecordComponent component : type.getRecordComponents()) {
++                    String name = component.getName().toLowerCase(Locale.ROOT);
++                    for (String forbidden : FORBIDDEN) {
++                        assertFalse(name.contains(forbidden), type.getSimpleName() + "." + component.getName());
++                    }
++                }
++            }
++        }
++    }
++
++    private static void walk(Type type, Set<Class<?>> visited) {
++        if (type instanceof ParameterizedType parameterized) {
++            walk(parameterized.getRawType(), visited);
++            for (Type argument : parameterized.getActualTypeArguments()) {
++                walk(argument, visited);
++            }
++            return;
++        }
++        if (!(type instanceof Class<?> clazz) || !clazz.getName().startsWith("com.manage.nhakhoa") || !visited.add(clazz)) {
++            return;
++        }
++        if (clazz.isRecord()) {
++            for (RecordComponent component : clazz.getRecordComponents()) {
++                walk(component.getGenericType(), visited);
++            }
++        }
++    }
++}
+diff --git a/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/service/DashboardQueryServiceTest.java b/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/service/DashboardQueryServiceTest.java
+new file mode 100644
+index 0000000..e9c4dfd
+--- /dev/null
++++ b/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/service/DashboardQueryServiceTest.java
+@@ -0,0 +1,575 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++import com.manage.nhakhoa.features.capcuu.enums.KetQuaKiemTra;
++import com.manage.nhakhoa.features.dashboard.dto.response.AdminDashboardResponse;
++import com.manage.nhakhoa.features.dashboard.dto.response.DashboardWarning;
++import com.manage.nhakhoa.features.dashboard.dto.response.EmergencyCheckState;
++import com.manage.nhakhoa.features.dashboard.dto.response.RoleCount;
++import com.manage.nhakhoa.features.dashboard.dto.response.SectionStatus;
++import com.manage.nhakhoa.features.dashboard.dto.response.ShiftStaffingDto;
++import com.manage.nhakhoa.features.dashboard.dto.response.ShiftState;
++import com.manage.nhakhoa.features.dashboard.dto.response.WorkPriority;
++import com.manage.nhakhoa.features.dashboard.dto.response.WorkQueueItem;
++import com.manage.nhakhoa.features.dashboard.repository.ShiftRow;
++import com.manage.nhakhoa.features.dashboard.repository.StockItemRow;
++import com.manage.nhakhoa.features.dashboard.repository.StockItemType;
++import com.manage.nhakhoa.features.dashboard.service.InMemoryDashboardReadRepository.Appointment;
++import com.manage.nhakhoa.features.dashboard.service.InMemoryDashboardReadRepository.Assignment;
++import com.manage.nhakhoa.features.dashboard.service.InMemoryDashboardReadRepository.Catalog;
++import com.manage.nhakhoa.features.dashboard.service.InMemoryDashboardReadRepository.Check;
++import com.manage.nhakhoa.features.dashboard.service.InMemoryDashboardReadRepository.CheckItem;
++import com.manage.nhakhoa.features.dashboard.service.InMemoryDashboardReadRepository.Exam;
++import com.manage.nhakhoa.features.dashboard.service.InMemoryDashboardReadRepository.Invoice;
++import com.manage.nhakhoa.features.dashboard.service.InMemoryDashboardReadRepository.InvoiceLine;
++import com.manage.nhakhoa.features.dashboard.service.InMemoryDashboardReadRepository.Lot;
++import com.manage.nhakhoa.features.dashboard.service.InMemoryDashboardReadRepository.Payment;
++import com.manage.nhakhoa.features.dashboard.service.InMemoryDashboardReadRepository.PlanItem;
++import com.manage.nhakhoa.features.hoadon.enums.PhuongThucThanhToan;
++import com.manage.nhakhoa.features.hoadon.enums.TrangThaiHoaDon;
++import com.manage.nhakhoa.features.hoadon.enums.TrangThaiThanhToan;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiChiTietDieuTri;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiKeHoach;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiPhieuKham;
++import com.manage.nhakhoa.features.lichhen.enums.TrangThaiLichHen;
++import com.manage.nhakhoa.features.nhansu.enums.TrangThaiNhanVien;
++import com.manage.nhakhoa.features.nhansu.enums.TrangThaiPhanCong;
++import com.manage.nhakhoa.shared.enums.TrangThaiDuyet;
++import com.manage.nhakhoa.shared.enums.VaiTro;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++
++import java.math.BigDecimal;
++import java.time.Clock;
++import java.time.Instant;
++import java.time.LocalDate;
++import java.time.LocalDateTime;
++import java.time.LocalTime;
++import java.time.ZoneOffset;
++import java.util.List;
++import java.util.Map;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertFalse;
++import static org.junit.jupiter.api.Assertions.assertNotNull;
++import static org.junit.jupiter.api.Assertions.assertNull;
++import static org.junit.jupiter.api.Assertions.assertThrows;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++/** Kiểm thử công thức nghiệp vụ Dashboard theo BA V1/V1.1 với Clock cố định (không dùng giờ máy). */
++class DashboardQueryServiceTest {
++
++    /** 2026-10-19 15:38 giờ Việt Nam. */
++    private static final Instant NOW = Instant.parse("2026-10-19T08:38:00Z");
++    private static final LocalDate D = LocalDate.of(2026, 10, 19);
++
++    private InMemoryDashboardReadRepository repo;
++
++    @BeforeEach
++    void setUp() {
++        repo = new InMemoryDashboardReadRepository();
++    }
++
++    private AdminDashboardResponse run() {
++        return run(NOW);
++    }
++
++    private AdminDashboardResponse run(Instant instant) {
++        return new DashboardQueryService(repo, Clock.fixed(instant, ZoneOffset.UTC)).getAdminDashboard();
++    }
++
++    private static LocalDateTime at(LocalDate date, int h, int m, int s) {
++        return date.atTime(h, m, s);
++    }
++
++    private static boolean hasWarning(AdminDashboardResponse r, String code, String section) {
++        return r.warnings().stream().anyMatch(w -> w.code().equals(code) && w.section().equals(section));
++    }
++
++    private static WorkQueueItem item(AdminDashboardResponse r, String code) {
++        return r.workQueue().items().stream().filter(i -> i.code().equals(code)).findFirst().orElse(null);
++    }
++
++    // ------------------------------------------------------------------ ngày nghiệp vụ / Clock
++
++    @Test
++    void emptyDatabaseReturnsValidZerosWithAllKeysAndLiveMetadata() {
++        AdminDashboardResponse r = run();
++
++        assertEquals("LIVE", r.source());
++        assertEquals(D, r.businessDate());
++        assertEquals("Asia/Ho_Chi_Minh", r.zoneId());
++        assertEquals("2026-10-19T15:38+07:00", r.generatedAt().toString());
++        assertEquals("2026-10-19T00:00+07:00", r.period().startInclusive().toString());
++        assertEquals("2026-10-20T00:00+07:00", r.period().endExclusive().toString());
++
++        assertEquals(7, r.appointments().byStatus().size());
++        assertEquals(0, r.appointments().totalRecords());
++        assertEquals(0, r.exams().waiting());
++        assertEquals("PHIEU_KHAM_TIEP_NHAN_TRONG_NGAY", r.exams().unit());
++        assertEquals("0", r.collections().amountVnd());
++        assertEquals(3, r.collections().byMethodVnd().size());
++        r.collections().byMethodVnd().values().forEach(v -> assertEquals("0", v));
++        assertEquals("0", r.receivables().amountVnd());
++        assertEquals(0, r.receivables().invoiceCount());
++
++        assertEquals(SectionStatus.AVAILABLE, r.inventory().status());
++        assertEquals(0, r.inventory().belowMinimumItemCount());
++        assertEquals(30, r.inventory().thresholdDays());
++        assertEquals(SectionStatus.AVAILABLE, r.treatmentDue().status());
++        assertEquals(0L, r.treatmentDue().duePlanCount());
++        assertEquals(14, r.treatmentDue().horizonDays());
++        // Không có ca và không có danh mục cấp cứu thật: không giả "đủ"/"đạt".
++        assertEquals(SectionStatus.UNCONFIGURED, r.staffing().status());
++        assertEquals(SectionStatus.UNCONFIGURED, r.emergencyKit().status());
++        assertNull(r.emergencyKit().checkState());
++        // Thiếu tham số → fallback + cảnh báo cấu hình.
++        assertTrue(hasWarning(r, "THAM_SO_CHUA_CAU_HINH", "inventory"));
++        assertTrue(hasWarning(r, "THAM_SO_CHUA_CAU_HINH", "treatmentDue"));
++    }
++
++    @Test
++    void businessDateFollowsHoChiMinhZoneNotUtcOrMachineTime() {
++        // 23:59:59 giờ VN ngày 19 = 16:59:59Z
++        assertEquals(D, run(Instant.parse("2026-10-19T16:59:59Z")).businessDate());
++        // 00:00:00 giờ VN ngày 20 = 17:00:00Z (UTC vẫn là ngày 19)
++        AdminDashboardResponse next = run(Instant.parse("2026-10-19T17:00:00Z"));
++        assertEquals(D.plusDays(1), next.businessDate());
++        assertEquals(D.plusDays(1).atStartOfDay(), repo.lastAppointmentStart);
++        assertEquals(D.plusDays(2).atStartOfDay(), repo.lastAppointmentEnd);
++    }
++
++    // ------------------------------------------------------------------ lịch hẹn (Q05)
++
++    @Test
++    void appointmentsCountAllSevenStatusesInHalfOpenDay() {
++        repo.appointments.add(new Appointment(at(D, 0, 0, 0), TrangThaiLichHen.CHO_XAC_NHAN));          // biên dưới: tính
++        repo.appointments.add(new Appointment(at(D, 23, 59, 59), TrangThaiLichHen.DA_XAC_NHAN));        // cuối ngày: tính
++        repo.appointments.add(new Appointment(D.plusDays(1).atStartOfDay(), TrangThaiLichHen.DA_XAC_NHAN)); // biên trên: loại
++        repo.appointments.add(new Appointment(at(D.minusDays(1), 23, 59, 59), TrangThaiLichHen.DA_DEN)); // hôm qua: loại
++        repo.appointments.add(new Appointment(at(D, 9, 0, 0), TrangThaiLichHen.DA_DEN));
++        repo.appointments.add(new Appointment(at(D, 9, 30, 0), TrangThaiLichHen.HOAN_THANH));
++        repo.appointments.add(new Appointment(at(D, 10, 0, 0), TrangThaiLichHen.VANG_MAT));
++        repo.appointments.add(new Appointment(at(D, 11, 0, 0), TrangThaiLichHen.DA_HUY));
++        // Đổi lịch trong cùng ngày: bản cũ DA_DOI_LICH + bản mới CHO_XAC_NHAN = 2 bản ghi.
++        repo.appointments.add(new Appointment(at(D, 14, 0, 0), TrangThaiLichHen.DA_DOI_LICH));
++        repo.appointments.add(new Appointment(at(D, 16, 0, 0), TrangThaiLichHen.CHO_XAC_NHAN));
++        // Đổi lịch sang ngày khác: chỉ bản cũ thuộc D.
++        repo.appointments.add(new Appointment(at(D, 15, 0, 0), TrangThaiLichHen.DA_DOI_LICH));
++        repo.appointments.add(new Appointment(at(D.plusDays(3), 15, 0, 0), TrangThaiLichHen.CHO_XAC_NHAN));
++
++        AdminDashboardResponse r = run();
++        Map<TrangThaiLichHen, Long> s = r.appointments().byStatus();
++
++        assertEquals(2L, s.get(TrangThaiLichHen.CHO_XAC_NHAN));
++        assertEquals(1L, s.get(TrangThaiLichHen.DA_XAC_NHAN));
++        assertEquals(1L, s.get(TrangThaiLichHen.DA_DEN));
++        assertEquals(1L, s.get(TrangThaiLichHen.HOAN_THANH));
++        assertEquals(1L, s.get(TrangThaiLichHen.VANG_MAT));
++        assertEquals(1L, s.get(TrangThaiLichHen.DA_HUY));
++        assertEquals(2L, s.get(TrangThaiLichHen.DA_DOI_LICH));
++        assertEquals(9, r.appointments().totalRecords());
++        assertEquals(s.values().stream().mapToLong(Long::longValue).sum(), r.appointments().totalRecords());
++        assertEquals(4, r.appointments().activeCount());
++        assertEquals(2, item(r, "LICH_HEN_CHO_XAC_NHAN").objectCount());
++    }
++
++    // ------------------------------------------------------------------ phiếu khám (Q04)
++
++    @Test
++    void examsCountTicketsByStatusAndExcludeCancelledAndOtherDays() {
++        repo.exams.add(new Exam(at(D, 8, 0, 0), TrangThaiPhieuKham.CHO_KHAM));
++        repo.exams.add(new Exam(at(D, 8, 5, 0), TrangThaiPhieuKham.CHO_KHAM)); // có thể cùng bệnh nhân: vẫn 2 phiếu
++        repo.exams.add(new Exam(at(D, 9, 0, 0), TrangThaiPhieuKham.DANG_KHAM));
++        repo.exams.add(new Exam(at(D, 10, 0, 0), TrangThaiPhieuKham.DA_KET_LUAN));
++        repo.exams.add(new Exam(at(D, 10, 30, 0), TrangThaiPhieuKham.DA_HUY));
++        repo.exams.add(new Exam(at(D.minusDays(1), 16, 0, 0), TrangThaiPhieuKham.CHO_KHAM));
++
++        AdminDashboardResponse r = run();
++
++        assertEquals(2, r.exams().waiting());
++        assertEquals(1, r.exams().inProgress());
++        assertEquals(1, r.exams().concluded());
++        assertEquals("Phiếu chờ khám", item(r, "PHIEU_CHO_KHAM").title());
++    }
++
++    // ------------------------------------------------------------------ thu trong ngày (Q06)
++
++    @Test
++    void collectionsSumOnlySuccessfulPaymentsInDayByMethod() {
++        repo.invoices.put("HD1", new Invoice("HD1", TrangThaiHoaDon.THANH_TOAN_MOT_PHAN));
++        repo.payments.add(new Payment("HD1", at(D, 0, 0, 0), new BigDecimal("100000"), PhuongThucThanhToan.TIEN_MAT, TrangThaiThanhToan.THANH_CONG));
++        repo.payments.add(new Payment("HD1", at(D, 23, 59, 59), new BigDecimal("250000"), PhuongThucThanhToan.CHUYEN_KHOAN, TrangThaiThanhToan.THANH_CONG));
++        repo.payments.add(new Payment("HD1", at(D, 12, 0, 0), new BigDecimal("70000"), PhuongThucThanhToan.THE_POS, TrangThaiThanhToan.DA_HUY));
++        repo.payments.add(new Payment("HD1", at(D.minusDays(1), 23, 59, 59), new BigDecimal("999"), PhuongThucThanhToan.TIEN_MAT, TrangThaiThanhToan.THANH_CONG));
++        repo.payments.add(new Payment("HD1", D.plusDays(1).atStartOfDay(), new BigDecimal("888"), PhuongThucThanhToan.TIEN_MAT, TrangThaiThanhToan.THANH_CONG));
++
++        AdminDashboardResponse r = run();
++
++        assertEquals("350000", r.collections().amountVnd());
++        assertEquals("100000", r.collections().byMethodVnd().get(PhuongThucThanhToan.TIEN_MAT));
++        assertEquals("250000", r.collections().byMethodVnd().get(PhuongThucThanhToan.CHUYEN_KHOAN));
++        assertEquals("0", r.collections().byMethodVnd().get(PhuongThucThanhToan.THE_POS));
++        BigDecimal sum = r.collections().byMethodVnd().values().stream().map(BigDecimal::new).reduce(BigDecimal.ZERO, BigDecimal::add);
++        assertEquals(new BigDecimal(r.collections().amountVnd()), sum);
++    }
++
++    @Test
++    void successfulPaymentOnCancelledInvoiceRaisesAnomalyWarning() {
++        repo.invoices.put("HD9", new Invoice("HD9", TrangThaiHoaDon.DA_HUY));
++        repo.payments.add(new Payment("HD9", at(D, 9, 0, 0), new BigDecimal("50000"), PhuongThucThanhToan.TIEN_MAT, TrangThaiThanhToan.THANH_CONG));
++
++        AdminDashboardResponse r = run();
++
++        assertTrue(hasWarning(r, "THU_TREN_HOA_DON_DA_HUY", "collections"));
++        assertEquals("0", r.receivables().amountVnd()); // hóa đơn hủy không vào công nợ
++    }
++
++    // ------------------------------------------------------------------ công nợ (Q07, V1.1 #05)
++
++    @Test
++    void receivablesComputedPerInvoiceWithoutCrossJoinAndKeepPendingCancellation() {
++        // HD1: 2 dòng (2×150.000 + 1×200.000 = 500.000), thu 100.000 + 150.000, 1 lần thu bị hủy 50.000 → còn 250.000
++        repo.invoices.put("HD1", new Invoice("HD1", TrangThaiHoaDon.THANH_TOAN_MOT_PHAN));
++        repo.invoiceLines.add(new InvoiceLine("HD1", 2, new BigDecimal("150000")));
++        repo.invoiceLines.add(new InvoiceLine("HD1", 1, new BigDecimal("200000")));
++        repo.payments.add(new Payment("HD1", at(D.minusDays(2), 9, 0, 0), new BigDecimal("100000"), PhuongThucThanhToan.TIEN_MAT, TrangThaiThanhToan.THANH_CONG));
++        repo.payments.add(new Payment("HD1", at(D.minusDays(1), 9, 0, 0), new BigDecimal("150000"), PhuongThucThanhToan.THE_POS, TrangThaiThanhToan.THANH_CONG));
++        repo.payments.add(new Payment("HD1", at(D.minusDays(1), 10, 0, 0), new BigDecimal("50000"), PhuongThucThanhToan.TIEN_MAT, TrangThaiThanhToan.DA_HUY));
++        // HD2: đang có yêu cầu hủy CHO_DUYET → vẫn tính công nợ 300.000
++        repo.invoices.put("HD2", new Invoice("HD2", TrangThaiHoaDon.CHUA_THANH_TOAN));
++        repo.invoiceLines.add(new InvoiceLine("HD2", 3, new BigDecimal("100000")));
++        repo.cancellationRequests.add(TrangThaiDuyet.CHO_DUYET);
++        // HD3: đã hủy → loại
++        repo.invoices.put("HD3", new Invoice("HD3", TrangThaiHoaDon.DA_HUY));
++        repo.invoiceLines.add(new InvoiceLine("HD3", 1, new BigDecimal("700000")));
++        // HD4: đã thanh toán đủ → không nợ
++        repo.invoices.put("HD4", new Invoice("HD4", TrangThaiHoaDon.DA_THANH_TOAN));
++        repo.invoiceLines.add(new InvoiceLine("HD4", 1, new BigDecimal("80000")));
++        repo.payments.add(new Payment("HD4", at(D, 9, 0, 0), new BigDecimal("80000"), PhuongThucThanhToan.TIEN_MAT, TrangThaiThanhToan.THANH_CONG));
++
++        AdminDashboardResponse r = run();
++
++        assertEquals("550000", r.receivables().amountVnd());
++        assertEquals(2, r.receivables().invoiceCount());
++        assertEquals(0, r.receivables().overpaidInvoiceCount());
++        assertEquals("TAT_CA_HOA_DON_CON_HIEU_LUC_HIEN_TAI", r.receivables().scope());
++        assertEquals(1, item(r, "HOA_DON_CHO_DUYET_HUY").objectCount());
++        assertEquals(WorkPriority.CHO_DUYET, item(r, "HOA_DON_CHO_DUYET_HUY").priority());
++    }
++
++    @Test
++    void overpaidInvoiceIsAnomalyNotNegativeReceivable() {
++        repo.invoices.put("HD1", new Invoice("HD1", TrangThaiHoaDon.DA_THANH_TOAN));
++        repo.invoiceLines.add(new InvoiceLine("HD1", 1, new BigDecimal("100000")));
++        repo.payments.add(new Payment("HD1", at(D, 9, 0, 0), new BigDecimal("120000"), PhuongThucThanhToan.TIEN_MAT, TrangThaiThanhToan.THANH_CONG));
++        repo.invoices.put("HD2", new Invoice("HD2", TrangThaiHoaDon.CHUA_THANH_TOAN));
++        repo.invoiceLines.add(new InvoiceLine("HD2", 1, new BigDecimal("40000")));
++
++        AdminDashboardResponse r = run();
++
++        assertEquals("40000", r.receivables().amountVnd()); // không bị trừ 20.000 thừa của HD1
++        assertEquals(1, r.receivables().invoiceCount());
++        assertEquals(1, r.receivables().overpaidInvoiceCount());
++        assertTrue(hasWarning(r, "HOA_DON_THU_VUOT", "receivables"));
++        assertEquals(WorkPriority.KHAN, item(r, "HOA_DON_THU_VUOT").priority());
++    }
++
++    @Test
++    void largeAmountsKeepExactIntegerPrecision() {
++        BigDecimal max18 = new BigDecimal("999999999999999999");
++        repo.invoices.put("HD1", new Invoice("HD1", TrangThaiHoaDon.CHUA_THANH_TOAN));
++        repo.invoices.put("HD2", new Invoice("HD2", TrangThaiHoaDon.CHUA_THANH_TOAN));
++        repo.invoiceLines.add(new InvoiceLine("HD1", 1, max18));
++        repo.invoiceLines.add(new InvoiceLine("HD2", 1, max18));
++        repo.payments.add(new Payment("HD1", at(D, 9, 0, 0), max18, PhuongThucThanhToan.CHUYEN_KHOAN, TrangThaiThanhToan.THANH_CONG));
++        repo.payments.add(new Payment("HD2", at(D, 10, 0, 0), new BigDecimal("1"), PhuongThucThanhToan.TIEN_MAT, TrangThaiThanhToan.THANH_CONG));
++
++        AdminDashboardResponse r = run();
++
++        assertEquals("999999999999999998", r.receivables().amountVnd());
++        assertEquals("1000000000000000000", r.collections().amountVnd());
++    }
++
++    @Test
++    void fractionalMoneyIsNotSilentlyRounded() {
++        repo.invoices.put("HD1", new Invoice("HD1", TrangThaiHoaDon.CHUA_THANH_TOAN));
++        repo.payments.add(new Payment("HD1", at(D, 9, 0, 0), new BigDecimal("100.5"), PhuongThucThanhToan.TIEN_MAT, TrangThaiThanhToan.THANH_CONG));
++
++        DashboardDataUnavailableException ex = assertThrows(DashboardDataUnavailableException.class, this::run);
++        assertEquals("collections", ex.getSection());
++    }
++
++    // ------------------------------------------------------------------ nhân sự (Q08)
++
++    @Test
++    void staffingCountsDistinctActiveEmployeesPerShiftAndRole() {
++        repo.shifts.add(new ShiftRow("CA02", "Chiều", LocalTime.of(13, 0), LocalTime.of(17, 0), 1, 1, 1));
++        repo.shifts.add(new ShiftRow("CA01", "Sáng", LocalTime.of(7, 0), LocalTime.of(12, 0), 2, 1, 1));
++        repo.shifts.add(new ShiftRow("CA03", "Đêm", LocalTime.of(22, 0), LocalTime.of(6, 0), 1, 0, 0));
++        repo.shifts.add(new ShiftRow("CA04", "Lỗi", LocalTime.of(8, 0), LocalTime.of(8, 0), 1, 0, 0));
++        // CA01: BS NV1 được phân 2 lần → 1 người; NV2 nghỉ việc → loại; NV3 phân công DA_HUY → loại
++        repo.assignments.add(new Assignment("NV1", VaiTro.BS, TrangThaiNhanVien.DANG_LAM_VIEC, "CA01", D, TrangThaiPhanCong.DANG_THUC_HIEN));
++        repo.assignments.add(new Assignment("NV1", VaiTro.BS, TrangThaiNhanVien.DANG_LAM_VIEC, "CA01", D, TrangThaiPhanCong.CHO_HIEU_LUC));
++        repo.assignments.add(new Assignment("NV2", VaiTro.BS, TrangThaiNhanVien.NGHI_VIEC, "CA01", D, TrangThaiPhanCong.DANG_THUC_HIEN));
++        repo.assignments.add(new Assignment("NV3", VaiTro.BS, TrangThaiNhanVien.DANG_LAM_VIEC, "CA01", D, TrangThaiPhanCong.DA_HUY));
++        repo.assignments.add(new Assignment("NV4", VaiTro.YT, TrangThaiNhanVien.DANG_LAM_VIEC, "CA01", D, TrangThaiPhanCong.HOAN_THANH));
++        repo.assignments.add(new Assignment("NV5", VaiTro.LT, TrangThaiNhanVien.DANG_LAM_VIEC, "CA01", D, TrangThaiPhanCong.DANG_THUC_HIEN));
++        repo.assignments.add(new Assignment("NV6", VaiTro.AD, TrangThaiNhanVien.DANG_LAM_VIEC, "CA01", D, TrangThaiPhanCong.DANG_THUC_HIEN));
++        // CA02: đủ người, NV1 làm thêm ca này → được tính ở ca này
++        repo.assignments.add(new Assignment("NV1", VaiTro.BS, TrangThaiNhanVien.DANG_LAM_VIEC, "CA02", D, TrangThaiPhanCong.CHO_HIEU_LUC));
++        repo.assignments.add(new Assignment("NV4", VaiTro.YT, TrangThaiNhanVien.DANG_LAM_VIEC, "CA02", D, TrangThaiPhanCong.CHO_HIEU_LUC));
++        repo.assignments.add(new Assignment("NV5", VaiTro.LT, TrangThaiNhanVien.DANG_LAM_VIEC, "CA02", D, TrangThaiPhanCong.CHO_HIEU_LUC));
++        // CA02 có 2 BS trong khi định mức 1 → thừa không làm "thiếu" âm
++        repo.assignments.add(new Assignment("NV8", VaiTro.BS, TrangThaiNhanVien.DANG_LAM_VIEC, "CA02", D, TrangThaiPhanCong.CHO_HIEU_LUC));
++        // Ngày khác → loại
++        repo.assignments.add(new Assignment("NV7", VaiTro.BS, TrangThaiNhanVien.DANG_LAM_VIEC, "CA03", D.minusDays(1), TrangThaiPhanCong.HOAN_THANH));
++
++        AdminDashboardResponse r = run();
++        List<ShiftStaffingDto> shifts = r.staffing().shifts();
++
++        assertEquals(SectionStatus.AVAILABLE, r.staffing().status());
++        assertEquals(List.of("CA01", "CA04", "CA02", "CA03"), shifts.stream().map(ShiftStaffingDto::shiftCode).toList());
++        ShiftStaffingDto ca01 = shifts.get(0);
++        assertEquals(new RoleCount(1, 1, 1), ca01.assigned());
++        assertEquals(new RoleCount(1, 0, 0), ca01.missing());
++        assertEquals(ShiftState.THIEU_NHAN_SU, ca01.state());
++        assertEquals(ShiftState.DU_NHAN_SU, shifts.get(2).state());
++        assertEquals(new RoleCount(2, 1, 1), shifts.get(2).assigned());
++        assertEquals(RoleCount.ZERO, shifts.get(2).missing());
++        ShiftStaffingDto ca03 = shifts.get(3);
++        assertTrue(ca03.overnight());
++        assertEquals(ShiftState.THIEU_NHAN_SU, ca03.state()); // ca không có phân công vẫn báo thiếu
++        assertEquals(ShiftState.LOI_CAU_HINH, shifts.get(1).state());
++        assertEquals(2, r.staffing().understaffedShiftCount());
++        assertEquals(2, item(r, "CA_THIEU_NHAN_SU").objectCount());
++        assertTrue(hasWarning(r, "CA_LAM_LOI_CAU_HINH", "staffing"));
++    }
++
++    // ------------------------------------------------------------------ kho (Q09/Q10)
++
++    @Test
++    void inventoryClassifiesLotsAndCountsDistinctItemsBelowMinimum() {
++        repo.items.add(new StockItemRow(StockItemType.THUOC, "T1", 100));
++        repo.items.add(new StockItemRow(StockItemType.THUOC, "T2", 10));
++        repo.items.add(new StockItemRow(StockItemType.VAT_TU, "V1", 5));   // không có lô → tồn 0 → dưới định mức
++        repo.items.add(new StockItemRow(StockItemType.VAT_TU, "V2", 0));   // định mức 0 → không xét
++        repo.lots.add(new Lot("L01", "T1", null, D, 500));                 // HSD hôm nay → hết hạn, không khả dụng
++        repo.lots.add(new Lot("L02", "T1", null, D.plusDays(1), 30));      // cận hạn
++        repo.lots.add(new Lot("L03", "T1", null, D.plusDays(30), 30));     // cận hạn (biên)
++        repo.lots.add(new Lot("L04", "T2", null, D.plusDays(31), 20));     // còn hạn, không cận
++        repo.lots.add(new Lot("L05", "T2", null, null, 50));               // không rõ HSD
++        repo.lots.add(new Lot("L06", "T2", null, D.minusDays(3), 0));      // lô rỗng → bỏ qua
++        repo.lots.add(new Lot("L07", null, "V2", D.plusDays(100), -4));    // tồn âm → bất thường
++        repo.lots.add(new Lot("L08", "T2", "V2", D.plusDays(100), 3));     // trỏ cả thuốc và vật tư → bất thường
++
++        AdminDashboardResponse r = run();
++
++        assertEquals(SectionStatus.AVAILABLE, r.inventory().status());
++        assertEquals(1, r.inventory().expiredLotCount());
++        assertEquals(2, r.inventory().nearExpiryLotCount());
++        assertEquals(1, r.inventory().unknownExpiryLotCount());
++        assertEquals(2, r.inventory().anomalyLotCount());
++        assertEquals(2, r.inventory().belowMinimumItemCount()); // T1 (60 < 100) và V1 (0 < 5); T2 = 20 ≥ 10
++        assertTrue(hasWarning(r, "LO_HANG_BAT_THUONG", "inventory"));
++        assertEquals(1, item(r, "KHO_HET_HAN").objectCount());
++        assertEquals(1, item(r, "KHO_CHUA_RO_HSD").objectCount());
++    }
++
++    @Test
++    void configuredExpiryThresholdIsUsedAndInvalidValueFallsBackWithWarning() {
++        repo.items.add(new StockItemRow(StockItemType.THUOC, "T1", 0));
++        repo.lots.add(new Lot("L01", "T1", null, D.plusDays(40), 1));
++
++        repo.parameters.put(DashboardThresholds.KEY_NEAR_EXPIRY_DAYS, " 45 ");
++        AdminDashboardResponse configured = run();
++        assertEquals(45, configured.inventory().thresholdDays());
++        assertEquals(1, configured.inventory().nearExpiryLotCount());
++        assertFalse(hasWarning(configured, "THAM_SO_CHUA_CAU_HINH", "inventory"));
++
++        repo.parameters.put(DashboardThresholds.KEY_NEAR_EXPIRY_DAYS, "abc");
++        AdminDashboardResponse invalid = run();
++        assertEquals(30, invalid.inventory().thresholdDays());
++        assertEquals(0, invalid.inventory().nearExpiryLotCount());
++        assertTrue(hasWarning(invalid, "THAM_SO_KHONG_HOP_LE", "inventory"));
++
++        repo.parameters.put(DashboardThresholds.KEY_NEAR_EXPIRY_DAYS, "0");
++        assertTrue(hasWarning(run(), "THAM_SO_KHONG_HOP_LE", "inventory"));
++    }
++
++    // ------------------------------------------------------------------ cấp cứu (Q11)
++
++    @Test
++    void emergencyKitWithOnlySampleCatalogIsUnconfiguredNeverPassed() {
++        repo.catalog.add(new Catalog(true, true));
++        repo.catalog.add(new Catalog(false, false));
++        repo.checks.add(new Check("KT1", at(D, 8, 0, 0), KetQuaKiemTra.DAT));
++
++        AdminDashboardResponse r = run();
++
++        assertEquals(SectionStatus.UNCONFIGURED, r.emergencyKit().status());
++        assertNull(r.emergencyKit().checkState());
++        assertEquals("Chưa có danh mục cấp cứu chính thức", r.emergencyKit().message());
++    }
++
++    @Test
++    void emergencyKitWithoutAnyCheckNeedsCheck() {
++        repo.catalog.add(new Catalog(true, false));
++        repo.checks.add(new Check("KT9", at(D, 20, 0, 0), KetQuaKiemTra.DAT)); // sau thời điểm hiện tại → bỏ qua
++
++        AdminDashboardResponse r = run();
++
++        assertEquals(EmergencyCheckState.CHUA_CO_KIEM_TRA, r.emergencyKit().checkState());
++        assertEquals(WorkPriority.KHAN, item(r, "CAP_CUU_CAN_KIEM_TRA").priority());
++    }
++
++    @Test
++    void emergencyKitCycleBoundaryAndNeedsAction() {
++        repo.catalog.add(new Catalog(true, false));
++        repo.checks.add(new Check("KT1", at(D.minusDays(7), 9, 0, 0), KetQuaKiemTra.DAT));
++        AdminDashboardResponse within = run();
++        assertEquals(EmergencyCheckState.TRONG_CHU_KY, within.emergencyKit().checkState());
++        assertEquals(7L, within.emergencyKit().daysSinceLastCheck());
++        assertEquals("2026-10-12T09:00+07:00", within.emergencyKit().lastCheckedAt().toString());
++        assertNull(item(within, "CAP_CUU_CAN_KIEM_TRA"));
++
++        repo.checks.clear();
++        repo.checks.add(new Check("KT1", at(D.minusDays(8), 9, 0, 0), KetQuaKiemTra.DAT));
++        assertEquals(EmergencyCheckState.QUA_CHU_KY, run().emergencyKit().checkState());
++
++        repo.checks.add(new Check("KT2", at(D, 7, 0, 0), KetQuaKiemTra.CAN_BO_SUNG));
++        assertEquals(EmergencyCheckState.CAN_XU_LY, run().emergencyKit().checkState());
++
++        // DAT nhưng có mục hạn dùng không còn hơn 30 ngày → cần xử lý
++        repo.checks.add(new Check("KT3", at(D, 8, 0, 0), KetQuaKiemTra.DAT));
++        repo.checkItems.add(new CheckItem("KT3", true, D.plusDays(30)));
++        AdminDashboardResponse expiring = run();
++        assertEquals(EmergencyCheckState.CAN_XU_LY, expiring.emergencyKit().checkState());
++        assertEquals(1, item(expiring, "CAP_CUU_CAN_XU_LY").objectCount());
++    }
++
++    // ------------------------------------------------------------------ kế hoạch điều trị (Q12)
++
++    @Test
++    void treatmentDueCountsDistinctPlansWithinHorizon() {
++        // KH1: 3 hạng mục chờ trong hạn → 1 kế hoạch; có 1 hạng mục quá hạn
++        repo.planItems.add(new PlanItem("KH1", TrangThaiKeHoach.DANG_THUC_HIEN, TrangThaiChiTietDieuTri.CHUA_THUC_HIEN, D.minusDays(1)));
++        repo.planItems.add(new PlanItem("KH1", TrangThaiKeHoach.DANG_THUC_HIEN, TrangThaiChiTietDieuTri.CHUA_THUC_HIEN, D));
++        repo.planItems.add(new PlanItem("KH1", TrangThaiKeHoach.DANG_THUC_HIEN, TrangThaiChiTietDieuTri.CHUA_THUC_HIEN, D.plusDays(5)));
++        // KH2: hạn đúng D+14 → tính, không quá hạn
++        repo.planItems.add(new PlanItem("KH2", TrangThaiKeHoach.DANG_THUC_HIEN, TrangThaiChiTietDieuTri.CHUA_THUC_HIEN, D.plusDays(14)));
++        // KH3: D+15 → ngoài cửa sổ
++        repo.planItems.add(new PlanItem("KH3", TrangThaiKeHoach.DANG_THUC_HIEN, TrangThaiChiTietDieuTri.CHUA_THUC_HIEN, D.plusDays(15)));
++        // KH4: kế hoạch đã hoàn thành → loại; KH5: hạng mục đã thực hiện → loại
++        repo.planItems.add(new PlanItem("KH4", TrangThaiKeHoach.HOAN_THANH, TrangThaiChiTietDieuTri.CHUA_THUC_HIEN, D));
++        repo.planItems.add(new PlanItem("KH5", TrangThaiKeHoach.DANG_THUC_HIEN, TrangThaiChiTietDieuTri.DA_THUC_HIEN, D.minusDays(2)));
++
++        AdminDashboardResponse r = run();
++
++        assertEquals(2L, r.treatmentDue().duePlanCount());
++        assertEquals(1L, r.treatmentDue().overduePlanCount());
++        assertEquals("Kế hoạch điều trị đến hạn", item(r, "KE_HOACH_DEN_HAN").title());
++        assertEquals(1, item(r, "KE_HOACH_QUA_HAN").objectCount());
++    }
++
++    // ------------------------------------------------------------------ lỗi nguồn dữ liệu
++
++    @Test
++    void coreSectionFailureThrowsInsteadOfReturningZerosAndHidesSqlDetails() {
++        repo.failingMethods.add("sumBilledAmountPerActiveInvoice");
++
++        DashboardDataUnavailableException ex = assertThrows(DashboardDataUnavailableException.class, this::run);
++
++        assertEquals("receivables", ex.getSection());
++        assertFalse(ex.getMessage().contains("SELECT"));
++        assertFalse(ex.getMessage().contains("0900000000"));
++    }
++
++    @Test
++    void appointmentFailureThrows() {
++        repo.failingMethods.add("countAppointmentsByStatus");
++        assertEquals("appointments", assertThrows(DashboardDataUnavailableException.class, this::run).getSection());
++    }
++
++    @Test
++    void optionalSectionFailuresBecomeUnavailableWithNullCountsAndNoFakeWorkItems() {
++        repo.failingMethods.add("findShifts");
++        repo.failingMethods.add("findNonEmptyStockLots");
++        repo.failingMethods.add("countActiveRealEmergencyCatalogItems");
++        repo.failingMethods.add("countPlansWithPendingItemsDueBefore");
++        repo.failingMethods.add("countPendingStockAdjustments");
++        repo.appointments.add(new Appointment(at(D, 9, 0, 0), TrangThaiLichHen.CHO_XAC_NHAN));
++
++        AdminDashboardResponse r = run();
++
++        assertEquals(SectionStatus.UNAVAILABLE, r.staffing().status());
++        assertNull(r.staffing().understaffedShiftCount());
++        assertEquals(SectionStatus.UNAVAILABLE, r.inventory().status());
++        assertNull(r.inventory().belowMinimumItemCount());
++        assertNull(r.inventory().expiredLotCount());
++        assertEquals(SectionStatus.UNAVAILABLE, r.emergencyKit().status());
++        assertEquals(SectionStatus.UNAVAILABLE, r.treatmentDue().status());
++        assertNull(r.treatmentDue().duePlanCount());
++        for (String section : List.of("staffing", "inventory", "emergencyKit", "treatmentDue", "workQueue")) {
++            assertTrue(hasWarning(r, "SECTION_KHONG_TAI_DUOC", section), section);
++        }
++        for (DashboardWarning w : r.warnings()) {
++            assertFalse(w.message().contains("SELECT"));
++        }
++        // Chỉ còn mục có nguồn hợp lệ.
++        assertEquals(List.of("LICH_HEN_CHO_XAC_NHAN"), r.workQueue().items().stream().map(WorkQueueItem::code).toList());
++        // Section lõi vẫn có số liệu.
++        assertEquals(1, r.appointments().totalRecords());
++    }
++
++    @Test
++    void parameterReadFailureFallsBackWithWarning() {
++        repo.failingMethods.add("findSystemParameter");
++        AdminDashboardResponse r = run();
++        assertEquals(30, r.inventory().thresholdDays());
++        assertTrue(hasWarning(r, "THAM_SO_KHONG_DOC_DUOC", "inventory"));
++    }
++
++    // ------------------------------------------------------------------ hàng việc (Q03)
++
++    @Test
++    void workQueueGroupsAreDynamicSortedAndCountedSeparately() {
++        repo.appointments.add(new Appointment(at(D, 9, 0, 0), TrangThaiLichHen.CHO_XAC_NHAN));
++        repo.appointments.add(new Appointment(at(D, 10, 0, 0), TrangThaiLichHen.CHO_XAC_NHAN));
++        repo.exams.add(new Exam(at(D, 9, 0, 0), TrangThaiPhieuKham.CHO_KHAM));
++        repo.stockAdjustments.add(TrangThaiDuyet.CHO_DUYET);
++        repo.stockAdjustments.add(TrangThaiDuyet.DA_DUYET);
++        repo.items.add(new StockItemRow(StockItemType.VAT_TU, "V1", 5));
++        repo.catalog.add(new Catalog(true, false));
++
++        AdminDashboardResponse r = run();
++        List<String> codes = r.workQueue().items().stream().map(WorkQueueItem::code).toList();
++
++        assertEquals(List.of("CAP_CUU_CAN_KIEM_TRA", "KHO_DUOI_DINH_MUC",
++                "KHO_CHO_DUYET_DIEU_CHINH", "LICH_HEN_CHO_XAC_NHAN",
++                "PHIEU_CHO_KHAM"), codes);
++        assertEquals(5, r.workQueue().workGroupCount());
++        assertEquals(1 + 1 + 1 + 2 + 1, r.workQueue().relatedObjectCount());
++        r.workQueue().items().forEach(i -> {
++            assertTrue(i.objectCount() > 0);
++            assertNotNull(i.targetScreen());
++            assertNotNull(i.sourceMetric());
++        });
++    }
++
++    // ------------------------------------------------------------------ bất biến
++
++    @Test
++    void responseCollectionsAreImmutable() {
++        AdminDashboardResponse r = run();
++        assertThrows(UnsupportedOperationException.class, () -> r.appointments().byStatus().put(TrangThaiLichHen.DA_HUY, 9L));
++        assertThrows(UnsupportedOperationException.class, () -> r.warnings().add(new DashboardWarning("X", "Y", "Z")));
++        assertThrows(UnsupportedOperationException.class, () -> r.workQueue().items().clear());
++    }
++
++    @Test
++    void serviceIsReadOnlyAndOnlyCallsQueryMethods() {
++        run();
++        assertFalse(repo.calls.isEmpty());
++        repo.calls.forEach(c -> assertTrue(c.startsWith("count") || c.startsWith("sum") || c.startsWith("find"), c));
++    }
++}
+diff --git a/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/service/InMemoryDashboardReadRepository.java b/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/service/InMemoryDashboardReadRepository.java
+new file mode 100644
+index 0000000..5fd68de
+--- /dev/null
++++ b/nhakhoa/src/test/java/com/manage/nhakhoa/features/dashboard/service/InMemoryDashboardReadRepository.java
+@@ -0,0 +1,251 @@
++package com.manage.nhakhoa.features.dashboard.service;
++
++import com.manage.nhakhoa.features.capcuu.enums.KetQuaKiemTra;
++import com.manage.nhakhoa.features.dashboard.repository.DashboardReadRepository;
++import com.manage.nhakhoa.features.dashboard.repository.EmergencyCheckRow;
++import com.manage.nhakhoa.features.dashboard.repository.InvoiceAmountRow;
++import com.manage.nhakhoa.features.dashboard.repository.ShiftAssignmentRow;
++import com.manage.nhakhoa.features.dashboard.repository.ShiftRow;
++import com.manage.nhakhoa.features.dashboard.repository.StockItemRow;
++import com.manage.nhakhoa.features.dashboard.repository.StockLotRow;
++import com.manage.nhakhoa.features.hoadon.enums.PhuongThucThanhToan;
++import com.manage.nhakhoa.features.hoadon.enums.TrangThaiHoaDon;
++import com.manage.nhakhoa.features.hoadon.enums.TrangThaiThanhToan;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiChiTietDieuTri;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiKeHoach;
++import com.manage.nhakhoa.features.khamchuabenh.enums.TrangThaiPhieuKham;
++import com.manage.nhakhoa.features.lichhen.enums.TrangThaiLichHen;
++import com.manage.nhakhoa.features.nhansu.enums.TrangThaiNhanVien;
++import com.manage.nhakhoa.features.nhansu.enums.TrangThaiPhanCong;
++import com.manage.nhakhoa.shared.enums.TrangThaiDuyet;
++import com.manage.nhakhoa.shared.enums.VaiTro;
++
++import java.math.BigDecimal;
++import java.time.LocalDate;
++import java.time.LocalDateTime;
++import java.util.ArrayList;
++import java.util.Comparator;
++import java.util.EnumMap;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.Optional;
++import java.util.Set;
++import java.util.stream.Collectors;
++
++/**
++ * Bản giả lập trong bộ nhớ, mô phỏng đúng ngữ nghĩa các truy vấn JPQL của JpaDashboardReadRepository
++ * (lọc trạng thái, khoảng nửa mở, aggregate riêng, COUNT DISTINCT). Có thể ép lỗi từng phương thức.
++ * Không chứa dữ liệu cá nhân thật.
++ */
++class InMemoryDashboardReadRepository implements DashboardReadRepository {
++
++    record Appointment(LocalDateTime time, TrangThaiLichHen status) { }
++    record Exam(LocalDateTime receivedAt, TrangThaiPhieuKham status) { }
++    record Invoice(String id, TrangThaiHoaDon status) { }
++    record InvoiceLine(String invoiceId, int quantity, BigDecimal unitPrice) { }
++    record Payment(String invoiceId, LocalDateTime time, BigDecimal amount, PhuongThucThanhToan method,
++                   TrangThaiThanhToan status) { }
++    record Assignment(String employeeId, VaiTro role, TrangThaiNhanVien employeeStatus, String shiftCode,
++                      LocalDate workDate, TrangThaiPhanCong status) { }
++    record Lot(String lotId, String drugId, String supplyId, LocalDate expiry, int quantity) { }
++    record Catalog(boolean active, boolean sample) { }
++    record Check(String checkId, LocalDateTime time, KetQuaKiemTra result) { }
++    record CheckItem(String checkId, boolean ok, LocalDate expiry) { }
++    record PlanItem(String planId, TrangThaiKeHoach planStatus, TrangThaiChiTietDieuTri itemStatus, LocalDate dueDate) { }
++
++    final List<Appointment> appointments = new ArrayList<>();
++    final List<Exam> exams = new ArrayList<>();
++    final Map<String, Invoice> invoices = new LinkedHashMap<>();
++    final List<InvoiceLine> invoiceLines = new ArrayList<>();
++    final List<Payment> payments = new ArrayList<>();
++    final List<TrangThaiDuyet> cancellationRequests = new ArrayList<>();
++    final List<TrangThaiDuyet> stockAdjustments = new ArrayList<>();
++    final Map<String, String> parameters = new HashMap<>();
++    final List<ShiftRow> shifts = new ArrayList<>();
++    final List<Assignment> assignments = new ArrayList<>();
++    final List<Lot> lots = new ArrayList<>();
++    final List<StockItemRow> items = new ArrayList<>();
++    final List<Catalog> catalog = new ArrayList<>();
++    final List<Check> checks = new ArrayList<>();
++    final List<CheckItem> checkItems = new ArrayList<>();
++    final List<PlanItem> planItems = new ArrayList<>();
++
++    final Set<String> failingMethods = new HashSet<>();
++    final List<String> calls = new ArrayList<>();
++    LocalDateTime lastAppointmentStart;
++    LocalDateTime lastAppointmentEnd;
++
++    private void enter(String method) {
++        calls.add(method);
++        if (failingMethods.contains(method)) {
++            throw new IllegalStateException("SELECT secret_column FROM BenhNhan WHERE soDienThoai='0900000000'");
++        }
++    }
++
++    private static boolean inRange(LocalDateTime t, LocalDateTime start, LocalDateTime end) {
++        return !t.isBefore(start) && t.isBefore(end);
++    }
++
++    @Override
++    public Map<TrangThaiLichHen, Long> countAppointmentsByStatus(LocalDateTime start, LocalDateTime end) {
++        enter("countAppointmentsByStatus");
++        lastAppointmentStart = start;
++        lastAppointmentEnd = end;
++        Map<TrangThaiLichHen, Long> result = new EnumMap<>(TrangThaiLichHen.class);
++        appointments.stream().filter(a -> inRange(a.time(), start, end))
++                .forEach(a -> result.merge(a.status(), 1L, Long::sum));
++        return result;
++    }
++
++    @Override
++    public Map<TrangThaiPhieuKham, Long> countExamsByStatus(LocalDateTime start, LocalDateTime end) {
++        enter("countExamsByStatus");
++        Map<TrangThaiPhieuKham, Long> result = new EnumMap<>(TrangThaiPhieuKham.class);
++        exams.stream().filter(e -> inRange(e.receivedAt(), start, end))
++                .forEach(e -> result.merge(e.status(), 1L, Long::sum));
++        return result;
++    }
++
++    @Override
++    public Map<PhuongThucThanhToan, BigDecimal> sumSuccessfulPaymentsByMethod(LocalDateTime start, LocalDateTime end) {
++        enter("sumSuccessfulPaymentsByMethod");
++        Map<PhuongThucThanhToan, BigDecimal> result = new EnumMap<>(PhuongThucThanhToan.class);
++        payments.stream()
++                .filter(p -> p.status() == TrangThaiThanhToan.THANH_CONG && inRange(p.time(), start, end))
++                .forEach(p -> result.merge(p.method(), p.amount(), BigDecimal::add));
++        return result;
++    }
++
++    private boolean active(String invoiceId) {
++        Invoice invoice = invoices.get(invoiceId);
++        return invoice != null && invoice.status() != TrangThaiHoaDon.DA_HUY;
++    }
++
++    @Override
++    public List<InvoiceAmountRow> sumBilledAmountPerActiveInvoice() {
++        enter("sumBilledAmountPerActiveInvoice");
++        Map<String, BigDecimal> sums = new LinkedHashMap<>();
++        invoiceLines.stream().filter(l -> active(l.invoiceId()))
++                .forEach(l -> sums.merge(l.invoiceId(), l.unitPrice().multiply(BigDecimal.valueOf(l.quantity())),
++                        BigDecimal::add));
++        return sums.entrySet().stream().map(e -> new InvoiceAmountRow(e.getKey(), e.getValue())).toList();
++    }
++
++    @Override
++    public List<InvoiceAmountRow> sumSuccessfulPaymentsPerActiveInvoice() {
++        enter("sumSuccessfulPaymentsPerActiveInvoice");
++        Map<String, BigDecimal> sums = new LinkedHashMap<>();
++        payments.stream().filter(p -> p.status() == TrangThaiThanhToan.THANH_CONG && active(p.invoiceId()))
++                .forEach(p -> sums.merge(p.invoiceId(), p.amount(), BigDecimal::add));
++        return sums.entrySet().stream().map(e -> new InvoiceAmountRow(e.getKey(), e.getValue())).toList();
++    }
++
++    @Override
++    public long countSuccessfulPaymentsOnCancelledInvoices() {
++        enter("countSuccessfulPaymentsOnCancelledInvoices");
++        return payments.stream().filter(p -> p.status() == TrangThaiThanhToan.THANH_CONG
++                && invoices.containsKey(p.invoiceId())
++                && invoices.get(p.invoiceId()).status() == TrangThaiHoaDon.DA_HUY).count();
++    }
++
++    @Override
++    public long countPendingInvoiceCancellationRequests() {
++        enter("countPendingInvoiceCancellationRequests");
++        return cancellationRequests.stream().filter(s -> s == TrangThaiDuyet.CHO_DUYET).count();
++    }
++
++    @Override
++    public long countPendingStockAdjustments() {
++        enter("countPendingStockAdjustments");
++        return stockAdjustments.stream().filter(s -> s == TrangThaiDuyet.CHO_DUYET).count();
++    }
++
++    @Override
++    public Optional<String> findSystemParameter(String key) {
++        enter("findSystemParameter");
++        return Optional.ofNullable(parameters.get(key));
++    }
++
++    @Override
++    public List<ShiftRow> findShifts() {
++        enter("findShifts");
++        return List.copyOf(shifts);
++    }
++
++    @Override
++    public List<ShiftAssignmentRow> countAssignedStaffByShiftAndRole(LocalDate workDate) {
++        enter("countAssignedStaffByShiftAndRole");
++        Set<TrangThaiPhanCong> counted = Set.of(TrangThaiPhanCong.CHO_HIEU_LUC, TrangThaiPhanCong.DANG_THUC_HIEN,
++                TrangThaiPhanCong.HOAN_THANH);
++        Set<VaiTro> roles = Set.of(VaiTro.BS, VaiTro.YT, VaiTro.LT);
++        Map<String, Map<VaiTro, Set<String>>> distinct = new LinkedHashMap<>();
++        assignments.stream()
++                .filter(a -> a.workDate().equals(workDate) && counted.contains(a.status())
++                        && a.employeeStatus() == TrangThaiNhanVien.DANG_LAM_VIEC && roles.contains(a.role()))
++                .forEach(a -> distinct.computeIfAbsent(a.shiftCode(), k -> new EnumMap<>(VaiTro.class))
++                        .computeIfAbsent(a.role(), k -> new HashSet<>()).add(a.employeeId()));
++        List<ShiftAssignmentRow> result = new ArrayList<>();
++        distinct.forEach((shift, byRole) -> byRole.forEach((role, ids) ->
++                result.add(new ShiftAssignmentRow(shift, role, ids.size()))));
++        return result;
++    }
++
++    @Override
++    public List<StockLotRow> findNonEmptyStockLots() {
++        enter("findNonEmptyStockLots");
++        return lots.stream().filter(l -> l.quantity() != 0)
++                .sorted(Comparator.comparing(Lot::lotId))
++                .map(l -> new StockLotRow(l.lotId(), l.drugId(), l.supplyId(), l.expiry(), l.quantity()))
++                .toList();
++    }
++
++    @Override
++    public List<StockItemRow> findStockItems() {
++        enter("findStockItems");
++        return List.copyOf(items);
++    }
++
++    @Override
++    public long countActiveRealEmergencyCatalogItems() {
++        enter("countActiveRealEmergencyCatalogItems");
++        return catalog.stream().filter(c -> c.active() && !c.sample()).count();
++    }
++
++    @Override
++    public Optional<EmergencyCheckRow> findLatestEmergencyCheckAtOrBefore(LocalDateTime atOrBefore) {
++        enter("findLatestEmergencyCheckAtOrBefore");
++        return checks.stream().filter(c -> !c.time().isAfter(atOrBefore))
++                .max(Comparator.comparing(Check::time).thenComparing(Check::checkId))
++                .map(c -> new EmergencyCheckRow(c.checkId(), c.time(), c.result()));
++    }
++
++    @Override
++    public long countFailingEmergencyCheckItems(String checkId, LocalDate safeUntilInclusive) {
++        enter("countFailingEmergencyCheckItems");
++        return checkItems.stream().filter(i -> i.checkId().equals(checkId))
++                .filter(i -> !i.ok() || (i.expiry() != null && !i.expiry().isAfter(safeUntilInclusive)))
++                .count();
++    }
++
++    @Override
++    public long countPlansWithPendingItemsDueOnOrBefore(LocalDate dueOnOrBefore) {
++        enter("countPlansWithPendingItemsDueOnOrBefore");
++        return pendingPlans().stream().filter(p -> !p.dueDate().isAfter(dueOnOrBefore))
++                .map(PlanItem::planId).collect(Collectors.toSet()).size();
++    }
++
++    @Override
++    public long countPlansWithPendingItemsDueBefore(LocalDate dueBefore) {
++        enter("countPlansWithPendingItemsDueBefore");
++        return pendingPlans().stream().filter(p -> p.dueDate().isBefore(dueBefore))
++                .map(PlanItem::planId).collect(Collectors.toSet()).size();
++    }
++
++    private List<PlanItem> pendingPlans() {
++        return planItems.stream().filter(p -> p.planStatus() == TrangThaiKeHoach.DANG_THUC_HIEN
++                && p.itemStatus() == TrangThaiChiTietDieuTri.CHUA_THUC_HIEN).toList();
++    }
++}

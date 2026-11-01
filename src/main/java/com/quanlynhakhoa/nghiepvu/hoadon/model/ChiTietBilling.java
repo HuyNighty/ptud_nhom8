@@ -1,0 +1,7 @@
+package com.quanlynhakhoa.nghiepvu.hoadon.model;
+
+import java.util.List;
+
+public record ChiTietBilling(HoaDon hoaDon, List<ChiTietHoaDon> chiTiet, List<ThanhToan> thanhToan) {
+    public ChiTietBilling { chiTiet = List.copyOf(chiTiet); thanhToan = List.copyOf(thanhToan); }
+}
