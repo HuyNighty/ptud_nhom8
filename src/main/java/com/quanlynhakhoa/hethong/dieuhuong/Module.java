@@ -22,7 +22,8 @@ public enum Module {
     DEBTS(Permission.BILLING_READ),
     PAYMENTS(Permission.BILLING_MANAGE),
     INVOICE_CANCELLATIONS(Permission.INVOICE_CANCEL_APPROVE),
-    RECEPTION(Permission.PATIENT_CHECK_IN);
+    RECEPTION(Permission.PATIENT_CHECK_IN),
+    SHIFT_ASSIGNMENTS(Permission.WORKFORCE_READ);
 
     private final Permission openPermission;
 

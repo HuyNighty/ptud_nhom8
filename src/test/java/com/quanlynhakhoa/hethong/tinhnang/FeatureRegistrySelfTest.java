@@ -35,6 +35,8 @@ public final class FeatureRegistrySelfTest {
     public static void main(String[] args) {
         FeatureRegistry empty = FeatureBootstrap.createRegistry();
         check(empty.contains(Module.AUDIT), "audit registered");
+        check(empty.contains(Module.SHIFT_ASSIGNMENTS), "shift assignments registered");
+        check(empty.contains(Module.MY_SCHEDULE), "personal schedule registered");
         check(empty.contains(Module.WORKFORCE), "workforce registered");
         check(empty.contains(Module.ROLES), "roles registered");
         check(empty.contains(Module.EXAMINATIONS), "examinations registered");

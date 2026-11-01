@@ -15,6 +15,7 @@ import com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.DichVuPanel;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.quantri.lichlamviec.view.LichLamViecPanel;
 import javax.swing.JPanel;
 
 public final class FeatureBootstrap {
@@ -24,6 +25,8 @@ public final class FeatureBootstrap {
         return FeatureRegistry.builder()
                 .register(Module.ACCOUNTS, AccountPanel::new)
                 .register(Module.WORKFORCE, EmployeePanel::new)
+                .register(Module.SHIFT_ASSIGNMENTS, session -> new LichLamViecPanel(session, true))
+                .register(Module.MY_SCHEDULE, session -> new LichLamViecPanel(session, false))
                 .register(Module.ROLES, RolePanel::new)
                 .register(Module.AUDIT, AuditPanel::new)
                 .register(Module.EXAMINATIONS, ExamQueuePanel::new)

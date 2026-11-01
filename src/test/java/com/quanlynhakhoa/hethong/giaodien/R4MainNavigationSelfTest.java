@@ -73,7 +73,7 @@ public final class R4MainNavigationSelfTest {
         check(manager.availableModules().equals(List.of(
                 Module.HOME, Module.BILLING, Module.WORKFORCE,
                 Module.ACCOUNTS, Module.ROLES, Module.AUDIT,
-                Module.SERVICE_CATALOG, Module.MY_SCHEDULE, Module.SERVICES, Module.DEBTS, Module.INVOICE_CANCELLATIONS)));
+                Module.SERVICE_CATALOG, Module.MY_SCHEDULE, Module.SERVICES, Module.DEBTS, Module.INVOICE_CANCELLATIONS, Module.SHIFT_ASSIGNMENTS)));
         manager.select(Module.WORKFORCE);
         denied(() -> manager.select(Module.INVENTORY));
         MainNavigationModel inventory = new MainNavigationModel(session(Role.INVENTORY_MANAGER));
