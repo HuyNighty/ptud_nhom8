@@ -11,9 +11,9 @@ try {
     if ($SqlWrite -or $SqlRead) {
         if (-not $TestId) { throw 'Supply a fresh synthetic -TestId starting with TST (max 10 characters)' }
         $mode = if ($SqlWrite) { '--write' } else { '--read' }
-        & java -cp $classpath com.quanlynhakhoa.billing.ServiceBillingSqlIT $mode $TestId
+        & java -cp $classpath com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSqlIT $mode $TestId
     } else {
-        & java -cp $classpath com.quanlynhakhoa.billing.ui.ServiceBillingLauncher
+        & java -cp $classpath com.quanlynhakhoa.nghiepvu.hoadon.ui.ServiceBillingLauncher
     }
     if ($LASTEXITCODE -ne 0) { throw 'Service/Billing launcher failed' }
 } finally { Pop-Location }

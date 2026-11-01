@@ -44,7 +44,7 @@ MainFrame constructs the page only on the **first authorized navigation**. Navig
 For Windows PowerShell the last command can be run as:
 
 ```powershell
-java -cp 'target/classes;target/test-classes' com.quanlynhakhoa.features.FeatureRegistrySelfTest
+java -cp 'target/classes;target/test-classes' com.quanlynhakhoa.hethong.tinhnang.FeatureRegistrySelfTest
 ```
 
 The self-test creates only synthetic in-memory sessions and lightweight Swing panels; no real account, JFrame, or database write.

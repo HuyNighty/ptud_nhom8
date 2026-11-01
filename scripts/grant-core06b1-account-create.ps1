@@ -40,7 +40,7 @@ try {
     [Environment]::SetEnvironmentVariable('N08_CORE06_SQL_ADMIN_PASSWORD', $plain, 'Process')
     $plain = $null
     $mode = if ($Apply) { '--apply' } else { '--check' }
-    & java -cp ((Join-Path $repo 'target/classes') + ';' + $deps) 'com.quanlynhakhoa.dev.AccountCreateSqlGrants' $mode
+    & java -cp ((Join-Path $repo 'target/classes') + ';' + $deps) 'com.quanlynhakhoa.hatang.phattrien.AccountCreateSqlGrants' $mode
     if ($LASTEXITCODE -ne 0) { throw 'SQL grant preflight/apply failed' }
 } finally {
     [Environment]::SetEnvironmentVariable('N08_CORE06_SQL_ADMIN_USER', $oldName, 'Process')

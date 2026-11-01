@@ -14,10 +14,10 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'STOP: Maven compile failed.' }
     $out = Join-Path $repo 'target/r4-a3-session-test'
     [System.IO.Directory]::CreateDirectory($out) | Out-Null
-    $javaFile = 'src/test/java/com/quanlynhakhoa/view/R4SessionLifecycleSelfTest.java'
+    $javaFile = 'src/test/java/com/quanlynhakhoa/hethong/giaodien/R4SessionLifecycleSelfTest.java'
     & javac --release 21 -encoding UTF-8 -cp (Join-Path $repo 'target/classes') -d $out $javaFile
     if ($LASTEXITCODE -ne 0) { throw 'STOP: R4-A3 test compile failed.' }
     $classpath = (Join-Path $repo 'target/classes') + ';' + $out
-    & java -cp $classpath 'com.quanlynhakhoa.view.R4SessionLifecycleSelfTest'
+    & java -cp $classpath 'com.quanlynhakhoa.hethong.giaodien.R4SessionLifecycleSelfTest'
     if ($LASTEXITCODE -ne 0) { throw 'STOP: R4-A3 lifecycle test failed.' }
 } finally { Pop-Location }

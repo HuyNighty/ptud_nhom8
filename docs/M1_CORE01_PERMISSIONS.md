@@ -23,7 +23,7 @@ Java 21, Swing, JDBC, SQL Server. Chỉ tác động lên database phát triển
 ## Áp dụng trên branch riêng
 
 1. Lấy `main` mới nhất và tạo branch `feat/n08-core-permissions-m1`/worktree riêng, không thay đổi worktree đã bảo vệ.
-2. Giải nén ZIP. Copy `src/main/java/com/quanlynhakhoa/dev/TeamM1Permissions.java` vào đúng thư mục source; copy `scripts/grant-team-m1.ps1` vào `scripts/`; copy tài liệu này vào `docs/`.
+2. Giải nén ZIP. Copy `src/main/java/com/quanlynhakhoa/hatang/phattrien/TeamM1Permissions.java` vào đúng thư mục source; copy `scripts/grant-team-m1.ps1` vào `scripts/`; copy tài liệu này vào `docs/`.
 3. `git apply --check` patch `patches/DevSetup-M1.patch`, chỉ `git apply` nếu check PASS. Patch thêm **một dòng** vào `DevSetup.java`: `TeamM1Permissions.grant(dev, sqlUser);` trong transaction setup, trước `dev.commit()`. Do đó, các máy **setup mới** sẽ nhận quyền M1 tự động cùng V1–V5.
 4. Chạy `mvnw.cmd clean compile`, `scripts/run.ps1 -Smoke`, `git diff --check`, `git status --short`.
 5. **Database đã setup trước** không có quyền M1: chạy `scripts/grant-team-m1.ps1 -Check` (không ghi SQL) và chỉ sau khi xác nhận đúng dev DB chạy `-Apply`. Script yêu cầu nhập `GRANT` và mật khẩu SQL admin ẩn. Tài khoản admin chỉ được dùng trong quá trình cấp quyền; App tiếp tục dùng `n08dev_...`.

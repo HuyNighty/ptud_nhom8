@@ -40,7 +40,7 @@ try {
     [Environment]::SetEnvironmentVariable('N08_W1B_SQL_ADMIN_PASSWORD', $plain, 'Process')
     $plain = $null
     $mode = if ($Apply) { '--apply' } else { '--check' }
-    & java -cp ((Join-Path $repo 'target/classes') + ';' + $deps) 'com.quanlynhakhoa.dev.WorkforceSqlGrants' $mode
+    & java -cp ((Join-Path $repo 'target/classes') + ';' + $deps) 'com.quanlynhakhoa.hatang.phattrien.WorkforceSqlGrants' $mode
     if ($LASTEXITCODE -ne 0) { throw 'W1B SQL gate failed' }
 } finally {
     [Environment]::SetEnvironmentVariable('N08_W1B_SQL_ADMIN_USER', $oldUser, 'Process')

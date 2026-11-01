@@ -5,9 +5,9 @@ Ngày kiểm tra: 30/10/2026. Runtime Java SE 21+, Swing, JDBC, SQL Server.
 
 ## Phạm vi đã triển khai
 
-- `com.quanlynhakhoa.dichvu.{ui,controller,service,dao,model}`: tìm mã/tên, lọc trạng thái,
+- `com.quanlynhakhoa.nghiepvu.dichvu.{ui,controller,service,dao,model}`: tìm mã/tên, lọc trạng thái,
   thêm, sửa, ngừng áp dụng/áp dụng lại; ghi dịch vụ và audit trong cùng transaction.
-- `com.quanlynhakhoa.billing.{ui,controller,service,dao,model}`: danh sách hóa đơn, lọc
+- `com.quanlynhakhoa.nghiepvu.hoadon.{ui,controller,service,dao,model}`: danh sách hóa đơn, lọc
   ngày/trạng thái, chi tiết dịch vụ/thuốc/vật tư, lịch sử thu và metadata hủy,
   tổng tiền/đã thu/còn nợ, công nợ bệnh nhân. Billing chỉ có API đọc.
 - Hai panel không gọi JDBC trong constructor. Khi panel được gắn vào cửa sổ, lần đọc
@@ -75,17 +75,17 @@ new DichVuPanel(session, TeamDevConnection::open);
 new HoaDonPanel(session, TeamDevConnection::open);
 ```
 
-`ConnectionProvider` thuộc `com.quanlynhakhoa.billing.dao`,
+`ConnectionProvider` thuộc `com.quanlynhakhoa.nghiepvu.hoadon.dao`,
 `Connection open() throws SQLException`; phải trả connection mới ở auto-commit.
 Cả hai panel cũng có overload chỉ nhận session, dùng TeamDevConnection mặc định.
 Core có thể tham khảo đoạn đăng ký dưới đây **sau khi review** (chưa áp dụng trong PR):
 
 ```java
-import com.quanlynhakhoa.dichvu.ui.DichVuPanel;
-import com.quanlynhakhoa.billing.ui.HoaDonPanel;
-import com.quanlynhakhoa.dev.TeamDevConnection;
-import com.quanlynhakhoa.features.FeaturePanelFactory;
-import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.nghiepvu.dichvu.ui.DichVuPanel;
+import com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel;
+import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.hethong.tinhnang.FeaturePanelFactory;
+import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import javax.swing.JPanel;
 
 // Nối vào builder hiện tại, giữ nguyên đăng ký Module.ACCOUNTS.
@@ -113,7 +113,7 @@ Không dùng file `.env` của kiến trúc Spring cũ hoặc credential SQL adm
 .\scripts\run-service-billing-m1.ps1
 ```
 
-Launcher `com.quanlynhakhoa.billing.ui.ServiceBillingLauncher` dùng JdbcAuthService,
+Launcher `com.quanlynhakhoa.nghiepvu.hoadon.ui.ServiceBillingLauncher` dùng JdbcAuthService,
 LoginPolicy, BCryptPasswordVerifier và TeamDevConnection hiện có; không tự tạo principal.
 Nhập username/password Swing thật. CLINIC_MANAGER có hai tab; RECEPTIONIST chỉ đọc
 Billing; các role khác không được tự cấp thêm quyền. Logout/đóng cửa sổ vô hiệu session.

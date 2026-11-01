@@ -40,18 +40,17 @@ Các module sau đã được đăng ký trong `FeatureBootstrap` trên nhánh `
 ptud_nhom8/
 ├── src/main/java/com/quanlynhakhoa/
 │   ├── App.java               # Điểm khởi động
-│   ├── view/                  # Giao diện chính và đăng nhập
-│   ├── features/              # Registry tích hợp module
-│   ├── security/              # Phiên đăng nhập và phân quyền
-│   ├── auth/                  # Xác thực JDBC
-│   ├── dev/                   # Kết nối/setup database phát triển
-│   ├── benhnhan/              # Bệnh nhân và hồ sơ
-│   ├── lichhen/               # Lịch hẹn và tiếp nhận
-│   ├── examination/           # Hàng chờ khám
-│   ├── billing/               # Hóa đơn, thanh toán, công nợ
-│   ├── inventory/             # Thuốc, vật tư, NCC, lô hàng
-│   ├── audit/                 # Nhật ký thao tác
-│   └── ...                    # Các module khác
+│   ├── nghiepvu/
+│   │   ├── benhnhan/          # Bệnh nhân và hồ sơ
+│   │   ├── lichhen/           # Lịch hẹn và tiếp nhận
+│   │   ├── phieukham/         # Hàng chờ khám
+│   │   ├── dichvu/            # Danh mục dịch vụ
+│   │   ├── hoadon/            # Hóa đơn, thanh toán, công nợ
+│   │   └── kho/               # thuoc, vattu, nhacungcap, lohang
+│   ├── quantri/               # taikhoan, nhanvien, vaitro, nhatky
+│   ├── hethong/               # xacthuc, phanquyen, dieuhuong,
+│   │                         # giaodien, tinhnang, tongquan
+│   └── hatang/                # cosodulieu, phattrien
 ├── src/test/java/             # Synthetic SelfTest và test hỗ trợ
 ├── sql/bootstrap/             # Các script schema V1–V5
 ├── scripts/                   # Setup, chạy và kiểm thử

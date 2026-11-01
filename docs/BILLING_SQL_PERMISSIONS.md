@@ -52,7 +52,7 @@ thu tiền → xét duyệt bằng dữ liệu nghiệp vụ thực và hai tài
 
 - Mới: `scripts/grant-billing-dev.ps1` — tiện ích cấp quyền tập trung cho Billing,
   tách khỏi script M1 cũ dùng phạm vi chỉ đọc hóa đơn.
-- Mới: `src/test/java/com/quanlynhakhoa/billing/BillingPermissionsSqlIT.java` —
+- Mới: `src/test/java/com/quanlynhakhoa/nghiepvu/hoadon/BillingPermissionsSqlIT.java` —
   kiểm tra application login thật, không tạo session ứng dụng giả.
 - Mới: `docs/BILLING_SQL_PERMISSIONS.md`.
 - Cập nhật: `docs/BILLING_UI_REVIEW.md` — ghi nhận vấn đề quyền đã được giải quyết.

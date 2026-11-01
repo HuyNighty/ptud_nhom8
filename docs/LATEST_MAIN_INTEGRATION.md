@@ -79,12 +79,12 @@ các session khác dùng Tải lại và Service luôn kiểm tra lại điều 
 
 | Nhóm | File |
 |---|---|
-| Shell main | view/MainFrame.java; features/FeatureBootstrap.java |
-| Đồng bộ | billing/controller/BillingChangeBus.java (mới); HoaDonController, PaymentController, CancellationController, CancellationRequestController, TaoHoaDonController |
-| Công nợ | billing/model/PatientDebt.java (mới); billing/service/DebtService.java; billing/ui/DebtPanel.java và billing/controller/DebtController.java (mới) |
-| Form thu dùng chung | billing/ui/PaymentForm.java và InvoiceHistoryPanel.java (mới); PaymentDialog.java; billing/ui/PaymentPanel.java và billing/controller/PaymentScreenController.java (mới) |
-| Hình thức | billing/ui/BillingUi.java, HoaDonPanel.java, CancellationPanel.java; dichvu/ui/DichVuPanel.java; dichvu/controller/DichVuController.java |
-| Kiểm thử | LatestShellUiSelfTest.java, view/LatestMainShellSelfTest.java (mới); FeatureRegistrySelfTest, ServiceBillingUiSelfTest, ServiceBillingPreview; scripts/test-service-billing-m1.ps1 |
+| Shell main | hethong/giaodien/MainFrame.java; hethong/tinhnang/FeatureBootstrap.java |
+| Đồng bộ | nghiepvu/hoadon/controller/BillingChangeBus.java (mới); HoaDonController, PaymentController, CancellationController, CancellationRequestController, TaoHoaDonController |
+| Công nợ | nghiepvu/hoadon/model/PatientDebt.java (mới); nghiepvu/hoadon/service/DebtService.java; nghiepvu/hoadon/ui/DebtPanel.java và nghiepvu/hoadon/controller/DebtController.java (mới) |
+| Form thu dùng chung | nghiepvu/hoadon/ui/PaymentForm.java và InvoiceHistoryPanel.java (mới); PaymentDialog.java; nghiepvu/hoadon/ui/PaymentPanel.java và nghiepvu/hoadon/controller/PaymentScreenController.java (mới) |
+| Hình thức | nghiepvu/hoadon/ui/BillingUi.java, HoaDonPanel.java, CancellationPanel.java; nghiepvu/dichvu/ui/DichVuPanel.java; nghiepvu/dichvu/controller/DichVuController.java |
+| Kiểm thử | LatestShellUiSelfTest.java, hethong/giaodien/LatestMainShellSelfTest.java (mới); FeatureRegistrySelfTest, ServiceBillingUiSelfTest, ServiceBillingPreview; scripts/test-service-billing-m1.ps1 |
 
 Ngoài bảng trên, merge đưa vào các source account/benhnhan/lichhen mới từ main,
 giữ đúng bản upstream. Logic giá lịch sử/ghi hóa đơn/thu tiền/hủy ở các Service/DAO

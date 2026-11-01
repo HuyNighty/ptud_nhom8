@@ -12,6 +12,6 @@ Write-Host 'Compiling R3-A2B main and synthetic test Java sources...' -Foregroun
 & .\mvnw.cmd -q test-compile
 if ($LASTEXITCODE -ne 0) { throw "Maven test-compile failed (exit $LASTEXITCODE)" }
 $cp = (Join-Path $root 'target\classes') + ';' + (Join-Path $root 'target\test-classes')
-& java -cp $cp com.quanlynhakhoa.auth.JdbcAuthTransactionSelfTest
+& java -cp $cp com.quanlynhakhoa.hethong.xacthuc.JdbcAuthTransactionSelfTest
 if ($LASTEXITCODE -ne 0) { throw "Synthetic transaction test failed (exit $LASTEXITCODE)" }
 Write-Host 'NO SQL SERVER CONNECTION; NO SQL/DATA/SCHEMA WRITES.' -ForegroundColor Green

@@ -14,9 +14,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Maven compile failed.' }
     $dest = Join-Path $repo 'target/r4-a2-navigation-test'
     [System.IO.Directory]::CreateDirectory($dest) | Out-Null
-    & javac --release 21 -encoding UTF-8 -cp 'target/classes' -d $dest 'src/test/java/com/quanlynhakhoa/view/R4MainNavigationSelfTest.java'
+    & javac --release 21 -encoding UTF-8 -cp 'target/classes' -d $dest 'src/test/java/com/quanlynhakhoa/hethong/giaodien/R4MainNavigationSelfTest.java'
     if ($LASTEXITCODE -ne 0) { throw 'R4-A2 test compile failed.' }
     $cp = (Join-Path $repo 'target/classes') + ';' + $dest
-    & java -cp $cp com.quanlynhakhoa.view.R4MainNavigationSelfTest
+    & java -cp $cp com.quanlynhakhoa.hethong.giaodien.R4MainNavigationSelfTest
     if ($LASTEXITCODE -ne 0) { throw 'R4-A2 navigation test failed.' }
 } finally { Pop-Location }
