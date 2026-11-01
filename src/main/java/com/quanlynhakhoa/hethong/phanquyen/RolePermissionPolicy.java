@@ -24,7 +24,7 @@ public final class RolePermissionPolicy {
                 Permission.BILLING_READ,
                 Permission.BILLING_MANAGE,
                 Permission.INVOICE_CANCEL_REQUEST,
-                Permission.SCHEDULE_SELF_READ));
+                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE));
 
         mapping.put(Role.DOCTOR, Set.of(
                 Permission.PATIENT_READ,
@@ -32,12 +32,12 @@ public final class RolePermissionPolicy {
                 Permission.MEDICAL_RECORD_UPDATE,
                 Permission.REEXAM_SCHEDULE,
                 Permission.SUPPLY_REQUEST,
-                Permission.SCHEDULE_SELF_READ));
+                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE));
 
         mapping.put(Role.NURSE, Set.of(
                 Permission.SUPPLY_REQUEST,
                 Permission.EMERGENCY_KIT_CHECK,
-                Permission.SCHEDULE_SELF_READ));
+                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE));
 
         mapping.put(Role.CLINIC_MANAGER, Set.of(
                 Permission.BILLING_READ,
@@ -48,12 +48,12 @@ public final class RolePermissionPolicy {
                 Permission.AUDIT_READ,
                 Permission.SERVICE_CATALOG_MANAGE,
                 Permission.INVOICE_CANCEL_APPROVE,
-                Permission.SCHEDULE_SELF_READ));
+                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE));
 
         mapping.put(Role.INVENTORY_MANAGER, Set.of(
                 Permission.INVENTORY_READ,
                 Permission.INVENTORY_MANAGE,
-                Permission.SCHEDULE_SELF_READ));
+                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE));
 
         mapping.put(Role.SYSTEM_ADMIN,
                 Collections.unmodifiableSet(EnumSet.allOf(Permission.class)));
