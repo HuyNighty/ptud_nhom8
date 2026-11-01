@@ -30,6 +30,7 @@ public final class LatestMainShellSelfTest {
                 JMenuBar bar=menu(winMain.getContentPane());check(bar!=null,"latest main horizontal menu retained");
                 java.util.List<String> headers=new ArrayList<>();for(Component c:bar.getComponents())if(c instanceof JMenu m)headers.add(m.getText().replace("▾","").trim());else if(c instanceof JButton b)headers.add(b.getText());
                 check(headers.equals(java.util.List.of("Tổng quan","Tổ chức","Kế hoạch","Tiếp nhận","Hoạt động","Tổng kết")),"exact latest-main menu structure: "+headers);
+                check(item(group(bar,"Hoạt động"),"Kế hoạch điều trị").isEnabled(),"treatment plan is an enabled operations menu destination");
                 item(group(bar,"Tổ chức"),"Dịch vụ & Bảng giá");item(group(bar,"Hoạt động"),"Hóa đơn");item(group(bar,"Hoạt động"),"Thanh toán");item(group(bar,"Hoạt động"),"Duyệt hủy hóa đơn");item(group(bar,"Tổng kết"),"Công nợ");
                 check(FeatureBootstrap.createRegistry().contains(Module.PATIENTS),"latest patient implementation retained");
                 for(String name:java.util.List.of("Hóa đơn","Thanh toán","Duyệt hủy hóa đơn"))item(group(bar,"Hoạt động"),name).doClick();

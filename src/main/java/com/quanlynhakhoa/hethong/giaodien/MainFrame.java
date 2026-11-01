@@ -168,9 +168,7 @@ public final class MainFrame extends JFrame {
         item(mnuOperations, "Hóa đơn", Module.BILLING);
         item(mnuOperations, "Thanh toán", Module.PAYMENTS);
         item(mnuOperations, "Duyệt hủy hóa đơn", Module.INVOICE_CANCELLATIONS);
-        if (allowed.contains(Module.EXAMINATIONS)) {
-            pending(mnuOperations, "Kế hoạch điều trị");
-        }
+        item(mnuOperations, "Kế hoạch điều trị", Module.TREATMENT_PLANS);
         if (allowed.contains(Module.INVENTORY)) {
             pending(mnuOperations, "Nhập / xuất kho");
         }
@@ -314,6 +312,7 @@ public final class MainFrame extends JFrame {
             case ROLES -> "Vai trò";
             case AUDIT -> "Nhật ký thao tác";
             case EXAMINATIONS -> "Phiếu khám";
+            case TREATMENT_PLANS -> "Kế hoạch điều trị";
             case SERVICE_CATALOG, SERVICES -> "Dịch vụ & Bảng giá";
             case DEBTS -> "Công nợ";
             case PAYMENTS -> "Thanh toán";
