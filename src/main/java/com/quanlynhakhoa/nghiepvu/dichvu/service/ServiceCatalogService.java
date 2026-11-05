@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.dichvu.service;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
-import com.quanlynhakhoa.nghiepvu.dichvu.dao.DichVuDao;
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DichVu;
+import com.quanlynhakhoa.nghiepvu.dichvu.dao.ServiceCatalogDao;
+import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -10,29 +10,29 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 
-public final class DichVuService {
+public final class ServiceCatalogService {
     private final DesktopSession session;
     private final ConnectionProvider connections;
-    private final DichVuDao dao;
+    private final ServiceCatalogDao dao;
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
 
-    public DichVuService(DesktopSession session, ConnectionProvider connections) {
-        this(session, connections, new DichVuDao());
+    public ServiceCatalogService(DesktopSession session, ConnectionProvider connections) {
+        this(session, connections, new ServiceCatalogDao());
     }
 
-    public DichVuService(DesktopSession session, ConnectionProvider connections, DichVuDao dao) {
+    public ServiceCatalogService(DesktopSession session, ConnectionProvider connections, ServiceCatalogDao dao) {
         this.session = Objects.requireNonNull(session);
         this.connections = Objects.requireNonNull(connections);
         this.dao = Objects.requireNonNull(dao);
     }
 
-    public List<DichVu> find(String keyword, Boolean active) throws SQLException {
+    public List<DentalService> find(String keyword, Boolean active) throws SQLException {
         require();
         String text = trimmed(keyword);
         if (text.length() > 100) throw new IllegalArgumentException("Từ khóa tối đa 100 ký tự.");
         try (Connection connection = connections.open()) {
             require();
-            List<DichVu> result = dao.find(connection, text, active);
+            List<DentalService> result = dao.find(connection, text, active);
             require();
             return result;
         }
@@ -52,7 +52,7 @@ public final class DichVuService {
         return new IllegalArgumentException("Đơn giá: 1–18 chữ số (VND nguyên, giá 0 hợp lệ), không dấu phân cách.");
     }
 
-    public static DichVu validate(DichVu value) {
+    public static DentalService validate(DentalService value) {
         Objects.requireNonNull(value, "Dịch vụ");
         String id = validateId(value.maDichVu());
         String name = trimmed(value.tenDichVu());
@@ -62,33 +62,33 @@ public final class DichVuService {
         BigDecimal price = value.donGia();
         if (price == null || price.signum() < 0 || price.stripTrailingZeros().scale() > 0
                 || price.compareTo(new BigDecimal("999999999999999999")) > 0) throw invalidPrice();
-        return new DichVu(id, name, price.setScale(0), description.isEmpty() ? null : description,
+        return new DentalService(id, name, price.setScale(0), description.isEmpty() ? null : description,
                 value.laCanLamSang(), value.dangApDung());
     }
 
-    public void save(DichVu value, boolean creating) throws SQLException {
+    public void save(DentalService value, boolean creating) throws SQLException {
         require();
-        DichVu normalized = validate(value);
+        DentalService normalized = validate(value);
         mutate(normalized, creating, null);
     }
 
     public void changeActive(String id, boolean active) throws SQLException {
         require();
-        mutate(new DichVu(validateId(id), null, null, null, false, active), false, active);
+        mutate(new DentalService(validateId(id), null, null, null, false, active), false, active);
     }
-    public void saveInformation(DichVu value,boolean creating)throws SQLException {
+    public void saveInformation(DentalService value,boolean creating)throws SQLException {
         require();
-        DichVu normalized=validate(new DichVu(value.maDichVu(),value.tenDichVu(),BigDecimal.ZERO,value.moTa(),value.laCanLamSang(),value.dangApDung()));
+        DentalService normalized=validate(new DentalService(value.maDichVu(),value.tenDichVu(),BigDecimal.ZERO,value.moTa(),value.laCanLamSang(),value.dangApDung()));
         mutate(normalized,creating,null,"INFORMATION");
     }
-    public void savePrice(DichVu value)throws SQLException {
-        require();DichVu normalized=validate(value);mutate(normalized,false,null,"PRICE");
+    public void savePrice(DentalService value)throws SQLException {
+        require();DentalService normalized=validate(value);mutate(normalized,false,null,"PRICE");
     }
 
-    private void mutate(DichVu value, boolean creating, Boolean activeOnly) throws SQLException {
+    private void mutate(DentalService value, boolean creating, Boolean activeOnly) throws SQLException {
         mutate(value,creating,activeOnly,"ALL");
     }
-    private void mutate(DichVu value, boolean creating, Boolean activeOnly,String fields) throws SQLException {
+    private void mutate(DentalService value, boolean creating, Boolean activeOnly,String fields) throws SQLException {
         boolean committed = false;
         try (Connection connection = connections.open()) {
             if (!connection.getAutoCommit()) throw new SQLException("Expected fresh auto-commit connection");

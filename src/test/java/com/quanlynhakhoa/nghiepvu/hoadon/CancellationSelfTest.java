@@ -13,20 +13,20 @@ import java.util.*;
 import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;
 
 public final class CancellationSelfTest {
-    private static class Invoices extends HoaDonDao {
-        BigDecimal paid=BigDecimal.ZERO;TrangThaiHoaDon status=TrangThaiHoaDon.CHUA_THANH_TOAN;
-        @Override public HoaDon getForPayment(Connection c,String id){return new HoaDon("H1","NV1","BN1","Synthetic",null,LocalDateTime.now(),status,new BigDecimal("300"),paid,BigDecimal.ZERO);}
-        @Override public List<ChiTietHoaDon> lines(Connection c,String id){return List.of(new ChiTietHoaDon(1,"H1","DV1",null,null,1,new BigDecimal("300")));}
-        @Override public List<ThanhToan> payments(Connection c,String id){return paid.signum()==0?List.of():List.of(new ThanhToan("P1","H1",LocalDateTime.now(),paid,ThanhToan.PhuongThuc.TIEN_MAT,null,paid,ThanhToan.TrangThai.THANH_CONG,"NV1",null,null,null));}
+    private static class Invoices extends InvoiceDao {
+        BigDecimal paid=BigDecimal.ZERO;InvoiceStatus status=InvoiceStatus.CHUA_THANH_TOAN;
+        @Override public Invoice getForPayment(Connection c,String id){return new Invoice("H1","NV1","BN1","Synthetic",null,LocalDateTime.now(),status,new BigDecimal("300"),paid,BigDecimal.ZERO);}
+        @Override public List<InvoiceLine> lines(Connection c,String id){return List.of(new InvoiceLine(1,"H1","DV1",null,null,1,new BigDecimal("300")));}
+        @Override public List<Payment> payments(Connection c,String id){return paid.signum()==0?List.of():List.of(new Payment("P1","H1",LocalDateTime.now(),paid,Payment.PhuongThuc.TIEN_MAT,null,paid,Payment.TrangThai.THANH_CONG,"NV1",null,null,null));}
     }
     private static class Dao extends CancellationDao {
-        boolean pending;YeuCauHuyHoaDon.TrangThai status=YeuCauHuyHoaDon.TrangThai.CHO_DUYET;String requester="TST_ACC";
+        boolean pending;InvoiceCancellationRequest.TrangThai status=InvoiceCancellationRequest.TrangThai.CHO_DUYET;String requester="TST_ACC";
         @Override public void lockInvoice(Connection c,String id){check(id.equals("H1"),"locks correct invoice first");}
         @Override public void lockRequest(Connection c,String id){check(id.equals("Y1"),"locks correct request");}
         @Override public boolean pending(Connection c,String id){return pending;}
         @Override public String invoiceId(Connection c,String id)throws SQLException{check(c.getAutoCommit(),"request invoice mapping read before transaction lock acquisition");return "H1";}
-        @Override public YeuCauHuyHoaDon get(Connection c,String id){return new YeuCauHuyHoaDon("Y1","H1","BN1","Synthetic",new BigDecimal("300"),BigDecimal.ZERO,requester,LocalDateTime.now(),"Synthetic reason",status,null,null,null);}
-        @Override public List<YeuCauHuyHoaDon> find(Connection c,String text,LocalDate from,LocalDate to,YeuCauHuyHoaDon.TrangThai status){return List.of(get(c,"Y1"));}
+        @Override public InvoiceCancellationRequest get(Connection c,String id){return new InvoiceCancellationRequest("Y1","H1","BN1","Synthetic",new BigDecimal("300"),BigDecimal.ZERO,requester,LocalDateTime.now(),"Synthetic reason",status,null,null,null);}
+        @Override public List<InvoiceCancellationRequest> find(Connection c,String text,LocalDate from,LocalDate to,InvoiceCancellationRequest.TrangThai status){return List.of(get(c,"Y1"));}
     }
     public static void main(String[] args)throws Exception {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final Dao dao=new Dao();final Invoices invoices=new Invoices();
@@ -43,7 +43,7 @@ public final class CancellationSelfTest {
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{requests.request("H1"," ");}});
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{requests.request("H1","x".repeat(501));}});check(jdbc.opens==before,"bad reason before connection");
         dao.pending=true;expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{requests.request("H1","duplicate");}});dao.pending=false;
-        invoices.status=TrangThaiHoaDon.DA_HUY;expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{requests.request("H1","cancelled");}});invoices.status=TrangThaiHoaDon.CHUA_THANH_TOAN;
+        invoices.status=InvoiceStatus.DA_HUY;expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{requests.request("H1","cancelled");}});invoices.status=InvoiceStatus.CHUA_THANH_TOAN;
         check(reviews.find("",null,null,null).size()==1&&reviews.detail("Y1").invoice().chiTiet().size()==1,"review list/detail available to manager");
         int writes=jdbc.persisted.size();reviews.decide("Y1",true,"");
         check(jdbc.persisted.size()==writes+2,"approval updates invoice and request in one commit");
@@ -51,10 +51,10 @@ public final class CancellationSelfTest {
         expect(SQLException.class,new Action(){public void run()throws Exception{reviews.decide("Y1",true,"audit failure");}});
         check(jdbc.persisted.size()==writes&&jdbc.audits.size()==auditCount,"audit error rolls back both status changes");jdbc.auditFailure=false;
         before=jdbc.opens;expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{reviews.decide("Y1",false," ");}});check(jdbc.opens==before,"rejection reason required before connection");
-        invoices.paid=new BigDecimal("100");invoices.status=TrangThaiHoaDon.THANH_TOAN_MOT_PHAN;writes=jdbc.updates;
+        invoices.paid=new BigDecimal("100");invoices.status=InvoiceStatus.THANH_TOAN_MOT_PHAN;writes=jdbc.updates;
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{reviews.decide("Y1",true,"paid");}});check(jdbc.updates==writes,"paid invoice cannot be cancelled and no refund is invented");
         reviews.decide("Y1",false,"Chưa xử lý khoản thu");check(jdbc.updates==writes+2,"rejection updates request and audit only");
-        dao.status=YeuCauHuyHoaDon.TrangThai.DA_DUYET;expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{reviews.decide("Y1",false,"again");}});dao.status=YeuCauHuyHoaDon.TrangThai.CHO_DUYET;
+        dao.status=InvoiceCancellationRequest.TrangThai.DA_DUYET;expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{reviews.decide("Y1",false,"again");}});dao.status=InvoiceCancellationRequest.TrangThai.CHO_DUYET;
         dao.requester="REVIEWER";expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{reviews.decide("Y1",false,"self");}});dao.requester="TST_ACC";
         before=jdbc.opens;
         expect(AccessDeniedException.class,new Action(){public void run()throws Exception{requests.find("",null,null,null);}});

@@ -1,11 +1,11 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.hethong.xacthuc.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.model.HoaDon;
-import com.quanlynhakhoa.nghiepvu.hoadon.service.HoaDonService;
+import com.quanlynhakhoa.nghiepvu.hoadon.model.Invoice;
+import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DichVu;
-import com.quanlynhakhoa.nghiepvu.dichvu.service.DichVuService;
+import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
+import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.io.Console;
 import java.math.BigDecimal;
@@ -32,24 +32,24 @@ public final class ServiceBillingSqlIT {
         } finally { Arrays.fill(password, '\0'); }
         DesktopSession session = DesktopSession.fromSuccessfulLogin(decision);
         try {
-            DichVuService catalog = new DichVuService(session, TeamDevConnection::open);
+            ServiceCatalogService catalog = new ServiceCatalogService(session, TeamDevConnection::open);
             if (args[0].equals("--write")) {
                 if (!catalog.find(args[1], null).isEmpty()) throw new IllegalArgumentException("Test ID exists; choose a fresh ID. No automatic overwrite/retry.");
-                catalog.save(new DichVu(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", BigDecimal.ZERO, "Dữ liệu kiểm thử giữ lại, không xóa.", false, true), true);
+                catalog.save(new DentalService(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", BigDecimal.ZERO, "Dữ liệu kiểm thử giữ lại, không xóa.", false, true), true);
                 verify(catalog, args[1], "0", true);
-                catalog.save(new DichVu(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", new BigDecimal("123456"), "Dữ liệu kiểm thử giữ lại, không xóa.", true, true), false);
+                catalog.save(new DentalService(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", new BigDecimal("123456"), "Dữ liệu kiểm thử giữ lại, không xóa.", true, true), false);
                 verify(catalog, args[1], "123456", true);
                 catalog.changeActive(args[1], false); verify(catalog, args[1], "123456", false);
                 catalog.changeActive(args[1], true);
             }
             verify(catalog, args[1], "123456", true);
-            List<HoaDon> invoices = new HoaDonService(session, TeamDevConnection::open).find("", null, null, null);
+            List<Invoice> invoices = new InvoiceService(session, TeamDevConnection::open).find("", null, null, null);
             System.out.println("PASS: real service read " + args[1] + "; billing read " + invoices.size() + " invoices (no patient details printed).");
             System.out.println("Run --read with this ID in a NEW process to verify restart persistence; UI still requires manual acceptance.");
         } finally { session.logout(); }
     }
-    private static void verify(DichVuService service, String id, String price, boolean active) throws Exception {
-        for (DichVu value : service.find(id, null)) {
+    private static void verify(ServiceCatalogService service, String id, String price, boolean active) throws Exception {
+        for (DentalService value : service.find(id, null)) {
             if (value.maDichVu().equals(id) && value.donGia().compareTo(new BigDecimal(price)) == 0 && value.dangApDung() == active) return;
         }
         throw new AssertionError("Service readback failed");

@@ -31,9 +31,9 @@ public final class PaymentPanel extends JPanel implements RefreshableFeature {
     @Override public void addNotify(){super.addNotify();refreshData();}
     @Override public void refreshData(){controller.refresh();}
     public void openInvoice(String id){controller.openInvoice(id);}
-    public void showChoices(List<HoaDon> invoices,String selected){
+    public void showChoices(List<Invoice> invoices,String selected){
         cmbHoaDon.removeAllItems();BillingChoice chosen=null;
-        for(HoaDon h:invoices){BillingChoice item=new BillingChoice(h.maHoaDon(),h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Còn nợ "+BillingUi.vnd(h.conNo()));cmbHoaDon.addItem(item);if(h.maHoaDon().equals(selected))chosen=item;}
+        for(Invoice h:invoices){BillingChoice item=new BillingChoice(h.maHoaDon(),h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Còn nợ "+BillingUi.vnd(h.conNo()));cmbHoaDon.addItem(item);if(h.maHoaDon().equals(selected))chosen=item;}
         cmbHoaDon.setSelectedItem(chosen); // Preserve current form/history even when a fully paid invoice leaves the picker.
     }
     public void showForm(PaymentForm pnlForm){pnlCollection.removeAll();pnlCollection.add(pnlForm,BorderLayout.CENTER);pnlCollection.revalidate();pnlCollection.repaint();}

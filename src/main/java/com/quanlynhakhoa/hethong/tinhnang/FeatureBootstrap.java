@@ -11,8 +11,8 @@ import com.quanlynhakhoa.quantri.nhanvien.ui.EmployeePanel;
 import com.quanlynhakhoa.quantri.vaitro.ui.RolePanel;
 import com.quanlynhakhoa.nghiepvu.phieukham.ui.ExamQueuePanel;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
-import com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel;
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.DichVuPanel;
+import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
+import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.quantri.lichlamviec.view.LichLamViecPanel;
@@ -37,12 +37,12 @@ public final class FeatureBootstrap {
                 .register(Module.MEDICAL_RECORDS, HoSoBenhAnPanel::new)
                 .register(Module.SERVICE_CATALOG, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session) {
-                        return new DichVuPanel(session, TeamDevConnection::open, DichVuPanel.EditorMode.COMBINED);
+                        return new ServiceCatalogPanel(session, TeamDevConnection::open, ServiceCatalogPanel.EditorMode.COMBINED);
                     }
                 })
                 .register(Module.BILLING, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session) {
-                        return new HoaDonPanel(session, TeamDevConnection::open);
+                        return new InvoicePanel(session, TeamDevConnection::open);
                     }
                 })
                 .register(Module.DEBTS, new FeaturePanelFactory() {
@@ -52,7 +52,7 @@ public final class FeatureBootstrap {
                     @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel(session,TeamDevConnection::open);}
                 })
                 .register(Module.SERVICES, new FeaturePanelFactory() {
-                    @Override public JPanel create(DesktopSession session){return new DichVuPanel(session,TeamDevConnection::open,DichVuPanel.EditorMode.COMBINED);}
+                    @Override public JPanel create(DesktopSession session){return new ServiceCatalogPanel(session,TeamDevConnection::open,ServiceCatalogPanel.EditorMode.COMBINED);}
                 })
                 .register(Module.INVOICE_CANCELLATIONS,new FeaturePanelFactory(){
                     @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel(session,TeamDevConnection::open);}

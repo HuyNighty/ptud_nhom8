@@ -3,9 +3,9 @@ package com.quanlynhakhoa.nghiepvu.dichvu.ui;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.dichvu.controller.DichVuController;
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DichVu;
-import com.quanlynhakhoa.nghiepvu.dichvu.service.DichVuService;
+import com.quanlynhakhoa.nghiepvu.dichvu.controller.ServiceCatalogController;
+import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
+import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -14,7 +14,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-public final class DichVuPanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
+public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
     public enum EditorMode { COMBINED, SERVICES, PRICES }
     private final EditorMode mode;
     private final JTextField txtTuKhoa = new JTextField(18);
@@ -29,16 +29,16 @@ public final class DichVuPanel extends JPanel implements com.quanlynhakhoa.hetho
     private final JPanel pnlForm = new JPanel(new BorderLayout(8,8));
     private final DefaultTableModel tableModel = BillingUi.model("Mã dịch vụ", "Tên dịch vụ", "Giá hiện hành", "Cận lâm sàng", "Trạng thái");
     private final JTable tblDichVu = BillingUi.table(tableModel);
-    private final DichVuController controller;
-    private List<DichVu> rows = List.of();
-    private DichVu selected;
+    private final ServiceCatalogController controller;
+    private List<DentalService> rows = List.of();
+    private DentalService selected;
     private boolean loaded;
 
-    public DichVuPanel(DesktopSession session) { this(session, TeamDevConnection::open); }
-    public DichVuPanel(DesktopSession session, ConnectionProvider connections) {
+    public ServiceCatalogPanel(DesktopSession session) { this(session, TeamDevConnection::open); }
+    public ServiceCatalogPanel(DesktopSession session, ConnectionProvider connections) {
         this(session,connections,EditorMode.COMBINED);
     }
-    public DichVuPanel(DesktopSession session, ConnectionProvider connections,EditorMode mode) {
+    public ServiceCatalogPanel(DesktopSession session, ConnectionProvider connections,EditorMode mode) {
         this.mode=mode;
         new AuthorizationService(new RolePermissionPolicy()).require(session, Permission.SERVICE_CATALOG_MANAGE);
         setLayout(new BorderLayout(12, 12));
@@ -78,7 +78,7 @@ public final class DichVuPanel extends JPanel implements com.quanlynhakhoa.hetho
         JPanel pnlBottom = new JPanel(new GridLayout(0, 1, 0, 6));
         lblTrangThai.setToolTipText("Ngừng áp dụng để giữ lịch sử. Đổi giá hiện hành không đổi giá trên hóa đơn đã lập.");
         pnlBottom.add(lblTrangThai); add(pnlBottom, BorderLayout.SOUTH);
-        controller = new DichVuController(this, session, new DichVuService(session, connections));
+        controller = new ServiceCatalogController(this, session, new ServiceCatalogService(session, connections));
         clearForm();
         BillingUi.style(this);
         BillingUi.columns(tblDichVu,110,270,170,145,170);
@@ -101,14 +101,14 @@ public final class DichVuPanel extends JPanel implements com.quanlynhakhoa.hetho
     public String keyword() { return txtTuKhoa.getText(); }
     public Boolean activeFilter() { return cmbTrangThai.getSelectedIndex() == 0 ? null : cmbTrangThai.getSelectedIndex() == 1; }
     public boolean creating() { return selected == null; }
-    public DichVu selected() { return selected; }
-    public DichVu input() {
-        return new DichVu(selected == null ? txtMaDichVu.getText() : selected.maDichVu(), txtTenDichVu.getText(),
+    public DentalService selected() { return selected; }
+    public DentalService input() {
+        return new DentalService(selected == null ? txtMaDichVu.getText() : selected.maDichVu(), txtTenDichVu.getText(),
         mode==EditorMode.SERVICES?(selected==null?java.math.BigDecimal.ZERO:selected.donGia()):BillingUi.moneyInput(txtDonGia.getText()), txaMoTa.getText(), chkLaCanLamSang.isSelected(), chkDangApDung.isSelected());
     }
-    public void showRows(List<DichVu> values) {
+    public void showRows(List<DentalService> values) {
         rows = List.of(); tableModel.setRowCount(0); rows = List.copyOf(values);
-        for (DichVu value : rows) tableModel.addRow(new Object[]{value.maDichVu(), value.tenDichVu(), value.donGia(),
+        for (DentalService value : rows) tableModel.addRow(new Object[]{value.maDichVu(), value.tenDichVu(), value.donGia(),
                 value.laCanLamSang() ? "Có" : "Không", value.dangApDung() ? "Đang áp dụng" : "Ngừng áp dụng"});
         clearForm();
         BillingUi.tableState(tblDichVu,values.isEmpty()?(keyword().isBlank()&&activeFilter()==null?"Nhập thông tin dịch vụ bên phải rồi bấm Lưu dịch vụ mới.":"Không tìm thấy dịch vụ phù hợp."):"");
@@ -119,7 +119,7 @@ public final class DichVuPanel extends JPanel implements com.quanlynhakhoa.hetho
         index = tblDichVu.convertRowIndexToModel(index);
         if (index >= 0 && index < rows.size()) showForm(rows.get(index));
     }
-    public void showForm(DichVu value) {
+    public void showForm(DentalService value) {
         selected = value;
         txtMaDichVu.setText(value.maDichVu()); txtMaDichVu.setEditable(false);
         txtTenDichVu.setText(value.tenDichVu()); txtDonGia.setText(BillingUi.moneyText(value.donGia()));

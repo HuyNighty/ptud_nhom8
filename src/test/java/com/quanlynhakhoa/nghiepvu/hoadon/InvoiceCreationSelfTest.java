@@ -58,7 +58,7 @@ public final class InvoiceCreationSelfTest {
         for(final InvoiceDraft invalid:List.of(new InvoiceDraft("BN1","PK1","r",List.of()),new InvoiceDraft("BN1","PK1","r",List.of(new InvoiceDraft.Line("DV1","X",0,BigDecimal.ONE))),draft("-1"),draft("1.5"),draft("1000000000000000000"))) {
             source.value=invalid;expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{service.preview("BN1","PK1");}});
         }
-        final HoaDonService defaultService=new HoaDonService(session,jdbc);
+        final InvoiceService defaultService=new InvoiceService(session,jdbc);
         int before=jdbc.opens;expect(IllegalStateException.class,new Action(){public void run()throws Exception{defaultService.createInvoice(reviewed);}});check(jdbc.opens==before,"unconfigured contract blocks before JDBC");
         final InvoiceCreationService denied=new InvoiceCreationService(session(Role.CLINIC_MANAGER),jdbc,source,new InvoiceIdGenerator(){public String next(Connection c){return "X";}},dao);
         before=jdbc.opens;expect(AccessDeniedException.class,new Action(){public void run()throws Exception{denied.create(reviewed);}});check(jdbc.opens==before,"read role cannot create");

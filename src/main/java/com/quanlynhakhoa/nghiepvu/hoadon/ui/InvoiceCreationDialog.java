@@ -6,7 +6,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 /** Review UI contains no persistence or pricing logic. Draft table is never editable. */
-public final class TaoHoaDonDialog extends JDialog {
+public final class InvoiceCreationDialog extends JDialog {
     public final JTextField txtBenhNhan = new JTextField(18);
     public final JButton btnTimBenhNhan = new JButton("Tìm bệnh nhân"), btnTaiDichVu = new JButton("Tải dịch vụ tính phí"), btnLuuHoaDon = new JButton("Lưu hóa đơn");
     public final JComboBox<BillingChoice> cmbBenhNhan = new JComboBox<>(), cmbPhieuKham = new JComboBox<>();
@@ -14,7 +14,7 @@ public final class TaoHoaDonDialog extends JDialog {
     public final JButton btnHuy=new JButton("Hủy");
     private final DefaultTableModel tableModel=BillingUi.model("Mã dịch vụ","Tên dịch vụ","Số lượng","Đơn giá áp dụng","Thành tiền");
     private final JTable tblChiTietHoaDon=BillingUi.table(tableModel);
-    public TaoHoaDonDialog(Window owner) {
+    public InvoiceCreationDialog(Window owner) {
         super(owner,"Tạo hóa đơn",ModalityType.APPLICATION_MODAL);
         JPanel pnlRoot=new JPanel(new BorderLayout(10,10));pnlRoot.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
         JPanel pnlSearch=new JPanel(new BorderLayout(8,0));pnlSearch.add(txtBenhNhan);pnlSearch.add(btnTimBenhNhan,BorderLayout.EAST);

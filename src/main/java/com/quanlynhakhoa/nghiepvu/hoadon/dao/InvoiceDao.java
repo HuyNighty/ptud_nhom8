@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Read only. Aggregates never join raw detail rows to raw payment rows. */
-public class HoaDonDao {
+public class InvoiceDao {
     private static final String LEDGER = """
             WITH Lines AS (
                 SELECT maHoaDon, SUM(CAST(soLuong AS decimal(10,0)) * donGiaApDung) AS tongTien
@@ -35,8 +35,8 @@ public class HoaDonDao {
                    trangThai, tongTien, daThu, congNoBenhNhan FROM WithDebt
             """;
 
-    public List<HoaDon> find(Connection connection, String keyword, LocalDate from, LocalDate to,
-                             TrangThaiHoaDon status) throws SQLException {
+    public List<Invoice> find(Connection connection, String keyword, LocalDate from, LocalDate to,
+                             InvoiceStatus status) throws SQLException {
         String sql = LEDGER + """
                 WHERE (CHARINDEX(?,maHoaDon)>0 OR CHARINDEX(?,maBenhNhan)>0 OR CHARINDEX(?,tenBenhNhan + N' ' + soDienThoai)>0)
                 AND (? IS NULL OR ngayLap>=?) AND (? IS NULL OR ngayLap<?)
@@ -51,13 +51,13 @@ public class HoaDonDao {
             dateTime(statement, 6, end); dateTime(statement, 7, end);
             statement.setString(8, status == null ? null : status.name());
             statement.setString(9, status == null ? null : status.name());
-            List<HoaDon> result = new ArrayList<>();
+            List<Invoice> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) { while (rows.next()) result.add(map(rows)); }
             return List.copyOf(result);
         }
     }
 
-    public HoaDon get(Connection connection, String id) throws SQLException {
+    public Invoice get(Connection connection, String id) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(LEDGER + " WHERE maHoaDon=?")) {
             statement.setQueryTimeout(15);
             statement.setString(1, id);
@@ -65,7 +65,7 @@ public class HoaDonDao {
         }
     }
     /** Targeted money snapshot under the caller's invoice lock; avoids scanning unrelated invoices while collecting. */
-    public HoaDon getForPayment(Connection connection,String id)throws SQLException {
+    public Invoice getForPayment(Connection connection,String id)throws SQLException {
         try(PreparedStatement s=connection.prepareStatement("""
                 SELECT h.maHoaDon,h.maNhanVien,h.maBenhNhan,b.hoTen AS tenBenhNhan,h.maPhieuKham,h.ngayLap,h.trangThai,
                     COALESCE((SELECT SUM(CAST(d.soLuong AS decimal(10,0))*d.donGiaApDung)
@@ -79,7 +79,7 @@ public class HoaDonDao {
         }
     }
 
-    public List<ChiTietHoaDon> lines(Connection connection, String id) throws SQLException {
+    public List<InvoiceLine> lines(Connection connection, String id) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT ct.maChiTiet, ct.maHoaDon, ct.maDichVu, ct.maThuoc, ct.maVatTu, ct.soLuong, ct.donGiaApDung,
                        COALESCE(d.tenDichVu,t.tenThuoc,v.tenVatTu) AS tenHang
@@ -90,9 +90,9 @@ public class HoaDonDao {
                 WHERE ct.maHoaDon=? ORDER BY ct.maChiTiet
                 """)) {
             statement.setQueryTimeout(15); statement.setString(1, id);
-            List<ChiTietHoaDon> result = new ArrayList<>();
+            List<InvoiceLine> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) {
-                while (rows.next()) result.add(new ChiTietHoaDon(rows.getInt("maChiTiet"), rows.getString("maHoaDon"),
+                while (rows.next()) result.add(new InvoiceLine(rows.getInt("maChiTiet"), rows.getString("maHoaDon"),
                         rows.getString("maDichVu"), rows.getString("maThuoc"), rows.getString("maVatTu"),
                         rows.getInt("soLuong"), rows.getBigDecimal("donGiaApDung"),rows.getNString("tenHang")));
             }
@@ -100,19 +100,19 @@ public class HoaDonDao {
         }
     }
 
-    public List<ThanhToan> payments(Connection connection, String id) throws SQLException {
+    public List<Payment> payments(Connection connection, String id) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT maThanhToan, maHoaDon, thoiGian, soTien, phuongThuc, maGiaoDich, tienKhachDua,
                        trangThai, maNhanVien, maTaiKhoanHuy, thoiGianHuy, lyDoHuy
                 FROM dbo.ThanhToan WHERE maHoaDon=? ORDER BY thoiGian, maThanhToan
                 """)) {
             statement.setQueryTimeout(15); statement.setString(1, id);
-            List<ThanhToan> result = new ArrayList<>();
+            List<Payment> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) {
-                while (rows.next()) result.add(new ThanhToan(rows.getString("maThanhToan"), rows.getString("maHoaDon"),
+                while (rows.next()) result.add(new Payment(rows.getString("maThanhToan"), rows.getString("maHoaDon"),
                         time(rows, "thoiGian"), rows.getBigDecimal("soTien"),
-                        ThanhToan.PhuongThuc.valueOf(rows.getString("phuongThuc")), rows.getString("maGiaoDich"),
-                        rows.getBigDecimal("tienKhachDua"), ThanhToan.TrangThai.valueOf(rows.getString("trangThai")),
+                        Payment.PhuongThuc.valueOf(rows.getString("phuongThuc")), rows.getString("maGiaoDich"),
+                        rows.getBigDecimal("tienKhachDua"), Payment.TrangThai.valueOf(rows.getString("trangThai")),
                         rows.getString("maNhanVien"), rows.getString("maTaiKhoanHuy"), time(rows, "thoiGianHuy"),
                         rows.getNString("lyDoHuy")));
             }
@@ -120,10 +120,10 @@ public class HoaDonDao {
         }
     }
 
-    private static HoaDon map(ResultSet rows) throws SQLException {
-        return new HoaDon(rows.getString("maHoaDon"), rows.getString("maNhanVien"), rows.getString("maBenhNhan"),
+    private static Invoice map(ResultSet rows) throws SQLException {
+        return new Invoice(rows.getString("maHoaDon"), rows.getString("maNhanVien"), rows.getString("maBenhNhan"),
                 rows.getNString("tenBenhNhan"), rows.getString("maPhieuKham"), time(rows, "ngayLap"),
-                TrangThaiHoaDon.valueOf(rows.getString("trangThai")), rows.getBigDecimal("tongTien"),
+                InvoiceStatus.valueOf(rows.getString("trangThai")), rows.getBigDecimal("tongTien"),
                 rows.getBigDecimal("daThu"), rows.getBigDecimal("congNoBenhNhan"));
     }
     private static LocalDateTime time(ResultSet rows, String column) throws SQLException {
