@@ -36,8 +36,15 @@ public final class DichVuController {
     public void load(final boolean afterSave) {
         if (busy) {reloadPending=true;return;}
         if (!session.isActive()) { view.expired(); return; }
+        final String selectedId = view.selected() == null ? null : view.selected().maDichVu();
+        busy = true;
+        if (afterSave) {
+            // A successful save must remain visible even when the old search excludes it.
+            view.clearFilters();
+            reloadPending = false;
+        }
         final String keyword = view.keyword(); final Boolean active = view.activeFilter();
-        busy = true; view.setBusy(true);
+        view.setBusy(true);
         view.status(afterSave ? "Đã lưu thành công. Đang tải lại..." : "Đang đọc database...");
         new SessionWorker<List<DichVu>>(session) {
             protected List<DichVu> doInBackground() throws Exception { return service.find(keyword, active); }
@@ -45,7 +52,8 @@ public final class DichVuController {
             protected void expired() { view.expired(); }
             protected void succeeded(List<DichVu> values) {
                 view.showRows(values);
-                view.status((afterSave ? "Đã lưu và tải lại. " : "") + (values.isEmpty() ? keyword.isBlank()&&active==null?"Chưa có dịch vụ. Bấm Thêm mới để bắt đầu.":"Không tìm thấy dịch vụ phù hợp." : values.size() + " dịch vụ."));
+                view.selectService(selectedId);
+                view.status((afterSave ? "Đã lưu và tải lại. Dịch vụ " + selectedId + ". Đã bỏ bộ lọc. " : "") + (values.isEmpty() ? keyword.isBlank()&&active==null?"Chưa có dịch vụ. Bấm Thêm mới để bắt đầu.":"Không tìm thấy dịch vụ phù hợp." : values.size() + " dịch vụ."));
                 if(reloadPending){reloadPending=false;load(false);}
             }
             protected void failed(Throwable failure) {

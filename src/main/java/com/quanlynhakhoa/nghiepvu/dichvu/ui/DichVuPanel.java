@@ -99,6 +99,22 @@ public final class DichVuPanel extends JPanel implements com.quanlynhakhoa.hetho
     public void onActivate(ActionListener listener) { btnApDungLai.addActionListener(listener); }
     public void onSelect(ListSelectionListener listener) { tblDichVu.getSelectionModel().addListSelectionListener(listener); }
     public String keyword() { return txtTuKhoa.getText(); }
+    public void clearFilters() {
+        txtTuKhoa.setText("");
+        cmbTrangThai.setSelectedIndex(0);
+    }
+    public void selectService(String id) {
+        if (id == null) return;
+        for (int index = 0; index < rows.size(); index++) {
+            if (id.equals(rows.get(index).maDichVu())) {
+                int viewIndex = tblDichVu.convertRowIndexToView(index);
+                tblDichVu.setRowSelectionInterval(viewIndex, viewIndex);
+                tblDichVu.scrollRectToVisible(tblDichVu.getCellRect(viewIndex, 0, true));
+                showForm(rows.get(index));
+                return;
+            }
+        }
+    }
     public Boolean activeFilter() { return cmbTrangThai.getSelectedIndex() == 0 ? null : cmbTrangThai.getSelectedIndex() == 1; }
     public boolean creating() { return selected == null; }
     public DichVu selected() { return selected; }
