@@ -19,8 +19,8 @@ public final class PaymentPanel extends JPanel implements RefreshableFeature {
     private final PaymentScreenController controller;
     public PaymentPanel(DesktopSession session,ConnectionProvider connections){
         new AuthorizationService(new RolePermissionPolicy()).require(session,Permission.BILLING_MANAGE);
-        setLayout(new BorderLayout(12,12));setBorder(BorderFactory.createEmptyBorder(16,16,16,16));
-        JLabel lblTitle=new JLabel("THANH TOÁN");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
+        setLayout(new BorderLayout(12,12));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
+        JLabel lblTitle=new JLabel("Thanh toán");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
         cmbHoaDon.setPrototypeDisplayValue(new BillingChoice("HD00000000","Bệnh nhân · Còn nợ 999.999.999 ₫"));
         JPanel pnlSearch=BillingUi.filters(BillingUi.field("Mã hóa đơn / bệnh nhân / SĐT",txtTimHoaDon),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)),BillingUi.field("Chọn hóa đơn còn nợ",cmbHoaDon));
         JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);pnlTop.add(pnlSearch,BorderLayout.CENTER);pnlTop.add(lblTrangThai,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);

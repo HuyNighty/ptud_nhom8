@@ -27,8 +27,8 @@ public final class DebtPanel extends JPanel implements RefreshableFeature {
     private List<PatientDebt> patients=List.of();private List<Invoice> invoices=List.of();
     public DebtPanel(DesktopSession session,ConnectionProvider connections){
         this.session=session;new AuthorizationService(new RolePermissionPolicy()).require(session,Permission.BILLING_READ);mayCollect=new AuthorizationService(new RolePermissionPolicy()).can(session,Permission.BILLING_MANAGE);
-        setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(16,16,16,16));
-        JLabel lblTitle=new JLabel("CÔNG NỢ THEO BỆNH NHÂN");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
+        setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
+        JLabel lblTitle=new JLabel("Công nợ theo bệnh nhân");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
         JPanel pnlFilter=BillingUi.filters(BillingUi.field("Bệnh nhân / hóa đơn / SĐT",txtTuKhoa),BillingUi.dateField(txtTuNgay,"Ngày lập hóa đơn từ"),BillingUi.dateField(txtDenNgay,"Đến ngày"),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)));
         JPanel pnlTop=new JPanel(new BorderLayout(0,10));pnlTop.add(lblTitle,BorderLayout.NORTH);pnlTop.add(pnlFilter,BorderLayout.CENTER);pnlTop.add(BillingUi.row(BillingUi.card(lblTongCongNo),BillingUi.card(lblSoBenhNhan),BillingUi.card(lblSoHoaDon)),BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
         JPanel pnlPatientHeader=new JPanel(new BorderLayout(0,8));pnlPatientHeader.add(new JLabel("Bệnh nhân còn nợ theo bộ lọc"),BorderLayout.NORTH);JLabel lblChonBenhNhan=new JLabel("Chọn bệnh nhân để xem các hóa đơn còn nợ.");lblChonBenhNhan.setPreferredSize(new Dimension(100,34));pnlPatientHeader.add(lblChonBenhNhan,BorderLayout.CENTER);
