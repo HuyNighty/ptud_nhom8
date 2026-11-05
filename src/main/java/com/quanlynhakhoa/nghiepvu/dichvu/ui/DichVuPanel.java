@@ -42,9 +42,9 @@ public final class DichVuPanel extends JPanel implements com.quanlynhakhoa.hetho
         this.mode=mode;
         new AuthorizationService(new RolePermissionPolicy()).require(session, Permission.SERVICE_CATALOG_MANAGE);
         setLayout(new BorderLayout(12, 12));
-        setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+        setBorder(BorderFactory.createEmptyBorder(24, 26, 24, 26));
         JPanel pnlTop = new JPanel(new BorderLayout(0, 8));
-        JLabel lblTitle = new JLabel(mode==EditorMode.COMBINED?"DỊCH VỤ & BẢNG GIÁ":mode==EditorMode.SERVICES?"DỊCH VỤ":"BẢNG GIÁ DỊCH VỤ");
+        JLabel lblTitle = new JLabel(mode==EditorMode.COMBINED?"Dịch vụ và bảng giá":mode==EditorMode.SERVICES?"Dịch vụ":"Bảng giá dịch vụ");
         lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 22f));
         pnlTop.add(lblTitle, BorderLayout.NORTH);
         JPanel pnlTim = BillingUi.filters(BillingUi.field("Mã hoặc tên dịch vụ",txtTuKhoa),BillingUi.field("Trạng thái sử dụng",cmbTrangThai),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)));
@@ -68,7 +68,7 @@ public final class DichVuPanel extends JPanel implements com.quanlynhakhoa.hetho
         if(mode!=EditorMode.PRICES)pnlSave.add(btnThem);
         pnlSave.add(btnXoaTrang);pnlSave.add(btnLuu);pnlActions.add(pnlSave,BorderLayout.NORTH);
         JPanel pnlState=new JPanel(new CardLayout());pnlState.add(btnNgungApDung,"stop");pnlState.add(btnApDungLai,"start");pnlState.add(new JPanel(),"new");pnlActions.add(pnlState,BorderLayout.SOUTH);
-        BillingUi.primary(btnLuu);
+        BillingUi.primary(btnLuu);BillingUi.danger(btnNgungApDung);
         btnThem.setVisible(mode!=EditorMode.PRICES);
         pnlGroup.add(pnlActions, BorderLayout.SOUTH);pnlForm.add(BillingUi.topAligned(pnlGroup),BorderLayout.CENTER);
         JScrollPane scrDanhSach = BillingUi.scroll(tblDichVu);

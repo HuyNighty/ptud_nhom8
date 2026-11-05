@@ -70,9 +70,9 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.hetho
         btnTaoHoaDon.setVisible(mode==ViewMode.INVOICES);
         btnThanhToan.setText(mode==ViewMode.DEBTS?"Thu nợ":"Thanh toán");btnThanhToan.setEnabled(canPay);
         btnTaoHoaDon.setToolTipText(canCreate ? "Lập từ dịch vụ khám được phép tính phí" : "Chờ quyền BILLING_MANAGE, hợp đồng tính phí và bộ sinh mã được duyệt");
-        setLayout(new BorderLayout(10, 10)); setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+        setLayout(new BorderLayout(10, 10)); setBorder(BorderFactory.createEmptyBorder(24, 26, 24, 26));
         JPanel pnlTop = new JPanel(new BorderLayout(0, 8));
-        JLabel lblTitle = new JLabel(switch(mode){case INVOICES -> "HÓA ĐƠN";case DEBTS -> "CÔNG NỢ";case PAYMENTS -> "THANH TOÁN";});
+        JLabel lblTitle = new JLabel(switch(mode){case INVOICES -> "Hóa đơn";case DEBTS -> "Công nợ";case PAYMENTS -> "Thanh toán";});
         lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 22f)); pnlTop.add(lblTitle, BorderLayout.NORTH);
         cmbTrangThai.addItem("Tất cả");
         for (TrangThaiHoaDon value : TrangThaiHoaDon.values()) cmbTrangThai.addItem(value);

@@ -26,8 +26,8 @@ public final class CancellationPanel extends JPanel implements RefreshableFeatur
     private final CancellationController controller;private List<YeuCauHuyHoaDon> rows=List.of();private boolean loaded;
     public CancellationPanel(DesktopSession session,ConnectionProvider connections){
         new AuthorizationService(new RolePermissionPolicy()).require(session,Permission.INVOICE_CANCEL_APPROVE);
-        setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(16,16,16,16));
-        JLabel lblTitle=new JLabel("DUYỆT HỦY HÓA ĐƠN");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
+        setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
+        JLabel lblTitle=new JLabel("Duyệt hủy hóa đơn");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
         JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);
         cmbTrangThai.addItem("Tất cả");for(YeuCauHuyHoaDon.TrangThai status:YeuCauHuyHoaDon.TrangThai.values())cmbTrangThai.addItem(status);
         JPanel pnlFilter=BillingUi.filters(BillingUi.field("Yêu cầu / hóa đơn / người gửi",txtTuKhoa),BillingUi.dateField(txtTuNgay,"Ngày gửi từ"),BillingUi.dateField(txtDenNgay,"Đến ngày"),BillingUi.field("Trạng thái yêu cầu",cmbTrangThai),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)));pnlTop.add(pnlFilter,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
