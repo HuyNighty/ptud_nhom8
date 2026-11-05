@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DichVu;
-import com.quanlynhakhoa.nghiepvu.dichvu.service.DichVuService;
+import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
+import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.quantri.vaitro.model.Role;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
@@ -10,14 +10,14 @@ import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;
 public final class CatalogSeparationSelfTest {
     public static void main(String[] args)throws Exception {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final DesktopSession principal=session(Role.CLINIC_MANAGER);
-        final DichVuService service=new DichVuService(principal,jdbc);
-        final DichVu value=new DichVu("DV1","Name",new BigDecimal("9999"),"Description",true,true);
+        final ServiceCatalogService service=new ServiceCatalogService(principal,jdbc);
+        final DentalService value=new DentalService("DV1","Name",new BigDecimal("9999"),"Description",true,true);
         service.saveInformation(value,false);
         check(jdbc.sql.getFirst().contains("SET tenDichVu=")&&!jdbc.sql.getFirst().contains("donGia="),"information updates cannot overwrite catalogue price");
         int before=jdbc.sql.size();service.savePrice(value);
         check(jdbc.sql.get(before).contains("SET donGia=")&&!jdbc.sql.get(before).contains("tenDichVu="),"price updates cannot overwrite service metadata");
         check(jdbc.audits.size()==2&&jdbc.commits==2,"both modes audit transactionally");
-        final DichVuService denied=new DichVuService(session(Role.RECEPTIONIST),jdbc);before=jdbc.opens;
+        final ServiceCatalogService denied=new ServiceCatalogService(session(Role.RECEPTIONIST),jdbc);before=jdbc.opens;
         expect(AccessDeniedException.class,new Action(){public void run()throws Exception{denied.savePrice(value);}});
         expect(AccessDeniedException.class,new Action(){public void run()throws Exception{denied.saveInformation(value,false);}});
         check(jdbc.opens==before,"denied before connection");

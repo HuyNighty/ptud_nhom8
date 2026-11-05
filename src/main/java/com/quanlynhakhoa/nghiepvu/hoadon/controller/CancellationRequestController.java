@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.model.TrangThaiHoaDon;
+import com.quanlynhakhoa.nghiepvu.hoadon.model.InvoiceStatus;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.CancellationService;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -25,7 +25,7 @@ public final class CancellationRequestController {
         if(busy)return;busy=true;maySubmit=false;view.busy(true,false);
         new Task<CancellationService.Preview>(){
             protected CancellationService.Preview doInBackground()throws Exception{return service.preview(invoiceId);}
-            protected void succeeded(CancellationService.Preview preview){maySubmit=!preview.pending()&&preview.invoice().hoaDon().trangThai()!=TrangThaiHoaDon.DA_HUY;view.showPreview(preview);view.busy(false,maySubmit);}
+            protected void succeeded(CancellationService.Preview preview){maySubmit=!preview.pending()&&preview.invoice().hoaDon().trangThai()!=InvoiceStatus.DA_HUY;view.showPreview(preview);view.busy(false,maySubmit);}
         }.execute();
     }
     private void send(){

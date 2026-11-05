@@ -3,8 +3,8 @@ package com.quanlynhakhoa.nghiepvu.hoadon;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DichVu;
-import com.quanlynhakhoa.nghiepvu.dichvu.service.DichVuService;
+import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
+import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.quantri.vaitro.model.Role;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
@@ -24,48 +24,48 @@ public final class ServiceBillingSelfTest {
     }
     public static DesktopSession session(Role role) { return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "TST_ACC", role, false)); }
     private static BigDecimal money(String value) { return new BigDecimal(value); }
-    private static DichVu value(String price) { return new DichVu(" TST1 ", " Dịch vụ kiểm thử ", money(price), " ", false, true); }
-    private static ThanhToan payment(String id, String amount, boolean cancelled) {
-        return new ThanhToan(id, "H1", LocalDateTime.of(2026, 1, 1, 8, 0), money(amount), ThanhToan.PhuongThuc.TIEN_MAT,
-                null, money("999999"), cancelled ? ThanhToan.TrangThai.DA_HUY : ThanhToan.TrangThai.THANH_CONG, "NV1", null, null, null);
+    private static DentalService value(String price) { return new DentalService(" TST1 ", " Dịch vụ kiểm thử ", money(price), " ", false, true); }
+    private static Payment payment(String id, String amount, boolean cancelled) {
+        return new Payment(id, "H1", LocalDateTime.of(2026, 1, 1, 8, 0), money(amount), Payment.PhuongThuc.TIEN_MAT,
+                null, money("999999"), cancelled ? Payment.TrangThai.DA_HUY : Payment.TrangThai.THANH_CONG, "NV1", null, null, null);
     }
-    private static HoaDon invoice(String total, String collected, TrangThaiHoaDon status) {
-        return new HoaDon("H1", "NV1", "B1", "Synthetic", null, LocalDateTime.now(), status, money(total), money(collected), BigDecimal.ZERO);
+    private static Invoice invoice(String total, String collected, InvoiceStatus status) {
+        return new Invoice("H1", "NV1", "B1", "Synthetic", null, LocalDateTime.now(), status, money(total), money(collected), BigDecimal.ZERO);
     }
     public static void main(String[] args) throws Exception {
         calculations(); permissions(); validation(); writes(); reads();
         System.out.println("PASS: ServiceBillingSelfTest " + checks + " checks (synthetic JDBC; no SQL Server).");
     }
     private static void calculations() throws Exception {
-        List<ChiTietHoaDon> lines = List.of(new ChiTietHoaDon(1, "H1", "DV1", null, null, 2, money("100")),
-                new ChiTietHoaDon(2, "H1", null, "TH1", null, 3, money("20")),
-                new ChiTietHoaDon(3, "H1", null, null, "VT1", 1, money("40")));
+        List<InvoiceLine> lines = List.of(new InvoiceLine(1, "H1", "DV1", null, null, 2, money("100")),
+                new InvoiceLine(2, "H1", null, "TH1", null, 3, money("20")),
+                new InvoiceLine(3, "H1", null, null, "VT1", 1, money("40")));
         check(BillingCalculator.total(lines).compareTo(money("300")) == 0, "all item kinds included");
         check(BillingCalculator.total(List.of()).signum() == 0, "no lines = zero");
         check(BillingCalculator.collected(List.of()).signum() == 0, "no payments = zero");
-        List<ThanhToan> payments = List.of(payment("T1", "60", false), payment("T2", "40", false), payment("T3", "900", true));
+        List<Payment> payments = List.of(payment("T1", "60", false), payment("T2", "40", false), payment("T3", "900", true));
         check(BillingCalculator.collected(payments).compareTo(money("100")) == 0, "2 lines of successful collection, cancelled ignored, customer tender ignored");
-        check(invoice("300", "0", TrangThaiHoaDon.CHUA_THANH_TOAN).conNo().intValueExact() == 300, "unpaid");
-        check(invoice("300", "100", TrangThaiHoaDon.THANH_TOAN_MOT_PHAN).conNo().intValueExact() == 200, "partial");
-        check(invoice("300", "300", TrangThaiHoaDon.DA_THANH_TOAN).conNo().signum() == 0, "paid");
-        HoaDon overpaid = invoice("300", "400", TrangThaiHoaDon.DA_THANH_TOAN);
+        check(invoice("300", "0", InvoiceStatus.CHUA_THANH_TOAN).conNo().intValueExact() == 300, "unpaid");
+        check(invoice("300", "100", InvoiceStatus.THANH_TOAN_MOT_PHAN).conNo().intValueExact() == 200, "partial");
+        check(invoice("300", "300", InvoiceStatus.DA_THANH_TOAN).conNo().signum() == 0, "paid");
+        Invoice overpaid = invoice("300", "400", InvoiceStatus.DA_THANH_TOAN);
         check(overpaid.conNo().intValueExact() == -100 && overpaid.canhBao().contains("vượt"), "overpayment not clamped");
-        check(BillingCalculator.patientDebt(List.of(invoice("300", "100", TrangThaiHoaDon.THANH_TOAN_MOT_PHAN),
-                invoice("1000", "0", TrangThaiHoaDon.DA_HUY), overpaid)).intValueExact() == 100, "cancelled invoices excluded, negative debt visible");
-        check(invoice("300", "100", TrangThaiHoaDon.DA_THANH_TOAN).canhBao().contains("BẤT NHẤT"), "status discrepancy");
-        BigDecimal big = new ChiTietHoaDon(1, "H1", "DV1", null, null, Integer.MAX_VALUE, money("999999999999999999")).thanhTien();
+        check(BillingCalculator.patientDebt(List.of(invoice("300", "100", InvoiceStatus.THANH_TOAN_MOT_PHAN),
+                invoice("1000", "0", InvoiceStatus.DA_HUY), overpaid)).intValueExact() == 100, "cancelled invoices excluded, negative debt visible");
+        check(invoice("300", "100", InvoiceStatus.DA_THANH_TOAN).canhBao().contains("BẤT NHẤT"), "status discrepancy");
+        BigDecimal big = new InvoiceLine(1, "H1", "DV1", null, null, Integer.MAX_VALUE, money("999999999999999999")).thanhTien();
         check(big.equals(money("2147483646999999997852516353")), "large exact decimal");
-        expect(IllegalArgumentException.class, new Action() { public void run() { new ChiTietHoaDon(1, "H1", "D1", "T1", null, 1, money("1")); } });
-        expect(IllegalArgumentException.class, new Action() { public void run() { new ChiTietHoaDon(1, "H1", "D1", null, null, 0, money("1")); } });
+        expect(IllegalArgumentException.class, new Action() { public void run() { new InvoiceLine(1, "H1", "D1", "T1", null, 1, money("1")); } });
+        expect(IllegalArgumentException.class, new Action() { public void run() { new InvoiceLine(1, "H1", "D1", null, null, 0, money("1")); } });
         // A price catalogue update cannot mutate immutable historical unit prices or rows.
-        DichVu changed = value("9999");
-        DichVu stopped = new DichVu(changed.maDichVu(), changed.tenDichVu(), changed.donGia(), null, false, false);
+        DentalService changed = value("9999");
+        DentalService stopped = new DentalService(changed.maDichVu(), changed.tenDichVu(), changed.donGia(), null, false, false);
         check(!stopped.dangApDung() && BillingCalculator.total(lines).intValueExact() == 300, "historical price/link retained");
     }
     private static void permissions() throws Exception {
         for (Role role : Role.values()) {
             final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final DesktopSession session = session(role);
-            final DichVuService catalog = new DichVuService(session, jdbc); final HoaDonService billing = new HoaDonService(session, jdbc);
+            final ServiceCatalogService catalog = new ServiceCatalogService(session, jdbc); final InvoiceService billing = new InvoiceService(session, jdbc);
             if (role != Role.CLINIC_MANAGER && role != Role.SYSTEM_ADMIN) {
                 expect(AccessDeniedException.class, new Action() { public void run() throws Exception { catalog.find("", null); } });
                 expect(AccessDeniedException.class, new Action() { public void run() throws Exception { catalog.save(value("0"), true); } });
@@ -88,23 +88,23 @@ public final class ServiceBillingSelfTest {
     }
     private static void validation() throws Exception {
         for (final String price : new String[]{"", "-1", "1.2", "1,000", "1.000", "abc", "1e3", "+2", "１２", "1000000000000000000"}) {
-            expect(IllegalArgumentException.class, new Action() { public void run() { DichVuService.parsePrice(price); } });
+            expect(IllegalArgumentException.class, new Action() { public void run() { ServiceCatalogService.parsePrice(price); } });
         }
-        check(DichVuService.parsePrice(" 0 ").signum() == 0, "zero allowed");
-        check(DichVuService.parsePrice("999999999999999999").precision() == 18, "max precision");
-        DichVu normalized = DichVuService.validate(value("0"));
+        check(ServiceCatalogService.parsePrice(" 0 ").signum() == 0, "zero allowed");
+        check(ServiceCatalogService.parsePrice("999999999999999999").precision() == 18, "max precision");
+        DentalService normalized = ServiceCatalogService.validate(value("0"));
         check(normalized.maDichVu().equals("TST1") && normalized.moTa() == null && normalized.tenDichVu().equals("Dịch vụ kiểm thử"), "trim/null");
-        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final DichVuService service = new DichVuService(session(Role.CLINIC_MANAGER), jdbc);
-        for (final DichVu invalid : List.of(new DichVu("X".repeat(11), "Name", money("1"), null, false, true),
-                new DichVu("ĐV1", "Name", money("1"), null, false, true), new DichVu("D V", "Name", money("1"), null, false, true),
-                new DichVu("D1", " ", money("1"), null, false, true), new DichVu("D1", "X".repeat(101), money("1"), null, false, true),
-                new DichVu("D1", "Name", money("1"), "X".repeat(301), false, true), value("-1"), value("0.1"), value("1000000000000000000"))) {
+        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final ServiceCatalogService service = new ServiceCatalogService(session(Role.CLINIC_MANAGER), jdbc);
+        for (final DentalService invalid : List.of(new DentalService("X".repeat(11), "Name", money("1"), null, false, true),
+                new DentalService("ĐV1", "Name", money("1"), null, false, true), new DentalService("D V", "Name", money("1"), null, false, true),
+                new DentalService("D1", " ", money("1"), null, false, true), new DentalService("D1", "X".repeat(101), money("1"), null, false, true),
+                new DentalService("D1", "Name", money("1"), "X".repeat(301), false, true), value("-1"), value("0.1"), value("1000000000000000000"))) {
             expect(IllegalArgumentException.class, new Action() { public void run() throws Exception { service.save(invalid, true); } });
         }
         check(jdbc.opens == 0, "invalid data before connection");
     }
     private static void writes() throws Exception {
-        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final DichVuService service = new DichVuService(session(Role.CLINIC_MANAGER), jdbc);
+        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final ServiceCatalogService service = new ServiceCatalogService(session(Role.CLINIC_MANAGER), jdbc);
         service.save(value("0"), true); service.save(value("100"), false); service.changeActive("TST1", false); service.changeActive("TST1", true);
         check(jdbc.commits == 4 && jdbc.audits.size() == 4 && jdbc.persisted.size() == 4, "writes and audit committed together");
         check(jdbc.audits.getFirst().get(1).equals("TST_ACC"), "audit uses authenticated account");
@@ -122,13 +122,13 @@ public final class ServiceBillingSelfTest {
         root = expect(SQLException.class, new Action() { public void run() throws Exception { service.changeActive("TST1", false); } });
         check(root.getErrorCode() == 229 && root.getSuppressed().length == 2, "original failure preserved with rollback/close failures");
         jdbc.auditFailure = false; jdbc.rollbackFailure = false;
-        expect(DichVuService.CommittedWriteException.class, new Action() { public void run() throws Exception { service.save(value("1"), false); } });
+        expect(ServiceCatalogService.CommittedWriteException.class, new Action() { public void run() throws Exception { service.save(value("1"), false); } });
         jdbc.closeFailure = false; jdbc.affected = 0;
         expect(SQLException.class, new Action() { public void run() throws Exception { service.changeActive("missing", true); } });
     }
     private static void reads() throws Exception {
-        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final HoaDonService service = new HoaDonService(session(Role.RECEPTIONIST), jdbc);
-        service.find("O'Brien_%", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31), TrangThaiHoaDon.DA_HUY);
+        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final InvoiceService service = new InvoiceService(session(Role.RECEPTIONIST), jdbc);
+        service.find("O'Brien_%", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31), InvoiceStatus.DA_HUY);
         check(!jdbc.sql.getFirst().contains("O'Brien"), "search is parameterized, wildcard characters literal via CHARINDEX");
         check(jdbc.bindings.getFirst().get(7).equals(Timestamp.valueOf("2026-02-01 00:00:00")), "inclusive end date");
         check(jdbc.isolation == Connection.TRANSACTION_SERIALIZABLE, "consistent read isolation");
@@ -146,7 +146,7 @@ public final class ServiceBillingSelfTest {
         jdbc.lineRows.get(0).put("tenHang","Synthetic service name");jdbc.lineRows.get(1).put("tenHang","Synthetic medicine name");jdbc.lineRows.get(2).put("tenHang","Synthetic material name");
         jdbc.paymentRows = List.of(paymentRow("P1", "60", "THANH_CONG", "TIEN_MAT"),
                 paymentRow("P2", "40", "THANH_CONG", "THE_POS"), paymentRow("P3", "900", "DA_HUY", "CHUYEN_KHOAN"));
-        ChiTietBilling detail = service.detail("H1");
+        InvoiceDetails detail = service.detail("H1");
         check(detail.chiTiet().size() == 3 && detail.thanhToan().size() == 3 && detail.hoaDon().conNo().intValueExact() == 200,
                 "real DAO maps mixed item types, multiple payments and cancellation");
         check(detail.hoaDon().congNoBenhNhan().intValueExact() == 700, "patient debt passed through unfiltered aggregate");

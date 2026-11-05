@@ -3,7 +3,7 @@ package com.quanlynhakhoa.nghiepvu.hoadon.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record YeuCauHuyHoaDon(String maYeuCau,String maHoaDon,String maBenhNhan,String tenBenhNhan,
+public record InvoiceCancellationRequest(String maYeuCau,String maHoaDon,String maBenhNhan,String tenBenhNhan,
         BigDecimal tongTien,BigDecimal daThu,String maTaiKhoanTao,LocalDateTime thoiGianTao,
         String lyDo,TrangThai trangThai,String maTaiKhoanDuyet,LocalDateTime thoiGianDuyet,String lyDoDuyet) {
     public enum TrangThai {

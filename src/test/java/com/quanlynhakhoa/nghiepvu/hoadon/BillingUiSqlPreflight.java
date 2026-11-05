@@ -21,7 +21,7 @@ public final class BillingUiSqlPreflight {
             try(PreparedStatement s=c.prepareStatement("SELECT TOP (0) d.tenDichVu,t.tenThuoc,v.tenVatTu,b.soDienThoai,p.thoiGianTiepNhan FROM dbo.DichVu d CROSS JOIN dbo.Thuoc t CROSS JOIN dbo.VatTu v CROSS JOIN dbo.BenhNhan b CROSS JOIN dbo.PhieuKham p")){
                 s.setQueryTimeout(10);try(ResultSet ignored=s.executeQuery()){System.out.println("PASS: actual catalog-name, patient-phone and visit-time columns readable");}
             }
-            new HoaDonDao().lines(c,"__UI_CHECK");System.out.println("PASS: detail-name joins execute on actual development schema (no invoice data printed)");
+            new InvoiceDao().lines(c,"__UI_CHECK");System.out.println("PASS: detail-name joins execute on actual development schema (no invoice data printed)");
             try(PreparedStatement s=c.prepareStatement("SELECT TOP (0) maYeuCau,maHoaDon,trangThai FROM dbo.YeuCauHuyHoaDon")){
                 s.setQueryTimeout(10);try(ResultSet ignored=s.executeQuery()){System.out.println("PASS: cancellation requests readable");}
             }catch(SQLException failure){System.out.println("BLOCKED: cancellation read SQLState="+failure.getSQLState()+" code="+failure.getErrorCode());System.out.println("UI: "+BillingUi.error(failure));if(failure.getErrorCode()!=229)throw failure;}

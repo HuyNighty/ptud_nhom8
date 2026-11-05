@@ -21,8 +21,8 @@ public final class BillingRefinementSelfTest {
     public static void main(String[] args)throws Exception{
         edt(new Runnable(){public void run(){
             PaymentForm view=new PaymentForm();
-            HoaDon h=new HoaDon("H1","NV1","BN1","Fixture",null,LocalDateTime.now(),TrangThaiHoaDon.CHUA_THANH_TOAN,new BigDecimal("1000000"),BigDecimal.ZERO,BigDecimal.ZERO);
-            view.showInvoice(new ChiTietBilling(h,List.of(),List.of()));view.busy(false,true,false);
+            Invoice h=new Invoice("H1","NV1","BN1","Fixture",null,LocalDateTime.now(),InvoiceStatus.CHUA_THANH_TOAN,new BigDecimal("1000000"),BigDecimal.ZERO,BigDecimal.ZERO);
+            view.showInvoice(new InvoiceDetails(h,List.of(),List.of()));view.busy(false,true,false);
             view.txtSoTien.setText("600.000");view.txtKhachDua.setText("1.000.000");
             check(view.cashAmount().intValueExact()==600000&&view.bankAmount().signum()==0,"Cash auto allocation");
             check(!view.txtTienMat.isEditable()&&!view.chkDaNhanChuyenKhoan.isVisible(),"Single method is locked and no bank confirmation");
@@ -35,7 +35,7 @@ public final class BillingRefinementSelfTest {
             view.cmbPhuongThuc.setSelectedItem(PaymentForm.Method.MIXED);view.txtTienMat.setText("200.000");view.txtChuyenKhoan.setText("500.000");view.txtKhachDua.setText("300.000");
             check(view.txtTienMat.isEditable()&&view.txtChuyenKhoan.isEditable(),"Mixed portions editable");
             check(view.lblTienThua.getText().contains("100.000")&&view.lblNoSauThu.getText().contains("300.000")&&view.lblPhanBo.getText().contains("Khớp"),"Mixed cash change and debt exact");
-            List<PaymentRequest.Part> parts=List.of(new PaymentRequest.Part("P1",view.cashAmount(),ThanhToan.PhuongThuc.TIEN_MAT,null,new BigDecimal("300000")),new PaymentRequest.Part("P2",view.bankAmount(),ThanhToan.PhuongThuc.CHUYEN_KHOAN,"TESTREF",null));
+            List<PaymentRequest.Part> parts=List.of(new PaymentRequest.Part("P1",view.cashAmount(),Payment.PhuongThuc.TIEN_MAT,null,new BigDecimal("300000")),new PaymentRequest.Part("P2",view.bankAmount(),Payment.PhuongThuc.CHUYEN_KHOAN,"TESTREF",null));
             try{PaymentService.validate(new PaymentRequest("H1",new BigDecimal("700000"),parts,false));throw new AssertionError("Bank confirmation bypassed");}catch(IllegalArgumentException expected){checks++;}
             PaymentService.validate(new PaymentRequest("H1",new BigDecimal("700000"),parts,true));checks++;
             view.txtChuyenKhoan.setText("400.000");check(view.lblPhanBo.getText().contains("Chưa khớp"),"Mixed mismatch visible");

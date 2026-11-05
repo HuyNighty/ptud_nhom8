@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.DichVuPanel;
+import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.quantri.vaitro.model.Role;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -24,9 +24,9 @@ public final class ServiceSavedVisibilitySelfTest {
         FeatureJdbcDouble jdbc = new FeatureJdbcDouble();
         jdbc.serviceRows = List.of(Map.of("maDichVu", "NEW1", "tenDichVu", "New service",
                 "donGia", BigDecimal.TEN, "moTa", "", "laCanLamSang", false, "dangApDung", true));
-        DichVuPanel[] panel = new DichVuPanel[1];
+        ServiceCatalogPanel[] panel = new ServiceCatalogPanel[1];
         SwingUtilities.invokeAndWait(() -> {
-            panel[0] = new DichVuPanel(session(Role.SYSTEM_ADMIN), jdbc);
+            panel[0] = new ServiceCatalogPanel(session(Role.SYSTEM_ADMIN), jdbc);
             try {
                 field(panel[0], "txtTuKhoa", JTextField.class).setText("unrelated");
                 field(panel[0], "cmbTrangThai", JComboBox.class).setSelectedIndex(2);
@@ -59,7 +59,7 @@ public final class ServiceSavedVisibilitySelfTest {
         });
     }
 
-    private static void await(DichVuPanel panel, String text) throws Exception {
+    private static void await(ServiceCatalogPanel panel, String text) throws Exception {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
         while (System.nanoTime() < deadline) {
             boolean[] found = new boolean[1];
@@ -73,4 +73,3 @@ public final class ServiceSavedVisibilitySelfTest {
         throw new AssertionError("Missing status: " + text + "; actual=" + field(panel, "lblTrangThai", JLabel.class).getText());
     }
 }
-

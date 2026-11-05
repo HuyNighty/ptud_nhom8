@@ -1,9 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.controller.HoaDonController;
+import com.quanlynhakhoa.nghiepvu.hoadon.controller.InvoiceController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.service.HoaDonService;
+import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.ClinicalBillingSource;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceIdGenerator;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
@@ -15,7 +15,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
+public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
     public enum ViewMode { INVOICES, DEBTS, PAYMENTS }
     public interface PaymentNavigation { void open(String invoiceId); }
     private final ViewMode mode;
@@ -40,24 +40,24 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.hetho
     private final DefaultTableModel lineModel = BillingUi.model("Loại", "Mã hàng", "Tên dịch vụ / hàng", "Số lượng", "Đơn giá đã chốt", "Thành tiền");
     private final DefaultTableModel paymentModel = BillingUi.model("Mã thu", "Thời gian", "Số tiền", "Phương thức", "Mã giao dịch", "Khách đưa", "Trạng thái", "Nhân viên", "TK hủy", "Lúc hủy", "Lý do hủy");
     private final JTable tblHoaDon = BillingUi.table(invoiceModel), tblChiTietHoaDon = BillingUi.table(lineModel), tblThanhToan = BillingUi.table(paymentModel);
-    private final HoaDonController controller;
-    private List<HoaDon> rows = List.of();
+    private final InvoiceController controller;
+    private List<Invoice> rows = List.of();
     private boolean loaded;
     private boolean working;
-    private HoaDon selectedDetail;
+    private Invoice selectedDetail;
 
-    public HoaDonPanel(DesktopSession session) { this(session, TeamDevConnection::open); }
-    public HoaDonPanel(DesktopSession session, ConnectionProvider connections) {
+    public InvoicePanel(DesktopSession session) { this(session, TeamDevConnection::open); }
+    public InvoicePanel(DesktopSession session, ConnectionProvider connections) {
         this(session, connections, ViewMode.INVOICES);
     }
-    public HoaDonPanel(DesktopSession session, ConnectionProvider connections, ViewMode mode) {
+    public InvoicePanel(DesktopSession session, ConnectionProvider connections, ViewMode mode) {
         this(session, connections, new com.quanlynhakhoa.nghiepvu.hoadon.service.JdbcClinicalBillingSource(),
                 new com.quanlynhakhoa.nghiepvu.hoadon.service.RandomInvoiceIdGenerator(), mode);
     }
-    public HoaDonPanel(DesktopSession session, ConnectionProvider connections, ClinicalBillingSource source, InvoiceIdGenerator ids) {
+    public InvoicePanel(DesktopSession session, ConnectionProvider connections, ClinicalBillingSource source, InvoiceIdGenerator ids) {
         this(session,connections,source,ids,ViewMode.INVOICES);
     }
-    private HoaDonPanel(DesktopSession session, ConnectionProvider connections, ClinicalBillingSource source, InvoiceIdGenerator ids, ViewMode mode) {
+    private InvoicePanel(DesktopSession session, ConnectionProvider connections, ClinicalBillingSource source, InvoiceIdGenerator ids, ViewMode mode) {
         this.session=session;this.connections=connections;this.mode=mode;
         new AuthorizationService(new RolePermissionPolicy()).require(session, Permission.BILLING_READ);
         canPay = new AuthorizationService(new RolePermissionPolicy()).can(session, Permission.BILLING_MANAGE);
@@ -75,7 +75,7 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.hetho
         JLabel lblTitle = new JLabel(switch(mode){case INVOICES -> "Hóa đơn";case DEBTS -> "Công nợ";case PAYMENTS -> "Thanh toán";});
         lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 22f)); pnlTop.add(lblTitle, BorderLayout.NORTH);
         cmbTrangThai.addItem("Tất cả");
-        for (TrangThaiHoaDon value : TrangThaiHoaDon.values()) cmbTrangThai.addItem(value);
+        for (InvoiceStatus value : InvoiceStatus.values()) cmbTrangThai.addItem(value);
         tblThanhToan.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         for (int column = 0; column < tblThanhToan.getColumnCount(); column++) {
             tblThanhToan.getColumnModel().getColumn(column).setPreferredWidth(column == 10 ? 260 : 150);
@@ -96,8 +96,8 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.hetho
         if(mode==ViewMode.DEBTS)pnlTotals.add(lblTongCongNo);
         pnlBottom.add(pnlTotals,BorderLayout.NORTH);pnlBottom.add(lblCanhBao,BorderLayout.CENTER);
         pnlBottom.add(lblTrangThai,BorderLayout.SOUTH); add(pnlBottom, BorderLayout.SOUTH);
-        controller = new HoaDonController(this, session, source == null || ids == null
-                ? new HoaDonService(session, connections) : new HoaDonService(session, connections, source, ids));
+        controller = new InvoiceController(this, session, source == null || ids == null
+                ? new InvoiceService(session, connections) : new InvoiceService(session, connections, source, ids));
         BillingUi.style(this);
         BillingUi.columns(tblHoaDon,110,85,290,110,180,150,150,150);BillingUi.dateColumn(tblHoaDon,3);
         BillingUi.columns(tblChiTietHoaDon,85,100,330,85,160,165);
@@ -145,22 +145,22 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.hetho
     public String keyword() { return txtTuKhoa.getText(); }
     public String fromText() { return txtTuNgay.getText(); }
     public String toText() { return txtDenNgay.getText(); }
-    public TrangThaiHoaDon statusFilter() { return cmbTrangThai.getSelectedItem() instanceof TrangThaiHoaDon status ? status : null; }
+    public InvoiceStatus statusFilter() { return cmbTrangThai.getSelectedItem() instanceof InvoiceStatus status ? status : null; }
     public String selectedId() {
         int index = tblHoaDon.getSelectedRow();
         if (index < 0) return null;
         index = tblHoaDon.convertRowIndexToModel(index);
         return index >= 0 && index < rows.size() ? rows.get(index).maHoaDon() : null;
     }
-    public void showRows(List<HoaDon> values) {
+    public void showRows(List<Invoice> values) {
         rows = List.of(); invoiceModel.setRowCount(0); rows = List.copyOf(values);
-        for (HoaDon value : rows) invoiceModel.addRow(new Object[]{value.maHoaDon(), value.maBenhNhan(), value.tenBenhNhan(),
+        for (Invoice value : rows) invoiceModel.addRow(new Object[]{value.maHoaDon(), value.maBenhNhan(), value.tenBenhNhan(),
                 value.ngayLap(), value.trangThai(), value.tongTien(), value.daThu(), value.conNo(), value.canhBao()});
         clearDetail();
-        int warnings=0;for(HoaDon invoice:values)if(invoice.canhBao().startsWith("BẤT NHẤT"))warnings++;
+        int warnings=0;for(Invoice invoice:values)if(invoice.canhBao().startsWith("BẤT NHẤT"))warnings++;
         lblCanhBaoDanhSach.setText(warnings+" hóa đơn có số tiền hoặc trạng thái cần đối soát. Chọn hóa đơn để xem cảnh báo.");lblCanhBaoDanhSach.setForeground(new Color(147,69,20));lblCanhBaoDanhSach.setVisible(warnings>0);
         java.math.BigDecimal debt=java.math.BigDecimal.ZERO;
-        for(HoaDon h:values)debt=debt.add(h.noTheoDoi());
+        for(Invoice h:values)debt=debt.add(h.noTheoDoi());
         lblTongCongNo.setText("Tổng công nợ theo bộ lọc: "+BillingUi.vnd(debt));
     }
     public void clearDetail() {
@@ -169,13 +169,13 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.hetho
         BillingUi.tableState(tblChiTietHoaDon,"Chọn hóa đơn để xem chi tiết.");BillingUi.tableState(tblThanhToan,"Chọn hóa đơn để xem lịch sử thanh toán.");
         lblTongTien.setText("Tổng: —"); lblDaThu.setText("Đã thu: —"); lblConNo.setText("Còn nợ: —"); lblCongNoBenhNhan.setText("Công nợ BN: —"); lblCanhBao.setText(" ");lblCanhBao.setVisible(false);
     }
-    public void showDetail(ChiTietBilling value) {
+    public void showDetail(InvoiceDetails value) {
         clearDetail();
-        for (ChiTietHoaDon line : value.chiTiet()) lineModel.addRow(new Object[]{line.loaiHang(), line.maHang(), line.tenHienThi(), line.soLuong(), line.donGiaApDung(), line.thanhTien()});
-        for (ThanhToan payment : value.thanhToan()) paymentModel.addRow(new Object[]{payment.maThanhToan(), payment.thoiGian(),
+        for (InvoiceLine line : value.chiTiet()) lineModel.addRow(new Object[]{line.loaiHang(), line.maHang(), line.tenHienThi(), line.soLuong(), line.donGiaApDung(), line.thanhTien()});
+        for (Payment payment : value.thanhToan()) paymentModel.addRow(new Object[]{payment.maThanhToan(), payment.thoiGian(),
                 payment.soTien(), payment.phuongThuc(), payment.maGiaoDich(), payment.tienKhachDua(), payment.trangThai(),
                 payment.maNhanVien(), payment.maTaiKhoanHuy(), BillingUi.time(payment.thoiGianHuy()), payment.lyDoHuy()});
-        HoaDon invoice = value.hoaDon();
+        Invoice invoice = value.hoaDon();
         lblTongTien.setText("Tổng: " + BillingUi.vnd(invoice.tongTien())); lblDaThu.setText("Đã thu: " + BillingUi.vnd(invoice.daThu()));
         lblConNo.setText("Còn nợ: " + BillingUi.vnd(invoice.conNo())); lblCongNoBenhNhan.setText("Công nợ BN: " + BillingUi.vnd(invoice.congNoBenhNhan()));
         lblCanhBao.setText(invoice.canhBao());
@@ -190,7 +190,7 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.hetho
         btnTaoHoaDon.setEnabled(!busy && canCreate);
         updateActions();
     }
-    private void updateActions(){boolean valid=selectedDetail!=null&&selectedDetail.maHoaDon().equals(selectedId())&&selectedDetail.trangThai()!=TrangThaiHoaDon.DA_HUY;btnThanhToan.setEnabled(!working&&valid&&canPay&&selectedDetail.conNo().signum()>0&&selectedDetail.canhBao().isEmpty());btnYeuCauHuy.setEnabled(!working&&valid&&canRequestCancellation);}
+    private void updateActions(){boolean valid=selectedDetail!=null&&selectedDetail.maHoaDon().equals(selectedId())&&selectedDetail.trangThai()!=InvoiceStatus.DA_HUY;btnThanhToan.setEnabled(!working&&valid&&canPay&&selectedDetail.conNo().signum()>0&&selectedDetail.canhBao().isEmpty());btnYeuCauHuy.setEnabled(!working&&valid&&canRequestCancellation);}
     public void status(String text) { lblTrangThai.setText(text);lblTrangThai.setToolTipText(text);BillingUi.tableState(tblHoaDon,text);if(invoiceModel.getRowCount()==0&&(text.startsWith("Chưa có hóa đơn")||text.startsWith("Không tìm thấy")))lblTrangThai.setText("Dùng bộ lọc hoặc Tạo hóa đơn để tiếp tục."); }
     public void expired() { showRows(List.of()); setBusy(true); status("Phiên đã đăng xuất."); }
 }

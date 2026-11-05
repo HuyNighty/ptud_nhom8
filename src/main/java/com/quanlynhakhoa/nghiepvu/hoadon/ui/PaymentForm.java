@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.model.ChiTietBilling;
+import com.quanlynhakhoa.nghiepvu.hoadon.model.InvoiceDetails;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
@@ -93,7 +93,7 @@ public final class PaymentForm extends JPanel {
         btnThuTien.setEnabled(enabled);btnKiemTra.setEnabled(!busy&&uncertain);((CardLayout)pnlActions.getLayout()).show(pnlActions,uncertain?"verify":"collect");
         if(!bank)chkDaNhanChuyenKhoan.setVisible(false);revalidate();repaint();
     }
-    public void showInvoice(ChiTietBilling detail){pnlHistory.showInvoice(detail);outstanding=detail.hoaDon().conNo();preview();}
+    public void showInvoice(InvoiceDetails detail){pnlHistory.showInvoice(detail);outstanding=detail.hoaDon().conNo();preview();}
     public void loading(){outstanding=null;pnlHistory.clear();preview();lblTrangThai.setText("Đang kiểm tra hóa đơn và lịch sử thanh toán…");}
     public void onClose(Runnable callback){closeAction=callback;}
     public void onStateChange(Runnable callback){stateListener=callback;}

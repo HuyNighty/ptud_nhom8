@@ -28,7 +28,7 @@ public final class CancellationController {
         invalidated=new Runnable(){public void run(){load();}};BillingChangeBus.forSession(session).subscribe(invalidated);
     }
     private boolean start(){if(busy)return false;if(!session.isActive()){view.expired();return false;}busy=true;view.busy(true);return true;}
-    private boolean mayReject(){return selected!=null&&selected.request().trangThai()==YeuCauHuyHoaDon.TrangThai.CHO_DUYET&&!session.accountId().equals(selected.request().maTaiKhoanTao())&&selected.invoice().hoaDon().trangThai()!=TrangThaiHoaDon.DA_HUY;}
+    private boolean mayReject(){return selected!=null&&selected.request().trangThai()==InvoiceCancellationRequest.TrangThai.CHO_DUYET&&!session.accountId().equals(selected.request().maTaiKhoanTao())&&selected.invoice().hoaDon().trangThai()!=InvoiceStatus.DA_HUY;}
     private void buttons(){view.buttons(mayReject()&&selected.invoice().hoaDon().daThu().signum()==0,mayReject());}
     private abstract class Task<T> extends SessionWorker<T>{
         Task(){super(CancellationController.this.session);}
@@ -39,11 +39,11 @@ public final class CancellationController {
     public void load(){
         if(busy){reloadPending=true;return;}final String keyword=view.txtTuKhoa.getText();final LocalDate from,to;
         try{from=date(view.txtTuNgay.getText());to=date(view.txtDenNgay.getText());}catch(IllegalArgumentException e){view.lblTrangThai.setText(e.getMessage());return;}
-        final YeuCauHuyHoaDon.TrangThai status=view.cmbTrangThai.getSelectedItem() instanceof YeuCauHuyHoaDon.TrangThai value?value:null;
+        final InvoiceCancellationRequest.TrangThai status=view.cmbTrangThai.getSelectedItem() instanceof InvoiceCancellationRequest.TrangThai value?value:null;
         if(!start())return;selected=null;view.clearDetail();view.lblTrangThai.setText("Đang tải yêu cầu hủy…");view.tableStatus("Đang tải yêu cầu hủy…");
-        new Task<List<YeuCauHuyHoaDon>>(){
-            protected List<YeuCauHuyHoaDon> doInBackground()throws Exception{return service.find(keyword,from,to,status);}
-            protected void succeeded(List<YeuCauHuyHoaDon> rows){busy=true;view.showRows(rows);busy=false;view.tableStatus(rows.isEmpty()?"Không có yêu cầu hủy phù hợp.":"");view.lblTrangThai.setText(writeMessage+(rows.isEmpty()?"Lọc theo ngày gửi và trạng thái yêu cầu.":rows.size()+" yêu cầu. Chọn dòng để xem và xét duyệt."));writeMessage="";if(reloadPending){reloadPending=false;load();}}
+        new Task<List<InvoiceCancellationRequest>>(){
+            protected List<InvoiceCancellationRequest> doInBackground()throws Exception{return service.find(keyword,from,to,status);}
+            protected void succeeded(List<InvoiceCancellationRequest> rows){busy=true;view.showRows(rows);busy=false;view.tableStatus(rows.isEmpty()?"Không có yêu cầu hủy phù hợp.":"");view.lblTrangThai.setText(writeMessage+(rows.isEmpty()?"Lọc theo ngày gửi và trạng thái yêu cầu.":rows.size()+" yêu cầu. Chọn dòng để xem và xét duyệt."));writeMessage="";if(reloadPending){reloadPending=false;load();}}
         }.execute();
     }
     private void detail(){
@@ -52,7 +52,7 @@ public final class CancellationController {
             protected CancellationService.Detail doInBackground()throws Exception{return service.detail(id);}
             protected void succeeded(CancellationService.Detail result){
                 if(!id.equals(view.selectedId())){detail();return;}selected=result;view.showDetail(result);buttons();
-                view.lblTrangThai.setText(result.request().trangThai()!=YeuCauHuyHoaDon.TrangThai.CHO_DUYET?"Yêu cầu đã được xử lý, chỉ xem lịch sử.":session.accountId().equals(result.request().maTaiKhoanTao())?"Không được tự xét duyệt yêu cầu của mình.":result.invoice().hoaDon().daThu().signum()>0?"Chặn duyệt hủy: có khoản thu hợp lệ, chưa có quy trình hoàn tiền. Có thể từ chối và ghi lý do.":"Kiểm tra thông tin và lịch sử thu trước khi quyết định.");
+                view.lblTrangThai.setText(result.request().trangThai()!=InvoiceCancellationRequest.TrangThai.CHO_DUYET?"Yêu cầu đã được xử lý, chỉ xem lịch sử.":session.accountId().equals(result.request().maTaiKhoanTao())?"Không được tự xét duyệt yêu cầu của mình.":result.invoice().hoaDon().daThu().signum()>0?"Chặn duyệt hủy: có khoản thu hợp lệ, chưa có quy trình hoàn tiền. Có thể từ chối và ghi lý do.":"Kiểm tra thông tin và lịch sử thu trước khi quyết định.");
                 if(reloadPending){reloadPending=false;load();}
             }
         }.execute();

@@ -173,7 +173,7 @@ public final class BillingUi {
     public static BigDecimal moneyInput(String text){
         String value=text==null?"":text.trim();
         if(value.indexOf('.')>=0){String[] groups=value.split("\\.",-1);if(groups[0].length()<1||groups[0].length()>3||groups[0].charAt(0)=='0')throw new IllegalArgumentException("Số tiền không hợp lệ. Ví dụ: 1.500.000 hoặc 1500000.");for(int i=1;i<groups.length;i++)if(groups[i].length()!=3)throw new IllegalArgumentException("Số tiền không hợp lệ. Ví dụ: 1.500.000 hoặc 1500000.");value=value.replace(".","");}
-        try{return com.quanlynhakhoa.nghiepvu.dichvu.service.DichVuService.parsePrice(value);}catch(IllegalArgumentException failure){throw new IllegalArgumentException("Số tiền phải là số nguyên từ 0 đến 999.999.999.999.999.999 VND.");}
+        try{return com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService.parsePrice(value);}catch(IllegalArgumentException failure){throw new IllegalArgumentException("Số tiền phải là số nguyên từ 0 đến 999.999.999.999.999.999 VND.");}
     }
     public static String moneyText(BigDecimal value){return NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN")).format(value);}
     public static void moneyField(final JTextField input){input.setHorizontalAlignment(JTextField.RIGHT);input.setToolTipText("Số tiền VND nguyên, ví dụ 1.500.000");input.addFocusListener(new FocusAdapter(){@Override public void focusLost(FocusEvent event){if(input.getText().isBlank())return;try{input.setText(moneyText(moneyInput(input.getText())));}catch(IllegalArgumentException ignored){ /* Validation stays visible at submit. */ }}});}
