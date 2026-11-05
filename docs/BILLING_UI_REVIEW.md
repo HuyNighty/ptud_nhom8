@@ -5,7 +5,7 @@ cấp đủ 12 quyền SQL còn thiếu và qua 60 kiểm tra quyền/truy vấn
 login. Xem [BILLING_SQL_PERMISSIONS.md](BILLING_SQL_PERMISSIONS.md). Bảng quyền và
 giới hạn do quyền dưới đây là ảnh chụp trạng thái **trước đợt cấp quyền này**.
 
-Thay đổi trong worktree `.worktrees/service-billing-m1`, nhánh `codex/latest-shell-integration`.
+Thay đổi trong worktree `.worktrees/service-billing-m1`.
 Giữ nguyên sáu menu ngang và các route đã tích hợp. Đợt chỉnh UI không thay đổi schema,
 migration, quyền SQL, tài khoản hoặc dữ liệu development; đợt cấp quyền tiếp theo được
 ghi riêng trong tài liệu liên kết ở trên.
