@@ -9,11 +9,11 @@ if ($errors.Count -gt 0) { throw 'Grant script parse failed.' }
 $actual = @(& $scriptPath -Plan)
 $expected = @(
     'NhanVien|SELECT|', 'TaiKhoan|SELECT|', 'CaLamViec|SELECT|',
-    'PhanCong|SELECT|', 'ThamSoHeThong|SELECT|', 'PhanCong|INSERT|',
+    'PhanCong|SELECT|', 'ThamSoHeThong|SELECT|', 'CaLamViec|INSERT|', 'PhanCong|INSERT|',
     'PhanCong|UPDATE|trangThai', 'PhanCong|UPDATE|lyDoHuy', 'NhatKyThaoTac|INSERT|'
 )
 $labels = @($actual | ForEach-Object { $_.Table + '|' + $_.Privilege + '|' + $_.Column })
-if ($labels.Count -ne 9 -or (Compare-Object $expected $labels)) { throw 'Permission matrix differs from DAO scope.' }
+if ($labels.Count -ne 10 -or (Compare-Object $expected $labels)) { throw 'Permission matrix differs from DAO scope.' }
 foreach ($argsSet in @(@{}, @{Check=$true;Apply=$true}, @{Plan=$true;Apply=$true}, @{Plan=$true;Check=$true})) {
     $rejected = $false
     try { & $scriptPath @argsSet | Out-Null } catch { $rejected = $_.Exception.Message -like 'Choose exactly one*' }
@@ -71,7 +71,7 @@ foreach ($case in @(
 }
 foreach ($planArgs in @(@{Plan=$true}, @{Plan=$true;WindowsAuth=$true}, @{Plan=$true;SqlAdminUser='local.admin'})) {
     $plan = @(& $scriptPath @planArgs)
-    if ($plan.Count -ne 9) { throw 'Authentication option changed offline matrix.' }
+    if ($plan.Count -ne 10) { throw 'Authentication option changed offline matrix.' }
 }
 if ($script:prompts -ne 2) { throw 'Invalid target or -Plan prompted for credentials.' }
-Write-Output 'PASS: offline 9-permission matrix, parser, mode/write gates, SQL secure prompt and Windows authentication selection. All connections remained closed; no Apply entrypoint or SQL executed.'
+Write-Output 'PASS: offline 10-permission matrix, parser, mode/write gates, SQL secure prompt and Windows authentication selection. All connections remained closed; no Apply entrypoint or SQL executed.'

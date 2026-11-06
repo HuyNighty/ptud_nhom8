@@ -11,8 +11,8 @@ public final class PhanCongDao {
         PreparedStatement p = c.prepareStatement(sql); p.setQueryTimeout(12); return p;
     }
     public List<NhanVienChon> employees(Connection c, String keyword) throws SQLException {
-        try (var p = query(c, "SELECT maNhanVien,hoTen FROM dbo.NhanVien WHERE trangThai='DANG_LAM_VIEC' AND (CHARINDEX(?,hoTen)>0 OR CHARINDEX(?,maNhanVien)>0) ORDER BY hoTen,maNhanVien")) {
-            p.setNString(1,keyword); p.setNString(2,keyword);
+        try (var p = query(c, "SELECT maNhanVien,hoTen FROM dbo.NhanVien WHERE trangThai='DANG_LAM_VIEC' AND (? = N'' OR CHARINDEX(?,hoTen)>0 OR CHARINDEX(?,maNhanVien)>0) ORDER BY hoTen,maNhanVien")) {
+            p.setNString(1,keyword); p.setNString(2,keyword); p.setNString(3,keyword);
             try(var r=p.executeQuery()) { List<NhanVienChon> rows=new ArrayList<>();
                 while(r.next()) rows.add(new NhanVienChon(r.getString(1),r.getNString(2))); return List.copyOf(rows); }
         }
@@ -61,6 +61,13 @@ public final class PhanCongDao {
         try(var p=query(c,"SELECT DB_NAME()");var r=p.executeQuery()){
             if(!r.next() || r.getString(1)==null || !r.getString(1).matches("N08Dev_[0-9a-f]{8}"))
                 throw new SQLException("BLOCKED: chỉ ghi vào database N08Dev_<8 hex> cô lập.");
+        }
+    }
+    public void insertShift(Connection c, CaLamViec shift) throws SQLException {
+        try (var p = query(c, "INSERT INTO dbo.CaLamViec(maCa,tenCa,gioBatDau,gioKetThuc) VALUES(?,?,?,?)")) {
+            p.setString(1, shift.id()); p.setNString(2, shift.ten());
+            p.setTime(3, Time.valueOf(shift.batDau())); p.setTime(4, Time.valueOf(shift.ketThuc()));
+            one(p.executeUpdate());
         }
     }
     public void insert(Connection c,String id,String employee,String shift,LocalDate date,String task) throws SQLException {

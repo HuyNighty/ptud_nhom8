@@ -49,6 +49,34 @@ public final class PhanCongService {
             dao.insert(c,id,nv,ca,day,work);dao.audit(c,session.accountId(),id,"Tạo phân công");return id;
         });
     }
+    /** A new shift and its assignment commit together or are both rolled back. */
+    public String createWithNewShift(String employee, String shiftName, java.time.LocalTime start,
+                                     java.time.LocalTime end, LocalDate day, String task) throws SQLException {
+        auth.require(session, Permission.WORKFORCE_MANAGE);
+        String nv = required(employee, 10, "Chọn nhân viên.");
+        String name = required(shiftName, 50, "Tên ca phải có 1–50 ký tự.");
+        range(day, day);
+        String work = required(task, 200, "Nhiệm vụ phải có 1–200 ký tự.");
+        if (start == null || end == null || !start.isBefore(end))
+            throw new IllegalArgumentException("Giờ kết thúc phải sau giờ bắt đầu; không hỗ trợ ca qua đêm.");
+        if (start.getSecond() != 0 || start.getNano() != 0 || end.getSecond() != 0 || end.getNano() != 0)
+            throw new IllegalArgumentException("Nhập giờ theo HH:mm, không nhập giây.");
+        return write(c -> {
+            dao.lockEmployee(c, nv, day, true);
+            CaLamViec shift = new CaLamViec(newCode(), name, start, end);
+            checkAssignment(shift, dao.schedule(c, day, day, nv), dao.maximumPerDay(c));
+            dao.insertShift(c, shift);
+            String id = newCode();
+            dao.insert(c, id, nv, shift.id(), day, work);
+            dao.audit(c, session.accountId(), id, "Tạo ca mới và phân công");
+            return id;
+        });
+    }
+    private static String newCode() {
+        StringBuilder code = new StringBuilder();
+        for (int i = 0; i < 10; i++) code.append("0123456789ABCDEFGHJKMNPQRSTVWXYZ".charAt(RANDOM.nextInt(32)));
+        return code.toString();
+    }
     /** PO APPROVED 01/11/2026: UI hint; DAO conditional UPDATE remains authoritative. */
     public static boolean canCancelStatus(String status) { return "CHO_HIEU_LUC".equals(status); }
     public void cancel(String id,String reason) throws SQLException {
