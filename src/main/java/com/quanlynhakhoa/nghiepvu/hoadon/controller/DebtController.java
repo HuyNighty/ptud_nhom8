@@ -11,10 +11,10 @@ import java.util.List;
 import javax.swing.event.*;
 
 public final class DebtController {
-    private final DebtPanel view;private final DesktopSession session;private final HoaDonService invoices;private boolean busy,reloadPending;
+    private final DebtPanel view;private final DesktopSession session;private final InvoiceService invoices;private boolean busy,reloadPending;
     private final Runnable invalidated;
     public DebtController(DebtPanel view,DesktopSession session,ConnectionProvider connections){
-        this.view=view;this.session=session;invoices=new HoaDonService(session,connections);
+        this.view=view;this.session=session;invoices=new InvoiceService(session,connections);
         view.btnTim.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});view.btnTaiLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});view.txtTuKhoa.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});view.btnThuNo.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(!busy)view.paySelected();}});
         view.tblBenhNhan.getSelectionModel().addListSelectionListener(new ListSelectionListener(){public void valueChanged(ListSelectionEvent e){if(!busy&&!e.getValueIsAdjusting()){busy=true;view.selectPatient();busy=false;}}});
         view.tblHoaDon.getSelectionModel().addListSelectionListener(new ListSelectionListener(){public void valueChanged(ListSelectionEvent e){if(!busy&&!e.getValueIsAdjusting())detail();}});
@@ -37,9 +37,9 @@ public final class DebtController {
             protected void succeeded(List<PatientDebt> rows){busy=true;view.showPatients(rows);busy=false;view.lblTrangThai.setText(rows.isEmpty()?"Tổng hợp theo bộ lọc ngày lập hóa đơn hiện tại.":"Chọn bệnh nhân rồi chọn hóa đơn để xem chi tiết hoặc thu nợ.");next();}
         }.execute();
     }
-    private void detail(){final String id=view.selectedInvoice();if(id==null)return;busy=true;view.busy(true);new Task<ChiTietBilling>(){
-        protected ChiTietBilling doInBackground()throws Exception{return invoices.detail(id);}
-        protected void succeeded(ChiTietBilling value){if(id.equals(view.selectedInvoice()))view.showDetail(value);next();}
+    private void detail(){final String id=view.selectedInvoice();if(id==null)return;busy=true;view.busy(true);new Task<InvoiceDetails>(){
+        protected InvoiceDetails doInBackground()throws Exception{return invoices.detail(id);}
+        protected void succeeded(InvoiceDetails value){if(id.equals(view.selectedInvoice()))view.showDetail(value);next();}
     }.execute();}
     private static LocalDate date(String text){return BillingUi.parseDate(text);}
 }

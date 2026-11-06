@@ -251,13 +251,13 @@ public final class MainFrame extends JFrame {
         try {
             JPanel pnlPage = registry.create(session, module);
             featurePages.put(module,pnlPage);
-            com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel.PaymentNavigation paymentNavigation=new com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel.PaymentNavigation(){
+            com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel.PaymentNavigation paymentNavigation=new com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel.PaymentNavigation(){
                 public void open(String invoiceId){
                     navigate(Module.PAYMENTS);
                     if(featurePages.get(Module.PAYMENTS) instanceof com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel payments)payments.openInvoice(invoiceId);
                 }
             };
-            if(pnlPage instanceof com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel invoices)invoices.setPaymentNavigation(paymentNavigation);
+            if(pnlPage instanceof com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel invoices)invoices.setPaymentNavigation(paymentNavigation);
             if(pnlPage instanceof com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel debts)debts.setPaymentNavigation(paymentNavigation);
             JPanel pnlSlot = slots.get(module);
             pnlSlot.removeAll();

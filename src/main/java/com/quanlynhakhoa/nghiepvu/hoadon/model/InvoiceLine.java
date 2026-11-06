@@ -2,12 +2,12 @@ package com.quanlynhakhoa.nghiepvu.hoadon.model;
 
 import java.math.BigDecimal;
 
-public record ChiTietHoaDon(int maChiTiet, String maHoaDon, String maDichVu, String maThuoc,
+public record InvoiceLine(int maChiTiet, String maHoaDon, String maDichVu, String maThuoc,
                             String maVatTu, int soLuong, BigDecimal donGiaApDung, String tenHang) {
-    public ChiTietHoaDon(int id,String invoice,String service,String medicine,String material,int quantity,BigDecimal price){
+    public InvoiceLine(int id,String invoice,String service,String medicine,String material,int quantity,BigDecimal price){
         this(id,invoice,service,medicine,material,quantity,price,null);
     }
-    public ChiTietHoaDon {
+    public InvoiceLine {
         int kinds = (maDichVu == null ? 0 : 1) + (maThuoc == null ? 0 : 1) + (maVatTu == null ? 0 : 1);
         if (kinds != 1 || soLuong <= 0 || donGiaApDung == null || donGiaApDung.signum() < 0
                 || donGiaApDung.stripTrailingZeros().scale() > 0) {

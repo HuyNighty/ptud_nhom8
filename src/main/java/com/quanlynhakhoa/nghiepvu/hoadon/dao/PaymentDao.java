@@ -22,7 +22,7 @@ public class PaymentDao {
         }
     }
     /** Returns existing row data including cancelled rows: a cancelled ID cannot be used to collect again. */
-    public ThanhToan existing(Connection c,String id)throws SQLException {
+    public Payment existing(Connection c,String id)throws SQLException {
         try(PreparedStatement s=c.prepareStatement("""
                 SELECT maThanhToan,maHoaDon,thoiGian,soTien,phuongThuc,maGiaoDich,tienKhachDua,
                        trangThai,maNhanVien,maTaiKhoanHuy,thoiGianHuy,lyDoHuy
@@ -32,9 +32,9 @@ public class PaymentDao {
             try(ResultSet r=s.executeQuery()) {
                 if(!r.next())return null;
                 Timestamp cancelled=r.getTimestamp("thoiGianHuy");
-                return new ThanhToan(r.getString("maThanhToan"),r.getString("maHoaDon"),r.getTimestamp("thoiGian").toLocalDateTime(),
-                        r.getBigDecimal("soTien"),ThanhToan.PhuongThuc.valueOf(r.getString("phuongThuc")),r.getString("maGiaoDich"),r.getBigDecimal("tienKhachDua"),
-                        ThanhToan.TrangThai.valueOf(r.getString("trangThai")),r.getString("maNhanVien"),r.getString("maTaiKhoanHuy"),
+                return new Payment(r.getString("maThanhToan"),r.getString("maHoaDon"),r.getTimestamp("thoiGian").toLocalDateTime(),
+                        r.getBigDecimal("soTien"),Payment.PhuongThuc.valueOf(r.getString("phuongThuc")),r.getString("maGiaoDich"),r.getBigDecimal("tienKhachDua"),
+                        Payment.TrangThai.valueOf(r.getString("trangThai")),r.getString("maNhanVien"),r.getString("maTaiKhoanHuy"),
                         cancelled==null?null:cancelled.toLocalDateTime(),r.getNString("lyDoHuy"));
             }
         }
@@ -66,7 +66,7 @@ public class PaymentDao {
             s.setString(7,employee);one(s.executeUpdate());
         }
     }
-    public void updateStatus(Connection c,String id,TrangThaiHoaDon status)throws SQLException {
+    public void updateStatus(Connection c,String id,InvoiceStatus status)throws SQLException {
         try(PreparedStatement s=c.prepareStatement("UPDATE dbo.HoaDon SET trangThai=? WHERE maHoaDon=? AND trangThai<>'DA_HUY'")) {
             s.setQueryTimeout(15);s.setString(1,status.name());s.setString(2,id);one(s.executeUpdate());
         }

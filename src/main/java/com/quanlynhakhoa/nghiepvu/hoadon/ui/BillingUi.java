@@ -18,9 +18,11 @@ import javax.swing.JScrollPane;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
-/** Shared display helpers for Khang's two panels. */
+/** Shared presentation for service catalog, invoices, debt and payment screens. */
 public final class BillingUi {
     public static final Color NAVY = new Color(29,61,102), BACKGROUND = new Color(245,248,252);
+    private static final Color INK = new Color(28,48,75), MUTED = new Color(97,115,137);
+    private static final Color LINE = new Color(220,231,242), SOFT = new Color(232,240,249);
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
     private static final Logger LOG = createLogger();
     private BillingUi() { }
@@ -34,7 +36,7 @@ public final class BillingUi {
         return logger;
     }
     public static void style(javax.swing.JPanel root){
-        styleChildren(root);root.setBackground(new java.awt.Color(245,248,252));
+        styleChildren(root);root.setOpaque(true);root.setBackground(BACKGROUND);
     }
     private static void styleChildren(java.awt.Component component){
         Font old=component.getFont();
@@ -42,23 +44,49 @@ public final class BillingUi {
         boolean heading=old!=null&&old.getSize()>=20;
         boolean caption=component instanceof JComponent c&&Boolean.TRUE.equals(c.getClientProperty("billing.caption"));
         component.setFont(new Font(Font.SANS_SERIF,heading||emphasis?Font.BOLD:Font.PLAIN,heading?old.getSize():caption?12:14));
-        if(component instanceof javax.swing.JPanel panel)panel.setBackground(java.awt.Color.WHITE);
-        if(component instanceof javax.swing.JLabel label)label.setForeground(Boolean.TRUE.equals(label.getClientProperty("billing.debt"))?new Color(147,69,20):new java.awt.Color(28,48,75));
+        if(component instanceof JPanel panel){
+            boolean surface=panel instanceof FilterBar||panel.getBorder() instanceof javax.swing.border.TitledBorder||Boolean.TRUE.equals(panel.getClientProperty("billing.surface"));
+            panel.setOpaque(surface);panel.setBackground(surface?Color.WHITE:BACKGROUND);
+        }
+        if(component instanceof JCheckBox check){check.setOpaque(false);check.setForeground(INK);}
+        if(component instanceof javax.swing.JLabel label)label.setForeground(Boolean.TRUE.equals(label.getClientProperty("billing.debt"))?new Color(147,69,20):caption?MUTED:INK);
         if(component instanceof javax.swing.JButton button&&button.getText()!=null&&!button.getText().isBlank()){
-            button.setFocusPainted(false);button.setMargin(new Insets(6,12,6,12));
             boolean primary=Boolean.TRUE.equals(button.getClientProperty("billing.primary"));
-            button.setFont(button.getFont().deriveFont(primary?Font.BOLD:Font.PLAIN));
             boolean danger=Boolean.TRUE.equals(button.getClientProperty("billing.danger"));
-            button.setBackground(primary?NAVY:danger?new Color(253,235,235):new Color(232,240,249));
+            button.setUI(new BillingButtonUI());
+            button.setOpaque(true);button.setContentAreaFilled(false);button.setFocusPainted(true);button.setRolloverEnabled(true);
+            button.setMargin(new Insets(7,12,7,12));
+            button.setFont(button.getFont().deriveFont(primary?Font.BOLD:Font.PLAIN));
+            button.setBackground(primary?NAVY:Color.WHITE);
             button.setForeground(primary?Color.WHITE:danger?new Color(161,38,45):NAVY);
+            button.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(danger?new Color(232,190,194):primary?NAVY:LINE),BorderFactory.createEmptyBorder(7,12,7,12)));
+            button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             Dimension size=button.getPreferredSize();Insets insets=button.getInsets();int width=Math.max(size.width,button.getFontMetrics(button.getFont()).stringWidth(button.getText())+insets.left+insets.right+12);button.setPreferredSize(new Dimension(width,34));button.setMinimumSize(new Dimension(width,34));
         }
+        if(component instanceof javax.swing.text.JTextComponent input){input.setDisabledTextColor(MUTED);}
         if(component instanceof JTextField || component instanceof JComboBox<?>){Dimension size=component.getPreferredSize();component.setPreferredSize(new Dimension(size.width,34));component.setMinimumSize(new Dimension(40,34));}
-        if(component instanceof javax.swing.JTable table){table.setRowHeight(32);table.getTableHeader().setFont(new Font(Font.SANS_SERIF,Font.BOLD,13));table.getTableHeader().setPreferredSize(new Dimension(0,32));table.getTableHeader().setBackground(new java.awt.Color(232,240,249));table.getTableHeader().setForeground(NAVY);table.setShowVerticalLines(false);table.setGridColor(new Color(229,235,242));table.setSelectionBackground(new Color(218,233,249));table.setSelectionForeground(NAVY);}
-        if(component instanceof JSplitPane split){split.setBorder(null);split.setDividerSize(8);split.setContinuousLayout(true);}
-        if(component instanceof JScrollPane scroll){scroll.getViewport().setBackground(Color.WHITE);if(!(scroll.getBorder() instanceof javax.swing.border.TitledBorder))scroll.setBorder(BorderFactory.createLineBorder(new Color(218,226,236)));}
+        if(component instanceof javax.swing.JTable table){table.setRowHeight(32);table.getTableHeader().setFont(new Font(Font.SANS_SERIF,Font.BOLD,13));table.getTableHeader().setPreferredSize(new Dimension(0,32));table.getTableHeader().setOpaque(true);table.getTableHeader().setBackground(SOFT);table.getTableHeader().setForeground(NAVY);table.setShowVerticalLines(false);table.setGridColor(new Color(229,235,242));table.setSelectionBackground(new Color(218,233,249));table.setSelectionForeground(NAVY);}
+        if(component instanceof JSplitPane split){split.setBorder(null);split.setBackground(BACKGROUND);split.setDividerSize(8);split.setContinuousLayout(true);}
+        if(component instanceof JScrollPane scroll){scroll.getViewport().setBackground(Color.WHITE);if(!(scroll.getBorder() instanceof javax.swing.border.TitledBorder))scroll.setBorder(BorderFactory.createLineBorder(LINE));}
         if(component instanceof JComponent control&&control.getBorder() instanceof javax.swing.border.TitledBorder title){title.setTitleFont(new Font(Font.SANS_SERIF,Font.PLAIN,13));title.setTitleColor(NAVY);}
         if(component instanceof java.awt.Container container)for(java.awt.Component child:container.getComponents())styleChildren(child);
+    }
+    /** Flat fills avoid native button gradients hiding the primary button's white text. */
+    private static final class BillingButtonUI extends javax.swing.plaf.basic.BasicButtonUI {
+        @Override public void paint(Graphics graphics,JComponent component){
+            JButton button=(JButton)component;
+            Color fill=button.getBackground();
+            if(!button.isEnabled())fill=SOFT;
+            else if(button.getModel().isPressed())fill=fill.equals(NAVY)?new Color(21,46,79):new Color(218,233,249);
+            else if(button.getModel().isRollover())fill=fill.equals(NAVY)?new Color(43,81,129):SOFT;
+            graphics.setColor(fill);graphics.fillRect(0,0,button.getWidth(),button.getHeight());
+            super.paint(graphics,component);
+            if(button.isFocusOwner()){
+                graphics.setColor(button.getBackground().equals(NAVY)?Color.WHITE:NAVY);
+                graphics.drawRect(3,3,button.getWidth()-7,button.getHeight()-7);
+            }
+        }
+        @Override protected void paintButtonPressed(Graphics graphics,AbstractButton button){ }
     }
     public static JButton primary(JButton button){button.putClientProperty("billing.primary",true);return button;}
     public static JButton danger(JButton button){button.putClientProperty("billing.danger",true);return button;}
@@ -78,8 +106,8 @@ public final class BillingUi {
     public static JPanel card(final JLabel source){return card(null,source);}
     public static JPanel card(final String caption,final JLabel source){
         JPanel panel=new JPanel(new BorderLayout(0,3));
-        panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(218,226,236)),BorderFactory.createEmptyBorder(6,12,6,12)));
-        final JLabel lblCaption=new JLabel(),lblValue=new JLabel();lblCaption.putClientProperty("billing.caption",true);lblValue.setFont(new Font(Font.SANS_SERIF,Font.BOLD,22));
+        panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(LINE),BorderFactory.createEmptyBorder(6,12,6,12)));
+        final JLabel lblCaption=new JLabel(),lblValue=new JLabel();panel.putClientProperty("billing.surface",true);lblCaption.putClientProperty("billing.caption",true);lblValue.setFont(new Font(Font.SANS_SERIF,Font.BOLD,22));
         Runnable update=new Runnable(){public void run(){String text=source.getText()==null?"":source.getText();int colon=text.indexOf(':');String title=caption!=null?caption:colon<0?text:text.substring(0,colon);String amount=colon<0?"—":text.substring(colon+1).trim();lblCaption.setText(title);lblValue.setText(amount);lblValue.setToolTipText(text);boolean debt=title.toLowerCase(Locale.ROOT).startsWith("còn")||title.toLowerCase(Locale.ROOT).startsWith("tổng còn");lblValue.putClientProperty("billing.debt",debt);lblValue.setForeground(debt&&!amount.equals("—")?new Color(147,69,20):NAVY);}};
         source.addPropertyChangeListener("text",new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent event){update.run();}});update.run();panel.add(lblCaption,BorderLayout.NORTH);panel.add(lblValue,BorderLayout.CENTER);return panel;
     }
@@ -134,7 +162,7 @@ public final class BillingUi {
     public static BigDecimal moneyInput(String text){
         String value=text==null?"":text.trim();
         if(value.indexOf('.')>=0){String[] groups=value.split("\\.",-1);if(groups[0].length()<1||groups[0].length()>3||groups[0].charAt(0)=='0')throw new IllegalArgumentException("Số tiền không hợp lệ. Ví dụ: 1.500.000 hoặc 1500000.");for(int i=1;i<groups.length;i++)if(groups[i].length()!=3)throw new IllegalArgumentException("Số tiền không hợp lệ. Ví dụ: 1.500.000 hoặc 1500000.");value=value.replace(".","");}
-        try{return com.quanlynhakhoa.nghiepvu.dichvu.service.DichVuService.parsePrice(value);}catch(IllegalArgumentException failure){throw new IllegalArgumentException("Số tiền phải là số nguyên từ 0 đến 999.999.999.999.999.999 VND.");}
+        try{return com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService.parsePrice(value);}catch(IllegalArgumentException failure){throw new IllegalArgumentException("Số tiền phải là số nguyên từ 0 đến 999.999.999.999.999.999 VND.");}
     }
     public static String moneyText(BigDecimal value){return NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN")).format(value);}
     public static void moneyField(final JTextField input){input.setHorizontalAlignment(JTextField.RIGHT);input.setToolTipText("Số tiền VND nguyên, ví dụ 1.500.000");input.addFocusListener(new FocusAdapter(){@Override public void focusLost(FocusEvent event){if(input.getText().isBlank())return;try{input.setText(moneyText(moneyInput(input.getText())));}catch(IllegalArgumentException ignored){ /* Validation stays visible at submit. */ }}});}

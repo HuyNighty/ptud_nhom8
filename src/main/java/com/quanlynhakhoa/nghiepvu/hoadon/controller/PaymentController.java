@@ -4,7 +4,7 @@ import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
-import com.quanlynhakhoa.nghiepvu.dichvu.service.DichVuService;
+import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.math.BigDecimal;
 import java.awt.event.*;
@@ -12,21 +12,21 @@ import java.util.*;
 import javax.swing.JOptionPane;
 
 public final class PaymentController {
-    private final PaymentForm view;private final DesktopSession session;private final HoaDonService invoices;private final PaymentService payments;
-    private final String invoiceId;private final Runnable saved;private ChiTietBilling detail;private boolean busy;private PaymentRequest pending;
+    private final PaymentForm view;private final DesktopSession session;private final InvoiceService invoices;private final PaymentService payments;
+    private final String invoiceId;private final Runnable saved;private InvoiceDetails detail;private boolean busy;private PaymentRequest pending;
     private boolean pendingCancellation;
     private boolean reloadPending;
     public PaymentController(PaymentDialog view,DesktopSession session,ConnectionProvider connections,String invoiceId,Runnable saved) {
         this(view.form(),session,connections,invoiceId,saved);
     }
     public PaymentController(PaymentForm view,DesktopSession session,ConnectionProvider connections,String invoiceId,Runnable saved) {
-        this.view=view;this.session=session;this.invoiceId=invoiceId;this.saved=saved;invoices=new HoaDonService(session,connections);payments=new PaymentService(session,connections);
+        this.view=view;this.session=session;this.invoiceId=invoiceId;this.saved=saved;invoices=new InvoiceService(session,connections);payments=new PaymentService(session,connections);
         view.btnThuTien.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){collect();}});
         view.btnKiemTra.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
 
         load();
     }
-    private boolean allowed(){return !pendingCancellation&&detail!=null&&detail.hoaDon().trangThai()!=TrangThaiHoaDon.DA_HUY&&detail.hoaDon().conNo().signum()>0&&detail.hoaDon().canhBao().isEmpty();}
+    private boolean allowed(){return !pendingCancellation&&detail!=null&&detail.hoaDon().trangThai()!=InvoiceStatus.DA_HUY&&detail.hoaDon().conNo().signum()>0&&detail.hoaDon().canhBao().isEmpty();}
     private abstract class Task<T> extends SessionWorker<T> {
         Task(){super(PaymentController.this.session);}
         protected void finished(){busy=false;view.busy(false,allowed(),pending!=null);}
@@ -35,16 +35,16 @@ public final class PaymentController {
     }
     private void load() {
         if(busy){reloadPending=true;return;}reloadPending=false;busy=true;detail=null;view.loading();view.busy(true,false,pending!=null);
-        new Task<ChiTietBilling>() {
+        new Task<InvoiceDetails>() {
             private boolean awaitingCancellation;
-            protected ChiTietBilling doInBackground()throws Exception{ChiTietBilling result=invoices.detail(invoiceId);awaitingCancellation=payments.pendingCancellation(invoiceId);return result;}
-            protected void succeeded(ChiTietBilling result){
+            protected InvoiceDetails doInBackground()throws Exception{InvoiceDetails result=invoices.detail(invoiceId);awaitingCancellation=payments.pendingCancellation(invoiceId);return result;}
+            protected void succeeded(InvoiceDetails result){
                 detail=result;pendingCancellation=awaitingCancellation;view.showInvoice(result);
                 if(pending!=null){
                     int found=0;boolean mismatch=false;
-                    for(PaymentRequest.Part part:pending.parts())for(ThanhToan prior:result.thanhToan())if(part.id().equals(prior.maThanhToan())){
+                    for(PaymentRequest.Part part:pending.parts())for(Payment prior:result.thanhToan())if(part.id().equals(prior.maThanhToan())){
                         found++;
-                        if(prior.trangThai()!=ThanhToan.TrangThai.THANH_CONG||prior.phuongThuc()!=part.method()
+                        if(prior.trangThai()!=Payment.TrangThai.THANH_CONG||prior.phuongThuc()!=part.method()
                                 ||prior.soTien().compareTo(part.amount())!=0||!Objects.equals(prior.maGiaoDich(),part.reference())
                                 ||(prior.tienKhachDua()==null?part.customerTender()!=null:part.customerTender()==null||prior.tienKhachDua().compareTo(part.customerTender())!=0))mismatch=true;
                     }
@@ -64,8 +64,8 @@ public final class PaymentController {
         try {
             BigDecimal cash=view.cashAmount(),bank=view.bankAmount();
             List<PaymentRequest.Part> parts=new ArrayList<>();RandomInvoiceIdGenerator ids=new RandomInvoiceIdGenerator();
-            if(cash.signum()>0)parts.add(new PaymentRequest.Part(ids.next(null),cash,ThanhToan.PhuongThuc.TIEN_MAT,null,BillingUi.moneyInput(view.txtKhachDua.getText())));
-            if(bank.signum()>0)parts.add(new PaymentRequest.Part(ids.next(null),bank,ThanhToan.PhuongThuc.CHUYEN_KHOAN,view.txtMaGiaoDich.getText().trim(),null));
+            if(cash.signum()>0)parts.add(new PaymentRequest.Part(ids.next(null),cash,Payment.PhuongThuc.TIEN_MAT,null,BillingUi.moneyInput(view.txtKhachDua.getText())));
+            if(bank.signum()>0)parts.add(new PaymentRequest.Part(ids.next(null),bank,Payment.PhuongThuc.CHUYEN_KHOAN,view.txtMaGiaoDich.getText().trim(),null));
             request=new PaymentRequest(invoiceId,BillingUi.moneyInput(view.txtSoTien.getText()),parts,view.chkDaNhanChuyenKhoan.isSelected());PaymentService.validate(request);
         }catch(RuntimeException failure){view.lblTrangThai.setText(BillingUi.error(failure));return;}
         if(JOptionPane.showConfirmDialog(view,"Xác nhận đã nhận "+BillingUi.vnd(request.amount())+"?","Ghi nhận thu tiền",JOptionPane.YES_NO_OPTION)!=JOptionPane.YES_OPTION)return;

@@ -7,6 +7,7 @@ import javax.swing.*;
 public final class FilterBar extends JPanel {
     public FilterBar(JComponent... groups) {
         super(new WrappingFlow());
+        setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(220,231,242)),BorderFactory.createEmptyBorder(7,10,7,10)));
         for(JComponent group:groups)add(group);
     }
     private static final class WrappingFlow extends FlowLayout {

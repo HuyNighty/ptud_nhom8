@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel;
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DichVu;
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.DichVuPanel;
+import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
+import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
+import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.quantri.vaitro.model.Role;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.Field;
@@ -37,15 +37,15 @@ public final class ServiceBillingUiSelfTest {
         System.setProperty("java.awt.headless", "true");
         final FeatureJdbcDouble jdbc = new FeatureJdbcDouble();
         final DesktopSession session = session(Role.CLINIC_MANAGER);
-        final DichVuPanel[] panel = new DichVuPanel[1];
-        final HoaDonPanel[] billing = new HoaDonPanel[1];
+        final ServiceCatalogPanel[] panel = new ServiceCatalogPanel[1];
+        final InvoicePanel[] billing = new InvoicePanel[1];
         edt(new Action() { public void run() {
-            panel[0] = new DichVuPanel(session, jdbc); billing[0] = new HoaDonPanel(session, jdbc);
+            panel[0] = new ServiceCatalogPanel(session, jdbc); billing[0] = new InvoicePanel(session, jdbc);
         } });
         check(jdbc.opens == 0, "constructors must not open JDBC");
         edt(new Action() { public void run() throws Exception {
-            panel[0].showRows(List.of(new DichVu("B", "B", new BigDecimal("20"), null, false, true),
-                    new DichVu("A", "A", new BigDecimal("100"), null, true, false)));
+            panel[0].showRows(List.of(new DentalService("B", "B", new BigDecimal("20"), null, false, true),
+                    new DentalService("A", "A", new BigDecimal("100"), null, true, false)));
             JTable tblDichVu = field(panel[0], "tblDichVu", JTable.class);
             tblDichVu.getRowSorter().toggleSortOrder(0); tblDichVu.setRowSelectionInterval(0, 0);
             check(panel[0].selected().maDichVu().equals("A"), "view to model index after sort");
@@ -71,9 +71,9 @@ public final class ServiceBillingUiSelfTest {
         check(jdbc.persisted.size() == 1 && jdbc.audits.size() == 1, "double click saved once; cached views may commit read transactions");
         check(new BigDecimal("1500000").equals(jdbc.persisted.getFirst().get(2)),"Vietnamese grouped input persists the exact price");
         final FeatureJdbcDouble savedJdbc = new FeatureJdbcDouble();
-        final DichVuPanel[] savedPanel = new DichVuPanel[1];
+        final ServiceCatalogPanel[] savedPanel = new ServiceCatalogPanel[1];
         edt(new Action() { public void run() throws Exception {
-            savedPanel[0] = new DichVuPanel(session, new com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider() {
+            savedPanel[0] = new ServiceCatalogPanel(session, new com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider() {
                 int calls;
                 public java.sql.Connection open() throws java.sql.SQLException {
                     if (++calls > 1) throw new java.sql.SQLException("reload", "08001", 0);
@@ -90,9 +90,9 @@ public final class ServiceBillingUiSelfTest {
             check(savedJdbc.commits == 1 && !savedPanel[0].creating(), "save success survives reload failure without duplicate insert mode");
         } });
         // Force a load/connection failure and verify honest UI, without a modal blocking the test.
-        final DichVuPanel[] errorPanel = new DichVuPanel[1];
+        final ServiceCatalogPanel[] errorPanel = new ServiceCatalogPanel[1];
         edt(new Action() { public void run() throws Exception {
-            errorPanel[0] = new DichVuPanel(session, new com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider() {
+            errorPanel[0] = new ServiceCatalogPanel(session, new com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider() {
                 public java.sql.Connection open() throws java.sql.SQLException { throw new java.sql.SQLException("synthetic", "08001", 0); }
             });
             field(errorPanel[0], "btnTaiLai", JButton.class).doClick();
@@ -109,10 +109,10 @@ public final class ServiceBillingUiSelfTest {
         waitFor(cancellation[0].lblTrangThai,"quyền");check(retries.get()==2,"Explicit retry performs one additional read");
         final FeatureJdbcDouble delayed = new FeatureJdbcDouble(); delayed.release = new CountDownLatch(1);
         final DesktopSession expiredSession = session(Role.CLINIC_MANAGER);
-        final DichVuPanel[] expiredPanel = new DichVuPanel[1];
+        final ServiceCatalogPanel[] expiredPanel = new ServiceCatalogPanel[1];
         edt(new Action() { public void run() throws Exception {
-            expiredPanel[0] = new DichVuPanel(expiredSession, delayed);
-            expiredPanel[0].showForm(new DichVu("TST1", "Synthetic", BigDecimal.ONE, null, false, true));
+            expiredPanel[0] = new ServiceCatalogPanel(expiredSession, delayed);
+            expiredPanel[0].showForm(new DentalService("TST1", "Synthetic", BigDecimal.ONE, null, false, true));
             field(expiredPanel[0], "btnTaiLai", JButton.class).doClick();
         } });
         check(delayed.opened.await(5, TimeUnit.SECONDS), "delayed query started");

@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.service.HoaDonService;
+import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.event.*;
@@ -10,10 +10,10 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import javax.swing.event.*;
 
-public final class HoaDonController {
-    private final HoaDonPanel view;
+public final class InvoiceController {
+    private final InvoicePanel view;
     private final DesktopSession session;
-    private final HoaDonService service;
+    private final InvoiceService service;
     private boolean busy;
     private String createdId;
     private final Runnable invalidated;
@@ -24,7 +24,7 @@ public final class HoaDonController {
     public void focusInvoice(String id){
         boolean wasBusy=busy;busy=true;view.filterInvoice(id);busy=wasBusy;selectionAfterLoad=id;load();
     }
-    public HoaDonController(HoaDonPanel view, DesktopSession session, HoaDonService service) {
+    public InvoiceController(InvoicePanel view, DesktopSession session, InvoiceService service) {
         this.view = view; this.session = session; this.service = service;
         view.onSearch(new ActionListener() { public void actionPerformed(ActionEvent event) { load(); } });
         view.onReload(new ActionListener() { public void actionPerformed(ActionEvent event) { load(); } });
@@ -32,8 +32,8 @@ public final class HoaDonController {
         view.onRequestCancellation(new ActionListener(){public void actionPerformed(ActionEvent event){if(!busy)view.requestCancellation();}});
         view.onCreate(new ActionListener() { public void actionPerformed(ActionEvent event) {
             if (busy || !session.isActive() || !service.creationConfigured()) return;
-            TaoHoaDonDialog winDialog=new TaoHoaDonDialog(javax.swing.SwingUtilities.getWindowAncestor(view));
-            new TaoHoaDonController(winDialog,session,service,new TaoHoaDonController.Saved() {
+            InvoiceCreationDialog winDialog=new InvoiceCreationDialog(javax.swing.SwingUtilities.getWindowAncestor(view));
+            new InvoiceCreationController(winDialog,session,service,new InvoiceCreationController.Saved() {
                 public void accept(String id) {
                     busy=true;view.filterInvoice(id);busy=false;createdId=id;load();
                 }
@@ -48,20 +48,20 @@ public final class HoaDonController {
     public void load() {
         if (busy) { reloadPending=true;return; }
         if (!session.isActive()) { view.expired(); return; }
-        final String keyword = view.keyword(); final TrangThaiHoaDon filter = view.statusFilter();
+        final String keyword = view.keyword(); final InvoiceStatus filter = view.statusFilter();
         final LocalDate from, to;
         try { from = date(view.fromText()); to = date(view.toText()); }
         catch (IllegalArgumentException failure) { view.status(failure.getMessage()); return; }
         busy = true; view.setBusy(true); view.clearDetail(); view.status("Đang đọc hóa đơn...");
         final boolean followingPayment=afterPayment;
-        new SessionWorker<List<HoaDon>>(session) {
-            protected List<HoaDon> doInBackground() throws Exception {
-                List<HoaDon> found=service.find(keyword, from, to, filter);
+        new SessionWorker<List<Invoice>>(session) {
+            protected List<Invoice> doInBackground() throws Exception {
+                List<Invoice> found=service.find(keyword, from, to, filter);
                 return view.outstandingOnly()?com.quanlynhakhoa.nghiepvu.hoadon.service.DebtService.outstanding(found):found;
             }
             protected void finished() { busy = false; view.setBusy(false); }
             protected void expired() { view.expired(); }
-            protected void succeeded(List<HoaDon> rows) {
+            protected void succeeded(List<Invoice> rows) {
                 // Keep selection listeners idle while replacing the model.
                 busy = true; view.showRows(rows); busy = false;
                 view.status((followingPayment?"Đã thu tiền thành công. ":"")+(rows.isEmpty() ? keyword.isBlank()&&from==null&&to==null&&filter==null?"Chưa có hóa đơn.":"Không tìm thấy hóa đơn phù hợp." : rows.size() + " hóa đơn. Chọn một dòng để xem."));
@@ -79,11 +79,11 @@ public final class HoaDonController {
         view.clearDetail();
         if (id == null) return;
         busy = true; view.setBusy(true); view.status("Đang đọc chi tiết và lịch sử thu...");
-        new SessionWorker<ChiTietBilling>(session) {
-            protected ChiTietBilling doInBackground() throws Exception { return service.detail(id); }
+        new SessionWorker<InvoiceDetails>(session) {
+            protected InvoiceDetails doInBackground() throws Exception { return service.detail(id); }
             protected void finished() { busy = false; view.setBusy(false); }
             protected void expired() { view.expired(); }
-            protected void succeeded(ChiTietBilling value) {
+            protected void succeeded(InvoiceDetails value) {
                 // Ignore programmatic selection changes while a request is running.
                 if (!id.equals(view.selectedId())) { detail(); return; }
                 view.showDetail(value);

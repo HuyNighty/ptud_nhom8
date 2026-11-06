@@ -1,13 +1,13 @@
 package com.quanlynhakhoa.nghiepvu.dichvu.dao;
 
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DichVu;
+import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Caller owns connection and transaction. No physical delete is provided. */
-public class DichVuDao {
-    public List<DichVu> find(Connection connection, String keyword, Boolean active) throws SQLException {
+public class ServiceCatalogDao {
+    public List<DentalService> find(Connection connection, String keyword, Boolean active) throws SQLException {
         String sql = """
                 SELECT maDichVu, tenDichVu, donGia, moTa, laCanLamSang, dangApDung
                 FROM dbo.DichVu
@@ -26,9 +26,9 @@ public class DichVuDao {
                 statement.setBoolean(3, active);
                 statement.setBoolean(4, active);
             }
-            List<DichVu> result = new ArrayList<>();
+            List<DentalService> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) {
-                while (rows.next()) result.add(new DichVu(rows.getString("maDichVu"),
+                while (rows.next()) result.add(new DentalService(rows.getString("maDichVu"),
                         rows.getNString("tenDichVu"), rows.getBigDecimal("donGia"),
                         rows.getNString("moTa"), rows.getBoolean("laCanLamSang"), rows.getBoolean("dangApDung")));
             }
@@ -45,21 +45,21 @@ public class DichVuDao {
         }
     }
 
-    public void insert(Connection connection, DichVu value) throws SQLException {
+    public void insert(Connection connection, DentalService value) throws SQLException {
         write(connection, """
                 INSERT INTO dbo.DichVu (tenDichVu, donGia, moTa, laCanLamSang, dangApDung, maDichVu)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """, value);
     }
 
-    public void update(Connection connection, DichVu value) throws SQLException {
+    public void update(Connection connection, DentalService value) throws SQLException {
         write(connection, """
                 UPDATE dbo.DichVu SET tenDichVu=?, donGia=?, moTa=?, laCanLamSang=?, dangApDung=?
                 WHERE maDichVu=?
                 """, value);
     }
 
-    private void write(Connection connection, String sql, DichVu value) throws SQLException {
+    private void write(Connection connection, String sql, DentalService value) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setQueryTimeout(15);
             statement.setNString(1, value.tenDichVu());
@@ -82,12 +82,12 @@ public class DichVuDao {
             requireOne(statement.executeUpdate());
         }
     }
-    public void updateInformation(Connection c,DichVu value)throws SQLException {
+    public void updateInformation(Connection c,DentalService value)throws SQLException {
         try(PreparedStatement s=c.prepareStatement("UPDATE dbo.DichVu SET tenDichVu=?,moTa=?,laCanLamSang=?,dangApDung=? WHERE maDichVu=?")) {
             s.setQueryTimeout(15);s.setNString(1,value.tenDichVu());s.setNString(2,value.moTa());s.setBoolean(3,value.laCanLamSang());s.setBoolean(4,value.dangApDung());s.setString(5,value.maDichVu());requireOne(s.executeUpdate());
         }
     }
-    public void updatePrice(Connection c,DichVu value)throws SQLException {
+    public void updatePrice(Connection c,DentalService value)throws SQLException {
         try(PreparedStatement s=c.prepareStatement("UPDATE dbo.DichVu SET donGia=?,dangApDung=? WHERE maDichVu=?")) {
             s.setQueryTimeout(15);s.setBigDecimal(1,value.donGia());s.setBoolean(2,value.dangApDung());s.setString(3,value.maDichVu());requireOne(s.executeUpdate());
         }

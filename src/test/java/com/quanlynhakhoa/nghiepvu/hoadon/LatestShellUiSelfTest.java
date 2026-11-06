@@ -14,16 +14,16 @@ import javax.swing.*;
 import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;
 
 public final class LatestShellUiSelfTest {
-    private static HoaDon invoice(String id,String patient,String total,String paid,TrangThaiHoaDon status){return new HoaDon(id,"NV1",patient,"Synthetic "+patient,null,LocalDateTime.now(),status,new BigDecimal(total),new BigDecimal(paid),BigDecimal.ZERO);}
+    private static Invoice invoice(String id,String patient,String total,String paid,InvoiceStatus status){return new Invoice(id,"NV1",patient,"Synthetic "+patient,null,LocalDateTime.now(),status,new BigDecimal(total),new BigDecimal(paid),BigDecimal.ZERO);}
     public static void main(String[] args)throws Exception {
-        List<PatientDebt> grouped=DebtService.byPatient(List.of(invoice("H1","B1","300","100",TrangThaiHoaDon.THANH_TOAN_MOT_PHAN),invoice("H2","B1","100","0",TrangThaiHoaDon.CHUA_THANH_TOAN),invoice("H3","B2","100","0",TrangThaiHoaDon.DA_HUY),invoice("H4","B3","100","100",TrangThaiHoaDon.DA_THANH_TOAN)));
+        List<PatientDebt> grouped=DebtService.byPatient(List.of(invoice("H1","B1","300","100",InvoiceStatus.THANH_TOAN_MOT_PHAN),invoice("H2","B1","100","0",InvoiceStatus.CHUA_THANH_TOAN),invoice("H3","B2","100","0",InvoiceStatus.DA_HUY),invoice("H4","B3","100","100",InvoiceStatus.DA_THANH_TOAN)));
         check(grouped.size()==1&&grouped.getFirst().invoices().size()==2&&grouped.getFirst().debt().intValueExact()==300,"patient aggregation retains outstanding invoices and excludes cancelled/paid");
         final DesktopSession session=session(Role.SYSTEM_ADMIN);final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();
         final FeatureJdbcDouble unrelatedJdbc=new FeatureJdbcDouble();final DesktopSession unrelated=session(Role.CLINIC_MANAGER);
         final DebtPanel[] debt=new DebtPanel[1];final PaymentPanel[] payment=new PaymentPanel[1];
         final java.util.List<JPanel> cached=new java.util.ArrayList<>();
         SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-            cached.add(new HoaDonPanel(session,jdbc));debt[0]=new DebtPanel(session,jdbc);payment[0]=new PaymentPanel(session,jdbc);cached.add(new CancellationPanel(session,jdbc));
+            cached.add(new InvoicePanel(session,jdbc));debt[0]=new DebtPanel(session,jdbc);payment[0]=new PaymentPanel(session,jdbc);cached.add(new CancellationPanel(session,jdbc));
             cached.add(new DebtPanel(unrelated,unrelatedJdbc));
             check(jdbc.opens==0&&unrelatedJdbc.opens==0,"new panels do not query in constructors");
             debt[0].showPatients(grouped);check(debt[0].tblBenhNhan.getRowCount()==1,"debt page groups by patient rather than copying invoice list");

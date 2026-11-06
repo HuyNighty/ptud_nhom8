@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Objects;
 
 /** Invoice creation is available only with approved clinical and ID dependencies. No payment writes. */
-public final class HoaDonService {
+public final class InvoiceService {
     private final DesktopSession session;
     private final ConnectionProvider connections;
-    private final HoaDonDao dao;
+    private final InvoiceDao dao;
     private InvoiceCreationService creation;
-    public HoaDonService(DesktopSession session, ConnectionProvider connections,
+    public InvoiceService(DesktopSession session, ConnectionProvider connections,
                          ClinicalBillingSource source, InvoiceIdGenerator ids) {
         this(session, connections);
         creation = new InvoiceCreationService(session, connections, source, ids);
@@ -30,13 +30,13 @@ public final class HoaDonService {
     public InvoiceDraft previewInvoice(String patient, String visit) throws SQLException { return creation().preview(patient, visit); }
     public String createInvoice(InvoiceDraft draft) throws SQLException { return creation().create(draft); }
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
-    public HoaDonService(DesktopSession session, ConnectionProvider connections) { this(session, connections, new HoaDonDao()); }
-    public HoaDonService(DesktopSession session, ConnectionProvider connections, HoaDonDao dao) {
+    public InvoiceService(DesktopSession session, ConnectionProvider connections) { this(session, connections, new InvoiceDao()); }
+    public InvoiceService(DesktopSession session, ConnectionProvider connections, InvoiceDao dao) {
         this.session = Objects.requireNonNull(session);
         this.connections = Objects.requireNonNull(connections);
         this.dao = Objects.requireNonNull(dao);
     }
-    public List<HoaDon> find(String keyword, LocalDate from, LocalDate to, TrangThaiHoaDon status) throws SQLException {
+    public List<Invoice> find(String keyword, LocalDate from, LocalDate to, InvoiceStatus status) throws SQLException {
         require();
         String text = keyword == null ? "" : keyword.trim();
         if (text.length() > 100) throw new IllegalArgumentException("Từ khóa tối đa 100 ký tự.");
@@ -46,28 +46,28 @@ public final class HoaDonService {
             require();
             beginRead(connection);
             try {
-                List<HoaDon> result = dao.find(connection, text, from, to, status);
+                List<Invoice> result = dao.find(connection, text, from, to, status);
                 require(); connection.commit(); return result;
             } catch (SQLException | RuntimeException failure) { rollback(connection, failure); throw failure; }
         }
     }
-    public ChiTietBilling detail(String id) throws SQLException {
+    public InvoiceDetails detail(String id) throws SQLException {
         require();
         if (id == null || id.isBlank() || id.trim().length() > 10) throw new IllegalArgumentException("Mã hóa đơn không hợp lệ.");
         try (Connection connection = connections.open()) {
             require();
             beginRead(connection);
             try {
-                HoaDon invoice = dao.get(connection, id.trim());
+                Invoice invoice = dao.get(connection, id.trim());
                 if (invoice == null) throw new IllegalArgumentException("Hóa đơn không tồn tại.");
-                List<ChiTietHoaDon> lines = dao.lines(connection, id.trim());
-                List<ThanhToan> payments = dao.payments(connection, id.trim());
+                List<InvoiceLine> lines = dao.lines(connection, id.trim());
+                List<Payment> payments = dao.payments(connection, id.trim());
                 if (invoice.tongTien().compareTo(BillingCalculator.total(lines)) != 0
                         || invoice.daThu().compareTo(BillingCalculator.collected(payments)) != 0) {
                     throw new SQLException("Kết quả đối soát hóa đơn không nhất quán.");
                 }
                 require(); connection.commit();
-                return new ChiTietBilling(invoice, lines, payments);
+                return new InvoiceDetails(invoice, lines, payments);
             } catch (SQLException | RuntimeException failure) { rollback(connection, failure); throw failure; }
         }
     }

@@ -8,15 +8,15 @@ import java.awt.event.*;
 import java.util.List;
 import javax.swing.*;
 
-public final class TaoHoaDonController {
+public final class InvoiceCreationController {
     public interface Saved { void accept(String id); }
-    private final TaoHoaDonDialog view;
+    private final InvoiceCreationDialog view;
     private final DesktopSession session;
-    private final HoaDonService service;
+    private final InvoiceService service;
     private final Saved saved;
     private InvoiceDraft draft;
     private boolean busy,updating;
-    public TaoHoaDonController(TaoHoaDonDialog view,DesktopSession session,HoaDonService service,Saved saved){
+    public InvoiceCreationController(InvoiceCreationDialog view,DesktopSession session,InvoiceService service,Saved saved){
         this.view=view;this.session=session;this.service=service;this.saved=saved;
         view.btnTimBenhNhan.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){patients();}});
         view.txtBenhNhan.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){patients();}});
@@ -28,7 +28,7 @@ public final class TaoHoaDonController {
     private void clear(){draft=null;view.showDraft(null);view.btnLuuHoaDon.setEnabled(false);}
     private boolean start(){if(busy)return false;if(!session.isActive()){view.dispose();return false;}busy=true;view.busy(true,false);return true;}
     private abstract class Task<T> extends SessionWorker<T>{
-        Task(){super(TaoHoaDonController.this.session);}
+        Task(){super(InvoiceCreationController.this.session);}
         protected void finished(){busy=false;view.busy(false,draft!=null);}
         protected void expired(){clear();view.dispose();}
         protected void failed(Throwable failure){view.guide(BillingUi.error(failure));}
