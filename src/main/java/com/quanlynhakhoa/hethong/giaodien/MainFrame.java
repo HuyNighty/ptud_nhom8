@@ -142,7 +142,6 @@ public final class MainFrame extends JFrame {
         item(mnuOrganization, "Danh sách nhân viên", Module.WORKFORCE);
         item(mnuOrganization, "Tài khoản", Module.ACCOUNTS);
         item(mnuOrganization, "Vai trò", Module.ROLES);
-        item(mnuOrganization, "Dịch vụ & Bảng giá", Module.SERVICE_CATALOG);
         addIfNotEmpty(mnuBar, mnuOrganization);
 
         // 2. Kế hoạch: lịch hẹn và thời gian làm việc.
@@ -160,6 +159,7 @@ public final class MainFrame extends JFrame {
 
         // 4. Hoạt động: hồ sơ, khám chữa bệnh, thuốc và vật tư.
         JMenu mnuOperations = menu("Hoạt động");
+        item(mnuOperations, "Quản lí dịch vụ", Module.SERVICE_CATALOG);
         item(mnuOperations, "Hồ sơ bệnh án", Module.MEDICAL_RECORDS);
         item(mnuOperations, "Phiếu khám", Module.EXAMINATIONS);
         item(mnuOperations, "Danh mục thuốc & vật tư", Module.INVENTORY);
@@ -314,7 +314,7 @@ public final class MainFrame extends JFrame {
             case AUDIT -> "Nhật ký thao tác";
             case EXAMINATIONS -> "Phiếu khám";
             case TREATMENT_PLANS -> "Kế hoạch điều trị";
-            case SERVICE_CATALOG, SERVICES -> "Dịch vụ & Bảng giá";
+            case SERVICE_CATALOG, SERVICES -> "Quản lí dịch vụ";
             case DEBTS -> "Công nợ";
             case PAYMENTS -> "Thanh toán";
             case INVOICE_CANCELLATIONS -> "Duyệt hủy hóa đơn";
