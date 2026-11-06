@@ -25,6 +25,11 @@ public final class PaymentPanel extends JPanel implements RefreshableFeature {
         JPanel pnlSearch=BillingUi.filters(BillingUi.field("Mã hóa đơn / bệnh nhân / SĐT",txtTimHoaDon),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)),BillingUi.field("Chọn hóa đơn còn nợ",cmbHoaDon));
         JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);pnlTop.add(pnlSearch,BorderLayout.CENTER);pnlTop.add(lblTrangThai,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
         pnlCollection.add(new PaymentForm());add(pnlCollection,BorderLayout.CENTER);
+        lblTrangThai.addPropertyChangeListener("text", new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent event) {
+                lblTrangThai.setVisible(!lblTrangThai.getText().isBlank());
+            }
+        });
         controller=new PaymentScreenController(this,session,connections);
         BillingUi.style(this);
     }

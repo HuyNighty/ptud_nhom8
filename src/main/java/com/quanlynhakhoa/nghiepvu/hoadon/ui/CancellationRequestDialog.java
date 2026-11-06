@@ -13,7 +13,7 @@ public final class CancellationRequestDialog extends JDialog {
         JPanel pnlRoot=new JPanel(new BorderLayout(10,10));pnlRoot.setBorder(BorderFactory.createEmptyBorder(14,14,14,14));pnlRoot.add(lblHoaDon,BorderLayout.NORTH);
         txaLyDo.setLineWrap(true);txaLyDo.setWrapStyleWord(true);JScrollPane scrLyDo=new JScrollPane(txaLyDo);scrLyDo.setBorder(BorderFactory.createTitledBorder("Lý do yêu cầu hủy"));pnlRoot.add(scrLyDo,BorderLayout.CENTER);
         JPanel pnlBottom=new JPanel(new BorderLayout(0,8));JPanel pnlActions=new JPanel(new FlowLayout(FlowLayout.RIGHT));pnlActions.add(btnTaiLai);pnlActions.add(btnGuiYeuCau);pnlBottom.add(pnlActions,BorderLayout.NORTH);pnlBottom.add(lblTrangThai,BorderLayout.SOUTH);pnlRoot.add(pnlBottom,BorderLayout.SOUTH);
-        setContentPane(pnlRoot);setSize(1000,330);setLocationRelativeTo(owner);setDefaultCloseOperation(DISPOSE_ON_CLOSE);btnGuiYeuCau.setEnabled(false);
+        BillingUi.style(pnlRoot);setContentPane(pnlRoot);setSize(1000,330);setLocationRelativeTo(owner);setDefaultCloseOperation(DISPOSE_ON_CLOSE);btnGuiYeuCau.setEnabled(false);
     }
     public void showPreview(CancellationService.Preview preview){
         var h=preview.invoice().hoaDon();lblHoaDon.setText(h.maHoaDon()+" · "+h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Tổng "+BillingUi.vnd(h.tongTien())+" · Đã thu "+BillingUi.vnd(h.daThu())+" · Còn nợ "+BillingUi.vnd(h.conNo()));

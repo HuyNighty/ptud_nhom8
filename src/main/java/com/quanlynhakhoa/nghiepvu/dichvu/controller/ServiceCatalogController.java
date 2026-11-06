@@ -36,8 +36,15 @@ public final class ServiceCatalogController {
     public void load(final boolean afterSave) {
         if (busy) {reloadPending=true;return;}
         if (!session.isActive()) { view.expired(); return; }
+        final String selectedId = view.selected() == null ? null : view.selected().maDichVu();
+        busy = true;
+        if (afterSave) {
+            // A successful save must remain visible even when the old search excludes it.
+            view.clearFilters();
+            reloadPending = false;
+        }
         final String keyword = view.keyword(); final Boolean active = view.activeFilter();
-        busy = true; view.setBusy(true);
+        view.setBusy(true);
         view.status(afterSave ? "Đã lưu thành công. Đang tải lại..." : "Đang đọc database...");
         new SessionWorker<List<DentalService>>(session) {
             protected List<DentalService> doInBackground() throws Exception { return service.find(keyword, active); }
@@ -45,13 +52,25 @@ public final class ServiceCatalogController {
             protected void expired() { view.expired(); }
             protected void succeeded(List<DentalService> values) {
                 view.showRows(values);
-                view.status((afterSave ? "Đã lưu và tải lại. " : "") + (values.isEmpty() ? keyword.isBlank()&&active==null?"Chưa có dịch vụ. Bấm Thêm mới để bắt đầu.":"Không tìm thấy dịch vụ phù hợp." : values.size() + " dịch vụ."));
+                view.selectService(selectedId);
+                view.status((afterSave ? "Đã lưu và tải lại. Dịch vụ " + selectedId + ". Đã bỏ bộ lọc. " : "") + (values.isEmpty() ? keyword.isBlank()&&active==null?"Chưa có dịch vụ. Bấm Thêm mới để bắt đầu.":"Không tìm thấy dịch vụ phù hợp." : values.size() + " dịch vụ."));
                 if(reloadPending){reloadPending=false;load(false);}
             }
             protected void failed(Throwable failure) {
                 view.status((afterSave ? "Đã lưu thành công, nhưng tải lại thất bại. " : "Tải thất bại. ") + BillingUi.error(failure));
             }
         }.execute();
+    }
+    private void showSaveFailure(Throwable failure) {
+        String detail = BillingUi.error(failure);
+        if (failure instanceof java.sql.SQLException) {
+            view.status("Chưa xác nhận lưu thành công. Dữ liệu nhập vẫn được giữ nguyên. "
+                    + "Kiểm tra kết nối/quyền và đối chiếu dữ liệu đã lưu trước khi bấm Lưu lại. "
+                    + "Không tự động gửi lại yêu cầu lưu.");
+        } else {
+            view.status("Chưa lưu. Dữ liệu nhập vẫn được giữ nguyên. " + detail
+                    + " Sửa thông tin rồi bấm Lưu lại.");
+        }
     }
     private void save(final Boolean activeOnly) {
         if (busy) return;
@@ -63,7 +82,7 @@ public final class ServiceCatalogController {
                 if (view.selected() == null) return;
                 value = view.selected();
             } else value = ServiceCatalogService.validate(view.input());
-        } catch (RuntimeException failure) { view.status(BillingUi.error(failure)); return; }
+        } catch (RuntimeException failure) { showSaveFailure(failure); return; }
         busy = true; view.setBusy(true); view.status("Đang lưu dịch vụ và nhật ký...");
         new SessionWorker<Void>(session) {
             protected Void doInBackground() throws Exception {
@@ -86,7 +105,8 @@ public final class ServiceCatalogController {
             }
             protected void failed(Throwable failure) {
                 if (failure instanceof ServiceCatalogService.CommittedWriteException) { saved(); return; }
-                view.status(BillingUi.error(failure) + " Nếu lỗi kết nối khi ghi: tải lại xác minh trước khi lưu lại; không tự thử lại.");
+                reloadPending = false;
+                showSaveFailure(failure);
             }
         }.execute();
     }

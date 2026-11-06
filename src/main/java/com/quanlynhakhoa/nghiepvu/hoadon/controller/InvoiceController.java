@@ -64,7 +64,7 @@ public final class InvoiceController {
             protected void succeeded(List<Invoice> rows) {
                 // Keep selection listeners idle while replacing the model.
                 busy = true; view.showRows(rows); busy = false;
-                view.status((followingPayment?"Đã thu tiền thành công. ":"")+(rows.isEmpty() ? keyword.isBlank()&&from==null&&to==null&&filter==null?"Chưa có hóa đơn.":"Không tìm thấy hóa đơn phù hợp." : rows.size() + " hóa đơn. Chọn một dòng để xem."));
+                view.status((followingPayment?"Đã thu tiền thành công. ":"")+(rows.isEmpty() ? keyword.isBlank()&&from==null&&to==null&&filter==null?"Chưa có hóa đơn.":"Không tìm thấy hóa đơn phù hợp." : ""));
                 if(followingPayment&&!reloadPending)afterPayment=false;
                 if (createdId != null) { String id=createdId;createdId=null;view.selectInvoice(id); }
                 if(selectionAfterLoad!=null&&keyword.trim().equals(selectionAfterLoad)){String id=selectionAfterLoad;selectionAfterLoad=null;view.selectInvoice(id);}

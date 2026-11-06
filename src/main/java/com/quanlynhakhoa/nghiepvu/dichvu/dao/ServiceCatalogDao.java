@@ -11,7 +11,7 @@ public class ServiceCatalogDao {
         String sql = """
                 SELECT maDichVu, tenDichVu, donGia, moTa, laCanLamSang, dangApDung
                 FROM dbo.DichVu
-                WHERE (CHARINDEX(?, maDichVu) > 0 OR CHARINDEX(?, tenDichVu) > 0)
+                WHERE (? = N'' OR CHARINDEX(?, maDichVu) > 0 OR CHARINDEX(?, tenDichVu) > 0)
                   AND (? IS NULL OR dangApDung = ?)
                 ORDER BY maDichVu
                 """;
@@ -19,12 +19,13 @@ public class ServiceCatalogDao {
             statement.setQueryTimeout(15);
             statement.setNString(1, keyword);
             statement.setNString(2, keyword);
+            statement.setNString(3, keyword);
             if (active == null) {
-                statement.setNull(3, Types.BIT);
                 statement.setNull(4, Types.BIT);
+                statement.setNull(5, Types.BIT);
             } else {
-                statement.setBoolean(3, active);
                 statement.setBoolean(4, active);
+                statement.setBoolean(5, active);
             }
             List<DentalService> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) {

@@ -21,8 +21,6 @@ import javax.swing.table.DefaultTableModel;
 /** Shared presentation for service catalog, invoices, debt and payment screens. */
 public final class BillingUi {
     public static final Color NAVY = new Color(29,61,102), BACKGROUND = new Color(245,248,252);
-    private static final Color INK = new Color(28,48,75), MUTED = new Color(97,115,137);
-    private static final Color LINE = new Color(220,231,242), SOFT = new Color(232,240,249);
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
     private static final Logger LOG = createLogger();
     private BillingUi() { }
@@ -36,62 +34,75 @@ public final class BillingUi {
         return logger;
     }
     public static void style(javax.swing.JPanel root){
-        styleChildren(root);root.setOpaque(true);root.setBackground(BACKGROUND);
+        markHeadings(root);styleChildren(root);root.setOpaque(true);root.setBackground(BACKGROUND);
     }
-    private static void styleChildren(java.awt.Component component){
-        Font old=component.getFont();
-        boolean emphasis=component instanceof JComponent c&&Boolean.TRUE.equals(c.getClientProperty("billing.emphasis"));
-        boolean heading=old!=null&&old.getSize()>=20;
-        boolean caption=component instanceof JComponent c&&Boolean.TRUE.equals(c.getClientProperty("billing.caption"));
-        component.setFont(new Font(Font.SANS_SERIF,heading||emphasis?Font.BOLD:Font.PLAIN,heading?old.getSize():caption?12:14));
+    private static void markHeadings(Component component){
+        if(component instanceof JLabel label&&label.getFont()!=null&&label.getFont().getSize()>=20&&!Boolean.TRUE.equals(label.getClientProperty("billing.value")))label.putClientProperty("billing.heading",true);
+        if(component instanceof Container container)for(Component child:container.getComponents())markHeadings(child);
+    }
+    private static void styleChildren(Component component){
+        if(component instanceof JComponent control){
+            String key=control.getUIClassID().replace("UI", "");
+            Font font=UIManager.getFont(key+".font");
+            if(font!=null)control.setFont(font);
+            Color foreground=UIManager.getColor(key+".foreground");
+            if(foreground!=null)control.setForeground(foreground);
+        }
+        if(component instanceof JLabel label){
+            if(Boolean.TRUE.equals(label.getClientProperty("billing.heading"))){
+                label.setFont(new Font("SansSerif",Font.BOLD,23));label.setForeground(NAVY);
+            }
+        }
         if(component instanceof JPanel panel){
             boolean surface=panel instanceof FilterBar||panel.getBorder() instanceof javax.swing.border.TitledBorder||Boolean.TRUE.equals(panel.getClientProperty("billing.surface"));
             panel.setOpaque(surface);panel.setBackground(surface?Color.WHITE:BACKGROUND);
         }
-        if(component instanceof JCheckBox check){check.setOpaque(false);check.setForeground(INK);}
-        if(component instanceof javax.swing.JLabel label)label.setForeground(Boolean.TRUE.equals(label.getClientProperty("billing.debt"))?new Color(147,69,20):caption?MUTED:INK);
-        if(component instanceof javax.swing.JButton button&&button.getText()!=null&&!button.getText().isBlank()){
-            boolean primary=Boolean.TRUE.equals(button.getClientProperty("billing.primary"));
-            boolean danger=Boolean.TRUE.equals(button.getClientProperty("billing.danger"));
-            button.setUI(new BillingButtonUI());
-            button.setOpaque(true);button.setContentAreaFilled(false);button.setFocusPainted(true);button.setRolloverEnabled(true);
-            button.setMargin(new Insets(7,12,7,12));
-            button.setFont(button.getFont().deriveFont(primary?Font.BOLD:Font.PLAIN));
-            button.setBackground(primary?NAVY:Color.WHITE);
-            button.setForeground(primary?Color.WHITE:danger?new Color(161,38,45):NAVY);
-            button.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(danger?new Color(232,190,194):primary?NAVY:LINE),BorderFactory.createEmptyBorder(7,12,7,12)));
-            button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            Dimension size=button.getPreferredSize();Insets insets=button.getInsets();int width=Math.max(size.width,button.getFontMetrics(button.getFont()).stringWidth(button.getText())+insets.left+insets.right+12);button.setPreferredSize(new Dimension(width,34));button.setMinimumSize(new Dimension(width,34));
+        if(component instanceof JCheckBox check)check.setOpaque(false);
+        if(component instanceof JButton button&&button.getText()!=null&&!button.getText().isBlank()){
+            // Match unstyled JButtons in LichLamViecPanel; the current L&F owns every state.
+            JButton defaults=new JButton();
+            button.updateUI();button.setFont(defaults.getFont());
+            button.setBackground(defaults.getBackground());button.setForeground(defaults.getForeground());
+            button.setBorder(defaults.getBorder());button.setMargin(defaults.getMargin());
+            button.setOpaque(defaults.isOpaque());button.setContentAreaFilled(defaults.isContentAreaFilled());
+            button.setFocusPainted(defaults.isFocusPainted());button.setBorderPainted(defaults.isBorderPainted());
+            button.setRolloverEnabled(defaults.isRolloverEnabled());button.setCursor(defaults.getCursor());
+            button.setPreferredSize(null);button.setMinimumSize(null);
         }
-        if(component instanceof javax.swing.text.JTextComponent input){input.setDisabledTextColor(MUTED);}
-        if(component instanceof JTextField || component instanceof JComboBox<?>){Dimension size=component.getPreferredSize();component.setPreferredSize(new Dimension(size.width,34));component.setMinimumSize(new Dimension(40,34));}
-        if(component instanceof javax.swing.JTable table){table.setRowHeight(32);table.getTableHeader().setFont(new Font(Font.SANS_SERIF,Font.BOLD,13));table.getTableHeader().setPreferredSize(new Dimension(0,32));table.getTableHeader().setOpaque(true);table.getTableHeader().setBackground(SOFT);table.getTableHeader().setForeground(NAVY);table.setShowVerticalLines(false);table.setGridColor(new Color(229,235,242));table.setSelectionBackground(new Color(218,233,249));table.setSelectionForeground(NAVY);}
-        if(component instanceof JSplitPane split){split.setBorder(null);split.setBackground(BACKGROUND);split.setDividerSize(8);split.setContinuousLayout(true);}
-        if(component instanceof JScrollPane scroll){scroll.getViewport().setBackground(Color.WHITE);if(!(scroll.getBorder() instanceof javax.swing.border.TitledBorder))scroll.setBorder(BorderFactory.createLineBorder(LINE));}
-        if(component instanceof JComponent control&&control.getBorder() instanceof javax.swing.border.TitledBorder title){title.setTitleFont(new Font(Font.SANS_SERIF,Font.PLAIN,13));title.setTitleColor(NAVY);}
-        if(component instanceof java.awt.Container container)for(java.awt.Component child:container.getComponents())styleChildren(child);
-    }
-    /** Flat fills avoid native button gradients hiding the primary button's white text. */
-    private static final class BillingButtonUI extends javax.swing.plaf.basic.BasicButtonUI {
-        @Override public void paint(Graphics graphics,JComponent component){
-            JButton button=(JButton)component;
-            Color fill=button.getBackground();
-            if(!button.isEnabled())fill=SOFT;
-            else if(button.getModel().isPressed())fill=fill.equals(NAVY)?new Color(21,46,79):new Color(218,233,249);
-            else if(button.getModel().isRollover())fill=fill.equals(NAVY)?new Color(43,81,129):SOFT;
-            graphics.setColor(fill);graphics.fillRect(0,0,button.getWidth(),button.getHeight());
-            super.paint(graphics,component);
-            if(button.isFocusOwner()){
-                graphics.setColor(button.getBackground().equals(NAVY)?Color.WHITE:NAVY);
-                graphics.drawRect(3,3,button.getWidth()-7,button.getHeight()-7);
-            }
+        if(component instanceof javax.swing.text.JTextComponent input){
+            String key=input.getUIClassID().replace("UI", "");
+            input.setBackground(UIManager.getColor(key+".background"));
+            input.setDisabledTextColor(UIManager.getColor(key+".inactiveForeground"));
+            input.setBorder(UIManager.getBorder(key+".border"));
         }
-        @Override protected void paintButtonPressed(Graphics graphics,AbstractButton button){ }
+        if(component instanceof JTextField||component instanceof JComboBox<?>){
+            component.setPreferredSize(null);component.setMinimumSize(null);
+        }
+        if(component instanceof JTable table){
+            JTable defaults=new JTable();
+            table.setRowHeight(32);table.setBackground(defaults.getBackground());
+            table.setForeground(defaults.getForeground());table.setGridColor(defaults.getGridColor());
+            table.setShowGrid(defaults.getShowHorizontalLines());
+            table.setSelectionBackground(defaults.getSelectionBackground());table.setSelectionForeground(defaults.getSelectionForeground());
+            table.getTableHeader().setFont(defaults.getTableHeader().getFont());
+            table.getTableHeader().setBackground(defaults.getTableHeader().getBackground());
+            table.getTableHeader().setForeground(defaults.getTableHeader().getForeground());
+            table.getTableHeader().setPreferredSize(null);
+        }
+        if(component instanceof JSplitPane split){split.setBackground(BACKGROUND);split.setBorder(UIManager.getBorder("SplitPane.border"));split.setDividerSize(8);split.setContinuousLayout(true);}
+        if(component instanceof JScrollPane scroll){
+            scroll.getViewport().setBackground(Color.WHITE);
+            if(!(scroll.getBorder() instanceof javax.swing.border.TitledBorder))scroll.setBorder(UIManager.getBorder("ScrollPane.border"));
+        }
+        if(component instanceof JComponent control&&control.getBorder() instanceof javax.swing.border.TitledBorder title){
+            title.setTitleFont(UIManager.getFont("TitledBorder.font"));title.setTitleColor(UIManager.getColor("TitledBorder.titleColor"));title.setBorder(UIManager.getBorder("TitledBorder.border"));
+        }
+        if(component instanceof Container container)for(Component child:container.getComponents())styleChildren(child);
     }
     public static JButton primary(JButton button){button.putClientProperty("billing.primary",true);return button;}
     public static JButton danger(JButton button){button.putClientProperty("billing.danger",true);return button;}
     public static JPanel field(String caption,JComponent control){
-        JPanel panel=new JPanel(new BorderLayout(0,3));JLabel label=new JLabel(caption);label.setLabelFor(control);panel.add(label,BorderLayout.NORTH);panel.add(control,BorderLayout.CENTER);return panel;
+        JPanel panel=new JPanel(new BorderLayout(0,3));panel.putClientProperty("billing.surface",true);JLabel label=new JLabel(caption);label.setLabelFor(control);panel.add(label,BorderLayout.NORTH);panel.add(control,BorderLayout.CENTER);return panel;
     }
     public static JPanel row(JComponent... cells){
         JPanel panel=new JPanel(new GridBagLayout());
@@ -106,9 +117,9 @@ public final class BillingUi {
     public static JPanel card(final JLabel source){return card(null,source);}
     public static JPanel card(final String caption,final JLabel source){
         JPanel panel=new JPanel(new BorderLayout(0,3));
-        panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(LINE),BorderFactory.createEmptyBorder(6,12,6,12)));
-        final JLabel lblCaption=new JLabel(),lblValue=new JLabel();panel.putClientProperty("billing.surface",true);lblCaption.putClientProperty("billing.caption",true);lblValue.setFont(new Font(Font.SANS_SERIF,Font.BOLD,22));
-        Runnable update=new Runnable(){public void run(){String text=source.getText()==null?"":source.getText();int colon=text.indexOf(':');String title=caption!=null?caption:colon<0?text:text.substring(0,colon);String amount=colon<0?"—":text.substring(colon+1).trim();lblCaption.setText(title);lblValue.setText(amount);lblValue.setToolTipText(text);boolean debt=title.toLowerCase(Locale.ROOT).startsWith("còn")||title.toLowerCase(Locale.ROOT).startsWith("tổng còn");lblValue.putClientProperty("billing.debt",debt);lblValue.setForeground(debt&&!amount.equals("—")?new Color(147,69,20):NAVY);}};
+        panel.setBorder(BorderFactory.createCompoundBorder(UIManager.getBorder("ScrollPane.border"),BorderFactory.createEmptyBorder(6,12,6,12)));
+        final JLabel lblCaption=new JLabel(),lblValue=new JLabel();panel.putClientProperty("billing.surface",true);lblCaption.putClientProperty("billing.caption",true);lblValue.putClientProperty("billing.value",true);
+        Runnable update=new Runnable(){public void run(){String text=source.getText()==null?"":source.getText();int colon=text.indexOf(':');String title=caption!=null?caption:colon<0?text:text.substring(0,colon);String amount=colon<0?"—":text.substring(colon+1).trim();lblCaption.setText(title);lblValue.setText(amount);lblValue.setToolTipText(text);lblValue.setForeground(UIManager.getColor("Label.foreground"));}};
         source.addPropertyChangeListener("text",new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent event){update.run();}});update.run();panel.add(lblCaption,BorderLayout.NORTH);panel.add(lblValue,BorderLayout.CENTER);return panel;
     }
     public static JPanel boundedField(String caption,JComponent input,int width){return bounded(field(caption,input),width);}
@@ -188,7 +199,7 @@ public final class BillingUi {
         JTable tblResult = new JTable(model){
             @Override public boolean getScrollableTracksViewportWidth(){return getParent()!=null&&getPreferredSize().width<getParent().getWidth();}
             @Override public String getToolTipText(java.awt.event.MouseEvent event){int row=rowAtPoint(event.getPoint()),column=columnAtPoint(event.getPoint());if(row<0||column<0)return null;Object value=getValueAt(row,column);return value instanceof BigDecimal money?vnd(money):value instanceof LocalDateTime date?time(date):value==null?null:value.toString();}
-            @Override protected void paintComponent(Graphics g){super.paintComponent(g);if(getRowCount()==0){String hint=(String)getClientProperty("billing.empty");if(hint==null)hint="Chưa có dữ liệu.";g.setColor(new Color(65,82,103));FontMetrics fm=g.getFontMetrics();Rectangle visible=getVisibleRect();g.drawString(hint,Math.max(16,(visible.width-fm.stringWidth(hint))/2),visible.y+Math.min(64,Math.max(24,visible.height/2)));}}
+            @Override protected void paintComponent(Graphics g){super.paintComponent(g);if(getRowCount()==0){String hint=(String)getClientProperty("billing.empty");if(hint==null)hint="Chưa có dữ liệu.";g.setColor(UIManager.getColor("Label.foreground"));FontMetrics fm=g.getFontMetrics();Rectangle visible=getVisibleRect();g.drawString(hint,Math.max(16,(visible.width-fm.stringWidth(hint))/2),visible.y+Math.min(64,Math.max(24,visible.height/2)));}}
         };
         tblResult.setFillsViewportHeight(true);
         tblResult.setIntercellSpacing(new Dimension(8,1));
@@ -205,9 +216,6 @@ public final class BillingUi {
             @Override protected void setValue(Object value) {
                 setText(value instanceof LocalDateTime date ? time(date) : "");
             }
-        });
-        tblResult.setDefaultRenderer(Object.class,new DefaultTableCellRenderer(){
-            @Override public Component getTableCellRendererComponent(JTable table,Object value,boolean selected,boolean focus,int row,int column){super.getTableCellRendererComponent(table,value,selected,focus,row,column);if(!selected&&value instanceof Enum<?> status){String state=status.name();setForeground(state.equals("CHO_DUYET")||state.equals("CHUA_THANH_TOAN")?new Color(142,91,0):state.equals("DA_HUY")||state.equals("TU_CHOI")?new Color(161,38,45):state.equals("DA_DUYET")||state.equals("DA_THANH_TOAN")||state.equals("THANH_CONG")?new Color(26,111,79):NAVY);}else if(!selected)setForeground(new Color(28,48,75));return this;}
         });
         return tblResult;
     }

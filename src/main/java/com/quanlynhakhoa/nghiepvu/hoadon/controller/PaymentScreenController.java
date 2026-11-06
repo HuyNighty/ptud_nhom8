@@ -56,7 +56,7 @@ public final class PaymentScreenController {
                 updating=true;view.showChoices(found,invoiceId);updating=false;
                 boolean matches=false;for(Invoice invoice:found)if(invoice.maHoaDon().equals(invoiceId))matches=true;
                 if(form!=null)form.setCollectionContextAllowed(matches);
-                String message=found.isEmpty()?(keyword.isBlank()?"Chưa có hóa đơn còn phải thu.":"Không tìm thấy hóa đơn còn nợ phù hợp."):found.size()+" kết quả. Chọn hóa đơn để thu tiền.";
+                String message=found.isEmpty()?(keyword.isBlank()?"Chưa có hóa đơn còn phải thu.":"Không tìm thấy hóa đơn còn nợ phù hợp."):"";
                 if(invoiceId!=null)message=matches?"Đang xem hóa đơn "+invoiceId+".":"Tra cứu hóa đơn "+invoiceId+" · không thuộc kết quả còn nợ hiện tại.";
                 view.lblTrangThai.setText(message);
             }

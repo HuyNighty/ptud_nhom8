@@ -21,6 +21,7 @@ public final class FeatureJdbcDouble implements ConnectionProvider {
     public final CountDownLatch opened = new CountDownLatch(1);
     public CountDownLatch release;
     public List<Map<String, Object>> invoiceRows = List.of(), lineRows = List.of(), paymentRows = List.of();
+    public List<Map<String, Object>> serviceRows = List.of();
 
     @Override public Connection open() throws SQLException {
         opens++; onEdt |= SwingUtilities.isEventDispatchThread(); opened.countDown();
@@ -74,6 +75,14 @@ public final class FeatureJdbcDouble implements ConnectionProvider {
                     else if (query.contains("FROM dbo.ChiTietHoaDon ct")) values = lineRows;
                     else if (query.contains("FROM dbo.ThanhToan WHERE")) values = paymentRows;
                     else if (query.startsWith("SELECT maDichVu FROM") && existing) values = List.of(Map.of("maDichVu", "TST1"));
+                    else if (query.contains("FROM dbo.DichVu") && query.contains("CHARINDEX")) {
+                        String keyword = (String) params.get(1);
+                        Object active = params.get(4);
+                        values = serviceRows.stream().filter(row ->
+                                (row.get("maDichVu").toString().contains(keyword)
+                                || row.get("tenDichVu").toString().contains(keyword))
+                                && (active == null || active.equals(row.get("dangApDung")))).toList();
+                    }
                     return rows(values);
                 }
                 throw new AssertionError("Unexpected PreparedStatement call: " + name);

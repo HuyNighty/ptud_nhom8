@@ -18,16 +18,27 @@ public class CancellationDao {
             """;
     public List<InvoiceCancellationRequest> find(Connection c,String text,LocalDate from,LocalDate to,InvoiceCancellationRequest.TrangThai status)throws SQLException {
         try(PreparedStatement s=c.prepareStatement(QUERY+"""
-                WHERE (CHARINDEX(?,y.maYeuCau)>0 OR CHARINDEX(?,y.maHoaDon)>0
+                WHERE (? = N'' OR CHARINDEX(?,y.maYeuCau)>0 OR CHARINDEX(?,y.maHoaDon)>0
                    OR CHARINDEX(?,h.maBenhNhan)>0 OR CHARINDEX(?,b.hoTen)>0 OR CHARINDEX(?,y.maTaiKhoanTao)>0)
                 AND (? IS NULL OR y.thoiGianTao>=?) AND (? IS NULL OR y.thoiGianTao<?)
                 AND (? IS NULL OR y.trangThai=?) ORDER BY y.thoiGianTao DESC,y.maYeuCau
                 """)) {
-            s.setQueryTimeout(15);for(int i=1;i<=5;i++)s.setNString(i,text);
-            time(s,6,from==null?null:from.atStartOfDay());time(s,7,from==null?null:from.atStartOfDay());
-            time(s,8,to==null?null:to.plusDays(1).atStartOfDay());time(s,9,to==null?null:to.plusDays(1).atStartOfDay());
-            s.setString(10,status==null?null:status.name());s.setString(11,status==null?null:status.name());
+            s.setQueryTimeout(15);for(int i=1;i<=6;i++)s.setNString(i,text);
+            time(s,7,from==null?null:from.atStartOfDay());time(s,8,from==null?null:from.atStartOfDay());
+            time(s,9,to==null?null:to.plusDays(1).atStartOfDay());time(s,10,to==null?null:to.plusDays(1).atStartOfDay());
+            s.setString(11,status==null?null:status.name());s.setString(12,status==null?null:status.name());
             List<InvoiceCancellationRequest> result=new ArrayList<>();try(ResultSet r=s.executeQuery()){while(r.next())result.add(map(r));}return List.copyOf(result);
+        }
+    }
+    /** Read-only history for one invoice; approval permission is enforced only for decisions. */
+    public List<InvoiceCancellationRequest> findForInvoice(Connection c, String invoiceId) throws SQLException {
+        try (PreparedStatement s = c.prepareStatement(QUERY
+                + " WHERE y.maHoaDon=? ORDER BY y.thoiGianTao DESC,y.maYeuCau DESC")) {
+            s.setQueryTimeout(15);
+            s.setString(1, invoiceId);
+            List<InvoiceCancellationRequest> history = new ArrayList<>();
+            try (ResultSet r = s.executeQuery()) { while (r.next()) history.add(map(r)); }
+            return List.copyOf(history);
         }
     }
     public InvoiceCancellationRequest get(Connection c,String id)throws SQLException {
