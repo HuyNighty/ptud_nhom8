@@ -30,6 +30,7 @@ public final class FeatureBootstrap {
                 .register(Module.MY_SCHEDULE, session -> new LichLamViecPanel(session, false))
                 .register(Module.ROLES, RolePanel::new)
                 .register(Module.AUDIT, AuditPanel::new)
+                .register(Module.REVENUE_REPORTS, com.quanlynhakhoa.quantri.baocao.RevenueReportPanel::new)
                 .register(Module.EXAMINATIONS, PhieuKhamPanel::new)
                 .register(Module.TREATMENT_PLANS, TreatmentPlanPanel::new)
                 .register(Module.PATIENTS, BenhNhanPanel::new)

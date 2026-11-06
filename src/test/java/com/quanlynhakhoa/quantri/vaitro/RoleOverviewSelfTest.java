@@ -81,7 +81,7 @@ public final class RoleOverviewSelfTest {
     public static void main(String[] args) throws Exception {
         check(FeatureBootstrap.createRegistry().contains(Module.ROLES), "Roles panel registered");
         check(Role.values().length == 6, "Six canonical roles");
-        check(Permission.values().length == 25, "25 declared permissions");
+        check(Permission.values().length == 26, "26 declared permissions");
         RolePermissionPolicy policy = new RolePermissionPolicy();
         for (Role role : Role.values()) {
             check(!policy.permissionsFor(role).isEmpty(), "Policy grants for " + role);

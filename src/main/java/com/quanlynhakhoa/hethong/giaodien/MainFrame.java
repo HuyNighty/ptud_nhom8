@@ -176,6 +176,7 @@ public final class MainFrame extends JFrame {
 
         // 5. Tổng kết: công nợ và lịch sử thao tác.
         JMenu mnuSummary = menu("Tổng kết");
+        item(mnuSummary, "Thống kê doanh thu", Module.REVENUE_REPORTS);
         item(mnuSummary, "Công nợ", Module.DEBTS);
         item(mnuSummary, "Nhật ký thao tác", Module.AUDIT);
         addIfNotEmpty(mnuBar, mnuSummary);
@@ -320,6 +321,7 @@ public final class MainFrame extends JFrame {
             case SUPPLY_REQUESTS -> "Yêu cầu cấp phát";
             case MY_SCHEDULE -> "Lịch làm việc của tôi";
             case EMERGENCY_KIT -> "Kiểm tra hộp cấp cứu";
+            case REVENUE_REPORTS -> "Thống kê doanh thu";
             case SHIFT_ASSIGNMENTS -> "Phân công ca";
             case RECEPTION -> "Tiếp nhận bệnh nhân";
         };

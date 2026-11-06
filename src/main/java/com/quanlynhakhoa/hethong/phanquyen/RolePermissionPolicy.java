@@ -40,6 +40,7 @@ public final class RolePermissionPolicy {
                 Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE));
 
         mapping.put(Role.CLINIC_MANAGER, Set.of(
+                Permission.REVENUE_REPORT_READ,
                 Permission.BILLING_READ,
                 Permission.WORKFORCE_READ,
                 Permission.WORKFORCE_MANAGE,
