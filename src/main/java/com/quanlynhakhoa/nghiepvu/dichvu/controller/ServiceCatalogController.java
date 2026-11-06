@@ -61,6 +61,17 @@ public final class ServiceCatalogController {
             }
         }.execute();
     }
+    private void showSaveFailure(Throwable failure) {
+        String detail = BillingUi.error(failure);
+        if (failure instanceof java.sql.SQLException) {
+            view.status("Chưa xác nhận lưu thành công. Dữ liệu nhập vẫn được giữ nguyên. "
+                    + "Kiểm tra kết nối/quyền và đối chiếu dữ liệu đã lưu trước khi bấm Lưu lại. "
+                    + "Không tự động gửi lại yêu cầu lưu.");
+        } else {
+            view.status("Chưa lưu. Dữ liệu nhập vẫn được giữ nguyên. " + detail
+                    + " Sửa thông tin rồi bấm Lưu lại.");
+        }
+    }
     private void save(final Boolean activeOnly) {
         if (busy) return;
         if (!session.isActive()) { view.expired(); return; }
@@ -71,7 +82,7 @@ public final class ServiceCatalogController {
                 if (view.selected() == null) return;
                 value = view.selected();
             } else value = ServiceCatalogService.validate(view.input());
-        } catch (RuntimeException failure) { view.status(BillingUi.error(failure)); return; }
+        } catch (RuntimeException failure) { showSaveFailure(failure); return; }
         busy = true; view.setBusy(true); view.status("Đang lưu dịch vụ và nhật ký...");
         new SessionWorker<Void>(session) {
             protected Void doInBackground() throws Exception {
@@ -94,7 +105,8 @@ public final class ServiceCatalogController {
             }
             protected void failed(Throwable failure) {
                 if (failure instanceof ServiceCatalogService.CommittedWriteException) { saved(); return; }
-                view.status(BillingUi.error(failure) + " Nếu lỗi kết nối khi ghi: tải lại xác minh trước khi lưu lại; không tự thử lại.");
+                reloadPending = false;
+                showSaveFailure(failure);
             }
         }.execute();
     }
