@@ -32,25 +32,30 @@ public class InvoiceDao {
                 FROM Ledger
             )
             SELECT maHoaDon, maNhanVien, maBenhNhan, tenBenhNhan, maPhieuKham, ngayLap,
-                   trangThai, tongTien, daThu, congNoBenhNhan FROM WithDebt
+                   trangThai, tongTien, daThu, congNoBenhNhan,
+                   (SELECT TOP (1) y.trangThai FROM dbo.YeuCauHuyHoaDon y
+                    WHERE y.maHoaDon=WithDebt.maHoaDon
+                    ORDER BY CASE WHEN y.trangThai='CHO_DUYET' THEN 0 ELSE 1 END,
+                             y.thoiGianTao DESC, y.maYeuCau DESC) AS cancellationStatus
+            FROM WithDebt
             """;
 
     public List<Invoice> find(Connection connection, String keyword, LocalDate from, LocalDate to,
                              InvoiceStatus status) throws SQLException {
         String sql = LEDGER + """
-                WHERE (CHARINDEX(?,maHoaDon)>0 OR CHARINDEX(?,maBenhNhan)>0 OR CHARINDEX(?,tenBenhNhan + N' ' + soDienThoai)>0)
+                WHERE (? = N'' OR CHARINDEX(?,maHoaDon)>0 OR CHARINDEX(?,maBenhNhan)>0 OR CHARINDEX(?,tenBenhNhan + N' ' + soDienThoai)>0)
                 AND (? IS NULL OR ngayLap>=?) AND (? IS NULL OR ngayLap<?)
                 AND (? IS NULL OR trangThai=?) ORDER BY ngayLap DESC, maHoaDon
                 """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setQueryTimeout(15);
-            for (int i = 1; i <= 3; i++) statement.setNString(i, keyword);
+            for (int i = 1; i <= 4; i++) statement.setNString(i, keyword);
             LocalDateTime start = from == null ? null : from.atStartOfDay();
             LocalDateTime end = to == null ? null : to.plusDays(1).atStartOfDay();
-            dateTime(statement, 4, start); dateTime(statement, 5, start);
-            dateTime(statement, 6, end); dateTime(statement, 7, end);
-            statement.setString(8, status == null ? null : status.name());
+            dateTime(statement, 5, start); dateTime(statement, 6, start);
+            dateTime(statement, 7, end); dateTime(statement, 8, end);
             statement.setString(9, status == null ? null : status.name());
+            statement.setString(10, status == null ? null : status.name());
             List<Invoice> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) { while (rows.next()) result.add(map(rows)); }
             return List.copyOf(result);
@@ -72,7 +77,7 @@ public class InvoiceDao {
                               FROM dbo.ChiTietHoaDon d WHERE d.maHoaDon=h.maHoaDon),0) AS tongTien,
                     COALESCE((SELECT SUM(t.soTien) FROM dbo.ThanhToan t
                               WHERE t.maHoaDon=h.maHoaDon AND t.trangThai='THANH_CONG'),0) AS daThu,
-                    CAST(0 AS decimal(38,0)) AS congNoBenhNhan
+                    CAST(0 AS decimal(38,0)) AS congNoBenhNhan, CAST(NULL AS varchar(10)) AS cancellationStatus
                 FROM dbo.HoaDon h JOIN dbo.BenhNhan b ON b.maBenhNhan=h.maBenhNhan WHERE h.maHoaDon=?
                 """)) {
             s.setQueryTimeout(15);s.setString(1,id);try(ResultSet r=s.executeQuery()){return r.next()?map(r):null;}
@@ -124,7 +129,9 @@ public class InvoiceDao {
         return new Invoice(rows.getString("maHoaDon"), rows.getString("maNhanVien"), rows.getString("maBenhNhan"),
                 rows.getNString("tenBenhNhan"), rows.getString("maPhieuKham"), time(rows, "ngayLap"),
                 InvoiceStatus.valueOf(rows.getString("trangThai")), rows.getBigDecimal("tongTien"),
-                rows.getBigDecimal("daThu"), rows.getBigDecimal("congNoBenhNhan"));
+                rows.getBigDecimal("daThu"), rows.getBigDecimal("congNoBenhNhan"),
+                rows.getString("cancellationStatus") == null ? null
+                        : InvoiceCancellationRequest.TrangThai.valueOf(rows.getString("cancellationStatus")));
     }
     private static LocalDateTime time(ResultSet rows, String column) throws SQLException {
         Timestamp value = rows.getTimestamp(column);
