@@ -131,8 +131,8 @@ public final class InventoryWorkflowPanel extends JPanel {
 
     public static final class StocktakeTab extends JPanel {
         final JTextField maPhieu = new JTextField(), maLo = new JTextField(), actual = new JTextField(), reason = new JTextField();
-        final JButton save = new JButton("Gửi yêu cầu kiểm kê"), refresh = new JButton("Tải lại");
         final DefaultTableModel data = model("Mã phiếu", "Thời gian", "Tạo bởi", "Lý do", "Trạng thái", "Mã lô", "SL hệ thống", "SL thực tế");
+        final JTable table = new JTable(data);
 
         StocktakeTab() {
             setLayout(new BorderLayout(10, 10));
@@ -143,9 +143,9 @@ public final class InventoryWorkflowPanel extends JPanel {
             row(form, "Lý do chênh lệch", reason);
             form.add(save);
             form.add(refresh);
+            form.add(approve);
+            form.add(reject);
             add(form, BorderLayout.NORTH);
-            add(new JScrollPane(new JTable(data)), BorderLayout.CENTER);
-            add(new JLabel("Yêu cầu lưu ở trạng thái CHO_DUYET. Tồn kho chỉ đổi sau bước phê duyệt riêng."), BorderLayout.SOUTH);
         }
 
         public JTextField maPhieu() { return maPhieu; }
@@ -154,6 +154,12 @@ public final class InventoryWorkflowPanel extends JPanel {
         public JTextField reason() { return reason; }
         public JButton save() { return save; }
         public JButton refresh() { return refresh; }
+        public JButton approve() { return approve; }
+        public JButton reject() { return reject; }
+        public String selectedId() {
+            int r = table.getSelectedRow();
+            return r < 0 ? null : String.valueOf(data.getValueAt(table.convertRowIndexToModel(r), 0));
+        }
         public DefaultTableModel data() { return data; }
     }
 }

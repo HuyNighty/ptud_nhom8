@@ -19,21 +19,26 @@ public final class PaymentPanel extends JPanel implements RefreshableFeature {
     private final PaymentScreenController controller;
     public PaymentPanel(DesktopSession session,ConnectionProvider connections){
         new AuthorizationService(new RolePermissionPolicy()).require(session,Permission.BILLING_MANAGE);
-        setLayout(new BorderLayout(12,12));setBorder(BorderFactory.createEmptyBorder(16,16,16,16));
-        JLabel lblTitle=new JLabel("THANH TOÁN");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
+        setLayout(new BorderLayout(12,12));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
+        JLabel lblTitle=new JLabel("Thanh toán");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
         cmbHoaDon.setPrototypeDisplayValue(new BillingChoice("HD00000000","Bệnh nhân · Còn nợ 999.999.999 ₫"));
         JPanel pnlSearch=BillingUi.filters(BillingUi.field("Mã hóa đơn / bệnh nhân / SĐT",txtTimHoaDon),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)),BillingUi.field("Chọn hóa đơn còn nợ",cmbHoaDon));
         JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);pnlTop.add(pnlSearch,BorderLayout.CENTER);pnlTop.add(lblTrangThai,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
         pnlCollection.add(new PaymentForm());add(pnlCollection,BorderLayout.CENTER);
+        lblTrangThai.addPropertyChangeListener("text", new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent event) {
+                lblTrangThai.setVisible(!lblTrangThai.getText().isBlank());
+            }
+        });
         controller=new PaymentScreenController(this,session,connections);
         BillingUi.style(this);
     }
     @Override public void addNotify(){super.addNotify();refreshData();}
     @Override public void refreshData(){controller.refresh();}
     public void openInvoice(String id){controller.openInvoice(id);}
-    public void showChoices(List<HoaDon> invoices,String selected){
+    public void showChoices(List<Invoice> invoices,String selected){
         cmbHoaDon.removeAllItems();BillingChoice chosen=null;
-        for(HoaDon h:invoices){BillingChoice item=new BillingChoice(h.maHoaDon(),h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Còn nợ "+BillingUi.vnd(h.conNo()));cmbHoaDon.addItem(item);if(h.maHoaDon().equals(selected))chosen=item;}
+        for(Invoice h:invoices){BillingChoice item=new BillingChoice(h.maHoaDon(),h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Còn nợ "+BillingUi.vnd(h.conNo()));cmbHoaDon.addItem(item);if(h.maHoaDon().equals(selected))chosen=item;}
         cmbHoaDon.setSelectedItem(chosen); // Preserve current form/history even when a fully paid invoice leaves the picker.
     }
     public void showForm(PaymentForm pnlForm){pnlCollection.removeAll();pnlCollection.add(pnlForm,BorderLayout.CENTER);pnlCollection.revalidate();pnlCollection.repaint();}

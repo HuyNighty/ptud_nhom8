@@ -9,10 +9,11 @@ import com.quanlynhakhoa.nghiepvu.lichhen.view.TiepNhanPanel;
 import com.quanlynhakhoa.nghiepvu.kho.InventoryPanel;
 import com.quanlynhakhoa.quantri.nhanvien.ui.EmployeePanel;
 import com.quanlynhakhoa.quantri.vaitro.ui.RolePanel;
-import com.quanlynhakhoa.nghiepvu.phieukham.ui.ExamQueuePanel;
+import com.quanlynhakhoa.nghiepvu.phieukham.view.PhieuKhamPanel;
+import com.quanlynhakhoa.nghiepvu.dieutri.view.TreatmentPlanPanel;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
-import com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel;
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.DichVuPanel;
+import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
+import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.quantri.lichlamviec.view.LichLamViecPanel;
@@ -29,7 +30,9 @@ public final class FeatureBootstrap {
                 .register(Module.MY_SCHEDULE, session -> new LichLamViecPanel(session, false))
                 .register(Module.ROLES, RolePanel::new)
                 .register(Module.AUDIT, AuditPanel::new)
-                .register(Module.EXAMINATIONS, ExamQueuePanel::new)
+                .register(Module.REVENUE_REPORTS, com.quanlynhakhoa.quantri.baocao.RevenueReportPanel::new)
+                .register(Module.EXAMINATIONS, PhieuKhamPanel::new)
+                .register(Module.TREATMENT_PLANS, TreatmentPlanPanel::new)
                 .register(Module.PATIENTS, BenhNhanPanel::new)
                 .register(Module.APPOINTMENTS, LichHenPanel::new)
                 .register(Module.RECEPTION, TiepNhanPanel::new)
@@ -37,12 +40,12 @@ public final class FeatureBootstrap {
                 .register(Module.MEDICAL_RECORDS, HoSoBenhAnPanel::new)
                 .register(Module.SERVICE_CATALOG, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session) {
-                        return new DichVuPanel(session, TeamDevConnection::open, DichVuPanel.EditorMode.COMBINED);
+                        return new ServiceCatalogPanel(session, TeamDevConnection::open, ServiceCatalogPanel.EditorMode.COMBINED);
                     }
                 })
                 .register(Module.BILLING, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session) {
-                        return new HoaDonPanel(session, TeamDevConnection::open);
+                        return new InvoicePanel(session, TeamDevConnection::open);
                     }
                 })
                 .register(Module.DEBTS, new FeaturePanelFactory() {
@@ -52,7 +55,7 @@ public final class FeatureBootstrap {
                     @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel(session,TeamDevConnection::open);}
                 })
                 .register(Module.SERVICES, new FeaturePanelFactory() {
-                    @Override public JPanel create(DesktopSession session){return new DichVuPanel(session,TeamDevConnection::open,DichVuPanel.EditorMode.COMBINED);}
+                    @Override public JPanel create(DesktopSession session){return new ServiceCatalogPanel(session,TeamDevConnection::open,ServiceCatalogPanel.EditorMode.COMBINED);}
                 })
                 .register(Module.INVOICE_CANCELLATIONS,new FeaturePanelFactory(){
                     @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel(session,TeamDevConnection::open);}

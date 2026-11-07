@@ -142,7 +142,6 @@ public final class MainFrame extends JFrame {
         item(mnuOrganization, "Danh sách nhân viên", Module.WORKFORCE);
         item(mnuOrganization, "Tài khoản", Module.ACCOUNTS);
         item(mnuOrganization, "Vai trò", Module.ROLES);
-        item(mnuOrganization, "Dịch vụ & Bảng giá", Module.SERVICE_CATALOG);
         addIfNotEmpty(mnuBar, mnuOrganization);
 
         // 2. Kế hoạch: lịch hẹn và thời gian làm việc.
@@ -160,6 +159,7 @@ public final class MainFrame extends JFrame {
 
         // 4. Hoạt động: hồ sơ, khám chữa bệnh, thuốc và vật tư.
         JMenu mnuOperations = menu("Hoạt động");
+        item(mnuOperations, "Quản lí dịch vụ", Module.SERVICE_CATALOG);
         item(mnuOperations, "Hồ sơ bệnh án", Module.MEDICAL_RECORDS);
         item(mnuOperations, "Phiếu khám", Module.EXAMINATIONS);
         item(mnuOperations, "Danh mục thuốc & vật tư", Module.INVENTORY);
@@ -168,9 +168,7 @@ public final class MainFrame extends JFrame {
         item(mnuOperations, "Hóa đơn", Module.BILLING);
         item(mnuOperations, "Thanh toán", Module.PAYMENTS);
         item(mnuOperations, "Duyệt hủy hóa đơn", Module.INVOICE_CANCELLATIONS);
-        if (allowed.contains(Module.EXAMINATIONS)) {
-            pending(mnuOperations, "Kế hoạch điều trị");
-        }
+        item(mnuOperations, "Kế hoạch điều trị", Module.TREATMENT_PLANS);
         if (allowed.contains(Module.INVENTORY)) {
             pending(mnuOperations, "Nhập / xuất kho");
         }
@@ -178,6 +176,7 @@ public final class MainFrame extends JFrame {
 
         // 5. Tổng kết: công nợ và lịch sử thao tác.
         JMenu mnuSummary = menu("Tổng kết");
+        item(mnuSummary, "Thống kê doanh thu", Module.REVENUE_REPORTS);
         item(mnuSummary, "Công nợ", Module.DEBTS);
         item(mnuSummary, "Nhật ký thao tác", Module.AUDIT);
         addIfNotEmpty(mnuBar, mnuSummary);
@@ -253,13 +252,13 @@ public final class MainFrame extends JFrame {
         try {
             JPanel pnlPage = registry.create(session, module);
             featurePages.put(module,pnlPage);
-            com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel.PaymentNavigation paymentNavigation=new com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel.PaymentNavigation(){
+            com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel.PaymentNavigation paymentNavigation=new com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel.PaymentNavigation(){
                 public void open(String invoiceId){
                     navigate(Module.PAYMENTS);
                     if(featurePages.get(Module.PAYMENTS) instanceof com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel payments)payments.openInvoice(invoiceId);
                 }
             };
-            if(pnlPage instanceof com.quanlynhakhoa.nghiepvu.hoadon.ui.HoaDonPanel invoices)invoices.setPaymentNavigation(paymentNavigation);
+            if(pnlPage instanceof com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel invoices)invoices.setPaymentNavigation(paymentNavigation);
             if(pnlPage instanceof com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel debts)debts.setPaymentNavigation(paymentNavigation);
             JPanel pnlSlot = slots.get(module);
             pnlSlot.removeAll();
@@ -314,13 +313,15 @@ public final class MainFrame extends JFrame {
             case ROLES -> "Vai trò";
             case AUDIT -> "Nhật ký thao tác";
             case EXAMINATIONS -> "Phiếu khám";
-            case SERVICE_CATALOG, SERVICES -> "Dịch vụ & Bảng giá";
+            case TREATMENT_PLANS -> "Kế hoạch điều trị";
+            case SERVICE_CATALOG, SERVICES -> "Quản lí dịch vụ";
             case DEBTS -> "Công nợ";
             case PAYMENTS -> "Thanh toán";
             case INVOICE_CANCELLATIONS -> "Duyệt hủy hóa đơn";
             case SUPPLY_REQUESTS -> "Yêu cầu cấp phát";
             case MY_SCHEDULE -> "Lịch làm việc của tôi";
             case EMERGENCY_KIT -> "Kiểm tra hộp cấp cứu";
+            case REVENUE_REPORTS -> "Thống kê doanh thu";
             case SHIFT_ASSIGNMENTS -> "Phân công ca";
             case RECEPTION -> "Tiếp nhận bệnh nhân";
         };

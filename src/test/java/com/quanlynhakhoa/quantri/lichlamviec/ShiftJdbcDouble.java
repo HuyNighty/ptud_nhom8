@@ -57,6 +57,7 @@ public final class ShiftJdbcDouble {
             }
             if(n.equals("executeUpdate")){
                 events.add(sql);
+                if(sql.startsWith("INSERT INTO dbo.CaLamViec"))return 1;
                 if(sql.startsWith("INSERT INTO dbo.PhanCong")){var r=assignment((String)params.get(1),(String)params.get(2),"CHO_HIEU_LUC");r.put("maCa",params.get(3));r.put("ngayLam",params.get(4));r.put("nhiemVu",params.get(5));local.add(r);return 1;}
                 if(sql.startsWith("UPDATE dbo.PhanCong")){
                     if(cancelAffectedRows!=null)return cancelAffectedRows;

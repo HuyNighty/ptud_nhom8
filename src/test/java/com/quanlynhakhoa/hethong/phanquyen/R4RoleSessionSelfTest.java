@@ -31,26 +31,26 @@ public final class R4RoleSessionSelfTest {
         AuthorizationService service = new AuthorizationService(roles);
         NavigationPolicy nav = new NavigationPolicy(service);
         check(Role.values().length == 6, "Unexpected new role requires policy review");
-        check(Permission.values().length == 24, "Unexpected new permission requires policy review");
-        check(Module.values().length == 21, "Unexpected module requires policy review");
+        check(Permission.values().length == 26, "Unexpected new permission requires policy review");
+        check(Module.values().length == 23, "Unexpected module requires policy review");
 
         Set<Permission> receptionist = Set.of(
                 Permission.PATIENT_READ, Permission.PATIENT_CREATE, Permission.PATIENT_UPDATE,
                 Permission.PATIENT_CHECK_IN, Permission.APPOINTMENT_READ, Permission.APPOINTMENT_MANAGE,
                 Permission.BILLING_READ, Permission.BILLING_MANAGE, Permission.INVOICE_CANCEL_REQUEST,
-                Permission.SCHEDULE_SELF_READ);
+                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
         Set<Permission> doctor = Set.of(
                 Permission.PATIENT_READ, Permission.MEDICAL_RECORD_READ, Permission.MEDICAL_RECORD_UPDATE,
-                Permission.REEXAM_SCHEDULE, Permission.SUPPLY_REQUEST, Permission.SCHEDULE_SELF_READ);
+                Permission.REEXAM_SCHEDULE, Permission.SUPPLY_REQUEST, Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
         Set<Permission> nurse = Set.of(
-                Permission.SUPPLY_REQUEST, Permission.EMERGENCY_KIT_CHECK, Permission.SCHEDULE_SELF_READ);
+                Permission.SUPPLY_REQUEST, Permission.EMERGENCY_KIT_CHECK, Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
         Set<Permission> manager = Set.of(
-                Permission.BILLING_READ, Permission.WORKFORCE_READ, Permission.WORKFORCE_MANAGE,
+                Permission.REVENUE_REPORT_READ, Permission.BILLING_READ, Permission.WORKFORCE_READ, Permission.WORKFORCE_MANAGE,
                 Permission.ACCOUNT_MANAGE, Permission.ROLE_MANAGE, Permission.AUDIT_READ,
                 Permission.SERVICE_CATALOG_MANAGE, Permission.INVOICE_CANCEL_APPROVE,
-                Permission.SCHEDULE_SELF_READ);
+                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
         Set<Permission> inventory = Set.of(
-                Permission.INVENTORY_READ, Permission.INVENTORY_MANAGE, Permission.SCHEDULE_SELF_READ);
+                Permission.INVENTORY_READ, Permission.INVENTORY_MANAGE, Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
         for (Role role : Role.values()) {
             for (Permission permission : Permission.values()) {
                 boolean expected = switch (role) {
@@ -131,14 +131,14 @@ public final class R4RoleSessionSelfTest {
                 "Receptionist allowed modules");
         check(nav.visibleModules(session(Role.DOCTOR)).equals(
                 List.of(Module.HOME, Module.PATIENTS, Module.MEDICAL_RECORDS,
-                        Module.EXAMINATIONS, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE)), "Doctor safe list");
+                        Module.EXAMINATIONS, Module.TREATMENT_PLANS, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE)), "Doctor safe list");
         check(nav.visibleModules(session(Role.NURSE)).equals(List.of(
                 Module.HOME, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE, Module.EMERGENCY_KIT)),
                 "Nurse routes are restricted to assigned activities");
         check(nav.visibleModules(session(Role.CLINIC_MANAGER)).equals(
                 List.of(Module.HOME, Module.BILLING, Module.WORKFORCE,
                         Module.ACCOUNTS, Module.ROLES, Module.AUDIT,
-                        Module.SERVICE_CATALOG, Module.MY_SCHEDULE, Module.SERVICES, Module.DEBTS, Module.INVOICE_CANCELLATIONS, Module.SHIFT_ASSIGNMENTS)), "Manager allowed modules");
+                        Module.SERVICE_CATALOG, Module.MY_SCHEDULE, Module.SERVICES, Module.DEBTS, Module.INVOICE_CANCELLATIONS, Module.SHIFT_ASSIGNMENTS, Module.REVENUE_REPORTS)), "Manager allowed modules");
         check(nav.visibleModules(session(Role.INVENTORY_MANAGER)).equals(
                 List.of(Module.HOME, Module.INVENTORY, Module.MY_SCHEDULE)), "Inventory allowed modules");
         check(nav.visibleModules(session(Role.SYSTEM_ADMIN)).size() == Module.values().length,

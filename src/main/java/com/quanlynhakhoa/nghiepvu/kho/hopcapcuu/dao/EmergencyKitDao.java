@@ -22,10 +22,29 @@ public final class EmergencyKitDao {
         return query(sql, 6);
     }
 
+    public List<Object[]> chiTiet(String id) throws SQLException {
+        List<Object[]> rows = new ArrayList<>();
+        String sql = "SELECT d.maMuc,m.tenMuc,d.soLuongThucTe,m.soLuongToiThieu,d.hanSuDung,d.dat "
+                + "FROM dbo.ChiTietKiemTraCapCuu d INNER JOIN dbo.DanhMucCapCuu m ON m.maMuc=d.maMuc "
+                + "WHERE d.maKiemTra=? ORDER BY d.maMuc";
+        try (Connection con = TeamDevConnection.open(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, id);
+            try (ResultSet r = stmt.executeQuery()) {
+                while (r.next()) rows.add(new Object[]{r.getString(1), r.getNString(2), r.getInt(3), r.getInt(4), r.getDate(5), r.getBoolean(6)});
+            }
+        }
+        return rows;
+    }
     public void ghiKiemTra(Connection con, String accountId, String checkId, String note, List<CheckLine> lines) throws SQLException {
         String employee = InventoryWorkflowDao.layMaNhanVien(con, accountId);
         boolean allOk = true;
         List<Object[]> values = new ArrayList<>();
+        // A partial inspection is not a complete signed inspection report.
+        try (PreparedStatement count = con.prepareStatement("SELECT COUNT(*) FROM dbo.DanhMucCapCuu WITH (HOLDLOCK) WHERE dangApDung=1");
+             ResultSet result = count.executeQuery()) {
+            result.next();
+            if (result.getInt(1) != lines.size()) throw new IllegalArgumentException("Cần kiểm tra đủ mọi mục đang áp dụng.");
+        }
         String select = "SELECT soLuongToiThieu,hanSuDungGanNhat FROM dbo.DanhMucCapCuu WHERE maMuc=? AND dangApDung=1";
 
         for (CheckLine line : lines) {

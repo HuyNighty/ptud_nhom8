@@ -21,6 +21,7 @@ final class EmergencyKitController {
         view.refreshCatalog.addActionListener(e -> loadCatalog());
         view.refreshHistory.addActionListener(e -> loadHistory());
         view.save.addActionListener(e -> save());
+        view.history.getSelectionModel().addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) loadSelectedDetail(); });
         view.tabs.addChangeListener(e -> {
             if (view.tabs.getSelectedIndex() == 0) loadCatalog();
             else loadHistory();
@@ -40,6 +41,13 @@ final class EmergencyKitController {
 
     private void loadHistory() {
         async(service::lichSu, rows -> fill(view.historyModel, rows));
+    }
+
+    private void loadSelectedDetail() {
+        int row = view.history.getSelectedRow();
+        if (row < 0) { view.detailModel.setRowCount(0); return; }
+        String id = String.valueOf(view.history.getValueAt(view.history.convertRowIndexToModel(row), 0));
+        async(() -> service.chiTiet(id), rows -> fill(view.detailModel, rows));
     }
 
     private void save() {

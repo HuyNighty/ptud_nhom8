@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
@@ -29,6 +30,9 @@ public final class EmergencyKitPanel extends JPanel {
             return false;
         }
     };
+    final DefaultTableModel detailModel = new DefaultTableModel(new Object[]{"Mã mục", "Tên mục", "SL đã kiểm", "Định mức", "Hạn sử dụng", "Đạt"}, 0) {
+        @Override public boolean isCellEditable(int r, int c) { return false; }
+    };
     final JTable catalog = new JTable(catalogModel), history = new JTable(historyModel);
 
     public EmergencyKitPanel(DesktopSession session) {
@@ -47,7 +51,6 @@ public final class EmergencyKitPanel extends JPanel {
 
         JPanel historyPage = new JPanel(new BorderLayout());
         historyPage.add(refreshHistory, BorderLayout.NORTH);
-        historyPage.add(new JScrollPane(history), BorderLayout.CENTER);
 
         tabs.addTab("Kiểm tra danh mục", page);
         tabs.addTab("Lịch sử kiểm tra", historyPage);

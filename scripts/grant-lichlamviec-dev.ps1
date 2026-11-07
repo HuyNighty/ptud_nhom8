@@ -15,6 +15,7 @@ $required = @(
     foreach ($table in @('NhanVien','TaiKhoan','CaLamViec','PhanCong','ThamSoHeThong')) {
         [pscustomobject]@{ Table=$table; Privilege='SELECT'; Column=$null }
     }
+    [pscustomobject]@{ Table='CaLamViec'; Privilege='INSERT'; Column=$null }
     [pscustomobject]@{ Table='PhanCong'; Privilege='INSERT'; Column=$null }
     [pscustomobject]@{ Table='PhanCong'; Privilege='UPDATE'; Column='trangThai' }
     [pscustomobject]@{ Table='PhanCong'; Privilege='UPDATE'; Column='lyDoHuy' }

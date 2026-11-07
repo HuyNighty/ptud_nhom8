@@ -40,6 +40,7 @@ public final class FeatureRegistrySelfTest {
         check(empty.contains(Module.WORKFORCE), "workforce registered");
         check(empty.contains(Module.ROLES), "roles registered");
         check(empty.contains(Module.EXAMINATIONS), "examinations registered");
+        check(empty.contains(Module.TREATMENT_PLANS), "treatment plans registered");
         check(empty.contains(Module.RECEPTION), "reception registered");
         check(empty.contains(Module.INVENTORY), "inventory registered");
         check(empty.contains(Module.SERVICE_CATALOG), "service catalogue integrated in main shell");
@@ -88,6 +89,8 @@ public final class FeatureRegistrySelfTest {
         check(!navigation.canOpen(receptionist, Module.MEDICAL_RECORDS), "receptionist cannot open medical records");
         DesktopSession doctor = session(Role.DOCTOR);
         check(navigation.canOpen(doctor, Module.MEDICAL_RECORDS), "doctor can open medical records");
+        check(navigation.canOpen(doctor, Module.TREATMENT_PLANS), "doctor can open treatment plans");
+        check(!navigation.canOpen(receptionist, Module.TREATMENT_PLANS), "receptionist cannot open treatment plans");
         check(!navigation.canOpen(doctor, Module.APPOINTMENTS), "doctor cannot open appointments");
         check(registry.create(receptionist, Module.PATIENTS) != null, "permitted panel created");
         check(created.get() == 1, "factory called only when requested");

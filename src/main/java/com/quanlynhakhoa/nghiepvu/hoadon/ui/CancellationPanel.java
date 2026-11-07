@@ -23,13 +23,13 @@ public final class CancellationPanel extends JPanel implements RefreshableFeatur
     private final DefaultTableModel lineModel=BillingUi.model("Loại","Mã hàng","Tên dịch vụ / hàng","Số lượng","Đơn giá đã chốt","Thành tiền");
     private final DefaultTableModel paymentModel=BillingUi.model("Mã thu","Thời gian","Số tiền","Phương thức","Tham chiếu","Trạng thái");
     public final JTable tblYeuCau=BillingUi.table(requestModel);
-    private final CancellationController controller;private List<YeuCauHuyHoaDon> rows=List.of();private boolean loaded;
+    private final CancellationController controller;private List<InvoiceCancellationRequest> rows=List.of();private boolean loaded;
     public CancellationPanel(DesktopSession session,ConnectionProvider connections){
         new AuthorizationService(new RolePermissionPolicy()).require(session,Permission.INVOICE_CANCEL_APPROVE);
-        setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(16,16,16,16));
-        JLabel lblTitle=new JLabel("DUYỆT HỦY HÓA ĐƠN");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
+        setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
+        JLabel lblTitle=new JLabel("Duyệt hủy hóa đơn");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
         JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);
-        cmbTrangThai.addItem("Tất cả");for(YeuCauHuyHoaDon.TrangThai status:YeuCauHuyHoaDon.TrangThai.values())cmbTrangThai.addItem(status);
+        cmbTrangThai.addItem("Tất cả");for(InvoiceCancellationRequest.TrangThai status:InvoiceCancellationRequest.TrangThai.values())cmbTrangThai.addItem(status);
         JPanel pnlFilter=BillingUi.filters(BillingUi.field("Yêu cầu / hóa đơn / người gửi",txtTuKhoa),BillingUi.dateField(txtTuNgay,"Ngày gửi từ"),BillingUi.dateField(txtDenNgay,"Đến ngày"),BillingUi.field("Trạng thái yêu cầu",cmbTrangThai),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)));pnlTop.add(pnlFilter,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
         JScrollPane scrRequests=BillingUi.scroll(tblYeuCau);
         JTabbedPane tabDetails=new JTabbedPane();
@@ -50,7 +50,7 @@ public final class CancellationPanel extends JPanel implements RefreshableFeatur
     @Override public void addNotify(){super.addNotify();if(!loaded){loaded=true;SwingUtilities.invokeLater(new Runnable(){public void run(){refreshData();}});}}
     @Override public void refreshData(){controller.load();}
     public String selectedId(){int index=tblYeuCau.getSelectedRow();if(index<0)return null;index=tblYeuCau.convertRowIndexToModel(index);return index<rows.size()?rows.get(index).maYeuCau():null;}
-    public void showRows(List<YeuCauHuyHoaDon> values){rows=List.of();requestModel.setRowCount(0);rows=List.copyOf(values);for(var y:rows)requestModel.addRow(new Object[]{y.maYeuCau(),y.maHoaDon(),y.maBenhNhan()+" · "+y.tenBenhNhan(),y.tongTien(),y.daThu(),y.maTaiKhoanTao(),y.thoiGianTao(),y.trangThai(),y.lyDo()});clearDetail();}
+    public void showRows(List<InvoiceCancellationRequest> values){rows=List.of();requestModel.setRowCount(0);rows=List.copyOf(values);for(var y:rows)requestModel.addRow(new Object[]{y.maYeuCau(),y.maHoaDon(),y.maBenhNhan()+" · "+y.tenBenhNhan(),y.tongTien(),y.daThu(),y.maTaiKhoanTao(),y.thoiGianTao(),y.trangThai(),y.lyDo()});clearDetail();}
     public void clearDetail(){lineModel.setRowCount(0);paymentModel.setRowCount(0);txaThongTin.setText("Chọn yêu cầu để xem và xét duyệt");txaLyDoDuyet.setText("");buttons(false,false);}
     public void showDetail(CancellationService.Detail detail){
         clearDetail();var y=detail.request();var h=detail.invoice().hoaDon();

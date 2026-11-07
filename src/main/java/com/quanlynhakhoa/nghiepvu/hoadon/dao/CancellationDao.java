@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.model.YeuCauHuyHoaDon;
+import com.quanlynhakhoa.nghiepvu.hoadon.model.InvoiceCancellationRequest;
 import java.sql.*;
 import java.time.*;
 import java.util.*;
@@ -16,21 +16,32 @@ public class CancellationDao {
             FROM dbo.YeuCauHuyHoaDon y
             JOIN dbo.HoaDon h ON h.maHoaDon=y.maHoaDon JOIN dbo.BenhNhan b ON b.maBenhNhan=h.maBenhNhan
             """;
-    public List<YeuCauHuyHoaDon> find(Connection c,String text,LocalDate from,LocalDate to,YeuCauHuyHoaDon.TrangThai status)throws SQLException {
+    public List<InvoiceCancellationRequest> find(Connection c,String text,LocalDate from,LocalDate to,InvoiceCancellationRequest.TrangThai status)throws SQLException {
         try(PreparedStatement s=c.prepareStatement(QUERY+"""
-                WHERE (CHARINDEX(?,y.maYeuCau)>0 OR CHARINDEX(?,y.maHoaDon)>0
+                WHERE (? = N'' OR CHARINDEX(?,y.maYeuCau)>0 OR CHARINDEX(?,y.maHoaDon)>0
                    OR CHARINDEX(?,h.maBenhNhan)>0 OR CHARINDEX(?,b.hoTen)>0 OR CHARINDEX(?,y.maTaiKhoanTao)>0)
                 AND (? IS NULL OR y.thoiGianTao>=?) AND (? IS NULL OR y.thoiGianTao<?)
                 AND (? IS NULL OR y.trangThai=?) ORDER BY y.thoiGianTao DESC,y.maYeuCau
                 """)) {
-            s.setQueryTimeout(15);for(int i=1;i<=5;i++)s.setNString(i,text);
-            time(s,6,from==null?null:from.atStartOfDay());time(s,7,from==null?null:from.atStartOfDay());
-            time(s,8,to==null?null:to.plusDays(1).atStartOfDay());time(s,9,to==null?null:to.plusDays(1).atStartOfDay());
-            s.setString(10,status==null?null:status.name());s.setString(11,status==null?null:status.name());
-            List<YeuCauHuyHoaDon> result=new ArrayList<>();try(ResultSet r=s.executeQuery()){while(r.next())result.add(map(r));}return List.copyOf(result);
+            s.setQueryTimeout(15);for(int i=1;i<=6;i++)s.setNString(i,text);
+            time(s,7,from==null?null:from.atStartOfDay());time(s,8,from==null?null:from.atStartOfDay());
+            time(s,9,to==null?null:to.plusDays(1).atStartOfDay());time(s,10,to==null?null:to.plusDays(1).atStartOfDay());
+            s.setString(11,status==null?null:status.name());s.setString(12,status==null?null:status.name());
+            List<InvoiceCancellationRequest> result=new ArrayList<>();try(ResultSet r=s.executeQuery()){while(r.next())result.add(map(r));}return List.copyOf(result);
         }
     }
-    public YeuCauHuyHoaDon get(Connection c,String id)throws SQLException {
+    /** Read-only history for one invoice; approval permission is enforced only for decisions. */
+    public List<InvoiceCancellationRequest> findForInvoice(Connection c, String invoiceId) throws SQLException {
+        try (PreparedStatement s = c.prepareStatement(QUERY
+                + " WHERE y.maHoaDon=? ORDER BY y.thoiGianTao DESC,y.maYeuCau DESC")) {
+            s.setQueryTimeout(15);
+            s.setString(1, invoiceId);
+            List<InvoiceCancellationRequest> history = new ArrayList<>();
+            try (ResultSet r = s.executeQuery()) { while (r.next()) history.add(map(r)); }
+            return List.copyOf(history);
+        }
+    }
+    public InvoiceCancellationRequest get(Connection c,String id)throws SQLException {
         try(PreparedStatement s=c.prepareStatement(QUERY+" WHERE y.maYeuCau=?")) {
             s.setQueryTimeout(15);s.setString(1,id);try(ResultSet r=s.executeQuery()){return r.next()?map(r):null;}
         }
@@ -76,10 +87,10 @@ public class CancellationDao {
             s.setQueryTimeout(15);s.setString(1,account);s.setNString(2,action);s.setString(3,id);one(s.executeUpdate());
         }
     }
-    private static YeuCauHuyHoaDon map(ResultSet r)throws SQLException {
-        return new YeuCauHuyHoaDon(r.getString("maYeuCau"),r.getString("maHoaDon"),r.getString("maBenhNhan"),r.getNString("hoTen"),
+    private static InvoiceCancellationRequest map(ResultSet r)throws SQLException {
+        return new InvoiceCancellationRequest(r.getString("maYeuCau"),r.getString("maHoaDon"),r.getString("maBenhNhan"),r.getNString("hoTen"),
                 r.getBigDecimal("tongTien"),r.getBigDecimal("daThu"),r.getString("maTaiKhoanTao"),date(r,"thoiGianTao"),r.getNString("lyDo"),
-                YeuCauHuyHoaDon.TrangThai.valueOf(r.getString("trangThai")),r.getString("maTaiKhoanDuyet"),date(r,"thoiGianDuyet"),r.getNString("lyDoDuyet"));
+                InvoiceCancellationRequest.TrangThai.valueOf(r.getString("trangThai")),r.getString("maTaiKhoanDuyet"),date(r,"thoiGianDuyet"),r.getNString("lyDoDuyet"));
     }
     private static LocalDateTime date(ResultSet r,String column)throws SQLException{Timestamp value=r.getTimestamp(column);return value==null?null:value.toLocalDateTime();}
     private static void time(PreparedStatement s,int i,LocalDateTime value)throws SQLException{if(value==null)s.setNull(i,Types.TIMESTAMP);else s.setTimestamp(i,Timestamp.valueOf(value));}

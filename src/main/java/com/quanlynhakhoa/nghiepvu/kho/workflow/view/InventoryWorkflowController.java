@@ -22,6 +22,8 @@ final class InventoryWorkflowController {
         view.issue().refresh().addActionListener(event -> loadIssue());
         view.stocktake().save().addActionListener(event -> saveStocktake());
         view.stocktake().refresh().addActionListener(event -> loadStocktake());
+        view.stocktake().approve().addActionListener(event -> approveStocktake());
+        view.stocktake().reject().addActionListener(event -> rejectStocktake());
         view.tabs().addChangeListener(event -> loadSelected());
         loadSelected();
     }
@@ -93,6 +95,22 @@ final class InventoryWorkflowController {
         }
     }
 
+    private void approveStocktake() {
+        String id = view.stocktake().selectedId();
+        if (id == null) { showError(new IllegalArgumentException("Chọn phiếu kiểm kê cần duyệt.")); return; }
+        int choice = JOptionPane.showConfirmDialog(view, "Duyệt phiếu " + id + "? Tồn kho sẽ được điều chỉnh nếu dữ liệu chưa thay đổi.",
+                "Xác nhận điều chỉnh kho", JOptionPane.OK_CANCEL_OPTION);
+        if (choice != JOptionPane.OK_OPTION) return;
+        async(() -> { service.duyetKiemKe(id); return null; }, x -> loadStocktake());
+    }
+
+    private void rejectStocktake() {
+        String id = view.stocktake().selectedId();
+        if (id == null) { showError(new IllegalArgumentException("Chọn phiếu kiểm kê cần từ chối.")); return; }
+        String reason = JOptionPane.showInputDialog(view, "Lý do từ chối phiếu " + id + ":");
+        if (reason == null) return;
+        async(() -> { service.tuChoiKiemKe(id, reason); return null; }, x -> loadStocktake());
+    }
     private static LocalDate dateOrNull(String text) {
         String s = text == null ? "" : text.trim();
         return s.isEmpty() ? null : LocalDate.parse(s);

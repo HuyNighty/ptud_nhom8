@@ -73,6 +73,18 @@ public final class InventoryWorkflowService {
         transaction(con -> dao.taoYeuCauKiemKe(con, session.accountId(), norm(maPhieu), norm(maLo), soLuongThucTe, lyDo.trim()));
     }
 
+    public void duyetKiemKe(String maPhieu) throws SQLException {
+        authorization.require(session, Permission.INVENTORY_MANAGE);
+        checkCode(maPhieu, "Mã phiếu kiểm kê");
+        transaction(con -> dao.duyetKiemKe(con, session.accountId(), norm(maPhieu)));
+    }
+
+    public void tuChoiKiemKe(String maPhieu, String reason) throws SQLException {
+        authorization.require(session, Permission.INVENTORY_MANAGE);
+        checkCode(maPhieu, "Mã phiếu kiểm kê");
+        required(reason, 500, "Lý do từ chối");
+        transaction(con -> dao.tuChoiKiemKe(con, session.accountId(), norm(maPhieu), reason.trim()));
+    }
     private void transaction(SqlAction action) throws SQLException {
         try (Connection con = TeamDevConnection.open()) {
             con.setAutoCommit(false);

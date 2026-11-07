@@ -93,7 +93,7 @@ SELECT COALESCE(@allowed, 0);
 # Requirements from the current DAOs. No UPDATE on historical lines/receipts or clinical data.
 $required = @()
 foreach ($table in @('HoaDon','ChiTietHoaDon','ThanhToan','YeuCauHuyHoaDon','ChiTietDieuTri','ChiDinhCanLamSang',
-    'PhieuKham','HoSoBenhAn','KeHoachDieuTri','DichVu','Thuoc','VatTu','BenhNhan','TaiKhoan','NhanVien')) {
+    'PhieuKham','HoSoBenhAn','KeHoachDieuTri','DichVu','DonThuoc','ChiTietDonThuoc','Thuoc','VatTu','BenhNhan','TaiKhoan','NhanVien')) {
     $required += [pscustomobject]@{ Table=$table; Privilege='SELECT'; Column=$null }
 }
 foreach ($table in @('HoaDon','ChiTietHoaDon','ThanhToan','YeuCauHuyHoaDon','NhatKyThaoTac')) {

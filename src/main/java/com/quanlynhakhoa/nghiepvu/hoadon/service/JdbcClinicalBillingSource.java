@@ -4,6 +4,7 @@ import com.quanlynhakhoa.nghiepvu.hoadon.dao.ClinicalChargeDao;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ClinicalChargeDao.Evidence;
 import com.quanlynhakhoa.nghiepvu.hoadon.model.InvoiceDraft;
 import java.sql.*;
+import java.math.BigDecimal;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
@@ -18,7 +19,32 @@ public final class JdbcClinicalBillingSource implements ClinicalBillingSource {
     @Override public InvoiceDraft load(Connection c,String patient,String visit,boolean lock)throws SQLException {
         if(!lock || c.getAutoCommit() || c.getTransactionIsolation()!=Connection.TRANSACTION_SERIALIZABLE)
             throw new SQLException("Nguồn tính phí cần transaction SERIALIZABLE.");
-        return build(patient,visit,dao.load(c,patient,visit));
+        var evidence = dao.load(c,patient,visit);
+        InvoiceDraft base = evidence.isEmpty() ? new InvoiceDraft(patient,visit,"PERFORMED_V1",List.of()) : build(patient,visit,evidence);
+        List<InvoiceDraft.Line> lines = new ArrayList<>(base.lines());
+        StringBuilder revision = new StringBuilder(base.revision());
+        try (PreparedStatement s = c.prepareStatement("""
+                SELECT t.maThuoc,t.tenThuoc,t.donGiaBan,x.soLuong
+                FROM dbo.DonThuoc d WITH (HOLDLOCK)
+                JOIN dbo.ChiTietDonThuoc x WITH (HOLDLOCK) ON x.maDonThuoc=d.maDonThuoc
+                JOIN dbo.Thuoc t WITH (HOLDLOCK) ON t.maThuoc=x.maThuoc
+                WHERE d.maPhieuKham=? AND d.maBenhNhan=? ORDER BY t.maThuoc
+                """)) {
+            s.setQueryTimeout(15); s.setString(1,visit); s.setString(2,patient);
+            try (ResultSet r=s.executeQuery()) {
+                while(r.next()) {
+                    String id=r.getString("maThuoc"),name=r.getNString("tenThuoc");
+                    BigDecimal price=r.getBigDecimal("donGiaBan"); int quantity=r.getInt("soLuong");
+                    if(price==null)throw new IllegalArgumentException("Thuốc "+id+" chưa có giá bán. Cập nhật giá trong Danh mục thuốc rồi tải lại hóa đơn.");
+                    if(quantity<=0||price.signum()<0||price.stripTrailingZeros().scale()>0||price.precision()>18)
+                        throw new IllegalArgumentException("Số lượng hoặc giá bán thuốc không hợp lệ: "+id);
+                    lines.add(new InvoiceDraft.Line(id,name,quantity,price.setScale(0),true));
+                    for(String value:List.of(id,name,Integer.toString(quantity),price.toPlainString()))revision.append('|').append(value.length()).append(':').append(value);
+                }
+            }
+        }
+        if(lines.isEmpty())throw new IllegalArgumentException("Lượt khám chưa có dịch vụ hoặc thuốc được phép tính phí.");
+        return new InvoiceDraft(patient,visit,revision.toString(),lines);
     }
     public static InvoiceDraft build(String patient,String visit,List<Evidence> evidence) {
         List<InvoiceDraft.Line> lines=new ArrayList<>();

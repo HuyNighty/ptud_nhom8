@@ -32,6 +32,11 @@ public final class EmergencyKitService {
         return dao.lichSu();
     }
 
+    public List<Object[]> chiTiet(String id) throws SQLException {
+        authorization.require(session, Permission.EMERGENCY_KIT_CHECK);
+        return dao.chiTiet(code(id));
+    }
+
     public void ghiKiemTra(String id, String note, List<CheckLine> lines) throws SQLException {
         authorization.require(session, Permission.EMERGENCY_KIT_CHECK);
         String checkId = code(id);

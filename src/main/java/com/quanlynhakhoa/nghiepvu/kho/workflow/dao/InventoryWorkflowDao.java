@@ -86,8 +86,7 @@ public final class InventoryWorkflowDao {
             stmt.setString(6, employeeId);
             stmt.executeUpdate();
         }
-        try (PreparedStatement stmt = con.prepareStatement("UPDATE dbo.LoHang SET soLuongTon=soLuongTon-? WHERE maLo=? AND soLuongTon>=?")) {
-            stmt.setInt(1, soLuong);
+         stmt.setInt(1, soLuong);
             stmt.setString(2, maLo);
             stmt.setInt(3, soLuong);
             if (stmt.executeUpdate() != 1) throw new IllegalArgumentException("Lô không tồn tại hoặc không đủ tồn kho.");
@@ -131,7 +130,6 @@ public final class InventoryWorkflowDao {
         ghiNhatKy(con, accountId, "Gửi yêu cầu kiểm kê", "PhieuDieuChinhKho", maPhieu);
     }
 
-    public String layMaNhanVien(Connection con, String accountId) throws SQLException {
         String sql = "SELECT nv.maNhanVien FROM dbo.TaiKhoan tk INNER JOIN dbo.NhanVien nv ON nv.maNhanVien=tk.maNhanVien "
                 + "WHERE tk.maTaiKhoan=? AND tk.trangThai='HOAT_DONG' AND nv.trangThai='DANG_LAM_VIEC'";
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
