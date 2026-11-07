@@ -1,6 +1,7 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
 import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.nhanvien.JobTitleLabels;
 import java.util.Objects;
 
 /** A selectable employee who is active and has no linked account at query time. */
@@ -30,6 +31,6 @@ public record EligibleEmployee(String employeeId, String fullName, String jobTit
     }
 
     public String displayLabel() {
-        return employeeId + " — " + fullName + " (" + jobTitle + ")";
+        return employeeId + " — " + fullName + " (" + JobTitleLabels.label(jobTitle) + ")";
     }
 }
