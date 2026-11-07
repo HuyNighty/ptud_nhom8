@@ -17,6 +17,10 @@ import javax.swing.table.DefaultTableModel;
 
 /** Nhập, xuất và ghi nhận chênh lệch tồn kho; mọi ghi dữ liệu đi qua service. */
 public final class InventoryWorkflowPanel extends JPanel {
+    private final JButton save = new JButton("Lưu");
+    private final JButton refresh = new JButton("Làm mới");
+    private final JButton approve = new JButton("Duyệt");
+    private final JButton reject = new JButton("Từ chối");
     private final JTabbedPane tabs = new JTabbedPane();
     private final ReceiptTab receipt = new ReceiptTab();
     private final IssueTab issue = new IssueTab();
@@ -130,8 +134,11 @@ public final class InventoryWorkflowPanel extends JPanel {
     }
 
     public static final class StocktakeTab extends JPanel {
+        final JButton save = new JButton("Lưu");
+        final JButton refresh = new JButton("Tải lại");
+        final JButton approve = new JButton("Duyệt");
+        final JButton reject = new JButton("Từ chối");
         final JTextField maPhieu = new JTextField(), maLo = new JTextField(), actual = new JTextField(), reason = new JTextField();
-        final JButton save = new JButton("Gửi yêu cầu kiểm kê"), refresh = new JButton("Tải lại"), approve = new JButton("Duyệt kiểm kê"), reject = new JButton("Từ chối");
         final DefaultTableModel data = model("Mã phiếu", "Thời gian", "Tạo bởi", "Lý do", "Trạng thái", "Mã lô", "SL hệ thống", "SL thực tế");
         final JTable table = new JTable(data);
 
@@ -147,8 +154,6 @@ public final class InventoryWorkflowPanel extends JPanel {
             form.add(approve);
             form.add(reject);
             add(form, BorderLayout.NORTH);
-            add(new JScrollPane(table), BorderLayout.CENTER);
-            add(new JLabel("Người duyệt khác người tạo. Nếu tồn kho thay đổi sau kiểm kê thì phải kiểm kê lại."), BorderLayout.SOUTH);
         }
 
         public JTextField maPhieu() { return maPhieu; }

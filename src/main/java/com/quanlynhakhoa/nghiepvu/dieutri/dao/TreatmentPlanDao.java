@@ -2,11 +2,7 @@ package com.quanlynhakhoa.nghiepvu.dieutri.dao;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +31,7 @@ public final class TreatmentPlanDao {
         return rows;
     }
     public void taoKeHoach(Connection con,String accountId,String planId,String chartId,String visitId,LocalDate date,String goal)throws SQLException{
-        String employee=TreatmentPlanSqlSupport.layMaNhanVien(con,accountId);
+        String employee = TreatmentPlanSqlSupport.layMaNhanVien(con, accountId);
         if(visitId!=null){
             try(PreparedStatement stmt=con.prepareStatement("SELECT 1 FROM dbo.PhieuKham WHERE maPhieuKham=? AND maHoSo=?")){
                 stmt.setString(1,visitId);
@@ -54,7 +50,6 @@ public final class TreatmentPlanDao {
             stmt.setString(6,employee);
             stmt.executeUpdate();
         }
-        TreatmentPlanSqlSupport.ghiNhatKy(con,accountId,"Tạo kế hoạch điều trị","KeHoachDieuTri",planId);
     }
     public void themChiTiet(Connection con,String accountId,String planId,String serviceId,String tooth,LocalDate planned,String note)throws SQLException{
         String sql="INSERT INTO dbo.ChiTietDieuTri(maKeHoach,maDichVu,viTriRang,ngayDuKien,trangThai,ghiChu) "
@@ -70,20 +65,18 @@ public final class TreatmentPlanDao {
             stmt.setString(7,serviceId);
             if(stmt.executeUpdate()!=1)throw new IllegalArgumentException("Kế hoạch không ở trạng thái đang thực hiện hoặc dịch vụ không còn áp dụng.");
         }
-        TreatmentPlanSqlSupport.ghiNhatKy(con,accountId,"Thêm bước điều trị","ChiTietDieuTri",planId);
     }
     public void hoanThanhBuoc(Connection con,String accountId,int detailId,LocalDate actual,String result)throws SQLException{
-        String employee=TreatmentPlanSqlSupport.layMaNhanVien(con,accountId);
         String sql="UPDATE d SET d.trangThai='DA_THUC_HIEN',d.ngayThucHien=?,d.ketQua=?,d.maNhanVienThucHien=? FROM dbo.ChiTietDieuTri d "
                 +"INNER JOIN dbo.KeHoachDieuTri k ON k.maKeHoach=d.maKeHoach WHERE d.maChiTiet=? AND d.trangThai='CHUA_THUC_HIEN' AND k.trangThai='DANG_THUC_HIEN'";
         try(PreparedStatement stmt=con.prepareStatement(sql)){
+            String employee = TreatmentPlanSqlSupport.layMaNhanVien(con, accountId);
             stmt.setDate(1,Date.valueOf(actual));
             stmt.setNString(2,result);
             stmt.setString(3,employee);
             stmt.setInt(4,detailId);
             if(stmt.executeUpdate()!=1)throw new IllegalArgumentException("Bước điều trị không còn ở trạng thái chờ thực hiện.");
         }
-        TreatmentPlanSqlSupport.ghiNhatKy(con,accountId,"Hoàn thành bước điều trị","ChiTietDieuTri",String.valueOf(detailId));
     }
     public void huyBuoc(Connection con,String accountId,int detailId,String reason)throws SQLException{
         String sql="UPDATE d SET d.trangThai='DA_HUY',d.ghiChu=? FROM dbo.ChiTietDieuTri d INNER JOIN dbo.KeHoachDieuTri k ON k.maKeHoach=d.maKeHoach "
@@ -93,7 +86,6 @@ public final class TreatmentPlanDao {
             stmt.setInt(2,detailId);
             if(stmt.executeUpdate()!=1)throw new IllegalArgumentException("Bước điều trị không còn ở trạng thái chờ thực hiện.");
         }
-        TreatmentPlanSqlSupport.ghiNhatKy(con,accountId,"Hủy bước điều trị","ChiTietDieuTri",String.valueOf(detailId));
     }
     public void hoanThanhKeHoach(Connection con,String accountId,String planId)throws SQLException{
         String sql="UPDATE k SET trangThai='HOAN_THANH' FROM dbo.KeHoachDieuTri k WHERE k.maKeHoach=? AND k.trangThai='DANG_THUC_HIEN' "
@@ -103,7 +95,6 @@ public final class TreatmentPlanDao {
             stmt.setString(1,planId);
             if(stmt.executeUpdate()!=1)throw new IllegalArgumentException("Cần ít nhất một bước đã hoàn thành và không còn bước chờ trước khi hoàn tất kế hoạch.");
         }
-        TreatmentPlanSqlSupport.ghiNhatKy(con,accountId,"Hoàn tất kế hoạch điều trị","KeHoachDieuTri",planId);
     }
     public void huyKeHoach(Connection con,String accountId,String planId,String reason)throws SQLException{
         try(PreparedStatement stmt=con.prepareStatement("UPDATE dbo.KeHoachDieuTri SET trangThai='DA_HUY',lyDoHuy=? WHERE maKeHoach=? AND trangThai='DANG_THUC_HIEN'")){
@@ -111,7 +102,6 @@ public final class TreatmentPlanDao {
             stmt.setString(2,planId);
             if(stmt.executeUpdate()!=1)throw new IllegalArgumentException("Chỉ có thể hủy kế hoạch đang thực hiện.");
         }
-        TreatmentPlanSqlSupport.ghiNhatKy(con,accountId,"Hủy kế hoạch điều trị","KeHoachDieuTri",planId);
     }
     private List<Object[]> query(String sql,int width)throws SQLException{List<Object[]> rows=new ArrayList<>();
         try(Connection con=TeamDevConnection.open();

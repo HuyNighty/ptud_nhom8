@@ -10,11 +10,10 @@ import java.util.Objects;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
-/** Feature panel duy nhất đăng ký với Core cho Module.INVENTORY. */
 public final class InventoryPanel extends JPanel {
+    private final boolean[] daKhoiTao = new boolean[4];
     private final DesktopSession phienDangNhap;
     private final JTabbedPane tabbedPane = new JTabbedPane();
-    private final boolean[] daKhoiTao = new boolean[4];
 
     public InventoryPanel(DesktopSession phienDangNhap) {
         this.phienDangNhap = Objects.requireNonNull(phienDangNhap, "phienDangNhap");

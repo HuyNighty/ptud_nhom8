@@ -342,6 +342,7 @@ public final class LoginFrame extends JFrame {
                     lblStatus.setText("Không thể hoàn tất đăng nhập.");
                 } catch (ExecutionException | CancellationException ex) {
                     // Do not surface JDBC internals or credentials in UI / console.
+                    ex.printStackTrace();
                     lblStatus.setText("Không thể kết nối hoặc xác thực. Kiểm tra cấu hình cơ sở dữ liệu.");
                 }
                 SwingUtilities.invokeLater(() -> txtPassword.requestFocusInWindow());
