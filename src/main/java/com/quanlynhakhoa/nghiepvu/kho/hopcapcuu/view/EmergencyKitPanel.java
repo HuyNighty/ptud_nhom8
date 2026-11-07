@@ -51,9 +51,6 @@ public final class EmergencyKitPanel extends JPanel {
 
         JPanel historyPage = new JPanel(new BorderLayout());
         historyPage.add(refreshHistory, BorderLayout.NORTH);
-        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(history), new JScrollPane(new JTable(detailModel)));
-        split.setResizeWeight(0.6);
-        historyPage.add(split, BorderLayout.CENTER);
 
         tabs.addTab("Kiểm tra danh mục", page);
         tabs.addTab("Lịch sử kiểm tra", historyPage);
