@@ -22,6 +22,7 @@ import javax.swing.border.EmptyBorder;
 
 /** Dialog chỉ thu thập dữ liệu; validate và lưu do Service/Controller thực hiện. */
 public final class ThuocDialog extends JDialog {
+    private final JTextField txtGiaBan = new JTextField(24);
     private final JTextField txtMa = new JTextField(24);
     private final JTextField txtTen = new JTextField(24);
     private final JTextField txtDonVi = new JTextField(24);
@@ -53,6 +54,8 @@ public final class ThuocDialog extends JDialog {
         themDong(form, row++, "Mã thuốc (*):", txtMa);
         themDong(form, row++, "Tên thuốc (*):", txtTen);
         themDong(form, row++, "Đơn vị tính (*):", txtDonVi);
+        themDong(form, row++, "Giá bán (VND):", txtGiaBan);
+        txtGiaBan.setToolTipText("Giá bán cho một đơn vị tính; để trống nếu chưa định giá, nhập 0 nếu miễn phí.");
         themDong(form, row++, "Hàm lượng:", txtHamLuong);
         themDong(form, row++, "Hoạt chất:", txtHoatChat);
         themDong(form, row++, "Định mức tối thiểu:", spDinhMuc);
@@ -80,8 +83,8 @@ public final class ThuocDialog extends JDialog {
             root.add(heading, BorderLayout.NORTH);
         }
 
-        setMinimumSize(new Dimension(560, 390));
-        setSize(600, 430);
+        setMinimumSize(new Dimension(560, 440));
+        setSize(600, 480);
         setLocationRelativeTo(chuSoHuu);
     }
 
@@ -106,6 +109,7 @@ public final class ThuocDialog extends JDialog {
         txtMa.setText(thuoc.getMaThuoc());
         txtTen.setText(thuoc.getTenThuoc());
         txtDonVi.setText(thuoc.getDonViTinh());
+        txtGiaBan.setText(thuoc.getDonGiaBan() == null ? "" : thuoc.getDonGiaBan().toPlainString());
         txtHamLuong.setText(thuoc.getHamLuong() == null ? "" : thuoc.getHamLuong());
         txtHoatChat.setText(thuoc.getHoatChat() == null ? "" : thuoc.getHoatChat());
         spDinhMuc.setValue(thuoc.getDinhMucToiThieu());
@@ -114,7 +118,7 @@ public final class ThuocDialog extends JDialog {
     }
 
     public Thuoc layThuocTuForm() {
-        return new Thuoc(
+        Thuoc value = new Thuoc(
                 txtMa.getText(),
                 txtTen.getText(),
                 txtDonVi.getText(),
@@ -123,6 +127,9 @@ public final class ThuocDialog extends JDialog {
                 txtHoatChat.getText(),
                 ((Number) spDinhMuc.getValue()).intValue(),
                 chkDaDatHang.isSelected());
+        String price = txtGiaBan.getText().trim();
+        if (!price.isEmpty()) value.setDonGiaBan(com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi.moneyInput(price));
+        return value;
     }
 
     public void datDangLuu(boolean dangLuu) {

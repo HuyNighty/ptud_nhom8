@@ -4,6 +4,9 @@ import java.time.LocalDate;
 
 /** Dữ liệu danh mục thuốc; tồn và hạn gần nhất là dữ liệu tổng hợp chỉ đọc từ LoHang. */
 public class Thuoc {
+    private java.math.BigDecimal donGiaBan;
+    public java.math.BigDecimal getDonGiaBan() { return donGiaBan; }
+    public void setDonGiaBan(java.math.BigDecimal value) { donGiaBan = value; }
     private String maThuoc;
     private String tenThuoc;
     private String donViTinh;

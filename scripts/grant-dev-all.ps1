@@ -95,7 +95,7 @@ SELECT COALESCE(@allowed, 0);
 $required = @()
 foreach ($table in @('BenhNhan','HoSoBenhAn','LichHen','PhieuKham','NhanVien','TaiKhoan','PhanCong','CaLamViec',
     'DichVu','HoaDon','ChiTietHoaDon','ThanhToan','YeuCauHuyHoaDon','KeHoachDieuTri','ChiTietDieuTri',
-    'ChiDinhCanLamSang','Thuoc','VatTu')) {
+    'ChiDinhCanLamSang','DonThuoc','ChiTietDonThuoc','Thuoc','VatTu')) {
     $required += [pscustomobject]@{ Table=$table; Privilege='SELECT'; Column=$null }
 }
 foreach ($table in @('BenhNhan','HoSoBenhAn','LichHen','PhieuKham','NhanVien','TaiKhoan','DichVu',
@@ -103,6 +103,7 @@ foreach ($table in @('BenhNhan','HoSoBenhAn','LichHen','PhieuKham','NhanVien','T
     $required += [pscustomobject]@{ Table=$table; Privilege='INSERT'; Column=$null }
 }
 $updateColumns = [ordered]@{
+    'Thuoc'          = @('donGiaBan')
     'BenhNhan'        = @('hoTen','ngaySinh','gioiTinh','soDienThoai','diaChi','nguoiLienHe')
     'HoSoBenhAn'      = @('tienSuBenh','diUng')
     'LichHen'         = @('trangThai','lyDoHuy')
