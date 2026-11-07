@@ -10,6 +10,7 @@ import com.quanlynhakhoa.quantri.nhanvien.EmployeeDirectoryRow;
 import com.quanlynhakhoa.quantri.nhanvien.EmployeeDirectoryService;
 import com.quanlynhakhoa.quantri.nhanvien.EmployeeCreateService;
 import com.quanlynhakhoa.quantri.nhanvien.EmployeeCreateRequest;
+import com.quanlynhakhoa.quantri.nhanvien.JobTitleLabels;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
@@ -230,7 +231,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         JTextField txtId = new JTextField(16);
         JTextField txtName = new JTextField(24);
         JTextField txtPhone = new JTextField(16);
-        JComboBox<String> cmbJob = new JComboBox<>(new String[] {"LT", "BS", "YT", "QL", "KHO"});
+        JComboBox<String> cmbJob = createJobPicker();
         JTextField txtBirth = new JTextField(10);
         JComboBox<String> cmbGender = new JComboBox<>(new String[] {"", "NAM", "NU", "KHAC"});
         JTextField txtEmail = new JTextField(24);
@@ -329,16 +330,20 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
     }
 
     private static String jobText(String job) {
-        if (job == null) return "—";
-        return switch (job) {
-            case "AD" -> "Quản trị hệ thống";
-            case "LT" -> "Lễ tân";
-            case "BS" -> "Bác sĩ";
-            case "YT" -> "Y tá";
-            case "QL" -> "Quản lý phòng khám";
-            case "KHO" -> "Quản lý kho";
-            default -> job;
-        };
+        return JobTitleLabels.label(job);
+    }
+
+    static JComboBox<String> createJobPicker() {
+        JComboBox<String> picker = new JComboBox<>(new String[] {"LT", "BS", "YT", "QL", "KHO"});
+        picker.setRenderer(new DefaultListCellRenderer() {
+            @Override public java.awt.Component getListCellRendererComponent(
+                    javax.swing.JList<?> list, Object value, int index, boolean selected, boolean focused) {
+                super.getListCellRendererComponent(list, value, index, selected, focused);
+                setText(JobTitleLabels.label((String) value));
+                return this;
+            }
+        });
+        return picker;
     }
 
     private static String statusText(EmployeeStatus status) {
