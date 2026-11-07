@@ -61,3 +61,7 @@ ptud_nhom8/
 
 **Repository:** https://github.com/HuyNighty/ptud_nhom8  
 **Nhóm thực hiện:** Nhóm 8 - Phát triển ứng dụng.
+
+### IntelliJ báo `JDK "24" is missing`
+
+Dự án dùng Java 21. Trong **File → Project Structure → Project**, chọn **Project SDK = 21**, **Language level = 21**; module dùng **Project SDK**. Nếu chưa có JDK 21, dùng **Add SDK → Download JDK** để cài bản 21. Sau đó tải lại Maven project. Không cần cài JDK 24 để chạy dự án này.
