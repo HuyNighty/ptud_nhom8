@@ -63,12 +63,13 @@ public final class InvoiceService {
                 List<InvoiceLine> lines = dao.lines(connection, id.trim());
                 List<Payment> payments = dao.payments(connection, id.trim());
                 var cancellationHistory = new CancellationDao().findForInvoice(connection, id.trim());
+                var prescriptions = dao.prescribedMedicines(connection, id.trim());
                 if (invoice.tongTien().compareTo(BillingCalculator.total(lines)) != 0
                         || invoice.daThu().compareTo(BillingCalculator.collected(payments)) != 0) {
                     throw new SQLException("Kết quả đối soát hóa đơn không nhất quán.");
                 }
                 require(); connection.commit();
-                return new InvoiceDetails(invoice, lines, payments, cancellationHistory);
+                return new InvoiceDetails(invoice, lines, payments, cancellationHistory, prescriptions);
             } catch (SQLException | RuntimeException failure) { rollback(connection, failure); throw failure; }
         }
     }

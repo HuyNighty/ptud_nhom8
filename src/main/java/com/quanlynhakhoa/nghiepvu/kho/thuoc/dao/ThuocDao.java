@@ -15,7 +15,7 @@ public class ThuocDao {
     private static final String SELECT_THUOC = """
             SELECT TOP (500)
                    t.maThuoc, t.tenThuoc, t.donViTinh, t.kiemSoatDacBiet,
-                   t.hamLuong, t.hoatChat, t.dinhMucToiThieu, t.daDatHang,
+                   t.hamLuong, t.hoatChat, t.dinhMucToiThieu, t.daDatHang, t.donGiaBan,
                    COALESCE(l.tongTon, CONVERT(BIGINT, 0)) AS tongTon,
                    l.hanGanNhat
             FROM dbo.Thuoc AS t
@@ -65,8 +65,8 @@ public class ThuocDao {
         String sql = """
                 INSERT INTO dbo.Thuoc
                     (maThuoc, tenThuoc, donViTinh, kiemSoatDacBiet,
-                     hamLuong, hoatChat, dinhMucToiThieu, daDatHang)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                     hamLuong, hoatChat, dinhMucToiThieu, daDatHang, donGiaBan)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
             ganTruong(stmt, thuoc);
@@ -78,7 +78,7 @@ public class ThuocDao {
         String sql = """
                 UPDATE dbo.Thuoc
                 SET tenThuoc = ?, donViTinh = ?, kiemSoatDacBiet = ?,
-                    hamLuong = ?, hoatChat = ?, dinhMucToiThieu = ?, daDatHang = ?
+                    hamLuong = ?, hoatChat = ?, dinhMucToiThieu = ?, daDatHang = ?, donGiaBan = ?
                 WHERE maThuoc = ?
                 """;
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
@@ -89,7 +89,8 @@ public class ThuocDao {
             stmt.setNString(5, thuoc.getHoatChat());
             stmt.setInt(6, thuoc.getDinhMucToiThieu());
             stmt.setBoolean(7, thuoc.isDaDatHang());
-            stmt.setString(8, thuoc.getMaThuoc());
+            stmt.setBigDecimal(8, thuoc.getDonGiaBan());
+            stmt.setString(9, thuoc.getMaThuoc());
             return stmt.executeUpdate() > 0;
         }
     }
@@ -118,6 +119,7 @@ public class ThuocDao {
         stmt.setNString(6, thuoc.getHoatChat());
         stmt.setInt(7, thuoc.getDinhMucToiThieu());
         stmt.setBoolean(8, thuoc.isDaDatHang());
+        stmt.setBigDecimal(9, thuoc.getDonGiaBan());
     }
 
     private Thuoc docMotDong(ResultSet rs) throws SQLException {
@@ -130,6 +132,7 @@ public class ThuocDao {
                 rs.getNString("hoatChat"),
                 rs.getInt("dinhMucToiThieu"),
                 rs.getBoolean("daDatHang"));
+        thuoc.setDonGiaBan(rs.getBigDecimal("donGiaBan"));
         thuoc.setTongTon(rs.getLong("tongTon"));
         Date hanGanNhat = rs.getDate("hanGanNhat");
         thuoc.setHanSuDungGanNhat(hanGanNhat == null ? null : hanGanNhat.toLocalDate());

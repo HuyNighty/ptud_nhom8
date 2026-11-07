@@ -42,6 +42,9 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
     private final DefaultTableModel cancellationModel = BillingUi.model("Mã yêu cầu", "Người gửi", "Thời gian gửi",
             "Lý do yêu cầu", "Kết quả", "Người duyệt", "Thời gian duyệt", "Ý kiến xét duyệt");
     private final JTable tblCancellationHistory = BillingUi.table(cancellationModel);
+    private final DefaultTableModel prescriptionModel = BillingUi.model("Mã thuốc", "Tên thuốc", "Đơn vị",
+            "Số lượng", "Đơn giá đã chốt", "Thành tiền");
+    private final JTable tblPrescribedMedicines = BillingUi.table(prescriptionModel);
     private final JTable tblHoaDon = BillingUi.table(invoiceModel), tblChiTietHoaDon = BillingUi.table(lineModel), tblThanhToan = BillingUi.table(paymentModel);
     private final InvoiceController controller;
     private List<Invoice> rows = List.of();
@@ -91,7 +94,13 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
         pnlTop.add(pnlToolbar, BorderLayout.SOUTH); add(pnlTop, BorderLayout.NORTH);
         JScrollPane scrHoaDon = BillingUi.scroll(tblHoaDon);
         JScrollPane scrChiTiet = BillingUi.scroll(tblChiTietHoaDon), scrThanhToan = BillingUi.scroll(tblThanhToan);
-        JTabbedPane tabBilling = new JTabbedPane(); tabBilling.addTab("Chi tiết hóa đơn", scrChiTiet); tabBilling.addTab("Lịch sử thanh toán", scrThanhToan);
+        JTabbedPane tabBilling = new JTabbedPane();
+        JPanel prescriptionPanel = new JPanel(new BorderLayout(0,4));
+        JLabel prescriptionTitle = new JLabel("Thuốc trong đơn · Thuốc chưa có giá chốt chưa được tính tiền");
+        prescriptionPanel.add(prescriptionTitle,BorderLayout.NORTH);
+        prescriptionPanel.add(BillingUi.scroll(tblPrescribedMedicines),BorderLayout.CENTER);
+        tblPrescribedMedicines.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        tabBilling.addTab("Chi tiết hóa đơn", BillingUi.split(JSplitPane.VERTICAL_SPLIT,scrChiTiet,prescriptionPanel,.52)); tabBilling.addTab("Lịch sử thanh toán", scrThanhToan);
         tabBilling.addTab("Lịch sử yêu cầu hủy", BillingUi.scroll(tblCancellationHistory));
         add(BillingUi.split(JSplitPane.VERTICAL_SPLIT,scrHoaDon,tabBilling,.58), BorderLayout.CENTER);
         JPanel pnlBottom = new JPanel(new BorderLayout(0,6));
@@ -104,6 +113,8 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
                 ? new InvoiceService(session, connections) : new InvoiceService(session, connections, source, ids));
         BillingUi.style(this);
         BillingUi.columns(tblHoaDon,110,85,290,110,180,150,150,150,160);BillingUi.dateColumn(tblHoaDon,3);
+        BillingUi.columns(tblPrescribedMedicines,110,300,100,100,170,170);
+        BillingUi.tableState(tblPrescribedMedicines,"Chọn hóa đơn để xem thuốc được kê.");
         BillingUi.columns(tblCancellationHistory,120,140,180,300,150,140,180,300);
         BillingUi.tableState(tblCancellationHistory,"Chọn hóa đơn để xem lịch sử yêu cầu hủy.");
         BillingUi.columns(tblChiTietHoaDon,85,100,330,85,160,165);
@@ -171,7 +182,8 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
     }
     public void clearDetail() {
         selectedDetail=null;updateActions();
-        lineModel.setRowCount(0); paymentModel.setRowCount(0); cancellationModel.setRowCount(0);
+        lineModel.setRowCount(0); paymentModel.setRowCount(0); cancellationModel.setRowCount(0);prescriptionModel.setRowCount(0);
+        BillingUi.tableState(tblPrescribedMedicines,"Chọn hóa đơn để xem thuốc được kê.");
         BillingUi.tableState(tblCancellationHistory,"Chọn hóa đơn để xem lịch sử yêu cầu hủy.");
         BillingUi.tableState(tblChiTietHoaDon,"Chọn hóa đơn để xem chi tiết.");BillingUi.tableState(tblThanhToan,"Chọn hóa đơn để xem lịch sử thanh toán.");
         lblTongTien.setText("Tổng: —"); lblDaThu.setText("Đã thu: —"); lblConNo.setText("Còn phải thu: —"); lblCongNoBenhNhan.setText("Công nợ BN: —"); lblCanhBao.setText(" ");lblCanhBao.setVisible(false);
@@ -179,6 +191,11 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
     public void showDetail(InvoiceDetails value) {
         clearDetail();
         for (InvoiceLine line : value.chiTiet()) lineModel.addRow(new Object[]{line.loaiHang(), line.maHang(), line.tenHienThi(), line.soLuong(), line.donGiaApDung(), line.thanhTien()});
+        for (PrescribedMedicine medicine : value.prescribedMedicines()) {
+            prescriptionModel.addRow(new Object[]{medicine.medicineId(),medicine.name(),medicine.unit(),medicine.quantity(),
+                    medicine.unitPrice()==null?"Chưa chốt":medicine.unitPrice(),medicine.total()});
+        }
+        BillingUi.tableState(tblPrescribedMedicines,"Lượt khám của hóa đơn chưa có thuốc được kê.");
         for (Payment payment : value.thanhToan()) paymentModel.addRow(new Object[]{payment.maThanhToan(), payment.thoiGian(),
                 payment.soTien(), payment.phuongThuc(), payment.maGiaoDich(), payment.tienKhachDua(), payment.trangThai(),
                 payment.maNhanVien(), payment.maTaiKhoanHuy(), BillingUi.time(payment.thoiGianHuy()), payment.lyDoHuy()});

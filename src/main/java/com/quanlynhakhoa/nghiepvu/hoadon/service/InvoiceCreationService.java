@@ -73,6 +73,7 @@ public final class InvoiceCreationService {
     private static void key(String id){if(id==null||id.isBlank()||id.length()>10)throw new IllegalArgumentException("Mã phải có 1–10 ký tự.");for(char ch:id.toCharArray())if(ch<33||ch>126)throw new IllegalArgumentException("Mã phải là ASCII không khoảng trắng.");}
     private void checkServices(Connection c,InvoiceDraft draft) throws SQLException {
         for(InvoiceDraft.Line line:draft.lines()) {
+            if (line.medicine()) continue; // Prescription and sale price are reloaded under HOLDLOCK by the source.
             boolean active=dao.serviceActive(c,line.serviceId());
             source.validateServiceState(c,draft,line.serviceId(),active);
         }
