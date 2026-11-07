@@ -154,10 +154,7 @@ public final class PhieuKhamPanel extends JPanel {
         pnlTitle.add(lblFlow);
         pnlHeader.add(pnlTitle, BorderLayout.CENTER);
 
-        JPanel pnlActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        pnlActions.setOpaque(false);
-        pnlActions.add(btnTaiLai);
-        pnlHeader.add(pnlActions, BorderLayout.EAST);
+        pnlHeader.add(pnlTitle, BorderLayout.CENTER);
 
         JPanel pnlWrap = new JPanel(new BorderLayout(0, 12));
         pnlWrap.setOpaque(false);
@@ -467,8 +464,20 @@ public final class PhieuKhamPanel extends JPanel {
         pnlCard.setBorder(paddedBorder(13, 13, 13, 13));
         JPanel pnlTitle = new JPanel(new BorderLayout());
         pnlTitle.setOpaque(false);
-        pnlTitle.add(label("Danh sách phiếu khám", 15, NAVY, true), BorderLayout.WEST);
-        pnlTitle.add(lblSoLuong, BorderLayout.EAST);
+
+        pnlTitle.add(
+                label("Danh sách phiếu khám", 15, NAVY, true),
+                BorderLayout.WEST
+        );
+
+        JPanel pnlTitleRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        pnlTitleRight.setOpaque(false);
+
+        pnlTitleRight.add(lblSoLuong);
+        pnlTitleRight.add(btnTaiLai);
+
+        pnlTitle.add(pnlTitleRight, BorderLayout.EAST);
+
         pnlCard.add(pnlTitle, BorderLayout.NORTH);
 
         tblPhieuKham.setRowHeight(31);
