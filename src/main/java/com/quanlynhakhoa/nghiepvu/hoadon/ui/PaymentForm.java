@@ -1,6 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.model.InvoiceDetails;
+import com.quanlynhakhoa.nghiepvu.hoadon.model.PaymentRequest;
+import com.quanlynhakhoa.nghiepvu.hoadon.model.Payment;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
@@ -10,15 +12,15 @@ import javax.swing.event.*;
 /** Shared collection form. UI previews never replace transaction validation in PaymentService. */
 public final class PaymentForm extends JPanel {
     public enum Method {
-        CASH("Tiền mặt"), BANK("Chuyển khoản"), MIXED("Kết hợp");
+        CASH("Tiền mặt"), BANK("Chuyển khoản");
         private final String label;
         Method(String label){this.label=label;}
         @Override public String toString(){return label;}
     }
     public final JTextField txtSoTien=new JTextField(),txtTienMat=new JTextField("0"),txtChuyenKhoan=new JTextField("0"),txtKhachDua=new JTextField(),txtMaGiaoDich=new JTextField();
     public final JComboBox<Method> cmbPhuongThuc=new JComboBox<>(Method.values());
-    public final JCheckBox chkDaNhanChuyenKhoan=new JCheckBox("<html>Đã kiểm tra và nhận đủ phần chuyển khoản</html>");
-    public final JButton btnThuTien=new JButton("Xác nhận thu tiền"),btnThuHet=new JButton("Thu hết còn nợ"),btnKiemTra=new JButton("Kiểm tra kết quả lần thu");
+    public final JCheckBox chkDaNhanChuyenKhoan=new JCheckBox("<html>Đã kiểm tra và nhận đủ tiền chuyển khoản</html>");
+    public final JButton btnThuTien=new JButton("Xác nhận thu tiền"),btnThuHet=new JButton("Thu hết còn nợ"),btnKiemTra=new JButton("Kiểm tra kết quả lần thu"),btnThuLai=new JButton("Xác nhận lại lần thu này");
     public final JLabel lblTrangThai=new JLabel("Tìm và chọn hóa đơn còn nợ để bắt đầu thu tiền.");
     public final JLabel lblPhanBo=new JLabel("Tổng phân bổ: —"),lblNoSauThu=new JLabel("Còn nợ sau thu: —"),lblTienThua=new JLabel("Tiền thừa trả khách: —");
     private final InvoiceHistoryPanel pnlHistory=new InvoiceHistoryPanel();
@@ -26,7 +28,7 @@ public final class PaymentForm extends JPanel {
     private final JPanel pnlTender=BillingUi.field("Tiền khách đưa",txtKhachDua),pnlReference=BillingUi.field("Tham chiếu chuyển khoản",txtMaGiaoDich);
     private final JPanel pnlActions=new JPanel(new CardLayout());
     private BigDecimal outstanding,lastBank=BigDecimal.ZERO;
-    private boolean busy,uncertain,mayCollect,synchronizing,collectionContextAllowed=true;
+    private boolean retryAllowed,busy,uncertain,mayCollect,synchronizing,collectionContextAllowed=true;
     private Runnable closeAction,stateListener;
 
     public PaymentForm(){
@@ -35,14 +37,14 @@ public final class PaymentForm extends JPanel {
         pnlReceipt.setBorder(BorderFactory.createTitledBorder("Ghi nhận khoản thu"));
         JPanel pnlInputs=new ReceiptInputs();
         pnlInputs.add(BillingUi.row(BillingUi.field("Số tiền thu (VND)",txtSoTien),BillingUi.field("Phương thức thu",cmbPhuongThuc)));
-        pnlInputs.add(BillingUi.row(pnlCash,pnlBank));pnlInputs.add(BillingUi.row(pnlTender,pnlReference));
+        pnlInputs.add(BillingUi.row(pnlTender,pnlReference));
         JScrollPane scrInputs=new JScrollPane(pnlInputs){@Override public Dimension getPreferredSize(){Dimension size=super.getPreferredSize();size.height=pnlInputs.getPreferredSize().height+getInsets().top+getInsets().bottom;return size;}};
         scrInputs.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);scrInputs.setMinimumSize(new Dimension(120,70));pnlReceipt.add(scrInputs,BorderLayout.CENTER);
         JPanel pnlReview=new JPanel(new BorderLayout(0,6));pnlReview.add(chkDaNhanChuyenKhoan,BorderLayout.NORTH);
-        JPanel pnlBalances=new JPanel(new GridLayout(0,1,0,4));pnlBalances.add(lblPhanBo);pnlBalances.add(lblTienThua);pnlBalances.add(lblNoSauThu);
+        JPanel pnlBalances=new JPanel(new GridLayout(0,1,0,4));pnlBalances.add(lblTienThua);pnlBalances.add(lblNoSauThu);
         pnlReview.add(pnlBalances,BorderLayout.CENTER);
         JPanel pnlCollect=BillingUi.row(btnThuHet,BillingUi.primary(btnThuTien));
-        pnlActions.add(pnlCollect,"collect");pnlActions.add(BillingUi.primary(btnKiemTra),"verify");pnlReview.add(pnlActions,BorderLayout.SOUTH);
+        pnlActions.add(pnlCollect,"collect");pnlActions.add(BillingUi.actions(btnKiemTra,BillingUi.primary(btnThuLai)),"verify");pnlReview.add(pnlActions,BorderLayout.SOUTH);
         pnlReceipt.add(pnlReview,BorderLayout.SOUTH);
         JPanel pnlRight=BillingUi.topAligned(pnlReceipt);pnlRight.setPreferredSize(new Dimension(440,0));add(pnlRight,BorderLayout.EAST);add(lblTrangThai,BorderLayout.SOUTH);
         txtSoTien.setToolTipText("Số tiền ghi nhận để thanh toán hóa đơn");txtKhachDua.setToolTipText("Tiền mặt thực nhận trước khi trả tiền thừa");
@@ -50,6 +52,12 @@ public final class PaymentForm extends JPanel {
         txtSoTien.getDocument().addDocumentListener(new DocumentListener(){public void insertUpdate(DocumentEvent e){amountChanged();}public void removeUpdate(DocumentEvent e){amountChanged();}public void changedUpdate(DocumentEvent e){amountChanged();}});
         DocumentListener partsChanged=new DocumentListener(){public void insertUpdate(DocumentEvent e){preview();}public void removeUpdate(DocumentEvent e){preview();}public void changedUpdate(DocumentEvent e){preview();}};
         txtTienMat.getDocument().addDocumentListener(partsChanged);txtChuyenKhoan.getDocument().addDocumentListener(partsChanged);txtKhachDua.getDocument().addDocumentListener(partsChanged);
+        txtMaGiaoDich.getDocument().addDocumentListener(new DocumentListener(){
+            public void insertUpdate(DocumentEvent e){resetConfirmation();}
+            public void removeUpdate(DocumentEvent e){resetConfirmation();}
+            public void changedUpdate(DocumentEvent e){resetConfirmation();}
+            private void resetConfirmation(){chkDaNhanChuyenKhoan.setSelected(false);}
+        });
         cmbPhuongThuc.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(!synchronizing){chkDaNhanChuyenKhoan.setSelected(false);allocate();updateControls();preview();}}});
         btnThuHet.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(outstanding!=null&&mayCollect)txtSoTien.setText(BillingUi.moneyText(outstanding));}});
         busy(false,false,false);BillingUi.style(this);updateControls();
@@ -89,10 +97,26 @@ public final class PaymentForm extends JPanel {
         for(Component control:new Component[]{txtSoTien,cmbPhuongThuc,txtTienMat,txtChuyenKhoan,txtKhachDua,txtMaGiaoDich,chkDaNhanChuyenKhoan,btnThuHet})control.setEnabled(enabled);
         boolean cash=method()!=Method.BANK,bank=method()!=Method.CASH;
         pnlCash.setVisible(cash);pnlTender.setVisible(cash);pnlBank.setVisible(bank);pnlReference.setVisible(bank);lblTienThua.setVisible(cash);
-        txtTienMat.setEditable(method()==Method.MIXED);txtChuyenKhoan.setEditable(method()==Method.MIXED);
-        btnThuTien.setEnabled(enabled);btnKiemTra.setEnabled(!busy&&uncertain);((CardLayout)pnlActions.getLayout()).show(pnlActions,uncertain?"verify":"collect");
+        txtTienMat.setEditable(false);txtChuyenKhoan.setEditable(false);
+        btnThuTien.setEnabled(enabled);btnKiemTra.setEnabled(!busy&&uncertain);btnThuLai.setVisible(retryAllowed);btnThuLai.setEnabled(!busy&&uncertain&&retryAllowed);((CardLayout)pnlActions.getLayout()).show(pnlActions,uncertain?"verify":"collect");
         if(!bank)chkDaNhanChuyenKhoan.setVisible(false);revalidate();repaint();
     }
+    public void restoreRequest(PaymentRequest request){
+        var part=request.parts().getFirst();boolean bank=part.method()==Payment.PhuongThuc.CHUYEN_KHOAN;
+        synchronizing=true;
+        try{
+            cmbPhuongThuc.setSelectedItem(bank?Method.BANK:Method.CASH);
+            txtSoTien.setText(BillingUi.moneyText(request.amount()));
+            txtTienMat.setText(bank?"0":BillingUi.moneyText(part.amount()));
+            txtChuyenKhoan.setText(bank?BillingUi.moneyText(part.amount()):"0");
+            txtKhachDua.setText(part.customerTender()==null?"":BillingUi.moneyText(part.customerTender()));
+            txtMaGiaoDich.setText(part.reference()==null?"":part.reference());
+            lastBank=bank?part.amount():BigDecimal.ZERO;
+            chkDaNhanChuyenKhoan.setSelected(request.transferConfirmed());
+        }finally{synchronizing=false;}
+        updateControls();preview();
+    }
+    public void allowRetry(boolean allowed){retryAllowed=allowed;updateControls();}
     public void showInvoice(InvoiceDetails detail){pnlHistory.showInvoice(detail);outstanding=detail.hoaDon().conNo();preview();}
     public void loading(){outstanding=null;pnlHistory.clear();preview();lblTrangThai.setText("Đang kiểm tra hóa đơn và lịch sử thanh toán…");}
     public void onClose(Runnable callback){closeAction=callback;}

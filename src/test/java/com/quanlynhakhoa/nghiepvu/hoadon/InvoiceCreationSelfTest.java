@@ -32,7 +32,7 @@ public final class InvoiceCreationSelfTest {
         final InvoiceCreationService service=new InvoiceCreationService(session,jdbc,source,new InvoiceIdGenerator(){public String next(Connection c){return "HDTEST1";}},dao);
         final InvoiceDraft reviewed=service.preview("BN1","PK1");
         check(service.create(reviewed).equals("HDTEST1"),"created id");
-        check(jdbc.persisted.size()==3 && jdbc.audits.size()==1 && jdbc.commits==2,"header, all lines and audit committed");
+        check(jdbc.persisted.size()==4 && jdbc.audits.size()==1 && jdbc.commits==2,"header, all lines, final payment status and audit committed");
         boolean employeeBound=false;
         for(java.util.Map<Integer,Object> parameters:jdbc.bindings) {
             if("NV1".equals(parameters.get(2)))employeeBound=true;

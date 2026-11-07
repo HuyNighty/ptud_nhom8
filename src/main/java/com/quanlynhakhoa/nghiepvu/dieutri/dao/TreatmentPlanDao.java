@@ -37,13 +37,17 @@ public final class TreatmentPlanDao {
     public void taoKeHoach(Connection con,String accountId,String planId,String chartId,String visitId,LocalDate date,String goal)throws SQLException{
         String employee=TreatmentPlanSqlSupport.layMaNhanVien(con,accountId);
         if(visitId!=null){
-            try(PreparedStatement stmt=con.prepareStatement("SELECT 1 FROM dbo.PhieuKham WHERE maPhieuKham=? AND maHoSo=?")){
+            try(PreparedStatement stmt=con.prepareStatement("SELECT 1 FROM dbo.PhieuKham WITH (UPDLOCK,HOLDLOCK) WHERE maPhieuKham=? AND maHoSo=? AND trangThai<>'DA_HUY'")){
                 stmt.setString(1,visitId);
                 stmt.setString(2,chartId);
                 try(ResultSet rs=stmt.executeQuery()){
                     if(!rs.next())throw new IllegalArgumentException("Phiếu khám không thuộc hồ sơ bệnh án đã chọn.");
                 }
             }
+        }
+        if(visitId!=null)try(PreparedStatement guard=con.prepareStatement("SELECT maHoaDon FROM dbo.HoaDon WITH (UPDLOCK,HOLDLOCK) WHERE maPhieuKham=? AND trangThai<>'DA_HUY'")){
+            guard.setQueryTimeout(15);guard.setString(1,visitId);
+            try(ResultSet rows=guard.executeQuery()){if(rows.next())throw new IllegalArgumentException("Lượt khám đã chốt hóa đơn. Tạo lượt khám mới để bổ sung điều trị.");}
         }
         try(PreparedStatement stmt=con.prepareStatement("INSERT INTO dbo.KeHoachDieuTri(maKeHoach,maHoSo,maPhieuKham,ngayLap,mucTieu,trangThai,maNhanVien) VALUES (?,?,?,?,?,'DANG_THUC_HIEN',?)")){
             stmt.setString(1,planId);

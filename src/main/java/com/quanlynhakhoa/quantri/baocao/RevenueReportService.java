@@ -47,8 +47,8 @@ public final class RevenueReportService {
                             SELECT 1 FROM dbo.YeuCauHuyHoaDon y WHERE y.maHoaDon=h.maHoaDon
                             AND y.trangThai='DA_DUYET' AND y.thoiGianDuyet>=?))
                         ), ValidPayments AS (
-                          SELECT maHoaDon,thoiGian,soTien FROM dbo.ThanhToan
-                          WHERE thoiGian<? AND (trangThai='THANH_CONG' OR (trangThai='DA_HUY' AND thoiGianHuy>=?))
+                          SELECT maHoaDon,thoiGian,soTien FROM dbo.DongTienHoaDon
+                          WHERE thoiGian<? AND ? IS NOT NULL
                         )
                         SELECT 'REVENUE' AS kind,CAST(ngayLap AS date) AS day,COUNT(*) AS invoices,SUM(total) AS amount
                           FROM ActiveInvoices WHERE ngayLap>=? GROUP BY CAST(ngayLap AS date)

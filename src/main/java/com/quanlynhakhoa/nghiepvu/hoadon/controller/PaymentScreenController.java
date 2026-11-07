@@ -22,7 +22,7 @@ public final class PaymentScreenController {
         this.view=view;this.session=session;this.connections=connections;invoices=new InvoiceService(session,connections);
         view.btnTim.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){userSearch();}});
         view.txtTimHoaDon.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){userSearch();}});
-        view.btnTaiLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){refresh();}});
+        view.btnTaiLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(locked()||searching)return;view.txtTimHoaDon.setText("");userSearch();}});
         view.cmbHoaDon.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(!updating&&view.cmbHoaDon.getSelectedItem() instanceof BillingChoice choice)openInvoice(choice.id());}});
         invalidated=new Runnable(){public void run(){refresh();}};BillingChangeBus.forSession(session).subscribe(invalidated);
     }
@@ -48,17 +48,18 @@ public final class PaymentScreenController {
         if(searching){searchPending=true;return;}if(!session.isActive()){view.expired();return;}
         searching=true;if(form!=null)form.setCollectionContextAllowed(false);updatePicker();view.lblTrangThai.setText("Đang tìm hóa đơn còn nợ…");final String keyword=view.txtTimHoaDon.getText();
         new SessionWorker<List<Invoice>>(session){
-            protected List<Invoice> doInBackground()throws Exception{return DebtService.outstanding(invoices.find(keyword,null,null,null));}
+            protected List<Invoice> doInBackground()throws Exception{return invoices.outstandingChoices(keyword);}
             protected void finished(){searching=false;updatePicker();}
             protected void expired(){view.expired();}
             protected void succeeded(List<Invoice> found){
                 if(searchPending||!keyword.equals(view.txtTimHoaDon.getText())){searchPending=false;search();return;}
+                boolean limited=found.size()>100;if(limited)found=found.subList(0,100);
                 updating=true;view.showChoices(found,invoiceId);updating=false;
                 boolean matches=false;for(Invoice invoice:found)if(invoice.maHoaDon().equals(invoiceId))matches=true;
                 if(form!=null)form.setCollectionContextAllowed(matches);
                 String message=found.isEmpty()?(keyword.isBlank()?"Chưa có hóa đơn còn phải thu.":"Không tìm thấy hóa đơn còn nợ phù hợp."):"";
                 if(invoiceId!=null)message=matches?"Đang xem hóa đơn "+invoiceId+".":"Tra cứu hóa đơn "+invoiceId+" · không thuộc kết quả còn nợ hiện tại.";
-                view.lblTrangThai.setText(message);
+                view.lblTrangThai.setText(limited?message+" · Hiển thị 100 hóa đơn. Nhập mã hoặc từ khóa để tìm cụ thể.":message);
             }
             protected void failed(Throwable failure){view.lblTrangThai.setText("Tìm hóa đơn thất bại. "+BillingUi.error(failure));if(searchPending){searchPending=false;search();}}
         }.execute();

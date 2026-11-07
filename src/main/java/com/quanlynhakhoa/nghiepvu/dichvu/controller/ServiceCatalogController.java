@@ -19,7 +19,7 @@ public final class ServiceCatalogController {
     public ServiceCatalogController(ServiceCatalogPanel view, DesktopSession session, ServiceCatalogService service) {
         this.view = view; this.session = session; this.service = service;
         view.onSearch(new ActionListener() { public void actionPerformed(ActionEvent event) { load(false); } });
-        view.onReload(new ActionListener() { public void actionPerformed(ActionEvent event) { load(false); } });
+        view.onReload(new ActionListener() { public void actionPerformed(ActionEvent event) { if(busy)return; busy=true; view.clearFilters(); busy=false; reloadPending=false; load(false); } });
         view.onNew(new ActionListener() { public void actionPerformed(ActionEvent event) {
             if (!busy) { view.clearForm(); view.focusNewCode(); view.status("Nhập dịch vụ mới rồi bấm Lưu."); }
         } });

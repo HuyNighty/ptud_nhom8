@@ -13,7 +13,7 @@ public final class TreatmentPlanSqlSupport {
         String sql = "SELECT nv.maNhanVien FROM dbo.TaiKhoan tk "
                 + "INNER JOIN dbo.NhanVien nv ON nv.maNhanVien=tk.maNhanVien "
                 + "WHERE tk.maTaiKhoan=? AND tk.trangThai='HOAT_DONG' "
-                + "AND nv.trangThai='DANG_LAM_VIEC' AND nv.chucDanh='BS'";
+                + "AND nv.trangThai='DANG_LAM_VIEC' AND (nv.chucDanh='BS' OR tk.vaiTro='SYSTEM_ADMIN')";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, accountId);
             statement.setQueryTimeout(10);

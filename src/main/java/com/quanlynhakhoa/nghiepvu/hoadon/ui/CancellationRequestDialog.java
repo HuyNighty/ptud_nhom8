@@ -17,7 +17,7 @@ public final class CancellationRequestDialog extends JDialog {
     }
     public void showPreview(CancellationService.Preview preview){
         var h=preview.invoice().hoaDon();lblHoaDon.setText(h.maHoaDon()+" · "+h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Tổng "+BillingUi.vnd(h.tongTien())+" · Đã thu "+BillingUi.vnd(h.daThu())+" · Còn nợ "+BillingUi.vnd(h.conNo()));
-        lblTrangThai.setText(preview.pending()?"Hóa đơn đã có yêu cầu chờ duyệt, không gửi thêm.":h.daThu().signum()>0?"Có khoản thu hợp lệ: chỉ gửi yêu cầu; chưa thể duyệt hủy khi chưa có xử lý khoản thu.":"Gửi yêu cầu chưa hủy hóa đơn; chờ người khác có quyền xét duyệt.");
+        lblTrangThai.setText(preview.pending()?"Hóa đơn đã có yêu cầu chờ duyệt, không gửi thêm.":h.daThu().signum()>0?"Hóa đơn đã có khoản thu; không thể gửi yêu cầu hủy khi chưa hỗ trợ hoàn tiền.":"Gửi yêu cầu chưa hủy hóa đơn; chờ người khác có quyền xét duyệt.");
     }
     public void busy(boolean busy,boolean canSubmit){txaLyDo.setEnabled(!busy);btnGuiYeuCau.setEnabled(!busy&&canSubmit);btnTaiLai.setEnabled(!busy);setDefaultCloseOperation(busy?DO_NOTHING_ON_CLOSE:DISPOSE_ON_CLOSE);}
 }

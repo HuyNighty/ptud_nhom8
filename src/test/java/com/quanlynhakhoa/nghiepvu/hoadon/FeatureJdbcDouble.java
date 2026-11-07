@@ -71,7 +71,7 @@ public final class FeatureJdbcDouble implements ConnectionProvider {
                 }
                 if (name.equals("executeQuery")) {
                     List<Map<String, Object>> values = List.of();
-                    if (query.startsWith("WITH Lines")) values = invoiceRows;
+                    if ((query.startsWith("WITH Lines")||query.startsWith("WITH WithDebt"))) values = invoiceRows;
                     else if (query.contains("FROM dbo.ChiTietHoaDon ct")) values = lineRows;
                     else if (query.contains("FROM dbo.ThanhToan WHERE")) values = paymentRows;
                     else if (query.startsWith("SELECT maDichVu FROM") && existing) values = List.of(Map.of("maDichVu", "TST1"));
@@ -83,6 +83,7 @@ public final class FeatureJdbcDouble implements ConnectionProvider {
                                 || row.get("tenDichVu").toString().contains(keyword))
                                 && (active == null || active.equals(row.get("dangApDung")))).toList();
                     }
+                    if(query.contains("SELECT COALESCE(SUM(COALESCE(d.total"))values=List.of(Map.of("1",invoiceRows.isEmpty()?java.math.BigDecimal.ZERO:invoiceRows.getFirst().get("congNoBenhNhan")));
                     return rows(values);
                 }
                 throw new AssertionError("Unexpected PreparedStatement call: " + name);
@@ -97,7 +98,7 @@ public final class FeatureJdbcDouble implements ConnectionProvider {
                 if (name.equals("next")) return ++index < values.size();
                 if (name.equals("close")) return null;
                 if (name.startsWith("get")) {
-                    Object value = values.get(index).get((String) args[0]);
+                    Object value = values.get(index).get(String.valueOf(args[0]));
                     if (value == null && name.equals("getInt")) return 0;
                     if (value == null && name.equals("getBoolean")) return false;
                     return value;

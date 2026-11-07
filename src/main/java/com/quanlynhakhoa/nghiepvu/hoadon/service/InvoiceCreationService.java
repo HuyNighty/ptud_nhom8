@@ -35,7 +35,7 @@ public final class InvoiceCreationService {
         try(Connection c=connections.open()) {
             begin(c);
             try {require();dao.validateVisit(c,patient,visit);dao.employee(c,session.accountId());
-                InvoiceDraft draft=source.load(c,patient,visit,true);validate(draft,patient,visit);checkServices(c,draft);require();c.commit();return draft;
+                InvoiceDraft draft=source.load(c,patient,visit,true);validate(draft,patient,visit);checkServices(c,draft);authorization.requireCurrent(session,Permission.BILLING_MANAGE,c);require();c.commit();return draft;
             } catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }
     }
@@ -54,7 +54,10 @@ public final class InvoiceCreationService {
                 id=ids.next(c);key(id);
                 dao.insertHeader(c,id,trusted.patientId(),trusted.visitId(),employee);
                 for(InvoiceDraft.Line line:trusted.lines())dao.insertLine(c,id,line);
-                dao.audit(c,session.accountId(),id);require();c.commit();committed=true;
+                try(PreparedStatement status=c.prepareStatement("UPDATE dbo.HoaDon SET trangThai=? WHERE maHoaDon=?")){
+                    status.setQueryTimeout(15);status.setString(1,trusted.total().signum()==0?"DA_THANH_TOAN":"CHUA_THANH_TOAN");status.setString(2,id);if(status.executeUpdate()!=1)throw new SQLException("Missing created invoice");
+                }
+                dao.audit(c,session.accountId(),id);authorization.requireCurrent(session,Permission.BILLING_MANAGE,c);require();c.commit();committed=true;
             } catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         } catch(SQLException e) {
             if(committed)throw new CommittedInvoiceException(id,e);

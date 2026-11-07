@@ -31,6 +31,8 @@ public class LichHenController implements ActionListener, MouseListener {
 
     private LichHenDialog winLichHen;
     private boolean dangTaiDanhSach;
+    private boolean reloadPending;
+    private String selectionAfterLoad;
     private boolean dangXuLyForm;
 
     public LichHenController(LichHenPanel view, LichHenService lichHenService) {
@@ -130,11 +132,18 @@ public class LichHenController implements ActionListener, MouseListener {
     public void mouseExited(MouseEvent suKien) {
     }
 
+    public void focusAppointment(String id) {
+        selectionAfterLoad=id;
+        taiDanhSach(id);
+    }
+
     private void taiDanhSach(String maCanChon) {
         if (dangTaiDanhSach) {
+            reloadPending=true;
             return;
         }
         dangTaiDanhSach = true;
+        selectionAfterLoad=null;
         LocalDate ngay = view.getNgayDangXem();
         String tuKhoa = view.getTxtTimKiem().getText();
         view.datDangTai(true);
@@ -156,6 +165,8 @@ public class LichHenController implements ActionListener, MouseListener {
                     }
                 } catch (Exception loi) {
                     view.hienLoi(thongBaoLoi(loi));
+                } finally {
+                    if(reloadPending){reloadPending=false;String id=selectionAfterLoad;selectionAfterLoad=null;taiDanhSach(id);}
                 }
             }
         }.execute();

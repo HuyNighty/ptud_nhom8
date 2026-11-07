@@ -73,9 +73,6 @@ public final class ExamQueuePanel extends JPanel implements RefreshableFeature {
         title.setFont(new Font("SansSerif", Font.BOLD, 23));
         title.setForeground(NAVY);
         heading.add(title, BorderLayout.NORTH);
-        JLabel scope = new JLabel("INT4-A · Chỉ xem phiếu đã tiếp nhận · Chưa hỗ trợ bắt đầu khám");
-        scope.setForeground(MUTED);
-        heading.add(scope, BorderLayout.SOUTH);
         add(heading, BorderLayout.NORTH);
 
         JPanel body = new JPanel(new BorderLayout(0, 12));
@@ -86,7 +83,7 @@ public final class ExamQueuePanel extends JPanel implements RefreshableFeature {
                 BorderFactory.createLineBorder(new Color(220, 231, 242)),
                 new EmptyBorder(8, 10, 8, 10)));
         filters.add(new JLabel("Ngày tiếp nhận (dd/MM/yyyy):"));
-        filters.add(txtDay);
+        filters.add(com.quanlynhakhoa.hethong.giaodien.DateInput.wrap(txtDay,"ngày tiếp nhận",DAY,LocalDate.of(1900,1,1),LocalDate.of(9999,12,31)));
         filters.add(new JLabel("Mã / tên bệnh nhân:"));
         filters.add(txtKeyword);
         filters.add(btnRefresh);
@@ -111,7 +108,7 @@ public final class ExamQueuePanel extends JPanel implements RefreshableFeature {
         body.add(footer, BorderLayout.SOUTH);
         add(body, BorderLayout.CENTER);
 
-        btnRefresh.addActionListener(e -> reload());
+        btnRefresh.addActionListener(e -> { txtKeyword.setText(""); reload(); });
         txtDay.addActionListener(e -> reload());
         txtKeyword.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { applyLocalFilter(); }
@@ -145,7 +142,7 @@ public final class ExamQueuePanel extends JPanel implements RefreshableFeature {
         loading = true;
         btnRefresh.setEnabled(false);
         txtDay.setEnabled(false);
-        lblStatus.setText("Đang tải hàng chờ từ SQL Server...");
+        lblStatus.setText("Đang tải hàng chờ...");
         new SwingWorker<ExamQueueDao.Result, Void>() {
             @Override protected ExamQueueDao.Result doInBackground() throws Exception {
                 return service.load(day);

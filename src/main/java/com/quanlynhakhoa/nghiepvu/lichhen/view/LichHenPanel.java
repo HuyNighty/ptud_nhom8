@@ -42,6 +42,7 @@ public class LichHenPanel extends JPanel {
     private JPanel pnlNorth;
     private JLabel lblTieuDe;
     private JTextField txtNgayXem;
+    private final LichHenController controller;
     private JButton btnChonNgayXem;
     private JButton btnHomNay;
     private JTextField txtTimKiem;
@@ -84,7 +85,7 @@ public class LichHenPanel extends JPanel {
         datNgayDangXem(LocalDate.now());
         hienChiTiet(null);
 
-        new LichHenController(this, new LichHenService(phienDangNhap));
+        controller = new LichHenController(this, new LichHenService(phienDangNhap));
     }
 
     private void taoNorth() {
@@ -97,7 +98,7 @@ public class LichHenPanel extends JPanel {
 
         txtNgayXem = new JTextField(9);
         txtNgayXem.setEditable(false);
-        btnChonNgayXem = new JButton("Chọn");
+        btnChonNgayXem = new JButton("Lịch");
         btnHomNay = new JButton("Hôm nay");
         txtTimKiem = new JTextField(16);
         btnTimKiem = new JButton("Tìm kiếm");
@@ -334,6 +335,12 @@ public class LichHenPanel extends JPanel {
             return "";
         }
         return chuoi;
+    }
+
+    public void openDashboardAppointment(String id) {
+        datNgayDangXem(LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
+        txtTimKiem.setText(id);
+        controller.focusAppointment(id);
     }
 
     public JButton getBtnChonNgayXem() {

@@ -21,7 +21,7 @@ public final class SupplyRequestPanel extends JPanel {
     private final JTabbedPane tabs = new JTabbedPane();
     final JTextField requestId = new JTextField(), reason = new JTextField(), itemCode = new JTextField(), quantity = new JTextField("1");
     final JComboBox<String> itemType = new JComboBox<>(new String[]{"THUOC", "VATTU"});
-    final JButton addLine = new JButton("Thêm dòng"), removeLine = new JButton("Bỏ dòng"), create = new JButton("Gửi yêu cầu"), refreshMine = new JButton("Tải lại");
+    final JButton addLine = new JButton("Thêm dòng"), removeLine = new JButton("Bỏ dòng"), create = new JButton("Gửi yêu cầu"), refreshMine = new JButton("Làm mới");
     final DefaultTableModel draftModel = readOnly("Loại", "Mã hàng", "Số lượng");
     final DefaultTableModel mineModel = readOnly("Mã yêu cầu", "Thời gian", "Người tạo", "Trạng thái", "Lý do", "Số dòng");
     final DefaultTableModel managerModel = readOnly("Mã yêu cầu", "Thời gian", "Người yêu cầu", "Trạng thái", "Lý do", "Số dòng");
@@ -33,7 +33,7 @@ public final class SupplyRequestPanel extends JPanel {
     };
     final JTable draftTable = new JTable(draftModel), mineTable = new JTable(mineModel), managerTable = new JTable(managerModel), detailTable = new JTable(detailModel);
     final JTextField voucherId = new JTextField(), department = new JTextField("Phòng khám"), receiver = new JTextField(), issueReason = new JTextField(), status = new JTextField();
-    final JButton approve = new JButton("Duyệt"), reject = new JButton("Từ chối"), issue = new JButton("Cấp phát + tạo phiếu xuất"), refreshManager = new JButton("Tải lại");
+    final JButton approve = new JButton("Duyệt"), reject = new JButton("Từ chối"), issue = new JButton("Cấp phát + tạo phiếu xuất"), refreshManager = new JButton("Làm mới");
 
     public SupplyRequestPanel(DesktopSession session) {
         this(session, false);

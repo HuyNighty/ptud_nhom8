@@ -18,7 +18,7 @@ public final class CancellationController {
     public CancellationController(CancellationPanel view,DesktopSession session,CancellationService service){
         this.view=view;this.session=session;this.service=service;
         view.btnTim.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
-        view.btnTaiLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
+        view.btnTaiLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(busy)return;busy=true;view.txtTuKhoa.setText("");view.txtTuNgay.setText("");view.txtDenNgay.setText("");view.cmbTrangThai.setSelectedIndex(0);busy=false;reloadPending=false;load();}});
         view.btnThuLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
         view.txtTuKhoa.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
         view.cmbTrangThai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
@@ -43,7 +43,7 @@ public final class CancellationController {
         if(!start())return;selected=null;view.clearDetail();view.lblTrangThai.setText("Đang tải yêu cầu hủy…");view.tableStatus("Đang tải yêu cầu hủy…");
         new Task<List<InvoiceCancellationRequest>>(){
             protected List<InvoiceCancellationRequest> doInBackground()throws Exception{return service.find(keyword,from,to,status);}
-            protected void succeeded(List<InvoiceCancellationRequest> rows){busy=true;view.showRows(rows);busy=false;view.tableStatus(rows.isEmpty()?"Không có yêu cầu hủy phù hợp.":"");view.lblTrangThai.setText(writeMessage+(rows.isEmpty()?"Lọc theo ngày gửi và trạng thái yêu cầu.":rows.size()+" yêu cầu. Chọn dòng để xem và xét duyệt."));writeMessage="";if(reloadPending){reloadPending=false;load();}}
+            protected void succeeded(List<InvoiceCancellationRequest> rows){busy=true;view.showRows(rows);busy=false;view.tableStatus(rows.isEmpty()?"Không có yêu cầu hủy phù hợp.":"");view.lblTrangThai.setText(writeMessage+(rows.isEmpty()?"Lọc theo ngày gửi và trạng thái yêu cầu.":rows.size()+" yêu cầu."));writeMessage="";if(reloadPending){reloadPending=false;load();}}
         }.execute();
     }
     private void detail(){
@@ -65,10 +65,10 @@ public final class CancellationController {
         if(!start())return;
         new Task<Void>(){
             protected Void doInBackground()throws Exception{service.decide(id,approve,reason);return null;}
-            protected void succeeded(Void ignored){selected=null;writeMessage=approve?"Đã duyệt hủy hóa đơn. ":"Đã từ chối; hóa đơn vẫn hoạt động. ";load();BillingChangeBus.forSession(session).publishExcept(invalidated);}
+            protected void succeeded(Void ignored){BillingUi.result(view,approve?"Duyệt hủy hóa đơn thành công.":"Đã từ chối yêu cầu hủy. Hóa đơn vẫn hoạt động.","Kết quả xét duyệt",JOptionPane.INFORMATION_MESSAGE);selected=null;writeMessage=approve?"Đã duyệt hủy hóa đơn. ":"Đã từ chối; hóa đơn vẫn hoạt động. ";load();BillingChangeBus.forSession(session).publishExcept(invalidated);}
             protected void failed(Throwable failure){
                 if(failure instanceof CancellationService.CommittedCancellationException){succeeded(null);return;}
-                selected=null;view.buttons(false,false);writeMessage=BillingUi.error(failure)+" Chưa xác nhận kết quả; tải lại để kiểm tra trước khi thử lại. ";load();
+                BillingUi.result(view,BillingUi.error(failure)+" Chưa xác nhận kết quả; tải lại để kiểm tra trước khi thử lại.","Chưa xác nhận kết quả xét duyệt",JOptionPane.ERROR_MESSAGE);selected=null;view.buttons(false,false);writeMessage=BillingUi.error(failure)+" Chưa xác nhận kết quả; tải lại để kiểm tra trước khi thử lại. ";load();
             }
         }.execute();
     }

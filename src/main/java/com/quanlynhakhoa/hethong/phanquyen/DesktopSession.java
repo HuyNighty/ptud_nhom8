@@ -15,6 +15,12 @@ public final class DesktopSession {
     private final String accountId;
     private final Role role;
     private final Instant startedAt;
+    @FunctionalInterface public interface CurrentAccountCheck { void check(DesktopSession session); }
+    private CurrentAccountCheck currentAccountCheck;
+    public void bindCurrentAccountCheck(CurrentAccountCheck check) { currentAccountCheck=Objects.requireNonNull(check); }
+    public void verifyCurrentAccount() { if(currentAccountCheck!=null)currentAccountCheck.check(this); }
+    public boolean isServerBound() { return currentAccountCheck!=null; }
+
     private final AtomicBoolean active = new AtomicBoolean(true);
 
     private DesktopSession(String accountId, Role role, Instant startedAt) {

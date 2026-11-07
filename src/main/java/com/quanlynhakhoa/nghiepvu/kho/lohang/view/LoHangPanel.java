@@ -85,10 +85,6 @@ public final class LoHangPanel extends JPanel {
         south.setOpaque(false);
         lblTrangThai.setForeground(MUTED);
         south.add(lblTrangThai, BorderLayout.NORTH);
-        JLabel note = new JLabel("Chỉ xem dữ liệu. Số tồn được cập nhật cùng transaction của phiếu nhập/xuất/điều chỉnh; không sửa trực tiếp tại danh sách.", SwingConstants.LEFT);
-        note.setForeground(MUTED);
-        note.setFont(note.getFont().deriveFont(11f));
-        south.add(note, BorderLayout.SOUTH);
         add(south, BorderLayout.SOUTH);
 
         new LoHangController(this, new LoHangService(phien));
@@ -125,6 +121,7 @@ public final class LoHangPanel extends JPanel {
         };
     }
     public JButton getBtnTim() { return btnTim; }
+    public void xoaBoLoc() { txtTimKiem.setText(""); cmbLoai.setSelectedIndex(0); cmbHan.setSelectedIndex(0); }
     public JButton getBtnTaiLai() { return btnTaiLai; }
     public JTextField getTxtTimKiem() { return txtTimKiem; }
 

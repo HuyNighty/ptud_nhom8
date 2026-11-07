@@ -114,7 +114,7 @@ public class LichHenDialog extends JDialog {
 
         txtNgayHen = new JTextField();
         txtNgayHen.setEditable(false);
-        btnChonNgay = new JButton("Chọn");
+        btnChonNgay = new JButton("Lịch");
         Box boxNgayHen = Box.createHorizontalBox();
         boxNgayHen.add(txtNgayHen);
         boxNgayHen.add(Box.createHorizontalStrut(6));

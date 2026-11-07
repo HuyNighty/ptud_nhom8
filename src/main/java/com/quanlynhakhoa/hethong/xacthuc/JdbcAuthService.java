@@ -65,6 +65,10 @@ public final class JdbcAuthService {
      * Makes real SQL writes when invoked against a writable DB. No production wiring in R3-A2B.
      * Never log username, password, hash, or raw SQLException (may contain private details).
      */
+    public void bindSession(com.quanlynhakhoa.hethong.phanquyen.DesktopSession session) {
+        session.bindCurrentAccountCheck(new com.quanlynhakhoa.hethong.phanquyen.JdbcSessionVerifier(connectionSource));
+    }
+
     public AuthDecision authenticate(String username, String rawPassword) throws SQLException {
         if (username == null || username.isBlank() || rawPassword == null || rawPassword.isBlank()) {
             return AuthDecision.rejected();

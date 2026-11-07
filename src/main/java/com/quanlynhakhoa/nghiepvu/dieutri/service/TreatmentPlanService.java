@@ -55,8 +55,10 @@ public final class TreatmentPlanService {
         if(date==null)throw new IllegalArgumentException("Ngày lập kế hoạch bắt buộc.");
         required(goal,300,"Mục tiêu");
         tx(c -> {
-            String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
-            security.requireDoctorOwnsChart(c, chart, visit, doctor);
+            if (session.role() != Role.SYSTEM_ADMIN) {
+                String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
+                security.requireDoctorOwnsChart(c, chart, visit, doctor);
+            }
             dao.taoKeHoach(c,session.accountId(),id,chart,visit,date,goal.trim());
         });
     }
@@ -67,8 +69,10 @@ public final class TreatmentPlanService {
         required(tooth,50,"Vị trí răng");if(planned==null)throw new IllegalArgumentException("Ngày dự kiến bắt buộc.");
         optional(note,300,"Ghi chú");
         tx(c -> {
-            String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
-            security.requireOwnedPlan(c, plan, doctor);
+            if (session.role() != Role.SYSTEM_ADMIN) {
+                String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
+                security.requireOwnedPlan(c, plan, doctor);
+            }
             dao.themChiTiet(c,session.accountId(),plan,service,tooth.trim(),planned,clean(note));
         });
     }
@@ -78,8 +82,10 @@ public final class TreatmentPlanService {
         if(detailId<=0||actual==null)throw new IllegalArgumentException("Chi tiết hoặc ngày thực hiện không hợp lệ.");
         required(result,500,"Kết quả");
         tx(c -> {
-            String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
-            security.requireOwnedStep(c, detailId, doctor);
+            if (session.role() != Role.SYSTEM_ADMIN) {
+                String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
+                security.requireOwnedStep(c, detailId, doctor);
+            }
             dao.hoanThanhBuoc(c,session.accountId(),detailId,actual,result.trim());
         });
     }
@@ -89,8 +95,10 @@ public final class TreatmentPlanService {
         if(detailId<=0)throw new IllegalArgumentException("Chưa chọn bước điều trị.");
         required(reason,300,"Lý do hủy");
         tx(c -> {
-            String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
-            security.requireOwnedStep(c, detailId, doctor);
+            if (session.role() != Role.SYSTEM_ADMIN) {
+                String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
+                security.requireOwnedStep(c, detailId, doctor);
+            }
             dao.huyBuoc(c,session.accountId(),detailId,reason.trim());
         });
     }
@@ -99,8 +107,10 @@ public final class TreatmentPlanService {
         requireDoctorWrite();
         String id=code(planId,"Mã kế hoạch");
         tx(c -> {
-            String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
-            security.requireOwnedPlan(c, id, doctor);
+            if (session.role() != Role.SYSTEM_ADMIN) {
+                String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
+                security.requireOwnedPlan(c, id, doctor);
+            }
             dao.hoanThanhKeHoach(c,session.accountId(),id);
         });
     }
@@ -110,15 +120,17 @@ public final class TreatmentPlanService {
         String id=code(planId,"Mã kế hoạch");
         required(reason,300,"Lý do hủy");
         tx(c -> {
-            String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
-            security.requireOwnedPlan(c, id, doctor);
+            if (session.role() != Role.SYSTEM_ADMIN) {
+                String doctor = TreatmentPlanSqlSupport.layMaNhanVien(c, session.accountId());
+                security.requireOwnedPlan(c, id, doctor);
+            }
             dao.huyKeHoach(c,session.accountId(),id,reason.trim());
         });
     }
 
     private void requireDoctorWrite() {
         authorization.require(session, Permission.MEDICAL_RECORD_UPDATE);
-        if (session.role() != Role.DOCTOR) throw new AccessDeniedException();
+        if (session.role() != Role.DOCTOR && session.role() != Role.SYSTEM_ADMIN) throw new AccessDeniedException();
     }
 
     private static void tx(SqlAction action)throws SQLException{

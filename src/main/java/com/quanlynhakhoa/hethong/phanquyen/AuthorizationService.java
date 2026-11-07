@@ -15,7 +15,14 @@ public final class AuthorizationService {
                 && policy.isAllowed(session.role(), permission);
     }
 
+    public void requireCurrent(DesktopSession session, Permission permission, java.sql.Connection c) throws java.sql.SQLException {
+        if(!can(session,permission))throw new AccessDeniedException();
+        if(session.isServerBound())JdbcSessionVerifier.verify(c,session,true);
+    }
+
     public void require(DesktopSession session, Permission permission) {
+        if (!can(session, permission)) throw new AccessDeniedException();
+        session.verifyCurrentAccount();
         if (!can(session, permission)) throw new AccessDeniedException();
     }
 }

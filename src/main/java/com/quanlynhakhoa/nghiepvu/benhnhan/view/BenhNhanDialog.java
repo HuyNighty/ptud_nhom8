@@ -105,7 +105,7 @@ public class BenhNhanDialog extends JDialog {
 
         txtNgaySinh = new JTextField();
         txtNgaySinh.setEditable(false);
-        btnChonNgay = new JButton("Chọn");
+        btnChonNgay = new JButton("Lịch");
         Box boxNgaySinh = Box.createHorizontalBox();
         boxNgaySinh.add(txtNgaySinh);
         boxNgaySinh.add(Box.createHorizontalStrut(6));

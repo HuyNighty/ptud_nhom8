@@ -42,7 +42,7 @@ public final class R4FinalShellSelfTest {
             case NURSE -> Set.of(
                     Permission.SUPPLY_REQUEST, Permission.EMERGENCY_KIT_CHECK, Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE).contains(p);
             case CLINIC_MANAGER -> Set.of(
-                    Permission.BILLING_READ, Permission.WORKFORCE_READ, Permission.WORKFORCE_MANAGE,
+                    Permission.REVENUE_REPORT_READ, Permission.BILLING_READ, Permission.WORKFORCE_READ, Permission.WORKFORCE_MANAGE,
                     Permission.ACCOUNT_MANAGE, Permission.ROLE_MANAGE, Permission.AUDIT_READ,
                     Permission.SERVICE_CATALOG_MANAGE, Permission.INVOICE_CANCEL_APPROVE,
                     Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE).contains(p);
@@ -52,8 +52,8 @@ public final class R4FinalShellSelfTest {
     }
     public static void main(String[] args) {
         check(Role.values().length == 6, "unreviewed role added");
-        check(Permission.values().length == 25, "unreviewed permission added");
-        check(Module.values().length == 22, "unreviewed navigation destination added");
+        check(Permission.values().length == 26, "unreviewed permission added");
+        check(Module.values().length == 23, "unreviewed navigation destination added");
         check(Module.TREATMENT_PLANS.openPermission() == Permission.MEDICAL_RECORD_READ,
                 "treatment plan navigation requires medical record read permission");
         check(Module.RECEPTION.openPermission() == Permission.PATIENT_CHECK_IN,

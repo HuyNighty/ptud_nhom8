@@ -20,6 +20,17 @@ import javax.swing.table.DefaultTableModel;
 
 /** Shared presentation for service catalog, invoices, debt and payment screens. */
 public final class BillingUi {
+    /** Keep nonvisual runs usable while preserving normal desktop result dialogs. */
+    public static void result(java.awt.Component owner, String message) {
+        result(owner, message, "Kết quả", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public static void result(java.awt.Component owner, String message, String title, int type) {
+        if (!java.awt.GraphicsEnvironment.isHeadless()) {
+            javax.swing.JOptionPane.showMessageDialog(owner, message, title, type);
+        }
+    }
+
     public static final Color NAVY = new Color(29,61,102), BACKGROUND = new Color(245,248,252);
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
     private static final Logger LOG = createLogger();
@@ -35,6 +46,7 @@ public final class BillingUi {
     }
     public static void style(javax.swing.JPanel root){
         markHeadings(root);styleChildren(root);root.setOpaque(true);root.setBackground(BACKGROUND);
+        com.quanlynhakhoa.hethong.giaodien.AppTheme.apply(root);
     }
     private static void markHeadings(Component component){
         if(component instanceof JLabel label&&label.getFont()!=null&&label.getFont().getSize()>=20&&!Boolean.TRUE.equals(label.getClientProperty("billing.value")))label.putClientProperty("billing.heading",true);

@@ -61,7 +61,7 @@ final class InventoryWorkflowController {
             async(() -> {
                 service.taoPhieuNhap(id, lot, batch, supplier, type, item, made, expiry, qty, price, note);
                 return null;
-            }, ignored -> loadReceipt());
+            }, x -> { JOptionPane.showMessageDialog(view, "Đã tạo phiếu nhập và cập nhật tồn kho."); loadReceipt(); });
         } catch (RuntimeException error) {
             showError(error);
         }
@@ -75,7 +75,7 @@ final class InventoryWorkflowController {
             async(() -> {
                 service.taoPhieuXuat(id, lot, dept, receiver, reason, qty);
                 return null;
-            }, ignored -> loadIssue());
+            }, x -> { JOptionPane.showMessageDialog(view, "Đã tạo phiếu xuất và cập nhật tồn kho."); loadIssue(); });
         } catch (RuntimeException error) {
             showError(error);
         }
@@ -89,7 +89,7 @@ final class InventoryWorkflowController {
             async(() -> {
                 service.guiKiemKe(id, lot, actual, reason);
                 return null;
-            }, ignored -> loadStocktake());
+            }, x -> { JOptionPane.showMessageDialog(view, "Đã gửi yêu cầu kiểm kê."); loadStocktake(); });
         } catch (RuntimeException error) {
             showError(error);
         }
@@ -101,7 +101,7 @@ final class InventoryWorkflowController {
         int choice = JOptionPane.showConfirmDialog(view, "Duyệt phiếu " + id + "? Tồn kho sẽ được điều chỉnh nếu dữ liệu chưa thay đổi.",
                 "Xác nhận điều chỉnh kho", JOptionPane.OK_CANCEL_OPTION);
         if (choice != JOptionPane.OK_OPTION) return;
-        async(() -> { service.duyetKiemKe(id); return null; }, x -> loadStocktake());
+        async(() -> { service.duyetKiemKe(id); return null; }, x -> { JOptionPane.showMessageDialog(view, "Đã duyệt kiểm kê và cập nhật tồn kho."); loadStocktake(); });
     }
 
     private void rejectStocktake() {
@@ -109,7 +109,7 @@ final class InventoryWorkflowController {
         if (id == null) { showError(new IllegalArgumentException("Chọn phiếu kiểm kê cần từ chối.")); return; }
         String reason = JOptionPane.showInputDialog(view, "Lý do từ chối phiếu " + id + ":");
         if (reason == null) return;
-        async(() -> { service.tuChoiKiemKe(id, reason); return null; }, x -> loadStocktake());
+        async(() -> { service.tuChoiKiemKe(id, reason); return null; }, x -> { JOptionPane.showMessageDialog(view, "Đã từ chối phiếu kiểm kê."); loadStocktake(); });
     }
     private static LocalDate dateOrNull(String text) {
         String s = text == null ? "" : text.trim();

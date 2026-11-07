@@ -52,6 +52,12 @@ public final class CancellationSelfTest {
         check(jdbc.persisted.size()==writes&&jdbc.audits.size()==auditCount,"audit error rolls back both status changes");jdbc.auditFailure=false;
         before=jdbc.opens;expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{reviews.decide("Y1",false," ");}});check(jdbc.opens==before,"rejection reason required before connection");
         invoices.paid=new BigDecimal("100");invoices.status=InvoiceStatus.THANH_TOAN_MOT_PHAN;writes=jdbc.updates;
+        expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{requests.request("H1","Paid invoice");}});
+        check(jdbc.updates==writes,"partially paid invoice rejected before request/audit insert");
+        invoices.paid=new BigDecimal("300");invoices.status=InvoiceStatus.DA_THANH_TOAN;
+        expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{requests.request("H1","Fully paid invoice");}});
+        check(jdbc.updates==writes,"fully paid invoice rejected before request/audit insert");
+        invoices.paid=new BigDecimal("100");invoices.status=InvoiceStatus.THANH_TOAN_MOT_PHAN;
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{reviews.decide("Y1",true,"paid");}});check(jdbc.updates==writes,"paid invoice cannot be cancelled and no refund is invented");
         reviews.decide("Y1",false,"Chưa xử lý khoản thu");check(jdbc.updates==writes+2,"rejection updates request and audit only");
         dao.status=InvoiceCancellationRequest.TrangThai.DA_DUYET;expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{reviews.decide("Y1",false,"again");}});dao.status=InvoiceCancellationRequest.TrangThai.CHO_DUYET;

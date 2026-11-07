@@ -37,6 +37,7 @@ public final class FeatureBootstrap {
                 .register(Module.APPOINTMENTS, LichHenPanel::new)
                 .register(Module.RECEPTION, TiepNhanPanel::new)
                 .register(Module.INVENTORY, InventoryPanel::new)
+                .register(Module.SUPPLY_REQUESTS, com.quanlynhakhoa.nghiepvu.kho.supplyrequest.view.SupplyRequestPanel::new)
                 .register(Module.MEDICAL_RECORDS, HoSoBenhAnPanel::new)
                 .register(Module.SERVICE_CATALOG, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session) {

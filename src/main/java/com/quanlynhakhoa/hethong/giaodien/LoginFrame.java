@@ -53,7 +53,7 @@ public final class LoginFrame extends JFrame {
     private final JdbcAuthService auth;
     private final JTextField txtUsername = new JTextField(22);
     private final JPasswordField txtPassword = new JPasswordField(22);
-    private final JButton btnLogin = new PrimaryButton("ĐĂNG NHẬP");
+    private final JButton btnLogin = new JButton("ĐĂNG NHẬP");
     private final JLabel lblStatus = new JLabel("Đăng nhập bằng tài khoản được phòng khám cấp.");
     private final JCheckBox chkShowPassword = new JCheckBox("Hiện mật khẩu");
     private boolean working;
@@ -156,6 +156,8 @@ public final class LoginFrame extends JFrame {
         btnLogin.setAlignmentX(LEFT_ALIGNMENT);
         btnLogin.setFont(new Font("SansSerif", Font.BOLD, 14));
         btnLogin.getAccessibleContext().setAccessibleName("Đăng nhập");
+        btnLogin.putClientProperty("theme.primary", true);
+        AppTheme.applyButtons(btnLogin);
         form.add(btnLogin);
         form.add(Box.createVerticalStrut(17));
 
@@ -204,33 +206,6 @@ public final class LoginFrame extends JFrame {
         field.setAlignmentX(LEFT_ALIGNMENT);
     }
 
-    private static final class PrimaryButton extends JButton {
-        private PrimaryButton(String text) {
-            super(text);
-            setForeground(Color.WHITE);
-            setFocusPainted(false);
-            setBorderPainted(false);
-            setContentAreaFilled(false);
-            setOpaque(false);
-            setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
-        }
-
-        @Override protected void paintComponent(Graphics graphics) {
-            Graphics2D g = (Graphics2D) graphics.create();
-            try {
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON);
-                g.setColor(!isEnabled() ? new Color(148, 172, 194)
-                        : getModel().isPressed() ? new Color(8, 77, 131)
-                        : getModel().isRollover() ? new Color(9, 95, 157) : BLUE);
-                g.fillRoundRect(0, 0, getWidth(), getHeight(), 14, 14);
-            } finally {
-                g.dispose();
-            }
-            super.paintComponent(graphics);
-        }
-    }
-
     private static final class DentalPhotoPanel extends JPanel {
         private final Image image;
 
@@ -277,11 +252,7 @@ public final class LoginFrame extends JFrame {
                 g.setFont(new Font("SansSerif", Font.BOLD, 28));
                 g.drawString("Tận tâm trong", x, baseline - 40);
                 g.drawString("từng nụ cười.", x, baseline - 5);
-                g.setFont(new Font("SansSerif", Font.PLAIN, 13));
-                g.drawString("Lịch hẹn  ·  Hồ sơ  ·  Điều trị", x, baseline + 30);
-                g.setColor(new Color(221, 237, 245));
-                g.setFont(new Font("SansSerif", Font.PLAIN, 12));
-                g.drawString("Không gian làm việc dành cho đội ngũ nha khoa", x, baseline + 53);
+
             } finally {
                 g.dispose();
             }
@@ -325,6 +296,7 @@ public final class LoginFrame extends JFrame {
                     AuthDecision decision = get();
                     if (DesktopLoginGate.mayOpenMain(decision)) {
                         DesktopSession session = DesktopSession.fromSuccessfulLogin(decision);
+                        auth.bindSession(session);
                         MainFrame winMain = new MainFrame(session,
                                 () -> new LoginFrame(auth).setVisible(true));
                         winMain.setVisible(true);

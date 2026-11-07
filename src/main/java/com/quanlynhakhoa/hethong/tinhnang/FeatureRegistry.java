@@ -30,7 +30,9 @@ public final class FeatureRegistry {
         if (factory == null) {
             throw new IllegalArgumentException("Module has no registered panel: " + module);
         }
-        return Objects.requireNonNull(factory.create(session), "Feature panel cannot be null");
+        JPanel page = Objects.requireNonNull(factory.create(session), "Feature panel cannot be null");
+        com.quanlynhakhoa.hethong.giaodien.AppTheme.applyPage(page);
+        return page;
     }
 
     public static final class Builder {

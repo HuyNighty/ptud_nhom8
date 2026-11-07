@@ -71,9 +71,6 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
         title.setFont(new Font("SansSerif", Font.BOLD, 23));
         title.setForeground(NAVY);
         heading.add(title, BorderLayout.NORTH);
-        JLabel intro = new JLabel("6 vai trò cố định · Chính sách từ RolePermissionPolicy · Chỉ xem");
-        intro.setForeground(MUTED);
-        heading.add(intro, BorderLayout.SOUTH);
         add(heading, BorderLayout.NORTH);
 
         JPanel body = new JPanel(new BorderLayout(0, 12));
@@ -200,7 +197,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
                         showRole();
                         int total = result.stream().mapToInt(RoleOverview::accountCount).sum();
                         status.setText(result.size() + " vai trò · " + total
-                                + " tài khoản (mọi trạng thái) · Không có thao tác sửa quyền");
+                                + " tài khoản (mọi trạng thái)");
                     }
                 } catch (InterruptedException failure) {
                     Thread.currentThread().interrupt();

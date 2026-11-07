@@ -29,6 +29,7 @@ public final class CancellationConcurrencySelfTest {
                     case "getAutoCommit" -> auto;
                     case "setAutoCommit" -> {auto=(boolean)args[0];yield null;}
                     case "setTransactionIsolation" -> null;
+                    case "prepareStatement" -> new FeatureJdbcDouble().open().prepareStatement((String)args[0]);
                     case "commit" -> {for(Runnable action:pending)action.run();pending.clear();unlock();yield null;}
                     case "rollback" -> {pending.clear();unlock();yield null;}
                     case "close" -> {pending.clear();unlock();txs.remove(proxy);yield null;}

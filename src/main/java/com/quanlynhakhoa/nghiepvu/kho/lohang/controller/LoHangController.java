@@ -28,7 +28,7 @@ public final class LoHangController implements ActionListener {
     }
 
     @Override
-    public void actionPerformed(ActionEvent event) { taiDanhSach(); }
+    public void actionPerformed(ActionEvent event) { if(dangTai)return; if(event.getSource()==view.getBtnTaiLai())view.xoaBoLoc(); taiDanhSach(); }
 
     private void taiDanhSach() {
         if (dangTai) return;
