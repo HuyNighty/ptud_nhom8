@@ -31,10 +31,10 @@ public final class LatestMainShellSelfTest {
                 java.util.List<String> headers=new ArrayList<>();for(Component c:bar.getComponents())if(c instanceof JMenu m)headers.add(m.getText().replace("▾","").trim());else if(c instanceof JButton b)headers.add(b.getText());
                 check(headers.equals(java.util.List.of("Tổng quan","Tổ chức","Kế hoạch","Tiếp nhận","Hoạt động","Tổng kết")),"exact latest-main menu structure: "+headers);
                 check(item(group(bar,"Hoạt động"),"Kế hoạch điều trị").isEnabled(),"treatment plan is an enabled operations menu destination");
-                item(group(bar,"Tổ chức"),"Dịch vụ & Bảng giá");item(group(bar,"Hoạt động"),"Hóa đơn");item(group(bar,"Hoạt động"),"Thanh toán");item(group(bar,"Hoạt động"),"Duyệt hủy hóa đơn");item(group(bar,"Tổng kết"),"Công nợ");
+                item(group(bar,"Hoạt động"),"Quản lí dịch vụ");item(group(bar,"Hoạt động"),"Hóa đơn");item(group(bar,"Hoạt động"),"Thanh toán");item(group(bar,"Hoạt động"),"Duyệt hủy hóa đơn");item(group(bar,"Tổng kết"),"Công nợ");
                 check(FeatureBootstrap.createRegistry().contains(Module.PATIENTS),"latest patient implementation retained");
                 for(String name:java.util.List.of("Hóa đơn","Thanh toán","Duyệt hủy hóa đơn"))item(group(bar,"Hoạt động"),name).doClick();
-                item(group(bar,"Tổng kết"),"Công nợ").doClick();item(group(bar,"Tổ chức"),"Dịch vụ & Bảng giá").doClick();
+                item(group(bar,"Tổng kết"),"Công nợ").doClick();item(group(bar,"Hoạt động"),"Quản lí dịch vụ").doClick();
                 JPanel pnlContent=(JPanel)winMain.getContentPane();pnlContent.setSize(1360,800);layout(pnlContent);BufferedImage image=new BufferedImage(1360,800,BufferedImage.TYPE_INT_RGB);Graphics2D graphics=image.createGraphics();pnlContent.printAll(graphics);graphics.dispose();
                 try{ImageIO.write(image,"png",root.resolve("target/latest-shell-preview.png").toFile());}catch(java.io.IOException e){throw new RuntimeException(e);}
             }finally{session.logout();winMain.dispose();}

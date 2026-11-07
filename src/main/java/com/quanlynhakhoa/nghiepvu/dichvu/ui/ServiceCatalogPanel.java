@@ -44,7 +44,7 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
         setLayout(new BorderLayout(12, 12));
         setBorder(BorderFactory.createEmptyBorder(24, 26, 24, 26));
         JPanel pnlTop = new JPanel(new BorderLayout(0, 8));
-        JLabel lblTitle = new JLabel(mode==EditorMode.COMBINED?"Dịch vụ và bảng giá":mode==EditorMode.SERVICES?"Dịch vụ":"Bảng giá dịch vụ");
+        JLabel lblTitle = new JLabel(mode==EditorMode.COMBINED?"Quản lí dịch vụ":mode==EditorMode.SERVICES?"Dịch vụ":"Bảng giá dịch vụ");
         lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 22f));
         pnlTop.add(lblTitle, BorderLayout.NORTH);
         JPanel pnlTim = BillingUi.filters(BillingUi.field("Mã hoặc tên dịch vụ",txtTuKhoa),BillingUi.field("Trạng thái sử dụng",cmbTrangThai),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)));
