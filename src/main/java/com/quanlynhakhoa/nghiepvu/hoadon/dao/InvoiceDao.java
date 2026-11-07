@@ -105,6 +105,27 @@ public class InvoiceDao {
         }
     }
 
+    public List<PrescribedMedicine> prescribedMedicines(Connection connection, String invoiceId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement("""
+                SELECT t.maThuoc,t.tenThuoc,t.donViTinh,
+                       COALESCE(b.soLuong,ct.soLuong) AS soLuong,b.donGiaApDung
+                FROM dbo.HoaDon h
+                JOIN dbo.DonThuoc d ON d.maPhieuKham=h.maPhieuKham AND d.maBenhNhan=h.maBenhNhan
+                JOIN dbo.ChiTietDonThuoc ct ON ct.maDonThuoc=d.maDonThuoc
+                JOIN dbo.Thuoc t ON t.maThuoc=ct.maThuoc
+                LEFT JOIN dbo.ChiTietHoaDon b ON b.maHoaDon=h.maHoaDon AND b.maThuoc=ct.maThuoc
+                WHERE h.maHoaDon=? ORDER BY t.tenThuoc,t.maThuoc,b.maChiTiet
+                """)) {
+            statement.setQueryTimeout(15); statement.setString(1, invoiceId);
+            List<PrescribedMedicine> result = new ArrayList<>();
+            try (ResultSet rows = statement.executeQuery()) {
+                while (rows.next()) result.add(new PrescribedMedicine(rows.getString("maThuoc"),
+                        rows.getNString("tenThuoc"), rows.getNString("donViTinh"), rows.getInt("soLuong"),
+                        rows.getBigDecimal("donGiaApDung")));
+            }
+            return List.copyOf(result);
+        }
+    }
     public List<Payment> payments(Connection connection, String id) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT maThanhToan, maHoaDon, thoiGian, soTien, phuongThuc, maGiaoDich, tienKhachDua,
