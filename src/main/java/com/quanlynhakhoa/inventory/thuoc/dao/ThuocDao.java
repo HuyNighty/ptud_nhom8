@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.inventory.thuoc.dao;
 
-import com.quanlynhakhoa.dev.TeamDevConnection;
+import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.inventory.thuoc.model.Thuoc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

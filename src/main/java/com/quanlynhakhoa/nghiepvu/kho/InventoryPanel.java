@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 public final class InventoryPanel extends JPanel {
+    private final boolean[] daKhoiTao = new boolean[4];
     private final DesktopSession phienDangNhap;
     private final JTabbedPane tabbedPane = new JTabbedPane();
 

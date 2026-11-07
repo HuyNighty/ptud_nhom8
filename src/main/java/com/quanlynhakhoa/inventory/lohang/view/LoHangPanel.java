@@ -3,7 +3,7 @@ package com.quanlynhakhoa.inventory.lohang.view;
 import com.quanlynhakhoa.inventory.lohang.controller.LoHangController;
 import com.quanlynhakhoa.inventory.lohang.model.LoHang;
 import com.quanlynhakhoa.inventory.lohang.service.LoHangService;
-import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;

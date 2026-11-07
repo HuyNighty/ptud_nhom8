@@ -29,10 +29,12 @@ public final class TreatmentPlanService {
 
     public List<Object[]> danhSach()throws SQLException{
         authorization.require(session,Permission.MEDICAL_RECORD_READ);
+        return List.of();
     }
 
     public List<Object[]> chiTiet(String planId)throws SQLException{
         authorization.require(session,Permission.MEDICAL_RECORD_READ);
+        return List.of();
     }
 
     public void taoKeHoach(String planId,String chartId,String visitId,LocalDate date,String goal)throws SQLException{

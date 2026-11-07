@@ -4,7 +4,7 @@ import com.quanlynhakhoa.nghiepvu.kho.lohang.view.LoHangPanel;
 import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.view.NhaCungCapPanel;
 import com.quanlynhakhoa.nghiepvu.kho.thuoc.view.ThuocPanel;
 import com.quanlynhakhoa.nghiepvu.kho.vattu.view.VatTuPanel;
-import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
 import java.util.Objects;
 import javax.swing.JPanel;

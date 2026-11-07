@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.inventory.vattu.dao;
 
-import com.quanlynhakhoa.dev.TeamDevConnection;
+import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.inventory.vattu.model.VatTu;
 import java.sql.Connection;
 import java.sql.Date;

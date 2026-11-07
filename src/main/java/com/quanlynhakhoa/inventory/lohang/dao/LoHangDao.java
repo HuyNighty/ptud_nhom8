@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.inventory.lohang.dao;
 
-import com.quanlynhakhoa.dev.TeamDevConnection;
+import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.inventory.lohang.model.LoHang;
 import java.sql.Connection;
 import java.sql.Date;

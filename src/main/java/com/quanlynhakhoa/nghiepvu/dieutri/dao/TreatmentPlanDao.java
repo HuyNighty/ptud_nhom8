@@ -1,11 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.dieutri.dao;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +31,7 @@ public final class TreatmentPlanDao {
         return rows;
     }
     public void taoKeHoach(Connection con,String accountId,String planId,String chartId,String visitId,LocalDate date,String goal)throws SQLException{
+        String employee = TreatmentPlanSqlSupport.layMaNhanVien(con, accountId);
         if(visitId!=null){
             try(PreparedStatement stmt=con.prepareStatement("SELECT 1 FROM dbo.PhieuKham WHERE maPhieuKham=? AND maHoSo=?")){
                 stmt.setString(1,visitId);
@@ -72,6 +70,7 @@ public final class TreatmentPlanDao {
         String sql="UPDATE d SET d.trangThai='DA_THUC_HIEN',d.ngayThucHien=?,d.ketQua=?,d.maNhanVienThucHien=? FROM dbo.ChiTietDieuTri d "
                 +"INNER JOIN dbo.KeHoachDieuTri k ON k.maKeHoach=d.maKeHoach WHERE d.maChiTiet=? AND d.trangThai='CHUA_THUC_HIEN' AND k.trangThai='DANG_THUC_HIEN'";
         try(PreparedStatement stmt=con.prepareStatement(sql)){
+            String employee = TreatmentPlanSqlSupport.layMaNhanVien(con, accountId);
             stmt.setDate(1,Date.valueOf(actual));
             stmt.setNString(2,result);
             stmt.setString(3,employee);

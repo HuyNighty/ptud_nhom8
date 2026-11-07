@@ -1,12 +1,12 @@
 package com.quanlynhakhoa.inventory.vattu.service;
 
-import com.quanlynhakhoa.dev.TeamDevConnection;
+import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.inventory.vattu.dao.VatTuDao;
 import com.quanlynhakhoa.inventory.vattu.model.VatTu;
-import com.quanlynhakhoa.security.AuthorizationService;
-import com.quanlynhakhoa.security.DesktopSession;
-import com.quanlynhakhoa.security.Permission;
-import com.quanlynhakhoa.security.RolePermissionPolicy;
+import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
+import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;

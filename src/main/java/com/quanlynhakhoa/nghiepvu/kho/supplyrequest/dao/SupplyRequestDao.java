@@ -158,6 +158,7 @@ public final class SupplyRequestDao {
                     if (rs.getInt(3) < qty) throw new IllegalArgumentException("Lô " + lotId + " không đủ tồn cho dòng " + lineNo + ".");
                 }
             }
+            try (PreparedStatement stmt = con.prepareStatement("UPDATE dbo.LoHang SET soLuongTon=soLuongTon-? WHERE maLo=? AND soLuongTon>=? AND (hanSuDung IS NULL OR hanSuDung>=CONVERT(date, SYSDATETIME()))")) {
                 stmt.setInt(1, qty);
                 stmt.setString(2, lotId);
                 stmt.setInt(3, qty);

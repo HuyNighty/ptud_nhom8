@@ -86,11 +86,15 @@ public final class InventoryWorkflowDao {
             stmt.setString(6, employeeId);
             stmt.executeUpdate();
         }
-         stmt.setInt(1, soLuong);
+
+        // Đã sửa lại khối lệnh bị thiếu ở đây
+        try (PreparedStatement stmt = con.prepareStatement("UPDATE dbo.LoHang SET soLuongTon=soLuongTon-? WHERE maLo=? AND soLuongTon>=?")) {
+            stmt.setInt(1, soLuong);
             stmt.setString(2, maLo);
             stmt.setInt(3, soLuong);
             if (stmt.executeUpdate() != 1) throw new IllegalArgumentException("Lô không tồn tại hoặc không đủ tồn kho.");
         }
+
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.ChiTietPhieuXuat (maPhieuXuat,maLo,soLuong) VALUES (?,?,?)")) {
             stmt.setString(1, maPhieu);
             stmt.setString(2, maLo);
@@ -130,6 +134,45 @@ public final class InventoryWorkflowDao {
         ghiNhatKy(con, accountId, "Gửi yêu cầu kiểm kê", "PhieuDieuChinhKho", maPhieu);
     }
 
+    public void duyetKiemKe(Connection con, String accountId, String maPhieu) throws SQLException {
+        // 1. Cập nhật trạng thái phiếu
+        try (PreparedStatement stmt = con.prepareStatement(
+                "UPDATE dbo.PhieuDieuChinhKho SET trangThai='DA_DUYET' WHERE maPhieu=? AND trangThai='CHO_DUYET'")) {
+            stmt.setString(1, maPhieu);
+            if (stmt.executeUpdate() != 1) {
+                throw new IllegalArgumentException("Phiếu không tồn tại hoặc không ở trạng thái chờ duyệt.");
+            }
+        }
+        // 2. Cập nhật số lượng tồn thực tế vào Lô hàng
+        try (PreparedStatement stmt = con.prepareStatement(
+                "UPDATE l SET l.soLuongTon = d.soLuongThucTe "
+                        + "FROM dbo.LoHang l "
+                        + "INNER JOIN dbo.ChiTietDieuChinhKho d ON l.maLo = d.maLo "
+                        + "WHERE d.maPhieu = ?")) {
+            stmt.setString(1, maPhieu);
+            stmt.executeUpdate();
+        }
+        // 3. Ghi nhật ký
+        ghiNhatKy(con, accountId, "Duyệt phiếu kiểm kê", "PhieuDieuChinhKho", maPhieu);
+    }
+
+    public void tuChoiKiemKe(Connection con, String accountId, String maPhieu, String reason) throws SQLException {
+        // 1. Cập nhật trạng thái và lý do từ chối
+        try (PreparedStatement stmt = con.prepareStatement(
+                "UPDATE dbo.PhieuDieuChinhKho SET trangThai='TU_CHOI', lyDo=? WHERE maPhieu=? AND trangThai='CHO_DUYET'")) {
+            stmt.setNString(1, reason);
+            stmt.setString(2, maPhieu);
+            if (stmt.executeUpdate() != 1) {
+                throw new IllegalArgumentException("Phiếu không tồn tại hoặc không ở trạng thái chờ duyệt.");
+            }
+        }
+        // 2. Ghi nhật ký
+        ghiNhatKy(con, accountId, "Từ chối phiếu kiểm kê", "PhieuDieuChinhKho", maPhieu);
+    }
+
+
+    // Đã thêm lại dòng khai báo hàm bị thiếu ở đây
+    public static String layMaNhanVien(Connection con, String accountId) throws SQLException {
         String sql = "SELECT nv.maNhanVien FROM dbo.TaiKhoan tk INNER JOIN dbo.NhanVien nv ON nv.maNhanVien=tk.maNhanVien "
                 + "WHERE tk.maTaiKhoan=? AND tk.trangThai='HOAT_DONG' AND nv.trangThai='DANG_LAM_VIEC'";
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
@@ -167,8 +210,8 @@ public final class InventoryWorkflowDao {
         return rows;
     }
 
-    private static void setDate(PreparedStatement stmt, int index, LocalDate value) throws SQLException {
-        if (value == null) stmt.setDate(index, null);
-        else stmt.setDate(index, Date.valueOf(value));
+    private static void setDate(PreparedStatement stmt, int dateIndex, LocalDate value) throws SQLException {
+        if (value == null) stmt.setDate(dateIndex, null);
+        else stmt.setDate(dateIndex, Date.valueOf(value));
     }
 }

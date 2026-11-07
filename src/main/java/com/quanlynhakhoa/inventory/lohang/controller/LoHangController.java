@@ -3,7 +3,7 @@ package com.quanlynhakhoa.inventory.lohang.controller;
 import com.quanlynhakhoa.inventory.lohang.model.LoHang;
 import com.quanlynhakhoa.inventory.lohang.service.LoHangService;
 import com.quanlynhakhoa.inventory.lohang.view.LoHangPanel;
-import com.quanlynhakhoa.security.AccessDeniedException;
+import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
