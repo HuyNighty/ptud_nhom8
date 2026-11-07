@@ -64,7 +64,10 @@ public class InvoiceCreateDao {
         }
     }
     public void insertLine(Connection c,String id,InvoiceDraft.Line line) throws SQLException {
-        try(PreparedStatement s=c.prepareStatement("INSERT INTO dbo.ChiTietHoaDon (maHoaDon,maDichVu,soLuong,donGiaApDung) VALUES (?,?,?,?)")) {
+        String sql = line.medicine()
+                ? "INSERT INTO dbo.ChiTietHoaDon (maHoaDon,maThuoc,soLuong,donGiaApDung) VALUES (?,?,?,?)"
+                : "INSERT INTO dbo.ChiTietHoaDon (maHoaDon,maDichVu,soLuong,donGiaApDung) VALUES (?,?,?,?)";
+        try(PreparedStatement s=c.prepareStatement(sql)) {
             s.setQueryTimeout(15);s.setString(1,id);s.setString(2,line.serviceId());s.setInt(3,line.quantity());s.setBigDecimal(4,line.unitPrice());one(s.executeUpdate());
         }
     }

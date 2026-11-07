@@ -8,11 +8,11 @@ import javax.swing.table.DefaultTableModel;
 /** Review UI contains no persistence or pricing logic. Draft table is never editable. */
 public final class InvoiceCreationDialog extends JDialog {
     public final JTextField txtBenhNhan = new JTextField(18);
-    public final JButton btnTimBenhNhan = new JButton("Tìm bệnh nhân"), btnTaiDichVu = new JButton("Tải dịch vụ tính phí"), btnLuuHoaDon = new JButton("Lưu hóa đơn");
+    public final JButton btnTimBenhNhan = new JButton("Tìm bệnh nhân"), btnTaiDichVu = new JButton("Tải dịch vụ và thuốc"), btnLuuHoaDon = new JButton("Lưu hóa đơn");
     public final JComboBox<BillingChoice> cmbBenhNhan = new JComboBox<>(), cmbPhieuKham = new JComboBox<>();
     public final JLabel lblTongTien = new JLabel("Tổng tiền: —"), lblTrangThai = new JLabel("Tìm bệnh nhân để bắt đầu");
     public final JButton btnHuy=new JButton("Hủy");
-    private final DefaultTableModel tableModel=BillingUi.model("Mã dịch vụ","Tên dịch vụ","Số lượng","Đơn giá áp dụng","Thành tiền");
+    private final DefaultTableModel tableModel=BillingUi.model("Loại","Mã hàng","Tên dịch vụ / thuốc","Số lượng","Đơn giá áp dụng","Thành tiền");
     private final JTable tblChiTietHoaDon=BillingUi.table(tableModel);
     public InvoiceCreationDialog(Window owner) {
         super(owner,"Tạo hóa đơn",ModalityType.APPLICATION_MODAL);
@@ -27,15 +27,15 @@ public final class InvoiceCreationDialog extends JDialog {
         btnHuy.addActionListener(new java.awt.event.ActionListener(){public void actionPerformed(java.awt.event.ActionEvent event){dispose();}});
         BillingUi.style(pnlRoot);setContentPane(pnlRoot);setSize(980,600);setMinimumSize(new Dimension(760,480));setLocationRelativeTo(owner);setDefaultCloseOperation(DISPOSE_ON_CLOSE);btnLuuHoaDon.setEnabled(false);
         btnLuuHoaDon.setToolTipText("Chọn bệnh nhân, lượt khám và tải dịch vụ trước khi lưu.");
-        BillingUi.tableState(tblChiTietHoaDon,"Dịch vụ tính phí sẽ hiển thị tại đây.");
+        BillingUi.tableState(tblChiTietHoaDon,"Dịch vụ và thuốc được kê sẽ hiển thị tại đây.");
         busy(false,false);
     }
     public void showDraft(InvoiceDraft draft) {
         tableModel.setRowCount(0);
-        if(draft!=null)for(InvoiceDraft.Line line:draft.lines())tableModel.addRow(new Object[]{line.serviceId(),line.serviceName(),line.quantity(),line.unitPrice(),line.amount()});
+        if(draft!=null)for(InvoiceDraft.Line line:draft.lines())tableModel.addRow(new Object[]{line.medicine()?"Thuốc":"Dịch vụ",line.serviceId(),line.serviceName(),line.quantity(),line.unitPrice(),line.amount()});
         lblTongTien.setText(draft==null?"Tổng tiền: —":"Tổng tiền: "+BillingUi.vnd(draft.total()));
     }
-    public void guide(String text){lblTrangThai.setText(text);lblTrangThai.setToolTipText(text);if(tableModel.getRowCount()==0)BillingUi.tableState(tblChiTietHoaDon,"Dịch vụ tính phí sẽ hiển thị tại đây.");}
+    public void guide(String text){lblTrangThai.setText(text);lblTrangThai.setToolTipText(text);if(tableModel.getRowCount()==0)BillingUi.tableState(tblChiTietHoaDon,"Dịch vụ và thuốc được kê sẽ hiển thị tại đây.");}
     public void busy(boolean busy, boolean hasDraft) {
         for(Component control:new Component[]{txtBenhNhan,btnTimBenhNhan,btnHuy})control.setEnabled(!busy);
         cmbBenhNhan.setEnabled(!busy&&cmbBenhNhan.getItemCount()>0);cmbPhieuKham.setEnabled(!busy&&cmbPhieuKham.getItemCount()>0);btnTaiDichVu.setEnabled(!busy&&cmbPhieuKham.getSelectedItem()!=null);
