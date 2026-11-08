@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.nio.file.*;
 import javax.swing.*;
 
 /** Synthetic fixtures strictly for automated assertions. Does not generate screenshots or use SQL. */
@@ -18,7 +19,45 @@ public final class BillingRefinementSelfTest {
     private static <T>T find(java.awt.Container root,Class<T> type){for(var child:root.getComponents()){if(type.isInstance(child))return type.cast(child);if(child instanceof java.awt.Container nested){T value=find(nested,type);if(value!=null)return value;}}return null;}
     private static void edt(Runnable action)throws Exception{SwingUtilities.invokeAndWait(action);}
     private static void waitFor(final PaymentPanel panel,final String text)throws Exception{long deadline=System.nanoTime()+10_000_000_000L;while(System.nanoTime()<deadline){boolean[] done={false};edt(new Runnable(){public void run(){done[0]=panel.lblTrangThai.getText().contains(text)&&panel.btnTim.isEnabled();}});if(done[0])return;Thread.sleep(20);}throw new AssertionError("Timed out: "+text);}
+    private static String state(PaymentPanel panel,FeatureJdbcDouble jdbc){
+        PaymentForm form=current(panel);
+        return "search="+panel.lblTrangThai.getText()+"; pickerEnabled="+panel.btnTim.isEnabled()
+                +"; detail="+form.lblTrangThai.getText()+"; busy="+form.isWorking()
+                +"; uncertain="+form.hasUncertainResult()+"; collectionAllowed="+form.collectionContextAllowed()
+                +"; collectEnabled="+form.btnThuTien.isEnabled()+"; fixtureQueries="+new ArrayList<>(jdbc.sql);
+    }
+    private static void waitForDetail(final PaymentPanel panel,final FeatureJdbcDouble jdbc)throws Exception{
+        long deadline=System.nanoTime()+10_000_000_000L;String[] last={"not sampled"};
+        while(System.nanoTime()<deadline){
+            boolean[] ready={false};
+            edt(()->{PaymentForm form=current(panel);ready[0]=panel.lblTrangThai.getText().contains("Đang xem hóa đơn H1")
+                    &&panel.btnTim.isEnabled()&&!form.isWorking()&&!form.hasUncertainResult()
+                    &&form.collectionContextAllowed()&&form.btnThuTien.isEnabled();last[0]=state(panel,jdbc);});
+            if(ready[0])return;
+            Thread.sleep(20); // Poll a bounded condition; never assume a fixed load duration.
+        }
+        throw new AssertionError("Timed out waiting for loaded eligible detail: "+last[0]);
+    }
     public static void main(String[] args)throws Exception{
+        // PaymentPanel uses PendingPaymentStore.local(): never share a real recovery journal
+        // or local database config with this synthetic test.
+        String previousHome=System.getProperty("user.home"),previousDir=System.getProperty("user.dir");
+        Path sandbox=Files.createTempDirectory("n08-billing-refinement-").toAbsolutePath().normalize();
+        try{
+            System.setProperty("user.home",sandbox.toString());System.setProperty("user.dir",sandbox.toString());
+            run();
+        }finally{
+            System.setProperty("user.home",previousHome);System.setProperty("user.dir",previousDir);
+            // Only this freshly created synthetic directory is eligible for cleanup.
+            try(var paths=Files.walk(sandbox)){
+                for(Path path:paths.sorted(Comparator.reverseOrder()).toList()){
+                    if(!path.toAbsolutePath().normalize().startsWith(sandbox))throw new AssertionError("Unsafe cleanup target");
+                    Files.delete(path);
+                }
+            }
+        }
+    }
+    private static void run()throws Exception{
         edt(new Runnable(){public void run(){
             PaymentForm view=new PaymentForm();
             Invoice h=new Invoice("H1","NV1","BN1","Fixture",null,LocalDateTime.now(),InvoiceStatus.CHUA_THANH_TOAN,new BigDecimal("1000000"),BigDecimal.ZERO,BigDecimal.ZERO);
@@ -51,7 +90,7 @@ public final class BillingRefinementSelfTest {
         header.put("maHoaDon","H1");header.put("maNhanVien","NV1");header.put("maBenhNhan","BN1");header.put("tenBenhNhan","Fixture");header.put("ngayLap",Timestamp.valueOf("2026-10-31 10:00:00"));header.put("trangThai","CHUA_THANH_TOAN");header.put("tongTien",new BigDecimal("1000000"));header.put("daThu",BigDecimal.ZERO);header.put("congNoBenhNhan",new BigDecimal("1000000"));jdbc.invoiceRows=List.of(header);
         Map<String,Object> line=new HashMap<>();line.put("maChiTiet",1);line.put("maHoaDon","H1");line.put("maDichVu","DV1");line.put("soLuong",1);line.put("donGiaApDung",new BigDecimal("1000000"));jdbc.lineRows=List.of(line);
         var session=ServiceBillingSelfTest.session(Role.RECEPTIONIST);final PaymentPanel[] page={null};
-        edt(new Runnable(){public void run(){page[0]=new PaymentPanel(session,jdbc);page[0].openInvoice("H1");}});waitFor(page[0],"Đang xem hóa đơn H1");
+        edt(new Runnable(){public void run(){page[0]=new PaymentPanel(session,jdbc);page[0].openInvoice("H1");}});waitForDetail(page[0],jdbc);
         edt(new Runnable(){public void run(){check(current(page[0]).btnThuTien.isEnabled(),"Selected real-shaped fixture loaded");jdbc.invoiceRows=List.of();page[0].txtTimHoaDon.setText("NO_MATCH");page[0].btnTim.doClick();}});waitFor(page[0],"Không tìm thấy");
         edt(new Runnable(){public void run(){check(page[0].cmbHoaDon.getSelectedItem()==null&&!current(page[0]).btnThuTien.isEnabled(),"Fresh unmatched search cannot collect old invoice");check(current(page[0]).txtSoTien.getText().isBlank(),"Old receipt cleared on explicit search");}});
         check(!jdbc.onEdt,"JDBC remains outside EDT");session.logout();
