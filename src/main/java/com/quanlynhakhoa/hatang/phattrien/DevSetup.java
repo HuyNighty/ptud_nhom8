@@ -101,7 +101,7 @@ public final class DevSetup {
                 }
             }
 
-            stage = "install V1-V5 schema and medicine sale price";
+            stage = "install V1-V7 schema including supply requests and emergency-kit support";
             try (Connection dev = DriverManager.getConnection(devUrl, adminUser, adminPassword)) {
                 dev.setAutoCommit(false);
                 try {
@@ -111,6 +111,7 @@ public final class DevSetup {
                             "V3__harden_account_lock_constraints.sql",
                             "V4__create_audit_log.sql",
                             "V5__create_team_feature_schema.sql",
+                            "V6__create_supply_request_and_emergency_kit_support.sql",
                             "V7__add_medicine_sale_price.sql"
                     };
                     for (String name : scripts) {

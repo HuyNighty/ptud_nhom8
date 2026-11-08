@@ -163,15 +163,13 @@ public final class MainFrame extends JFrame {
         item(mnuOperations, "Hồ sơ bệnh án", Module.MEDICAL_RECORDS);
         item(mnuOperations, "Phiếu khám", Module.EXAMINATIONS);
         item(mnuOperations, "Danh mục thuốc & vật tư", Module.INVENTORY);
+        item(mnuOperations, "Nhập / xuất kho & kiểm kê", Module.INVENTORY_WORKFLOW);
         item(mnuOperations, "Yêu cầu cấp phát", Module.SUPPLY_REQUESTS);
         item(mnuOperations, "Kiểm tra hộp cấp cứu", Module.EMERGENCY_KIT);
         item(mnuOperations, "Hóa đơn", Module.BILLING);
         item(mnuOperations, "Thanh toán", Module.PAYMENTS);
         item(mnuOperations, "Duyệt hủy hóa đơn", Module.INVOICE_CANCELLATIONS);
         item(mnuOperations, "Kế hoạch điều trị", Module.TREATMENT_PLANS);
-        if (allowed.contains(Module.INVENTORY)) {
-            pending(mnuOperations, "Nhập / xuất kho");
-        }
         addIfNotEmpty(mnuBar, mnuOperations);
 
         // 5. Tổng kết: công nợ và lịch sử thao tác.
@@ -199,13 +197,6 @@ public final class MainFrame extends JFrame {
         mniAction.addActionListener(event -> navigate(module));
         mnuMenu.add(mniAction);
         links.put(module, mniAction);
-    }
-
-    private void pending(JMenu mnuMenu, String text) {
-        JMenuItem mniAction = new JMenuItem(text + "  ·  Sắp triển khai");
-        mniAction.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        mniAction.setEnabled(false);
-        mnuMenu.add(mniAction);
     }
 
     private void addIfNotEmpty(JMenuBar mnuBar, JMenu mnuMenu) {
@@ -308,6 +299,7 @@ public final class MainFrame extends JFrame {
             case APPOINTMENTS -> "Lịch hẹn";
             case BILLING -> "Hóa đơn";
             case INVENTORY -> "Kho vật tư";
+            case INVENTORY_WORKFLOW -> "Nhập / xuất kho & kiểm kê";
             case WORKFORCE -> "Nhân viên";
             case ACCOUNTS -> "Tài khoản";
             case ROLES -> "Vai trò";

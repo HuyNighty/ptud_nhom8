@@ -9,6 +9,7 @@ public enum Module {
     APPOINTMENTS(Permission.APPOINTMENT_READ),
     BILLING(Permission.BILLING_READ),
     INVENTORY(Permission.INVENTORY_READ),
+    INVENTORY_WORKFLOW(Permission.INVENTORY_READ),
     WORKFORCE(Permission.WORKFORCE_READ),
     ACCOUNTS(Permission.ACCOUNT_MANAGE),
     ROLES(Permission.ROLE_MANAGE),

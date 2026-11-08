@@ -43,6 +43,9 @@ public final class FeatureRegistrySelfTest {
         check(empty.contains(Module.TREATMENT_PLANS), "treatment plans registered");
         check(empty.contains(Module.RECEPTION), "reception registered");
         check(empty.contains(Module.INVENTORY), "inventory registered");
+        check(empty.contains(Module.INVENTORY_WORKFLOW), "inventory receipt/issue/stocktake workflow registered");
+        check(empty.contains(Module.SUPPLY_REQUESTS), "supply requests registered");
+        check(empty.contains(Module.EMERGENCY_KIT), "emergency kit registered");
         check(empty.contains(Module.SERVICE_CATALOG), "service catalogue integrated in main shell");
         check(empty.contains(Module.BILLING), "billing integrated in main shell");
         check(empty.contains(Module.ACCOUNTS), "existing accounts registration preserved");
@@ -104,6 +107,9 @@ public final class FeatureRegistrySelfTest {
         DesktopSession admin = session(Role.SYSTEM_ADMIN);
         check(navigation.canOpen(admin, Module.APPOINTMENTS), "admin can open appointments");
         check(navigation.canOpen(admin, Module.MEDICAL_RECORDS), "admin can open medical records");
+        check(navigation.canOpen(admin, Module.INVENTORY_WORKFLOW), "admin can open inventory workflow");
+        check(navigation.canOpen(session(Role.INVENTORY_MANAGER), Module.INVENTORY_WORKFLOW), "inventory manager can open inventory workflow");
+        check(!navigation.canOpen(doctor, Module.INVENTORY_WORKFLOW), "doctor cannot open inventory workflow without inventory permission");
         reject(IllegalArgumentException.class, () -> registry.create(admin, Module.BILLING));
         reject(AccessDeniedException.class, () -> registry.create(null, Module.PATIENTS));
         reject(AccessDeniedException.class, () -> registry.create(admin, null));

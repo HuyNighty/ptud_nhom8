@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eclipse-userlibraries>
+  <library name="Maven: com.microsoft.sqlserver:mssql-jdbc:12.10.0.jre11">
+    <archive path="C:/Users/Hải Đăng/.m2/repository/com/microsoft/sqlserver/mssql-jdbc/12.10.0.jre11/mssql-jdbc-12.10.0.jre11.jar" />
+  </library>
+  <library name="Maven: org.mindrot:jbcrypt:0.4">
+    <archive path="C:/Users/Hải Đăng/.m2/repository/org/mindrot/jbcrypt/0.4/jbcrypt-0.4.jar" />
+  </library>
+</eclipse-userlibraries>
+

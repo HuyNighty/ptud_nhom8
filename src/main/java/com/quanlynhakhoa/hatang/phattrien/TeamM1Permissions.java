@@ -19,6 +19,7 @@ public final class TeamM1Permissions {
     private static final Pattern LOGIN_NAME = Pattern.compile("n08dev_[0-9a-f]{8}");
 
     private record Grant(String table, String privileges) { }
+    private record ColumnGrant(String table, String column) { }
 
     private static final List<Grant> GRANTS = List.of(
             new Grant("NhanVien", "INSERT"),
@@ -31,11 +32,42 @@ public final class TeamM1Permissions {
             new Grant("Thuoc", "SELECT, INSERT, UPDATE"),
             new Grant("VatTu", "SELECT, INSERT, UPDATE"),
             new Grant("NhaCungCap", "SELECT, INSERT, UPDATE"),
-            new Grant("LoHang", "SELECT"),
+            new Grant("LoHang", "SELECT, INSERT"),
+            new Grant("PhieuNhapKho", "SELECT, INSERT"),
+            new Grant("ChiTietPhieuNhap", "SELECT, INSERT"),
+            new Grant("PhieuXuatKho", "SELECT, INSERT"),
+            new Grant("ChiTietPhieuXuat", "SELECT, INSERT"),
+            new Grant("PhieuDieuChinhKho", "SELECT, INSERT"),
+            new Grant("ChiTietDieuChinhKho", "SELECT, INSERT"),
+            new Grant("DanhMucCapCuu", "SELECT, INSERT"),
+            new Grant("KiemTraCapCuu", "SELECT, INSERT"),
+            new Grant("ChiTietKiemTraCapCuu", "SELECT, INSERT"),
+            new Grant("YeuCauCapPhat", "SELECT, INSERT"),
+            new Grant("ChiTietYeuCauCapPhat", "SELECT, INSERT"),
+            new Grant("ThamSoHeThong", "SELECT"),
             new Grant("HoaDon", "SELECT"),
             new Grant("ChiTietHoaDon", "SELECT"),
             new Grant("ThanhToan", "SELECT"),
             new Grant("NhatKyThaoTac", "SELECT, INSERT")
+    );
+
+    private static final List<ColumnGrant> COLUMN_UPDATES = List.of(
+            new ColumnGrant("LoHang", "soLuongTon"),
+            new ColumnGrant("PhieuDieuChinhKho", "trangThai"),
+            new ColumnGrant("PhieuDieuChinhKho", "maTaiKhoanDuyet"),
+            new ColumnGrant("PhieuDieuChinhKho", "thoiGianDuyet"),
+            new ColumnGrant("PhieuDieuChinhKho", "ghiChuDuyet"),
+            new ColumnGrant("DanhMucCapCuu", "soLuongHienCo"),
+            new ColumnGrant("DanhMucCapCuu", "hanSuDungGanNhat"),
+            new ColumnGrant("YeuCauCapPhat", "trangThai"),
+            new ColumnGrant("YeuCauCapPhat", "maTaiKhoanXuLy"),
+            new ColumnGrant("YeuCauCapPhat", "thoiGianXuLy"),
+            new ColumnGrant("YeuCauCapPhat", "ghiChuXuLy"),
+            new ColumnGrant("YeuCauCapPhat", "maPhieuXuat"),
+            new ColumnGrant("ChiTietYeuCauCapPhat", "maLoCapPhat"),
+            new ColumnGrant("ChiTietYeuCauCapPhat", "soLuongCapPhat"),
+            new ColumnGrant("ThamSoHeThong", "giaTri"),
+            new ColumnGrant("ThamSoHeThong", "capNhatLuc")
     );
 
     private TeamM1Permissions() { }
@@ -48,6 +80,10 @@ public final class TeamM1Permissions {
                 statement.execute("GRANT " + grant.privileges()
                         + " ON OBJECT::dbo." + grant.table()
                         + " TO [" + appSqlLogin + "]");
+            }
+            for (ColumnGrant grant : COLUMN_UPDATES) {
+                statement.execute("GRANT UPDATE ([" + grant.column() + "]) ON OBJECT::dbo.["
+                        + grant.table() + "] TO [" + appSqlLogin + "]");
             }
         }
     }
@@ -69,8 +105,8 @@ public final class TeamM1Permissions {
         try (Statement statement = admin.createStatement();
              ResultSet rs = statement.executeQuery(
                      "SELECT COUNT(*) FROM sys.tables WHERE schema_id = SCHEMA_ID(N'dbo')")) {
-            if (!rs.next() || rs.getInt(1) != 39) {
-                throw new SQLException("Expected 39 dbo tables before granting M1 permissions");
+            if (!rs.next() || rs.getInt(1) != 41) {
+                throw new SQLException("Expected 41 dbo tables before granting M1 permissions");
             }
         }
         try (PreparedStatement statement = admin.prepareStatement("""
@@ -109,7 +145,7 @@ public final class TeamM1Permissions {
         }
     }
 
-    private static int verifyEffectivePrivileges(boolean mustBeComplete) throws SQLException {
+    private static void verifyEffectivePrivileges(boolean mustBeComplete) throws SQLException {
         try (Connection app = TeamDevConnection.open()) {
             int missing = 0;
             for (Grant grant : GRANTS) {
@@ -123,6 +159,12 @@ public final class TeamM1Permissions {
                     throw new SQLException("M1 SQL login unexpectedly has DELETE on " + grant.table());
                 }
             }
+            for (ColumnGrant grant : COLUMN_UPDATES) {
+                if (!hasColumnPermission(app, grant.table(), grant.column())) {
+                    System.out.println("MISSING: " + grant.table() + "." + grant.column() + " / UPDATE");
+                    missing++;
+                }
+            }
             if (missing > 0 && mustBeComplete) {
                 throw new SQLException("Missing " + missing + " required M1 SQL permissions");
             }
@@ -131,7 +173,6 @@ public final class TeamM1Permissions {
             } else {
                 System.out.println("CHECK: " + missing + " required M1 grants are missing; no SQL writes");
             }
-            return missing;
         }
     }
 
@@ -141,6 +182,18 @@ public final class TeamM1Permissions {
                 "SELECT HAS_PERMS_BY_NAME(?, 'OBJECT', ?)")) {
             statement.setString(1, "dbo." + table);
             statement.setString(2, privilege);
+            try (ResultSet rs = statement.executeQuery()) {
+                return rs.next() && rs.getInt(1) == 1;
+            }
+        }
+    }
+
+    private static boolean hasColumnPermission(Connection app, String table, String column)
+            throws SQLException {
+        try (PreparedStatement statement = app.prepareStatement(
+                "SELECT HAS_PERMS_BY_NAME(?, 'OBJECT', 'UPDATE', ?, 'COLUMN')")) {
+            statement.setString(1, "dbo." + table);
+            statement.setString(2, column);
             try (ResultSet rs = statement.executeQuery()) {
                 return rs.next() && rs.getInt(1) == 1;
             }

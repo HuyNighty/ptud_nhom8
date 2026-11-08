@@ -156,14 +156,30 @@ public final class InventoryWorkflowPanel extends JPanel {
             add(form, BorderLayout.NORTH);
         }
 
-        public JTextField maPhieu() { return maPhieu; }
-        public JTextField maLo() { return maLo; }
-        public JTextField actual() { return actual; }
-        public JTextField reason() { return reason; }
-        public JButton save() { return save; }
-        public JButton refresh() { return refresh; }
-        public JButton approve() { return approve; }
-        public JButton reject() { return reject; }
+        public JTextField maPhieu() {
+            return maPhieu;
+        }
+        public JTextField maLo() {
+            return maLo;
+        }
+        public JTextField actual() {
+            return actual;
+        }
+        public JTextField reason() {
+            return reason;
+        }
+        public JButton save() {
+            return save;
+        }
+        public JButton refresh() {
+            return refresh;
+        }
+        public JButton approve() {
+            return approve;
+        }
+        public JButton reject() {
+            return reject;
+        }
         public String selectedId() {
             int r = table.getSelectedRow();
             return r < 0 ? null : String.valueOf(data.getValueAt(table.convertRowIndexToModel(r), 0));

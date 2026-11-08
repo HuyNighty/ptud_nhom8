@@ -7,6 +7,9 @@ import com.quanlynhakhoa.nghiepvu.benhnhan.view.HoSoBenhAnPanel;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.LichHenPanel;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.TiepNhanPanel;
 import com.quanlynhakhoa.nghiepvu.kho.InventoryPanel;
+import com.quanlynhakhoa.nghiepvu.kho.hopcapcuu.view.EmergencyKitPanel;
+import com.quanlynhakhoa.nghiepvu.kho.supplyrequest.view.SupplyRequestPanel;
+import com.quanlynhakhoa.nghiepvu.kho.workflow.view.InventoryWorkflowPanel;
 import com.quanlynhakhoa.quantri.nhanvien.ui.EmployeePanel;
 import com.quanlynhakhoa.quantri.vaitro.ui.RolePanel;
 import com.quanlynhakhoa.nghiepvu.phieukham.view.PhieuKhamPanel;
@@ -37,6 +40,9 @@ public final class FeatureBootstrap {
                 .register(Module.APPOINTMENTS, LichHenPanel::new)
                 .register(Module.RECEPTION, TiepNhanPanel::new)
                 .register(Module.INVENTORY, InventoryPanel::new)
+                .register(Module.INVENTORY_WORKFLOW, InventoryWorkflowPanel::new)
+                .register(Module.SUPPLY_REQUESTS, SupplyRequestPanel::new)
+                .register(Module.EMERGENCY_KIT, EmergencyKitPanel::new)
                 .register(Module.MEDICAL_RECORDS, HoSoBenhAnPanel::new)
                 .register(Module.SERVICE_CATALOG, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session) {
