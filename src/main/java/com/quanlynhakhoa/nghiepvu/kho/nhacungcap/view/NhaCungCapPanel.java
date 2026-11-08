@@ -94,10 +94,6 @@ public final class NhaCungCapPanel extends JPanel {
         south.setOpaque(false);
         lblTrangThai.setForeground(MUTED);
         south.add(lblTrangThai, BorderLayout.NORTH);
-        JLabel note = new JLabel("Ngừng hợp tác chỉ đổi trạng thái; không xóa nhà cung cấp để giữ nguyên tham chiếu lô hàng/chứng từ.", SwingConstants.LEFT);
-        note.setForeground(MUTED);
-        note.setFont(note.getFont().deriveFont(11f));
-        south.add(note, BorderLayout.SOUTH);
         add(south, BorderLayout.SOUTH);
 
         NhaCungCapService service = new NhaCungCapService(phien);
@@ -158,6 +154,7 @@ public final class NhaCungCapPanel extends JPanel {
     }
     public JButton getBtnTim() {
         return btnTim; }
+    public void xoaBoLoc() { txtTimKiem.setText(""); cmbTrangThai.setSelectedIndex(0); }
     public JButton getBtnTaiLai() {
         return btnTaiLai; }
     public JButton getBtnThem() {

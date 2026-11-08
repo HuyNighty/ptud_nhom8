@@ -114,11 +114,7 @@ public final class AccountPanel extends JPanel {
         JLabel lblTitle = new JLabel("Quản lý tài khoản nhân viên");
         lblTitle.setFont(new Font("SansSerif", Font.BOLD, 23));
         lblTitle.setForeground(NAVY);
-        JLabel lblDescription = new JLabel(
-                "Danh sách, tạo và khóa/mở khóa tài khoản nhân viên");
-        lblDescription.setForeground(MUTED);
         pnlHeading.add(lblTitle, BorderLayout.NORTH);
-        pnlHeading.add(lblDescription, BorderLayout.SOUTH);
         add(pnlHeading, BorderLayout.NORTH);
 
         JPanel pnlMain = new JPanel(new BorderLayout(0, 14));
@@ -146,9 +142,6 @@ public final class AccountPanel extends JPanel {
         pnlStateActions.setOpaque(false);
         pnlStateActions.add(btnLock);
         pnlStateActions.add(btnUnlock);
-        JLabel lblLockScope = new JLabel("Khóa chỉ chặn đăng nhập mới; phiên đang mở không bị thu hồi.");
-        lblLockScope.setForeground(MUTED);
-        pnlStateActions.add(lblLockScope);
         pnlFooter.add(pnlStateActions, BorderLayout.CENTER);
         pnlFooter.add(lblStatus, BorderLayout.SOUTH);
         pnlMain.add(pnlFooter, BorderLayout.SOUTH);
@@ -158,7 +151,7 @@ public final class AccountPanel extends JPanel {
         btnLock.addActionListener(event -> requestStateChange(true));
         btnUnlock.addActionListener(event -> requestStateChange(false));
         btnSearch.addActionListener(event -> load());
-        btnRefresh.addActionListener(event -> load());
+        btnRefresh.addActionListener(event -> { txtKeyword.setText(""); cmbRoleFilter.setSelectedIndex(0); cmbStatusFilter.setSelectedIndex(0); load(); });
         txtKeyword.addActionListener(event -> load());
         // Applying either filter is an immediate search, even during an in-flight load.
         cmbRoleFilter.addActionListener(event -> load());
@@ -170,7 +163,7 @@ public final class AccountPanel extends JPanel {
             btnSearch.setEnabled(false);
             btnRefresh.setEnabled(false);
             btnCreate.setEnabled(false);
-            lblStatus.setText("Chưa có cấu hình SQL Server development trong worktree.");
+            lblStatus.setText("Chưa thiết lập kết nối dữ liệu.");
         }
     }
 
@@ -220,7 +213,7 @@ public final class AccountPanel extends JPanel {
         if (!configured) {
         reloadPending = false;
         lblStatus.setText(
-            "Chưa có cấu hình SQL Server development trong worktree."
+            "Chưa thiết lập kết nối dữ liệu."
         );
         return;
     }
@@ -242,7 +235,7 @@ public final class AccountPanel extends JPanel {
         AccountStatus status = (AccountStatus) cmbStatusFilter.getSelectedItem();
         loading = true;
         updateControls();
-        lblStatus.setText("Đang tải từ SQL Server...");
+        lblStatus.setText("Đang tải dữ liệu...");
         new SwingWorker<AccountDirectoryDao.Result, Void>() {
             @Override protected AccountDirectoryDao.Result doInBackground() throws Exception {
                 return service.search(search, role, status);
@@ -325,7 +318,7 @@ public final class AccountPanel extends JPanel {
                     Thread.currentThread().interrupt();
                     lblStatus.setText("Không thể tải danh sách nhân viên.");
                 } catch (ExecutionException | CancellationException ex) {
-                    lblStatus.setText("Không thể tải nhân viên. Kiểm tra kết nối và quyền SQL.");
+                    lblStatus.setText("Không thể tải nhân viên. Kiểm tra kết nối hoặc liên hệ quản trị viên.");
                     JOptionPane.showMessageDialog(AccountPanel.this,
                             "Không thể tải danh sách nhân viên đủ điều kiện.",
                             "Không thể tạo tài khoản", JOptionPane.WARNING_MESSAGE);
@@ -402,7 +395,7 @@ public final class AccountPanel extends JPanel {
             }
             creating = true;
             updateControls();
-            lblStatus.setText("Đang tạo tài khoản trong SQL Server...");
+            lblStatus.setText("Đang tạo tài khoản...");
             char[] workerSecret = secret.clone();
             new SwingWorker<String, Void>() {
                 @Override protected String doInBackground() throws Exception {

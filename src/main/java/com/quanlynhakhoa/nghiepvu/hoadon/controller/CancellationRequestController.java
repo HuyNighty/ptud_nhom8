@@ -25,7 +25,7 @@ public final class CancellationRequestController {
         if(busy)return;busy=true;maySubmit=false;view.busy(true,false);
         new Task<CancellationService.Preview>(){
             protected CancellationService.Preview doInBackground()throws Exception{return service.preview(invoiceId);}
-            protected void succeeded(CancellationService.Preview preview){maySubmit=!preview.pending()&&preview.invoice().hoaDon().trangThai()!=InvoiceStatus.DA_HUY;view.showPreview(preview);view.busy(false,maySubmit);}
+            protected void succeeded(CancellationService.Preview preview){maySubmit=!preview.pending()&&preview.invoice().hoaDon().trangThai()!=InvoiceStatus.DA_HUY&&preview.invoice().hoaDon().daThu().signum()==0;view.showPreview(preview);view.busy(false,maySubmit);}
         }.execute();
     }
     private void send(){
@@ -35,8 +35,8 @@ public final class CancellationRequestController {
         busy=true;maySubmit=false;view.busy(true,false);
         new Task<String>(){
             protected String doInBackground()throws Exception{return service.request(invoiceId,reason);}
-            protected void succeeded(String id){view.lblTrangThai.setText("Đã gửi yêu cầu "+id+". Hóa đơn chưa bị hủy.");saved.run();view.busy(false,false);BillingChangeBus.forSession(session).publish();}
-            protected void failed(Throwable failure){if(failure instanceof CancellationService.CommittedCancellationException committed){succeeded(committed.id());return;}view.lblTrangThai.setText(BillingUi.error(failure)+" Kiểm tra/Làm mới trước khi gửi tiếp; không tự thử lại.");view.busy(false,false);}
+            protected void succeeded(String id){BillingUi.result(view,"Đã gửi yêu cầu hủy "+id+". Hóa đơn chờ người có quyền xét duyệt.");view.lblTrangThai.setText("Đã gửi yêu cầu "+id+". Hóa đơn chưa bị hủy.");saved.run();view.busy(false,false);BillingChangeBus.forSession(session).publish();}
+            protected void failed(Throwable failure){if(failure instanceof CancellationService.CommittedCancellationException committed){succeeded(committed.id());return;}BillingUi.result(view,BillingUi.error(failure)+" Kiểm tra kết quả trước khi gửi lại.","Chưa xác nhận gửi yêu cầu",javax.swing.JOptionPane.ERROR_MESSAGE);view.lblTrangThai.setText(BillingUi.error(failure)+" Kiểm tra/Làm mới trước khi gửi tiếp; không tự thử lại.");view.busy(false,false);}
         }.execute();
     }
 }

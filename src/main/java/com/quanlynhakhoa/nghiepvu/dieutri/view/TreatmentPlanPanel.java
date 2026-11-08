@@ -18,23 +18,26 @@ import javax.swing.table.DefaultTableModel;
 public final class TreatmentPlanPanel extends JPanel {
     final JTextField planId=new JTextField(), chartId=new JTextField(), visitId=new JTextField(), planDate=new JTextField(LocalDate.now().toString()), goal=new JTextField();
     final JTextField serviceId=new JTextField(), tooth=new JTextField(), dueDate=new JTextField(LocalDate.now().toString()), stepNote=new JTextField();
-    final JButton createPlan=new JButton("Tạo kế hoạch"), addStep=new JButton("Thêm bước điều trị"), completeStep=new JButton("Hoàn thành bước"), cancelStep=new JButton("Hủy bước"), completePlan=new JButton("Hoàn tất kế hoạch"), cancelPlan=new JButton("Hủy kế hoạch"), refresh=new JButton("Tải lại");
+    final JButton createPlan=new JButton("Tạo kế hoạch"), addStep=new JButton("Thêm bước điều trị"), completeStep=new JButton("Hoàn thành bước"), cancelStep=new JButton("Hủy bước"), completePlan=new JButton("Hoàn tất kế hoạch"), cancelPlan=new JButton("Hủy kế hoạch"), refresh=new JButton("Làm mới");
     final DefaultTableModel planModel=readonly("Mã KH","Mã hồ sơ","Mã BN","Bệnh nhân","Mã phiếu khám","Ngày lập","Mục tiêu","Trạng thái","Bác sĩ");
     final DefaultTableModel detailModel=readonly("Mã CT","Mã DV","Dịch vụ","Vị trí răng","Ngày dự kiến","Ngày thực hiện","Kết quả","Trạng thái","Nhân viên","Ghi chú");
     final JTable plans=new JTable(planModel), details=new JTable(detailModel);
 
     public TreatmentPlanPanel(DesktopSession session){
         setLayout(new BorderLayout(8,8)); JPanel create=new JPanel(new GridLayout(0,4,7,7));
+        JLabel title = new JLabel("Kế hoạch điều trị");
+        title.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 23));
+        add(title, BorderLayout.NORTH);
         field(create,"Mã kế hoạch (≤10)",planId);
         field(create,"Mã hồ sơ bệnh án",chartId);
         field(create,"Mã phiếu khám (tùy chọn)",visitId);
-        field(create,"Ngày lập yyyy-MM-dd",planDate);
+        field(create,"Ngày lập yyyy-MM-dd",com.quanlynhakhoa.hethong.giaodien.DateInput.iso(planDate,"ngày lập kế hoạch"));
         field(create,"Mục tiêu",goal);create.add(createPlan);create.add(refresh);
         JPanel step=new JPanel(new GridLayout(0,4,7,7));
         field(step,"Mã kế hoạch đang chọn",new JLabel("Chọn ở bảng trên"));
         field(step,"Mã dịch vụ",serviceId);
         field(step,"Vị trí răng",tooth);
-        field(step,"Ngày dự kiến yyyy-MM-dd",dueDate);
+        field(step,"Ngày dự kiến yyyy-MM-dd",com.quanlynhakhoa.hethong.giaodien.DateInput.iso(dueDate,"ngày dự kiến điều trị"));
         field(step,"Ghi chú",stepNote);
         step.add(addStep);
         step.add(completeStep);
@@ -45,13 +48,13 @@ public final class TreatmentPlanPanel extends JPanel {
         top.add(create,BorderLayout.NORTH);
         top.add(new JScrollPane(plans),BorderLayout.CENTER);
         JPanel bottom=new JPanel(new BorderLayout(5,5));
-        bottom.add(new JLabel("Chọn kế hoạch, sau đó thêm/hoàn thành/hủy từng bước. Mã hồ sơ và dịch vụ phải tồn tại."),BorderLayout.NORTH);
+
         bottom.add(new JScrollPane(details),BorderLayout.CENTER);
         bottom.add(step,BorderLayout.SOUTH);
         JSplitPane split=new JSplitPane(JSplitPane.VERTICAL_SPLIT,top,bottom);
         split.setResizeWeight(.48);
         add(split,BorderLayout.CENTER);
-        if (session.role() != Role.DOCTOR) {
+        if (session.role() != Role.DOCTOR && session.role() != Role.SYSTEM_ADMIN) {
             createPlan.setEnabled(false);
             addStep.setEnabled(false);
             completeStep.setEnabled(false);

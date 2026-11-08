@@ -32,14 +32,16 @@ public final class BillingRefinementSelfTest {
             check(!view.lblTienThua.isVisible()&&view.chkDaNhanChuyenKhoan.isVisible(),"Bank-only shows relevant controls");
             view.txtKhachDua.setText("unused invalid cash input");check(view.lblPhanBo.getText().contains("Khớp"),"Hidden tender does not affect bank preview");
             view.chkDaNhanChuyenKhoan.setSelected(true);view.txtSoTien.setText("700.000");check(!view.chkDaNhanChuyenKhoan.isSelected(),"Changed bank amount requires reconfirmation");
-            view.cmbPhuongThuc.setSelectedItem(PaymentForm.Method.MIXED);view.txtTienMat.setText("200.000");view.txtChuyenKhoan.setText("500.000");view.txtKhachDua.setText("300.000");
-            check(view.txtTienMat.isEditable()&&view.txtChuyenKhoan.isEditable(),"Mixed portions editable");
-            check(view.lblTienThua.getText().contains("100.000")&&view.lblNoSauThu.getText().contains("300.000")&&view.lblPhanBo.getText().contains("Khớp"),"Mixed cash change and debt exact");
-            List<PaymentRequest.Part> parts=List.of(new PaymentRequest.Part("P1",view.cashAmount(),Payment.PhuongThuc.TIEN_MAT,null,new BigDecimal("300000")),new PaymentRequest.Part("P2",view.bankAmount(),Payment.PhuongThuc.CHUYEN_KHOAN,"TESTREF",null));
+            view.txtMaGiaoDich.setText("BANK-A");view.chkDaNhanChuyenKhoan.setSelected(true);
+            view.txtMaGiaoDich.setText("BANK-B");check(!view.chkDaNhanChuyenKhoan.isSelected(),"Changed transfer reference requires reconfirmation");
+            view.chkDaNhanChuyenKhoan.setSelected(true);view.txtMaGiaoDich.setText("");
+            check(!view.chkDaNhanChuyenKhoan.isSelected(),"Cleared transfer reference requires reconfirmation");
+            check(view.cmbPhuongThuc.getItemCount()==2,"Only cash and bank methods available");
+            List<PaymentRequest.Part> parts=List.of(new PaymentRequest.Part("P2",new BigDecimal("700000"),Payment.PhuongThuc.CHUYEN_KHOAN,"TESTREF",null));
             try{PaymentService.validate(new PaymentRequest("H1",new BigDecimal("700000"),parts,false));throw new AssertionError("Bank confirmation bypassed");}catch(IllegalArgumentException expected){checks++;}
             PaymentService.validate(new PaymentRequest("H1",new BigDecimal("700000"),parts,true));checks++;
-            view.txtChuyenKhoan.setText("400.000");check(view.lblPhanBo.getText().contains("Chưa khớp"),"Mixed mismatch visible");
-            view.txtKhachDua.setText("100.000");check(view.lblTienThua.getText().contains("chưa đủ"),"Insufficient tender visible");
+            view.cmbPhuongThuc.setSelectedItem(PaymentForm.Method.CASH);view.txtKhachDua.setText("100.000");
+            check(view.lblTienThua.getText().contains("chưa đủ"),"Insufficient tender visible");
             view.txtSoTien.setText("1.000.001");check(view.lblNoSauThu.getText().contains("vượt"),"Overcollection visible");
             view.busy(true,false,true);check(!view.cmbPhuongThuc.isEnabled()&&!view.btnThuTien.isEnabled(),"Write locks method and submit");
             view.busy(false,false,true);check(view.btnKiemTra.isVisible()&&view.btnKiemTra.isEnabled()&&!view.btnThuTien.isEnabled(),"Unknown commit offers read verification only");
@@ -53,6 +55,6 @@ public final class BillingRefinementSelfTest {
         edt(new Runnable(){public void run(){check(current(page[0]).btnThuTien.isEnabled(),"Selected real-shaped fixture loaded");jdbc.invoiceRows=List.of();page[0].txtTimHoaDon.setText("NO_MATCH");page[0].btnTim.doClick();}});waitFor(page[0],"Không tìm thấy");
         edt(new Runnable(){public void run(){check(page[0].cmbHoaDon.getSelectedItem()==null&&!current(page[0]).btnThuTien.isEnabled(),"Fresh unmatched search cannot collect old invoice");check(current(page[0]).txtSoTien.getText().isBlank(),"Old receipt cleared on explicit search");}});
         check(!jdbc.onEdt,"JDBC remains outside EDT");session.logout();
-        System.out.println("PASS: BillingRefinementSelfTest "+checks+" assertions (method allocation, mixed, change, validation, busy/unknown result, fresh search; synthetic logic tests only, no screenshots/SQL).");
+        System.out.println("PASS: BillingRefinementSelfTest "+checks+" assertions (single method allocation, change, validation, busy/unknown result, fresh search; synthetic logic tests only, no screenshots/SQL).");
     }
 }

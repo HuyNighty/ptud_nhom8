@@ -15,7 +15,7 @@ public final class DebtController {
     private final Runnable invalidated;
     public DebtController(DebtPanel view,DesktopSession session,ConnectionProvider connections){
         this.view=view;this.session=session;invoices=new InvoiceService(session,connections);
-        view.btnTim.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});view.btnTaiLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});view.txtTuKhoa.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});view.btnThuNo.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(!busy)view.paySelected();}});
+        view.btnTim.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});view.btnTaiLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(busy)return;view.txtTuKhoa.setText("");view.txtTuNgay.setText("");view.txtDenNgay.setText("");load();}});view.txtTuKhoa.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});view.btnThuNo.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(!busy)view.paySelected();}});
         view.tblBenhNhan.getSelectionModel().addListSelectionListener(new ListSelectionListener(){public void valueChanged(ListSelectionEvent e){if(!busy&&!e.getValueIsAdjusting()){busy=true;view.selectPatient();busy=false;}}});
         view.tblHoaDon.getSelectionModel().addListSelectionListener(new ListSelectionListener(){public void valueChanged(ListSelectionEvent e){if(!busy&&!e.getValueIsAdjusting())detail();}});
         invalidated=new Runnable(){public void run(){load();}};BillingChangeBus.forSession(session).subscribe(invalidated);
@@ -34,7 +34,7 @@ public final class DebtController {
         busy=true;view.busy(true);view.loading();
         new Task<List<PatientDebt>>(){
             protected List<PatientDebt> doInBackground()throws Exception{return DebtService.byPatient(invoices.find(keyword,from,to,null));}
-            protected void succeeded(List<PatientDebt> rows){busy=true;view.showPatients(rows);busy=false;view.lblTrangThai.setText(rows.isEmpty()?"Tổng hợp theo bộ lọc ngày lập hóa đơn hiện tại.":"Chọn bệnh nhân rồi chọn hóa đơn để xem chi tiết hoặc thu nợ.");next();}
+            protected void succeeded(List<PatientDebt> rows){busy=true;view.showPatients(rows);busy=false;view.lblTrangThai.setText(rows.isEmpty()?"Tổng hợp theo bộ lọc ngày lập hóa đơn hiện tại.":" ");next();}
         }.execute();
     }
     private void detail(){final String id=view.selectedInvoice();if(id==null)return;busy=true;view.busy(true);new Task<InvoiceDetails>(){

@@ -35,6 +35,9 @@ public final class TeamM1Permissions {
             new Grant("HoaDon", "SELECT"),
             new Grant("ChiTietHoaDon", "SELECT"),
             new Grant("ThanhToan", "SELECT"),
+            new Grant("LanThuHoaDon", "SELECT, INSERT, UPDATE"),
+            new Grant("DieuChinhThanhToan", "SELECT, INSERT"),
+            new Grant("DongTienHoaDon", "SELECT"),
             new Grant("NhatKyThaoTac", "SELECT, INSERT")
     );
 
@@ -69,8 +72,8 @@ public final class TeamM1Permissions {
         try (Statement statement = admin.createStatement();
              ResultSet rs = statement.executeQuery(
                      "SELECT COUNT(*) FROM sys.tables WHERE schema_id = SCHEMA_ID(N'dbo')")) {
-            if (!rs.next() || rs.getInt(1) != 39) {
-                throw new SQLException("Expected 39 dbo tables before granting M1 permissions");
+            if (!rs.next() || rs.getInt(1) != 43) {
+                throw new SQLException("Expected V1-V8 schema (43 dbo tables) before granting M1 permissions");
             }
         }
         try (PreparedStatement statement = admin.prepareStatement("""
@@ -98,7 +101,7 @@ public final class TeamM1Permissions {
         }
         for (Grant grant : GRANTS) {
             try (PreparedStatement statement = admin.prepareStatement(
-                    "SELECT OBJECT_ID(?, 'U')")) {
+                    "SELECT OBJECT_ID(?)")) {
                 statement.setString(1, "dbo." + grant.table());
                 try (ResultSet rs = statement.executeQuery()) {
                     if (!rs.next() || rs.getObject(1) == null) {

@@ -154,6 +154,7 @@ public class ChonNgayDialog extends JDialog implements ActionListener, ChangeLis
         for (int ngay = 1; ngay <= thangDangXem.lengthOfMonth(); ngay++) {
             LocalDate ngayTrongThang = thangDangXem.atDay(ngay);
             JButton btnNgay = new JButton(String.valueOf(ngay));
+            btnNgay.putClientProperty("theme.compact", true);
             btnNgay.setMargin(new Insets(2, 2, 2, 2));
             btnNgay.setActionCommand(String.valueOf(ngay));
 
@@ -161,6 +162,7 @@ public class ChonNgayDialog extends JDialog implements ActionListener, ChangeLis
             btnNgay.setEnabled(duocChon);
 
             if (ngayTrongThang.equals(ngayBanDau)) {
+                btnNgay.putClientProperty("theme.selected", true);
                 btnNgay.setBackground(XANH_CHON);
                 btnNgay.setForeground(Color.WHITE);
                 btnNgay.setOpaque(true);
@@ -172,6 +174,7 @@ public class ChonNgayDialog extends JDialog implements ActionListener, ChangeLis
         btnThangTruoc.setEnabled(thangDangXem.isAfter(YearMonth.from(ngayNhoNhat)));
         btnThangSau.setEnabled(thangDangXem.isBefore(YearMonth.from(ngayLonNhat)));
 
+        com.quanlynhakhoa.hethong.giaodien.AppTheme.applyButtons(pnlCenter);
         pnlCenter.revalidate();
         pnlCenter.repaint();
     }

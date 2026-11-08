@@ -9,6 +9,12 @@ import java.util.*;
 
 /** Shared by invoice payment, debt collection and the dedicated payment page. */
 public final class PaymentService {
+    public interface Attempts {
+        void reserve(PaymentRequest request)throws SQLException;
+        void complete(Connection c,PaymentRequest request,String account)throws SQLException;
+        default void acknowledge(PaymentRequest request)throws SQLException { }
+    }
+    private final Attempts attempts;
     private final DesktopSession session;
     private final ConnectionProvider connections;
     private final PaymentDao dao;
@@ -17,11 +23,19 @@ public final class PaymentService {
     private final AuthorizationService authorization=new AuthorizationService(new RolePermissionPolicy());
     public PaymentService(DesktopSession session,ConnectionProvider connections){this(session,connections,new PaymentDao(),new InvoiceDao(),new InvoiceCreateDao());}
     public PaymentService(DesktopSession session,ConnectionProvider connections,PaymentDao dao,InvoiceDao invoices,InvoiceCreateDao accounts) {
+        this(session,connections,dao,invoices,accounts,new Attempts(){
+            public void reserve(PaymentRequest request)throws SQLException{new PaymentAttemptService(session,connections).reserve(request);}
+            public void acknowledge(PaymentRequest request)throws SQLException{new PaymentAttemptService(session,connections).acknowledge(request);}
+            public void complete(Connection c,PaymentRequest request,String account)throws SQLException{PaymentAttemptService.requireAndComplete(c,request,account);}
+        });
+    }
+    public PaymentService(DesktopSession session,ConnectionProvider connections,PaymentDao dao,InvoiceDao invoices,InvoiceCreateDao accounts,Attempts attempts){
+        this.attempts=Objects.requireNonNull(attempts);
         this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);
         this.dao=Objects.requireNonNull(dao);this.invoices=Objects.requireNonNull(invoices);this.accounts=Objects.requireNonNull(accounts);
     }
     public void collect(PaymentRequest request)throws SQLException {
-        require();validate(request);boolean committed=false;
+        require();validate(request);attempts.reserve(request);boolean committed=false;
         try(Connection c=connections.open()) {
             require();if(!c.getAutoCommit())throw new SQLException("Expected fresh connection");
             c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);c.setAutoCommit(false);
@@ -38,7 +52,7 @@ public final class PaymentService {
                 }
                 if(existing>0){
                     if(existing!=request.parts().size())throw new IllegalArgumentException("Kết quả lần thu không đầy đủ, cần đối soát.");
-                    require();c.commit();committed=true;
+                    attempts.complete(c,request,session.accountId());authorization.requireCurrent(session,Permission.BILLING_MANAGE,c);require();c.commit();committed=true;
                 } else {
                     Invoice invoice=invoices.getForPayment(c,request.invoiceId());
                     if(invoice==null||invoice.trangThai()==InvoiceStatus.DA_HUY)throw new IllegalArgumentException("Không được thu trên hóa đơn đã hủy/không tồn tại.");
@@ -51,10 +65,11 @@ public final class PaymentService {
                     }
                     InvoiceStatus status=request.amount().compareTo(invoice.conNo())==0?InvoiceStatus.DA_THANH_TOAN:InvoiceStatus.THANH_TOAN_MOT_PHAN;
                     dao.updateStatus(c,request.invoiceId(),status);dao.audit(c,session.accountId(),request.invoiceId());
-                    require();c.commit();committed=true;
+                    attempts.complete(c,request,session.accountId());authorization.requireCurrent(session,Permission.BILLING_MANAGE,c);require();c.commit();committed=true;
                 }
             }catch(SQLException|RuntimeException e){try{c.rollback();}catch(SQLException rollback){e.addSuppressed(rollback);}throw e;}
         }catch(SQLException e){if(committed)throw new CommittedPaymentException(e);throw e;}
+        attempts.acknowledge(request);
     }
     public boolean pendingCancellation(String invoiceId)throws SQLException {
         require();key(invoiceId);try(Connection c=connections.open()){require();boolean result=dao.hasPendingCancellation(c,invoiceId);require();return result;}
@@ -64,7 +79,7 @@ public final class PaymentService {
     }
     private void require(){authorization.require(session,Permission.BILLING_MANAGE);}
     private static boolean equalMoney(BigDecimal a,BigDecimal b){return a==null?b==null:b!=null&&a.compareTo(b)==0;}
-    private static boolean matches(Payment prior,String invoice,String employee,PaymentRequest.Part part) {
+    static boolean matches(Payment prior,String invoice,String employee,PaymentRequest.Part part) {
         return invoice.equals(prior.maHoaDon())&&employee.equals(prior.maNhanVien())&&prior.trangThai()==Payment.TrangThai.THANH_CONG
                 &&prior.phuongThuc()==part.method()&&equalMoney(prior.soTien(),part.amount())
                 &&Objects.equals(prior.maGiaoDich(),part.reference())&&equalMoney(prior.tienKhachDua(),part.customerTender());
@@ -72,7 +87,7 @@ public final class PaymentService {
     public static void validate(PaymentRequest request) {
         Objects.requireNonNull(request,"Khoản thu");key(request.invoiceId());
         if(request.amount()==null||request.amount().signum()<=0||request.amount().stripTrailingZeros().scale()>0)throw new IllegalArgumentException("Số tiền thu phải là VND nguyên lớn hơn 0.");
-        if(request.parts().isEmpty()||request.parts().size()>2)throw new IllegalArgumentException("Chọn tiền mặt, chuyển khoản hoặc phối hợp hai phương thức.");
+        if(request.parts().size()!=1)throw new IllegalArgumentException("Mỗi lần thu chỉ chọn tiền mặt hoặc chuyển khoản.");
         BigDecimal total=BigDecimal.ZERO;Set<String> ids=new HashSet<>();Set<Payment.PhuongThuc> methods=new HashSet<>();
         for(PaymentRequest.Part part:request.parts()) {
             key(part.id());money(part.amount(),true);

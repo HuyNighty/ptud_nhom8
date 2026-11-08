@@ -15,6 +15,7 @@ public final class InvoiceController {
     private final DesktopSession session;
     private final InvoiceService service;
     private boolean busy;
+    private int page;
     private String createdId;
     private final Runnable invalidated;
     private boolean reloadPending;
@@ -22,12 +23,14 @@ public final class InvoiceController {
     private boolean afterPayment;
     public void paymentSaved(){afterPayment=true;load();}
     public void focusInvoice(String id){
-        boolean wasBusy=busy;busy=true;view.filterInvoice(id);busy=wasBusy;selectionAfterLoad=id;load();
+        boolean wasBusy=busy;busy=true;view.filterInvoice(id);busy=wasBusy;selectionAfterLoad=id;page=0;load();
     }
     public InvoiceController(InvoicePanel view, DesktopSession session, InvoiceService service) {
         this.view = view; this.session = session; this.service = service;
-        view.onSearch(new ActionListener() { public void actionPerformed(ActionEvent event) { load(); } });
-        view.onReload(new ActionListener() { public void actionPerformed(ActionEvent event) { load(); } });
+        view.onSearch(new ActionListener() { public void actionPerformed(ActionEvent event) { if(busy)return;page=0;load(); } });
+        view.onReload(new ActionListener() { public void actionPerformed(ActionEvent event) { if(busy)return; busy=true; view.filterInvoice(""); busy=false; selectionAfterLoad=null; page=0;load(); } });
+        view.btnTrangTruoc.addActionListener(e->{if(!busy&&page>0){page--;load();}});
+        view.btnTrangSau.addActionListener(e->{if(!busy){page++;load();}});
         view.onPay(new ActionListener(){public void actionPerformed(ActionEvent event){if(!busy)view.paySelected();}});
         view.onRequestCancellation(new ActionListener(){public void actionPerformed(ActionEvent event){if(!busy)view.requestCancellation();}});
         view.onCreate(new ActionListener() { public void actionPerformed(ActionEvent event) {
@@ -35,7 +38,7 @@ public final class InvoiceController {
             InvoiceCreationDialog winDialog=new InvoiceCreationDialog(javax.swing.SwingUtilities.getWindowAncestor(view));
             new InvoiceCreationController(winDialog,session,service,new InvoiceCreationController.Saved() {
                 public void accept(String id) {
-                    busy=true;view.filterInvoice(id);busy=false;createdId=id;load();
+                    busy=true;view.filterInvoice(id);busy=false;createdId=id;page=0;load();
                 }
             });
             winDialog.setVisible(true);
@@ -56,14 +59,15 @@ public final class InvoiceController {
         final boolean followingPayment=afterPayment;
         new SessionWorker<List<Invoice>>(session) {
             protected List<Invoice> doInBackground() throws Exception {
-                List<Invoice> found=service.find(keyword, from, to, filter);
+                List<Invoice> found=service.findPage(keyword, from, to, filter,page);
                 return view.outstandingOnly()?com.quanlynhakhoa.nghiepvu.hoadon.service.DebtService.outstanding(found):found;
             }
             protected void finished() { busy = false; view.setBusy(false); }
             protected void expired() { view.expired(); }
             protected void succeeded(List<Invoice> rows) {
                 // Keep selection listeners idle while replacing the model.
-                busy = true; view.showRows(rows); busy = false;
+                boolean next=rows.size()>100;
+                busy = true; view.showRows(next?rows.subList(0,100):rows); busy = false;view.pageState(page,next);
                 view.status((followingPayment?"Đã thu tiền thành công. ":"")+(rows.isEmpty() ? keyword.isBlank()&&from==null&&to==null&&filter==null?"Chưa có hóa đơn.":"Không tìm thấy hóa đơn phù hợp." : ""));
                 if(followingPayment&&!reloadPending)afterPayment=false;
                 if (createdId != null) { String id=createdId;createdId=null;view.selectInvoice(id); }

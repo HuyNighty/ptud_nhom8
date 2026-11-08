@@ -131,7 +131,7 @@ public final class ServiceBillingSelfTest {
         service.find("O'Brien_%", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31), InvoiceStatus.DA_HUY);
         check(!jdbc.sql.getFirst().contains("O'Brien"), "search is parameterized, wildcard characters literal via CHARINDEX");
         check(jdbc.bindings.getFirst().get(8).equals(Timestamp.valueOf("2026-02-01 00:00:00")), "inclusive end date");
-        check(jdbc.isolation == Connection.TRANSACTION_SERIALIZABLE, "consistent read isolation");
+        check(jdbc.isolation == Connection.TRANSACTION_READ_COMMITTED, "list does not retain serializable range locks");
         expect(IllegalArgumentException.class, new Action() { public void run() throws Exception { service.detail("missing"); } });
         Map<String, Object> header = new HashMap<>();
         header.put("maHoaDon", "H1"); header.put("maBenhNhan", "BN1"); header.put("maNhanVien", "NV1"); header.put("tenBenhNhan", "Synthetic");

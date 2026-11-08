@@ -46,9 +46,11 @@ public final class CancellationService {
         try(Connection c=connections.open()){require(Permission.INVOICE_CANCEL_REQUEST);begin(c);
             try{dao.lockInvoice(c,invoiceId);Invoice invoice=invoices.getForPayment(c,invoiceId);
                 if(invoice==null||invoice.trangThai()==InvoiceStatus.DA_HUY)throw new IllegalArgumentException("Không gửi yêu cầu cho hóa đơn đã hủy/không tồn tại.");
+                if(invoice.daThu().signum()!=0)throw new IllegalArgumentException("Hóa đơn đã có khoản thu; chưa hỗ trợ hoàn tiền nên không thể gửi yêu cầu hủy.");
+                if(PaymentAttemptService.pending(c,invoiceId)!=null)throw new IllegalArgumentException("Hóa đơn còn lần thu chờ đối soát; giải quyết trước khi yêu cầu hủy.");
                 if(dao.pending(c,invoiceId))throw new IllegalArgumentException("Hóa đơn đã có yêu cầu đang chờ duyệt.");
                 id=ids.next(c);key(id);dao.insert(c,id,invoiceId,session.accountId(),normalized);dao.audit(c,session.accountId(),id,"Gửi yêu cầu hủy");
-                require(Permission.INVOICE_CANCEL_REQUEST);c.commit();committed=true;
+                authorization.requireCurrent(session,Permission.INVOICE_CANCEL_REQUEST,c);require(Permission.INVOICE_CANCEL_REQUEST);c.commit();committed=true;
             }catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }catch(SQLException e){if(committed)throw new CommittedCancellationException(id,e);if(e.getErrorCode()==2601||e.getErrorCode()==2627)throw new IllegalArgumentException("Trùng mã hoặc đã có yêu cầu chờ duyệt; tải lại để kiểm tra.",e);throw e;}
         return id;
@@ -68,12 +70,13 @@ public final class CancellationService {
                 Invoice invoice=invoices.getForPayment(c,invoiceId);
                 if(invoice==null||invoice.trangThai()==InvoiceStatus.DA_HUY)throw new IllegalArgumentException("Hóa đơn đã hủy/không tồn tại; cần đối soát.");
                 if(approve){
+                    if(PaymentAttemptService.pending(c,invoiceId)!=null)throw new IllegalArgumentException("Còn lần thu chưa đối soát; chưa thể hủy hóa đơn.");
                     if(invoice.daThu().signum()!=0)throw new IllegalArgumentException("Hóa đơn có khoản thu hợp lệ. Chưa có quy trình hoàn tiền nên chưa thể duyệt hủy.");
                     dao.cancelInvoice(c,invoiceId);
                 }
                 // A rejection changes only the request: invoice/payment history remains untouched.
                 dao.decide(c,requestId,session.accountId(),normalized,approve);dao.audit(c,session.accountId(),requestId,approve?"Duyệt hủy hóa đơn":"Từ chối hủy hóa đơn");
-                require(Permission.INVOICE_CANCEL_APPROVE);c.commit();committed=true;
+                authorization.requireCurrent(session,Permission.INVOICE_CANCEL_APPROVE,c);require(Permission.INVOICE_CANCEL_APPROVE);c.commit();committed=true;
             }catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }catch(SQLException e){if(committed)throw new CommittedCancellationException(requestId,e);throw e;}
     }

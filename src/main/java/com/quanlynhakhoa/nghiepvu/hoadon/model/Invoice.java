@@ -29,7 +29,7 @@ public record Invoice(String maHoaDon, String maNhanVien, String maBenhNhan, Str
     public String canhBao() {
         if (daThu.compareTo(tongTien) > 0) return "BẤT NHẤT: đã thu vượt tổng hóa đơn";
         if (trangThai == InvoiceStatus.DA_HUY) return "ĐÃ HỦY — không cộng công nợ theo dõi";
-        InvoiceStatus expected = daThu.signum() == 0 ? InvoiceStatus.CHUA_THANH_TOAN
+        InvoiceStatus expected = conNo().signum() == 0 ? InvoiceStatus.DA_THANH_TOAN : daThu.signum() == 0 ? InvoiceStatus.CHUA_THANH_TOAN
                 : conNo().signum() == 0 ? InvoiceStatus.DA_THANH_TOAN : InvoiceStatus.THANH_TOAN_MOT_PHAN;
         return expected == trangThai ? "" : "BẤT NHẤT: trạng thái khác số tiền; cần đối soát";
     }

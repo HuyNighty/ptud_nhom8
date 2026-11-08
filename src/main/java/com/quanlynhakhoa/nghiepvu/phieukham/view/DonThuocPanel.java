@@ -339,6 +339,7 @@ public final class DonThuocPanel extends JPanel {
 
     private static JButton button(String text, boolean primary) {
         JButton button = new JButton(text);
+        button.putClientProperty("theme.primary", primary);
         button.setFont(new Font("SansSerif", Font.BOLD, 11));
         button.setFocusPainted(false);
         button.setOpaque(true);

@@ -90,10 +90,6 @@ public final class VatTuPanel extends JPanel {
         JPanel south = new JPanel(new BorderLayout(0, 5));
         south.setOpaque(false);
         south.add(lblTrangThai, BorderLayout.NORTH);
-        JLabel note = new JLabel("Tồn và hạn dùng được tổng hợp từ LoHang. Không sửa tồn trực tiếp tại danh mục; xóa vật lý không được cấp quyền.", SwingConstants.LEFT);
-        note.setForeground(MUTED);
-        note.setFont(note.getFont().deriveFont(11f));
-        south.add(note, BorderLayout.SOUTH);
         add(south, BorderLayout.SOUTH);
 
         VatTuService service = new VatTuService(phien);
@@ -113,7 +109,7 @@ public final class VatTuPanel extends JPanel {
                     vatTu.isDaDatHang() ? "Có" : "Không"
             });
         }
-        setTrangThai("Hiển thị " + dsVatTu.size() + " vật tư (tối đa 500). Tồn kho được tính từ LoHang.", MUTED);
+        setTrangThai("Hiển thị " + dsVatTu.size() + " vật tư", MUTED);
         capNhatTrangThaiNut();
     }
 
@@ -154,6 +150,7 @@ public final class VatTuPanel extends JPanel {
 
     public String getTuKhoa() { return txtTimKiem.getText(); }
     public JButton getBtnTim() { return btnTim; }
+    public void xoaBoLoc() { txtTimKiem.setText(""); }
     public JButton getBtnTaiLai() { return btnTaiLai; }
     public JButton getBtnThem() { return btnThem; }
     public JButton getBtnSua() { return btnSua; }

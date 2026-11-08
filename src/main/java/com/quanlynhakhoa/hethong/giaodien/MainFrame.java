@@ -55,6 +55,7 @@ public final class MainFrame extends JFrame {
 
     public MainFrame(DesktopSession session, Runnable returnToLogin, FeatureRegistry registry) {
         super("Nhóm 8 - Quản lý nha khoa");
+        AppTheme.install();
         this.model = new MainNavigationModel(session);
         this.session = session;
         this.registry = Objects.requireNonNull(registry, "registry");
@@ -80,7 +81,12 @@ public final class MainFrame extends JFrame {
         pnlContent.setBackground(BACKGROUND);
         for (Module module : model.availableModules()) {
             JPanel pnlPage = module == Module.HOME ? new DashboardPanel(session) : buildPlaceholder(module);
+            if(pnlPage instanceof DashboardPanel dashboard){
+                dashboard.setNavigation(this::openFromDashboard);
+                featurePages.put(Module.HOME,dashboard);loaded.add(Module.HOME);
+            }
             JPanel pnlSlot = new JPanel(new BorderLayout());
+            AppTheme.apply(pnlPage);
             pnlSlot.add(scroll(pnlPage), BorderLayout.CENTER);
             slots.put(module, pnlSlot);
             pnlContent.add(pnlSlot, module.name());
@@ -100,11 +106,7 @@ public final class MainFrame extends JFrame {
         JLabel lblTitle = new JLabel("QUẢN LÝ NHA KHOA  |  NHÓM 8");
         lblTitle.setFont(new Font("SansSerif", Font.BOLD, 20));
         lblTitle.setForeground(NAVY);
-        JLabel lblCaption = new JLabel("Ứng dụng quản lý phòng khám · Java Swing");
-        lblCaption.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        lblCaption.setForeground(new Color(104, 119, 136));
         pnlBrand.add(lblTitle, BorderLayout.NORTH);
-        pnlBrand.add(lblCaption, BorderLayout.SOUTH);
         pnlHeader.add(pnlBrand, BorderLayout.WEST);
 
         JPanel pnlRight = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 15, 2));
@@ -116,6 +118,7 @@ public final class MainFrame extends JFrame {
         JButton btnLogout = new JButton("Đăng xuất");
         btnLogout.addActionListener(event -> logout());
         btnLogout.setFocusPainted(false);
+        AppTheme.apply(btnLogout);
         pnlRight.add(btnLogout);
         pnlHeader.add(pnlRight, BorderLayout.EAST);
         return pnlHeader;
@@ -135,6 +138,8 @@ public final class MainFrame extends JFrame {
         btnOverview.setBorder(new EmptyBorder(14, 13, 14, 13));
         btnOverview.setFocusPainted(false);
         btnOverview.addActionListener(event -> navigate(Module.HOME));
+        btnOverview.putClientProperty("theme.primary", true);
+        AppTheme.applyButtons(btnOverview);
         mnuBar.add(btnOverview);
 
         // 1. Tổ chức: cơ cấu nhân sự, tài khoản và danh mục dịch vụ.
@@ -229,13 +234,10 @@ public final class MainFrame extends JFrame {
         lblTitle.setFont(new Font("SansSerif", Font.BOLD, 24));
         lblTitle.setForeground(NAVY);
         pnlCard.add(lblTitle, BorderLayout.NORTH);
-        JLabel lblMessage = new JLabel("Giao diện nghiệp vụ này sẽ do thành viên phụ trách phát triển.");
+        JLabel lblMessage = new JLabel("Chức năng đang được cập nhật.");
         lblMessage.setFont(new Font("SansSerif", Font.PLAIN, 14));
         lblMessage.setForeground(INK);
         pnlCard.add(lblMessage, BorderLayout.CENTER);
-        JLabel lblNote = new JLabel("Chưa tích hợp dữ liệu. Không có thao tác SQL từ màn hình này.", SwingConstants.LEFT);
-        lblNote.setForeground(new Color(94, 109, 127));
-        pnlCard.add(lblNote, BorderLayout.SOUTH);
         pnlPanel.add(pnlCard, BorderLayout.NORTH);
         return pnlPanel;
     }
@@ -271,6 +273,15 @@ public final class MainFrame extends JFrame {
         } catch (RuntimeException failure) {
             JOptionPane.showMessageDialog(this, "Không thể mở màn hình nghiệp vụ.",
                     "Lỗi tải giao diện", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void openFromDashboard(Module module,String context) {
+        navigate(module);
+        JPanel page=featurePages.get(module);
+        if(page instanceof com.quanlynhakhoa.nghiepvu.kho.InventoryPanel inventory)inventory.openOverviewSection(context);
+        if(page instanceof com.quanlynhakhoa.nghiepvu.lichhen.view.LichHenPanel appointments && !context.isBlank()){
+            appointments.openDashboardAppointment(context);
         }
     }
 

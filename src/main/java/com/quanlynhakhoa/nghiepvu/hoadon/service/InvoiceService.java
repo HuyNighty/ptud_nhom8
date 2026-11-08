@@ -41,16 +41,25 @@ public final class InvoiceService {
         String text = keyword == null ? "" : keyword.trim();
         if (text.length() > 100) throw new IllegalArgumentException("Từ khóa tối đa 100 ký tự.");
         validateDates(from, to);
-        // SERIALIZABLE also covers each aggregate scan of the list, including row-versioned databases.
-        try (Connection connection = connections.open()) {
-            require();
-            beginRead(connection);
-            try {
-                List<Invoice> result = dao.find(connection, text, from, to, status);
-                require(); connection.commit(); return result;
-            } catch (SQLException | RuntimeException failure) { rollback(connection, failure); throw failure; }
+        try(Connection c=connections.open()){
+            c.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            List<Invoice> result=dao.find(c,text,from,to,status);require();return result;
         }
     }
+    public List<Invoice> findPage(String keyword,LocalDate from,LocalDate to,InvoiceStatus status,int page)throws SQLException {
+        require();validateDates(from,to);String text=keyword==null?"":keyword.trim();
+        if(text.length()>100||page<0||page>1000000)throw new IllegalArgumentException("Bộ lọc hoặc trang không hợp lệ.");
+        try(Connection c=connections.open()){
+            // A single READ COMMITTED statement avoids holding range locks across list rendering.
+            List<Invoice> result=dao.findPage(c,text,from,to,status,Math.multiplyExact(page,100),101);require();return result;
+        }
+    }
+
+    public List<Invoice> outstandingChoices(String keyword)throws SQLException {
+        require();String text=keyword==null?"":keyword.trim();if(text.length()>100)throw new IllegalArgumentException("Từ khóa tối đa 100 ký tự.");
+        try(Connection c=connections.open()){List<Invoice> rows=dao.findPage(c,text,null,null,null,0,101,true);require();return rows;}
+    }
+
     public InvoiceDetails detail(String id) throws SQLException {
         require();
         if (id == null || id.isBlank() || id.trim().length() > 10) throw new IllegalArgumentException("Mã hóa đơn không hợp lệ.");

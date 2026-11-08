@@ -42,6 +42,7 @@ public final class VatTuController implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent event) {
         Object source = event.getSource();
+        if (source == view.getBtnTaiLai()) { if(dangTai)return; view.xoaBoLoc(); }
         if (source == view.getBtnTim() || source == view.getTxtTimKiem()
                 || source == view.getBtnTaiLai()) {
             taiDanhSach();
@@ -111,6 +112,7 @@ public final class VatTuController implements ActionListener {
             @Override protected void done() {
                 try {
                     get();
+                    javax.swing.JOptionPane.showMessageDialog(form,"Đã lưu vật tư thành công.");
                     form.dispose();
                     if (dialog == form) dialog = null;
                     view.setTrangThai(dangSua ? "Đã cập nhật vật tư " + vatTu.getMaVatTu() + "."

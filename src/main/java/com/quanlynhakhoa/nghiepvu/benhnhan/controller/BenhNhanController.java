@@ -81,6 +81,7 @@ public class BenhNhanController implements ActionListener, MouseListener {
             docDuLieuVaoTable(null);
         }
         if (nguonSuKien.equals(view.getBtnTaiLai())) {
+            view.xoaTrang();
             docDuLieuVaoTable(null);
         }
         if (nguonSuKien.equals(view.getBtnThem())) {

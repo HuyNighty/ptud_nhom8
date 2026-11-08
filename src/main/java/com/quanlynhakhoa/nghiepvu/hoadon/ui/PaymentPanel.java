@@ -41,7 +41,7 @@ public final class PaymentPanel extends JPanel implements RefreshableFeature {
         for(Invoice h:invoices){BillingChoice item=new BillingChoice(h.maHoaDon(),h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Còn nợ "+BillingUi.vnd(h.conNo()));cmbHoaDon.addItem(item);if(h.maHoaDon().equals(selected))chosen=item;}
         cmbHoaDon.setSelectedItem(chosen); // Preserve current form/history even when a fully paid invoice leaves the picker.
     }
-    public void showForm(PaymentForm pnlForm){pnlCollection.removeAll();pnlCollection.add(pnlForm,BorderLayout.CENTER);pnlCollection.revalidate();pnlCollection.repaint();}
+    public void showForm(PaymentForm pnlForm){com.quanlynhakhoa.hethong.giaodien.AppTheme.applyButtons(pnlForm);pnlCollection.removeAll();pnlCollection.add(pnlForm,BorderLayout.CENTER);pnlCollection.revalidate();pnlCollection.repaint();}
     public void pickerEnabled(boolean enabled){txtTimHoaDon.setEnabled(enabled);btnTim.setEnabled(enabled);btnTaiLai.setEnabled(enabled);cmbHoaDon.setEnabled(enabled);}
     public void expired(){cmbHoaDon.removeAllItems();pnlCollection.removeAll();pickerEnabled(false);lblTrangThai.setText("Phiên đã đăng xuất.");pnlCollection.revalidate();pnlCollection.repaint();}
 }

@@ -86,15 +86,12 @@ public final class InventoryWorkflowDao {
             stmt.setString(6, employeeId);
             stmt.executeUpdate();
         }
-
-        // Đã sửa lại khối lệnh bị thiếu ở đây
-        try (PreparedStatement stmt = con.prepareStatement("UPDATE dbo.LoHang SET soLuongTon=soLuongTon-? WHERE maLo=? AND soLuongTon>=?")) {
+        try (PreparedStatement stmt = con.prepareStatement("UPDATE dbo.LoHang SET soLuongTon=soLuongTon-? WHERE maLo=? AND soLuongTon>=? AND (hanSuDung IS NULL OR hanSuDung>=CONVERT(date, SYSDATETIME()))")) {
             stmt.setInt(1, soLuong);
             stmt.setString(2, maLo);
             stmt.setInt(3, soLuong);
             if (stmt.executeUpdate() != 1) throw new IllegalArgumentException("Lô không tồn tại hoặc không đủ tồn kho.");
         }
-
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.ChiTietPhieuXuat (maPhieuXuat,maLo,soLuong) VALUES (?,?,?)")) {
             stmt.setString(1, maPhieu);
             stmt.setString(2, maLo);
@@ -134,44 +131,66 @@ public final class InventoryWorkflowDao {
         ghiNhatKy(con, accountId, "Gửi yêu cầu kiểm kê", "PhieuDieuChinhKho", maPhieu);
     }
 
-    public void duyetKiemKe(Connection con, String accountId, String maPhieu) throws SQLException {
-        // 1. Cập nhật trạng thái phiếu
-        try (PreparedStatement stmt = con.prepareStatement(
-                "UPDATE dbo.PhieuDieuChinhKho SET trangThai='DA_DUYET' WHERE maPhieu=? AND trangThai='CHO_DUYET'")) {
-            stmt.setString(1, maPhieu);
-            if (stmt.executeUpdate() != 1) {
-                throw new IllegalArgumentException("Phiếu không tồn tại hoặc không ở trạng thái chờ duyệt.");
+    /** Approve one pending stocktake; stale inventory fails the entire transaction. */
+    public void duyetKiemKe(Connection con, String actor, String id) throws SQLException {
+        String creator, status;
+        try (PreparedStatement s = con.prepareStatement(
+                "SELECT trangThai,maTaiKhoanTao FROM dbo.PhieuDieuChinhKho WITH (UPDLOCK,HOLDLOCK) WHERE maPhieu=? AND loai='KIEM_KE'")) {
+            s.setString(1, id);
+            try (ResultSet r = s.executeQuery()) {
+                if (!r.next()) throw new IllegalArgumentException("Không tìm thấy phiếu kiểm kê.");
+                status = r.getString(1);
+                creator = r.getString(2);
             }
         }
-        // 2. Cập nhật số lượng tồn thực tế vào Lô hàng
-        try (PreparedStatement stmt = con.prepareStatement(
-                "UPDATE l SET l.soLuongTon = d.soLuongThucTe "
-                        + "FROM dbo.LoHang l "
-                        + "INNER JOIN dbo.ChiTietDieuChinhKho d ON l.maLo = d.maLo "
-                        + "WHERE d.maPhieu = ?")) {
-            stmt.setString(1, maPhieu);
-            stmt.executeUpdate();
-        }
-        // 3. Ghi nhật ký
-        ghiNhatKy(con, accountId, "Duyệt phiếu kiểm kê", "PhieuDieuChinhKho", maPhieu);
-    }
-
-    public void tuChoiKiemKe(Connection con, String accountId, String maPhieu, String reason) throws SQLException {
-        // 1. Cập nhật trạng thái và lý do từ chối
-        try (PreparedStatement stmt = con.prepareStatement(
-                "UPDATE dbo.PhieuDieuChinhKho SET trangThai='TU_CHOI', lyDo=? WHERE maPhieu=? AND trangThai='CHO_DUYET'")) {
-            stmt.setNString(1, reason);
-            stmt.setString(2, maPhieu);
-            if (stmt.executeUpdate() != 1) {
-                throw new IllegalArgumentException("Phiếu không tồn tại hoặc không ở trạng thái chờ duyệt.");
+        com.quanlynhakhoa.nghiepvu.kho.workflow.service.InventoryApprovalRules.requireApprover(status, creator, actor);
+        // Materialize locked detail rows before updating lots: no nested active ResultSet.
+        List<Object[]> lines = new ArrayList<>();
+        try (PreparedStatement s = con.prepareStatement(
+                "SELECT maLo,soLuongHeThong,soLuongThucTe FROM dbo.ChiTietDieuChinhKho WITH (UPDLOCK,HOLDLOCK) WHERE maPhieu=? ORDER BY maLo")) {
+            s.setString(1, id);
+            try (ResultSet r = s.executeQuery()) {
+                while (r.next()) lines.add(new Object[]{r.getString(1), r.getInt(2), r.getInt(3)});
             }
         }
-        // 2. Ghi nhật ký
-        ghiNhatKy(con, accountId, "Từ chối phiếu kiểm kê", "PhieuDieuChinhKho", maPhieu);
+        if (lines.isEmpty()) throw new IllegalArgumentException("Phiếu kiểm kê không có dòng chi tiết.");
+        for (Object[] row : lines) {
+            String lot = (String) row[0];
+            int oldStock = (Integer) row[1], actual = (Integer) row[2];
+            com.quanlynhakhoa.nghiepvu.kho.workflow.service.InventoryApprovalRules.requireQuantity(oldStock, actual);
+            try (PreparedStatement change = con.prepareStatement(
+                    "UPDATE dbo.LoHang SET soLuongTon=? WHERE maLo=? AND soLuongTon=?")) {
+                change.setInt(1, actual);
+                change.setString(2, lot);
+                change.setInt(3, oldStock);
+                if (change.executeUpdate() != 1) {
+                    throw new IllegalArgumentException("Tồn kho đã thay đổi từ lúc kiểm kê; phải kiểm kê lại.");
+                }
+            }
+        }
+        try (PreparedStatement s = con.prepareStatement(
+                "UPDATE dbo.PhieuDieuChinhKho SET trangThai='DA_DUYET',maTaiKhoanDuyet=?,thoiGianDuyet=SYSUTCDATETIME() "
+                + "WHERE maPhieu=? AND trangThai='CHO_DUYET' AND maTaiKhoanTao<>?")) {
+            s.setString(1, actor);
+            s.setString(2, id);
+            s.setString(3, actor);
+            if (s.executeUpdate() != 1) throw new IllegalArgumentException("Phiếu đã thay đổi trạng thái.");
+        }
+        ghiNhatKy(con, actor, "Duyệt điều chỉnh kiểm kê", "PhieuDieuChinhKho", id);
     }
 
-
-    // Đã thêm lại dòng khai báo hàm bị thiếu ở đây
+    public void tuChoiKiemKe(Connection con, String actor, String id, String reason) throws SQLException {
+        try (PreparedStatement s = con.prepareStatement(
+                "UPDATE dbo.PhieuDieuChinhKho SET trangThai='TU_CHOI',maTaiKhoanDuyet=?,thoiGianDuyet=SYSUTCDATETIME(),ghiChuDuyet=? "
+                + "WHERE maPhieu=? AND loai='KIEM_KE' AND trangThai='CHO_DUYET' AND maTaiKhoanTao<>?")) {
+            s.setString(1, actor);
+            s.setNString(2, reason);
+            s.setString(3, id);
+            s.setString(4, actor);
+            if (s.executeUpdate() != 1) throw new IllegalArgumentException("Không thể từ chối phiếu hoặc người tạo đang tự xử lý.");
+        }
+        ghiNhatKy(con, actor, "Từ chối điều chỉnh kiểm kê", "PhieuDieuChinhKho", id);
+    }
     public static String layMaNhanVien(Connection con, String accountId) throws SQLException {
         String sql = "SELECT nv.maNhanVien FROM dbo.TaiKhoan tk INNER JOIN dbo.NhanVien nv ON nv.maNhanVien=tk.maNhanVien "
                 + "WHERE tk.maTaiKhoan=? AND tk.trangThai='HOAT_DONG' AND nv.trangThai='DANG_LAM_VIEC'";
@@ -210,8 +229,8 @@ public final class InventoryWorkflowDao {
         return rows;
     }
 
-    private static void setDate(PreparedStatement stmt, int dateIndex, LocalDate value) throws SQLException {
-        if (value == null) stmt.setDate(dateIndex, null);
-        else stmt.setDate(dateIndex, Date.valueOf(value));
+    private static void setDate(PreparedStatement stmt, int index, LocalDate value) throws SQLException {
+        if (value == null) stmt.setDate(index, null);
+        else stmt.setDate(index, Date.valueOf(value));
     }
 }

@@ -71,8 +71,8 @@ public final class InvoiceCreationController {
         if(!start())return;final InvoiceDraft reviewed=draft;view.guide("Đang lưu hóa đơn…");
         new Task<String>(){
             protected String doInBackground()throws Exception{return service.createInvoice(reviewed);}
-            protected void succeeded(String id){view.dispose();saved.accept(id);BillingChangeBus.forSession(session).publish();}
-            protected void failed(Throwable failure){if(failure instanceof InvoiceCreationService.CommittedInvoiceException committed){succeeded(committed.invoiceId());return;}clear();view.guide(BillingUi.error(failure)+" Xác minh kết quả trước khi lưu lại.");}
+            protected void succeeded(String id){BillingUi.result(view,"Đã lập hóa đơn "+id+" thành công.");view.dispose();saved.accept(id);BillingChangeBus.forSession(session).publish();}
+            protected void failed(Throwable failure){if(failure instanceof InvoiceCreationService.CommittedInvoiceException committed){succeeded(committed.invoiceId());return;}BillingUi.result(view,BillingUi.error(failure)+" Xác minh kết quả trước khi lưu lại.","Chưa xác nhận lưu hóa đơn",javax.swing.JOptionPane.ERROR_MESSAGE);clear();view.guide(BillingUi.error(failure)+" Xác minh kết quả trước khi lưu lại.");}
         }.execute();
     }
 }

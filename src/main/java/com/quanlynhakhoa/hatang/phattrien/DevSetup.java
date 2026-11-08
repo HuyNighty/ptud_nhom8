@@ -111,7 +111,9 @@ public final class DevSetup {
                             "V3__harden_account_lock_constraints.sql",
                             "V4__create_audit_log.sql",
                             "V5__create_team_feature_schema.sql",
-                            "V7__add_medicine_sale_price.sql"
+                            "V6__create_supply_requests.sql",
+                            "V7__add_medicine_sale_price.sql",
+                            "V8__harden_billing_workflows.sql"
                     };
                     for (String name : scripts) {
                         String sql = Files.readString(root.resolve("sql/bootstrap").resolve(name),

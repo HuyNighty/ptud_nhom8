@@ -83,9 +83,9 @@ public final class AuditPanel extends JPanel implements RefreshableFeature {
         controls.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(220, 231, 242)), new EmptyBorder(7, 10, 7, 10)));
         controls.add(new JLabel("Từ ngày (yyyy-MM-dd):"));
-        controls.add(from);
+        controls.add(com.quanlynhakhoa.hethong.giaodien.DateInput.iso(from,"ngày bắt đầu"));
         controls.add(new JLabel("Đến ngày:"));
-        controls.add(to);
+        controls.add(com.quanlynhakhoa.hethong.giaodien.DateInput.iso(to,"ngày kết thúc"));
         controls.add(new JLabel("Tìm:"));
         controls.add(keyword);
         controls.add(outcome);
@@ -107,7 +107,7 @@ public final class AuditPanel extends JPanel implements RefreshableFeature {
         add(status, BorderLayout.SOUTH);
 
         searchButton.addActionListener(event -> load());
-        refreshButton.addActionListener(event -> load());
+        refreshButton.addActionListener(event -> { keyword.setText(""); from.setText(""); to.setText(""); outcome.setSelectedIndex(0); load(); });
         keyword.addActionListener(event -> load());
         if (autoLoad) load();
     }

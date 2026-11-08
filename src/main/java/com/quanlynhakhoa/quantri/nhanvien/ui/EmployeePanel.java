@@ -84,9 +84,6 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         title.setFont(new Font("SansSerif", Font.BOLD, 23));
         title.setForeground(NAVY);
         heading.add(title, BorderLayout.NORTH);
-        JLabel description = new JLabel("Thông tin nhân sự, tài khoản liên kết và tạo nhân viên mới");
-        description.setForeground(MUTED);
-        heading.add(description, BorderLayout.SOUTH);
         add(heading, BorderLayout.NORTH);
 
         JPanel body = new JPanel(new BorderLayout(0, 14));
@@ -138,7 +135,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
 
         btnCreate.addActionListener(event -> createEmployee());
         btnSearch.addActionListener(event -> load());
-        btnRefresh.addActionListener(event -> load());
+        btnRefresh.addActionListener(event -> { txtKeyword.setText(""); cmbStatus.setSelectedIndex(0); load(); });
         txtKeyword.addActionListener(event -> load());
         cmbStatus.addActionListener(event -> load());
         if (autoLoad) load();
@@ -171,7 +168,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         EmployeeStatus status = (EmployeeStatus) cmbStatus.getSelectedItem();
         loading = true;
         updateControls();
-        lblStatus.setText("Đang tải nhân viên từ SQL Server...");
+        lblStatus.setText("Đang tải nhân viên...");
         new SwingWorker<EmployeeDirectoryDao.Result, Void>() {
             @Override protected EmployeeDirectoryDao.Result doInBackground() throws Exception {
                 return service.search(keyword, status);
@@ -191,8 +188,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
                         tableModel.setRows(result.rows());
                         lblDetail.setText("Chọn một nhân viên để xem thông tin.");
                         lblStatus.setText(result.rows().size() + " nhân viên"
-                                + (result.truncated() ? " (giới hạn 200, hãy lọc thêm)" : "")
-                                + " · Chỉ người có quyền quản lý nhân sự mới được thêm nhân viên.");
+                                + (result.truncated() ? " (giới hạn 200, hãy lọc thêm)" : ""));
                     }
                 } catch (InterruptedException failure) {
                     Thread.currentThread().interrupt();
@@ -201,7 +197,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
                     if (!reloadPending) {
                         tableModel.setRows(List.of());
                         lblDetail.setText("Không có dữ liệu hiển thị.");
-                        lblStatus.setText("Không thể tải nhân viên. Kiểm tra kết nối và quyền SQL.");
+                        lblStatus.setText("Không thể tải nhân viên. Kiểm tra kết nối hoặc liên hệ quản trị viên.");
                     }
                 } finally {
                     if (reloadPending) {
@@ -243,10 +239,10 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         form.add(new JLabel("Họ tên (*):")); form.add(txtName);
         form.add(new JLabel("Số điện thoại (*):")); form.add(txtPhone);
         form.add(new JLabel("Chức danh (*):")); form.add(cmbJob);
-        form.add(new JLabel("Ngày sinh (yyyy-MM-dd):")); form.add(txtBirth);
+        form.add(new JLabel("Ngày sinh (yyyy-MM-dd):")); form.add(com.quanlynhakhoa.hethong.giaodien.DateInput.wrap(txtBirth,"ngày sinh",java.time.format.DateTimeFormatter.ISO_LOCAL_DATE,LocalDate.now().minusYears(120),LocalDate.now()));
         form.add(new JLabel("Giới tính:")); form.add(cmbGender);
         form.add(new JLabel("Email:")); form.add(txtEmail);
-        form.add(new JLabel("Ngày vào làm (yyyy-MM-dd):")); form.add(txtJoined);
+        form.add(new JLabel("Ngày vào làm (yyyy-MM-dd):")); form.add(com.quanlynhakhoa.hethong.giaodien.DateInput.iso(txtJoined,"ngày vào làm"));
         form.add(new JLabel("Chuyên môn:")); form.add(txtSpecialty);
 
         int choice = JOptionPane.showConfirmDialog(this, form, "Thêm nhân viên (chưa cấp tài khoản)",

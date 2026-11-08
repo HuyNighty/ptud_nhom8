@@ -91,10 +91,6 @@ public final class ThuocPanel extends JPanel {
         south.setOpaque(false);
         lblTrangThai.setForeground(MUTED);
         south.add(lblTrangThai, BorderLayout.NORTH);
-        JLabel note = new JLabel("Tồn/hạn dùng được tổng hợp từ lô thuốc. Xóa vật lý chưa được hỗ trợ theo quyền/schema hiện tại.", SwingConstants.LEFT);
-        note.setForeground(MUTED);
-        note.setFont(note.getFont().deriveFont(11f));
-        south.add(note, BorderLayout.SOUTH);
         add(south, BorderLayout.SOUTH);
 
         ThuocService service = new ThuocService(phien);
@@ -116,7 +112,7 @@ public final class ThuocPanel extends JPanel {
             });
         }
         lblTrangThai.setForeground(MUTED);
-        lblTrangThai.setText("Hiển thị " + dsThuoc.size() + " thuốc (tối đa 500). Tồn kho được tính từ LoHang.");
+        lblTrangThai.setText("Hiển thị " + dsThuoc.size() + " thuốc");
         capNhatTrangThaiNut();
     }
 
@@ -157,6 +153,7 @@ public final class ThuocPanel extends JPanel {
 
     public String getTuKhoa() { return txtTimKiem.getText(); }
     public JButton getBtnTim() { return btnTim; }
+    public void xoaBoLoc() { txtTimKiem.setText(""); }
     public JButton getBtnTaiLai() { return btnTaiLai; }
     public JButton getBtnThem() { return btnThem; }
     public JButton getBtnSua() { return btnSua; }

@@ -17,10 +17,6 @@ import javax.swing.table.DefaultTableModel;
 
 /** Nhập, xuất và ghi nhận chênh lệch tồn kho; mọi ghi dữ liệu đi qua service. */
 public final class InventoryWorkflowPanel extends JPanel {
-    private final JButton save = new JButton("Lưu");
-    private final JButton refresh = new JButton("Làm mới");
-    private final JButton approve = new JButton("Duyệt");
-    private final JButton reject = new JButton("Từ chối");
     private final JTabbedPane tabs = new JTabbedPane();
     private final ReceiptTab receipt = new ReceiptTab();
     private final IssueTab issue = new IssueTab();
@@ -60,7 +56,7 @@ public final class InventoryWorkflowPanel extends JPanel {
         final JComboBox<String> loai = new JComboBox<>(new String[]{"THUOC", "VATTU"});
         final JTextField maHang = new JTextField(), ngaySX = new JTextField(), hanSD = new JTextField();
         final JTextField soLuong = new JTextField(), donGia = new JTextField(), ghiChu = new JTextField();
-        final JButton save = new JButton("Tạo phiếu nhập"), refresh = new JButton("Tải lại");
+        final JButton save = new JButton("Tạo phiếu nhập"), refresh = new JButton("Làm mới");
         final DefaultTableModel data = model("Mã phiếu", "Ngày nhập", "Nhà cung cấp", "Trạng thái", "Mã lô", "Số lượng", "Đơn giá");
 
         ReceiptTab() {
@@ -72,8 +68,8 @@ public final class InventoryWorkflowPanel extends JPanel {
             row(form, "Mã nhà cung cấp", maNcc);
             row(form, "Loại hàng", loai);
             row(form, "Mã thuốc/vật tư", maHang);
-            row(form, "Ngày sản xuất yyyy-MM-dd", ngaySX);
-            row(form, "Hạn sử dụng yyyy-MM-dd", hanSD);
+            row(form, "Ngày sản xuất yyyy-MM-dd", com.quanlynhakhoa.hethong.giaodien.DateInput.iso(ngaySX,"ngày sản xuất"));
+            row(form, "Hạn sử dụng yyyy-MM-dd", com.quanlynhakhoa.hethong.giaodien.DateInput.iso(hanSD,"hạn sử dụng"));
             row(form, "Số lượng", soLuong);
             row(form, "Đơn giá nhập", donGia);
             row(form, "Ghi chú", ghiChu);
@@ -103,7 +99,7 @@ public final class InventoryWorkflowPanel extends JPanel {
     public static final class IssueTab extends JPanel {
         final JTextField maPhieu = new JTextField(), maLo = new JTextField(), boPhan = new JTextField();
         final JTextField nguoiNhan = new JTextField(), lyDo = new JTextField(), soLuong = new JTextField();
-        final JButton save = new JButton("Tạo phiếu xuất"), refresh = new JButton("Tải lại");
+        final JButton save = new JButton("Tạo phiếu xuất"), refresh = new JButton("Làm mới");
         final DefaultTableModel data = model("Mã phiếu", "Ngày xuất", "Bộ phận", "Người nhận", "Nhân viên", "Trạng thái", "Mã lô", "Số lượng");
 
         IssueTab() {
@@ -134,11 +130,8 @@ public final class InventoryWorkflowPanel extends JPanel {
     }
 
     public static final class StocktakeTab extends JPanel {
-        final JButton save = new JButton("Lưu");
-        final JButton refresh = new JButton("Tải lại");
-        final JButton approve = new JButton("Duyệt");
-        final JButton reject = new JButton("Từ chối");
         final JTextField maPhieu = new JTextField(), maLo = new JTextField(), actual = new JTextField(), reason = new JTextField();
+        final JButton save = new JButton("Gửi yêu cầu kiểm kê"), refresh = new JButton("Làm mới"), approve = new JButton("Duyệt kiểm kê"), reject = new JButton("Từ chối");
         final DefaultTableModel data = model("Mã phiếu", "Thời gian", "Tạo bởi", "Lý do", "Trạng thái", "Mã lô", "SL hệ thống", "SL thực tế");
         final JTable table = new JTable(data);
 
@@ -154,6 +147,8 @@ public final class InventoryWorkflowPanel extends JPanel {
             form.add(approve);
             form.add(reject);
             add(form, BorderLayout.NORTH);
+            add(new JScrollPane(table), BorderLayout.CENTER);
+            add(new JLabel("Người duyệt khác người tạo. Nếu tồn kho thay đổi sau kiểm kê thì phải kiểm kê lại."), BorderLayout.SOUTH);
         }
 
         public JTextField maPhieu() { return maPhieu; }

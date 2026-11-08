@@ -18,9 +18,8 @@ final class DashboardDao {
             SELECT COUNT_BIG(*) FROM dbo.PhieuKham WHERE trangThai = 'DANG_KHAM'
             """;
     private static final String RECEIVED = """
-            SELECT COALESCE(SUM(soTien), 0) FROM dbo.ThanhToan
+            SELECT COALESCE(SUM(soTien), 0) FROM dbo.DongTienHoaDon
             WHERE thoiGian >= ? AND thoiGian < ?
-              AND trangThai = 'THANH_CONG'
             """;
 
     long countPatients(Connection connection) throws SQLException {

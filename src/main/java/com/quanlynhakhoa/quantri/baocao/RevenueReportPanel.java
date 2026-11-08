@@ -9,7 +9,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 import java.math.BigDecimal;
-import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -28,14 +27,13 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
     private final JComboBox<String> period = new JComboBox<>(new String[]{"Tháng này", "Hôm nay", "7 ngày gần nhất", "Tháng trước", "Tùy chọn"});
     private final JComboBox<String> grouping = new JComboBox<>(new String[]{"Theo ngày", "Theo tháng"});
     private final JButton fromCalendar = new JButton("Lịch"), toCalendar = new JButton("Lịch");
-    private final JButton view = new JButton("Xem báo cáo"), print = new JButton("In báo cáo");
+    private final JButton view = new JButton("Xem báo cáo");
     private final JLabel revenue = new JLabel("—"), collected = new JLabel("—"), debt = new JLabel("—"), invoices = new JLabel("—");
     private final JLabel status = new JLabel(" "), range = new JLabel(" ");
     private final DefaultTableModel model = BillingUi.model("Ngày", "Số hóa đơn", "Doanh thu", "Tiền đã thu");
     private final JTable table = BillingUi.table(model);
     private final Chart chart = new Chart();
     private boolean busy, updatingPeriod;
-    private RevenueReport report;
 
     public RevenueReportPanel(DesktopSession session) { this(session, new RevenueReportService(session), true); }
     public RevenueReportPanel(DesktopSession session, RevenueReportService service, boolean autoLoad) {
@@ -45,7 +43,7 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
         JPanel top = transparent(new BorderLayout(0,16));
         JPanel heading = transparent(new BorderLayout());
         JLabel title = new JLabel("Thống kê doanh thu"); title.setFont(new Font("SansSerif",Font.BOLD,23)); title.setForeground(NAVY);
-        heading.add(title,BorderLayout.WEST); heading.add(print,BorderLayout.EAST); top.add(heading,BorderLayout.NORTH);
+        heading.add(title,BorderLayout.WEST); top.add(heading,BorderLayout.NORTH);
         JPanel filters = new JPanel(new GridBagLayout()); filters.setBackground(Color.WHITE); filters.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(LINE),new EmptyBorder(12,12,12,12)));
         addFilter(filters,0,"Kỳ báo cáo",period,1);
         addFilter(filters,1,"Từ ngày",dateField(from,fromCalendar),1);
@@ -71,9 +69,8 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
         JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT,plot,details);split.setResizeWeight(.55);split.setDividerSize(8);split.setBorder(null);split.setOpaque(false);
         plot.setMinimumSize(new Dimension(200,160));details.setMinimumSize(new Dimension(200,140)); add(split,BorderLayout.CENTER);
         JPanel bottom = transparent(new BorderLayout(0,5));
-        JLabel note = new JLabel("Doanh thu theo ngày lập hóa đơn; tiền đã thu theo ngày thu. Hai số liệu có thể khác nhau.");note.setForeground(MUTED);note.setFont(new Font("SansSerif",Font.PLAIN,12));bottom.add(note,BorderLayout.NORTH);
         status.setForeground(MUTED);bottom.add(status,BorderLayout.SOUTH);add(bottom,BorderLayout.SOUTH);
-        for(JComponent input:new JComponent[]{from,to,period,grouping,fromCalendar,toCalendar,view,print}){
+        for(JComponent input:new JComponent[]{from,to,period,grouping,fromCalendar,toCalendar,view}){
             Dimension size=input.getPreferredSize();input.setPreferredSize(new Dimension(size.width,34));
         }
         from.setEditable(false);to.setEditable(false);from.setHorizontalAlignment(JTextField.CENTER);to.setHorizontalAlignment(JTextField.CENTER);
@@ -81,7 +78,6 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
         fromCalendar.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){chooseDate(from);}});
         toCalendar.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){chooseDate(to);}});
         view.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){refreshData();}});
-        print.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){printReport();}});
         setPreset();setBusy(false);if(autoLoad)SwingUtilities.invokeLater(new Runnable(){public void run(){refreshData();}});
     }
     private static JPanel transparent(LayoutManager layout){JPanel p=new JPanel(layout);p.setOpaque(false);return p;}
@@ -108,8 +104,8 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
         LocalDate chosen=ChonNgayDialog.chon(SwingUtilities.getWindowAncestor(this),"Chọn ngày báo cáo",LocalDate.parse(field.getText(),DATE),LocalDate.of(1900,1,1),LocalDate.now());
         if(chosen!=null){field.setText(DATE.format(chosen));updatingPeriod=true;period.setSelectedIndex(4);updatingPeriod=false;}
     }
-    private void setBusy(boolean value){busy=value;for(JComponent c:new JComponent[]{fromCalendar,toCalendar,period,grouping,view})c.setEnabled(!value&&session.isActive());print.setEnabled(!value&&report!=null&&session.isActive());}
-    private void clear(){report=null;model.setRowCount(0);chart.setRows(List.of(),false);revenue.setText("—");collected.setText("—");debt.setText("—");invoices.setText("—");range.setText(" ");}
+    private void setBusy(boolean value){busy=value;for(JComponent c:new JComponent[]{fromCalendar,toCalendar,period,grouping,view})c.setEnabled(!value&&session.isActive());}
+    private void clear(){model.setRowCount(0);chart.setRows(List.of(),false);revenue.setText("—");collected.setText("—");debt.setText("—");invoices.setText("—");range.setText(" ");}
     @Override public void refreshData(){
         if(busy)return;if(!session.isActive()){clear();setBusy(false);status.setText("Phiên đăng nhập đã kết thúc.");return;}
         final LocalDate start,end;
@@ -125,20 +121,13 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
         }.execute();
     }
     public void showReport(RevenueReport value){
-        report=value;from.setText(DATE.format(value.from()));to.setText(DATE.format(value.to()));grouping.setSelectedIndex(value.monthly()?1:0);
+        from.setText(DATE.format(value.from()));to.setText(DATE.format(value.to()));grouping.setSelectedIndex(value.monthly()?1:0);
         revenue.setText(BillingUi.vnd(value.revenue()));collected.setText(BillingUi.vnd(value.collected()));debt.setText(BillingUi.vnd(value.closingDebt()));invoices.setText(Integer.toString(value.invoices()));
         range.setText(DATE.format(value.from())+" – "+DATE.format(value.to()));model.setRowCount(0);
         table.getColumnModel().getColumn(0).setHeaderValue(value.monthly()?"Tháng":"Ngày");table.getTableHeader().repaint();
         DateTimeFormatter periodFormat=DateTimeFormatter.ofPattern(value.monthly()?"MM/uuuu":"dd/MM/uuuu");
         for(var row:value.rows())model.addRow(new Object[]{periodFormat.format(row.period()),row.invoices(),row.revenue(),row.collected()});
-        chart.setRows(value.rows(),value.monthly());status.setText(value.invoices()==0&&value.collected().signum()==0?"Không phát sinh doanh thu hoặc khoản thu trong kỳ đã chọn.":"Đã cập nhật báo cáo · Đơn vị: VND");setBusy(false);
-    }
-    private void printReport(){
-        if(report==null||!session.isActive())return;
-        String header="Thống kê doanh thu | "+DATE.format(report.from())+" – "+DATE.format(report.to());
-        String footer="Doanh thu: "+BillingUi.vnd(report.revenue())+" | Đã thu: "+BillingUi.vnd(report.collected())+" | Công nợ: "+BillingUi.vnd(report.closingDebt())+" | Trang {0}";
-        try{table.print(JTable.PrintMode.FIT_WIDTH,new MessageFormat(header),new MessageFormat(footer));}
-        catch(java.awt.print.PrinterException failure){status.setText("Không in được báo cáo. Kiểm tra máy in rồi thử lại.");}
+        chart.setRows(value.rows(),value.monthly());status.setText(value.invoices()==0&&value.collected().signum()==0?"Không phát sinh doanh thu hoặc khoản thu trong kỳ đã chọn.":" ");setBusy(false);
     }
     private static final class Chart extends JPanel {
         private List<RevenueReport.Row> rows=List.of();private boolean monthly;
@@ -150,15 +139,15 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
                 int left=78,right=getWidth()-16,top=18,bottom=getHeight()-32;
                 if(right<=left||bottom<=top)return;
-                double max=0;for(var row:rows)max=Math.max(max,Math.max(row.revenue().doubleValue(),row.collected().doubleValue()));
-                if(max==0){g.setColor(MUTED);g.drawString("Chưa có số liệu phát sinh trong kỳ",left,top+35);return;}
-                max=Math.ceil(max/4)*4;g.setFont(new Font("SansSerif",Font.PLAIN,11));
-                for(int i=0;i<=4;i++){int y=bottom-(bottom-top)*i/4;g.setColor(LINE);g.drawLine(left,y,right,y);g.setColor(MUTED);double value=max*i/4;String label=value>=1000000?String.format(java.util.Locale.ROOT,"%.1f tr",value/1000000):String.format(java.util.Locale.ROOT,"%.0f k",value/1000);g.drawString(label,8,y+4);}
+                double max=0,min=0;for(var row:rows){max=Math.max(max,Math.max(row.revenue().doubleValue(),row.collected().doubleValue()));min=Math.min(min,Math.min(row.revenue().doubleValue(),row.collected().doubleValue()));}
+                if(max==0&&min==0){g.setColor(MUTED);g.drawString("Chưa có số liệu phát sinh trong kỳ",left,top+35);return;}
+                double span=max-min;double baseline=top+max/span*(bottom-top);g.setFont(new Font("SansSerif",Font.PLAIN,11));
+                for(int i=0;i<=4;i++){int y=top+(bottom-top)*i/4;g.setColor(LINE);g.drawLine(left,y,right,y);g.setColor(MUTED);double value=max-span*i/4;String label=Math.abs(value)>=1000000?String.format(java.util.Locale.ROOT,"%.1f tr",value/1000000):String.format(java.util.Locale.ROOT,"%.0f k",value/1000);g.drawString(label,8,y+4);}
                 double group=(right-left)/(double)Math.max(1,rows.size()),bar=Math.max(.5,Math.min(22,group*.3));int step=Math.max(1,(int)Math.ceil(rows.size()/10.0));
                 DateTimeFormatter format=DateTimeFormatter.ofPattern(monthly?"MM/yy":"dd/MM");
                 for(int i=0;i<rows.size();i++){var row=rows.get(i);double center=left+(i+.5)*group;
-                    double h=row.revenue().doubleValue()/max*(bottom-top);g.setColor(NAVY);g.fill(new RoundRectangle2D.Double(center-bar-1,bottom-h,bar,h,3,3));
-                    h=row.collected().doubleValue()/max*(bottom-top);g.setColor(TEAL);g.fill(new RoundRectangle2D.Double(center+1,bottom-h,bar,h,3,3));
+                    double h=row.revenue().doubleValue()/span*(bottom-top);g.setColor(NAVY);g.fill(new RoundRectangle2D.Double(center-bar-1,h>=0?baseline-h:baseline,bar,Math.abs(h),3,3));
+                    h=row.collected().doubleValue()/span*(bottom-top);g.setColor(TEAL);g.fill(new RoundRectangle2D.Double(center+1,h>=0?baseline-h:baseline,bar,Math.abs(h),3,3));
                     if(i%step==0){String label=format.format(row.period());g.setColor(MUTED);g.drawString(label,(int)center-g.getFontMetrics().stringWidth(label)/2,bottom+20);}
                 }
             }finally{g.dispose();}

@@ -16,9 +16,6 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.BasicStroke;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -38,7 +35,6 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -76,10 +72,10 @@ public final class PhieuKhamPanel extends JPanel {
     private final JTextField txtTimKiem = new JTextField(24);
     private final JComboBox<BacSi> cmbBacSiPhuTrach = new JComboBox<>();
 
-    private final JButton btnChonNgay = new JButton(new CalendarIcon());
+    private final JButton btnChonNgay = new JButton("Lịch");
     private final JButton btnLoc = button("Lọc", true);
     private final JButton btnXoaLoc = button("Xóa lọc", false);
-    private final JButton btnTaiLai = button("Tải lại", false);
+    private final JButton btnTaiLai = button("Làm mới", false);
     private final JButton btnLuuNhap = button("Lưu nháp", false);
     private final JButton btnKetLuan = button("Kết luận", true);
     private CanLamSangPanel pnlCanLamSang;
@@ -148,12 +144,7 @@ public final class PhieuKhamPanel extends JPanel {
         pnlTitle.setOpaque(false);
         pnlTitle.setLayout(new BoxLayout(pnlTitle, BoxLayout.Y_AXIS));
         JLabel lblTitle = label("Phiếu khám", 23, NAVY, true);
-        JLabel lblFlow = label("Chọn phiếu  →  khám và ghi nhận kết quả  →  kết luận", 12, MUTED, false);
         pnlTitle.add(lblTitle);
-        pnlTitle.add(Box.createVerticalStrut(4));
-        pnlTitle.add(lblFlow);
-        pnlHeader.add(pnlTitle, BorderLayout.CENTER);
-
         pnlHeader.add(pnlTitle, BorderLayout.CENTER);
 
         JPanel pnlWrap = new JPanel(new BorderLayout(0, 12));
@@ -167,7 +158,7 @@ public final class PhieuKhamPanel extends JPanel {
         JPanel pnlFilter = card(new BorderLayout(10, 0));
         pnlFilter.setBorder(paddedBorder(13, 14, 13, 14));
 
-        JPanel pnlFields = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 0));
+        JPanel pnlFields = new JPanel(new java.awt.GridBagLayout());
         pnlFields.setOpaque(false);
         JPanel pnlChonNgay = new JPanel(new BorderLayout(4, 0));
         pnlChonNgay.setOpaque(false);
@@ -175,7 +166,7 @@ public final class PhieuKhamPanel extends JPanel {
         pnlChonNgay.add(txtNgayKham, BorderLayout.CENTER);
 
         btnChonNgay.setToolTipText("Chọn ngày khám từ lịch");
-        btnChonNgay.setPreferredSize(new Dimension(32, 28));
+        btnChonNgay.setPreferredSize(new Dimension(56, 34));
         btnChonNgay.setMargin(new Insets(2, 3, 2, 3));
         btnChonNgay.setFocusPainted(false);
         btnChonNgay.setBackground(Color.WHITE);
@@ -184,16 +175,30 @@ public final class PhieuKhamPanel extends JPanel {
         btnChonNgay.addActionListener(event -> hienThiLichChonNgay());
         pnlChonNgay.add(btnChonNgay, BorderLayout.EAST);
 
-        pnlFields.add(field("Ngày khám", pnlChonNgay));
-        pnlFields.add(field("Bác sĩ", cmbBacSiLoc));
-        pnlFields.add(field("Trạng thái", cmbTrangThai));
+        cmbBacSiLoc.setPreferredSize(new Dimension(240, 34));
+        cmbBacSiLoc.setMinimumSize(new Dimension(200, 34));
+        java.awt.GridBagConstraints filterCell = new java.awt.GridBagConstraints();
+        filterCell.gridy = 0;
+        filterCell.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        filterCell.anchor = java.awt.GridBagConstraints.SOUTH;
+        filterCell.insets = new Insets(0, 0, 0, 10);
+        filterCell.gridx = 0;
+        pnlFields.add(field("Ngày khám", pnlChonNgay), filterCell);
+        filterCell.gridx = 1;
+        pnlFields.add(field("Bác sĩ", cmbBacSiLoc), filterCell);
+        filterCell.gridx = 2;
+        pnlFields.add(field("Trạng thái", cmbTrangThai), filterCell);
 
         JPanel pnlSearch = new JPanel(new BorderLayout(6, 0));
         pnlSearch.setOpaque(false);
         pnlSearch.add(label("Tìm kiếm", 10, MUTED, true), BorderLayout.NORTH);
         txtTimKiem.setToolTipText("Tìm theo mã phiếu, tên hoặc số điện thoại bệnh nhân");
         pnlSearch.add(txtTimKiem, BorderLayout.CENTER);
-        pnlFields.add(pnlSearch);
+        filterCell.gridx = 3;
+        filterCell.weightx = 1;
+        filterCell.insets = new Insets(0, 0, 0, 0);
+        pnlSearch.setMinimumSize(new Dimension(140, 54));
+        pnlFields.add(pnlSearch, filterCell);
 
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 7, 0));
         pnlButtons.setOpaque(false);
@@ -201,7 +206,7 @@ public final class PhieuKhamPanel extends JPanel {
         pnlButtons.add(btnXoaLoc);
 
         pnlFilter.add(pnlFields, BorderLayout.CENTER);
-        pnlFilter.add(pnlButtons, BorderLayout.EAST);
+        pnlFilter.add(pnlButtons, BorderLayout.SOUTH);
         txtNgayKham.setText(DATE_INPUT.format(LocalDate.now()));
         return pnlFilter;
     }
@@ -382,6 +387,7 @@ public final class PhieuKhamPanel extends JPanel {
                         new Font("SansSerif", Font.PLAIN, 12)
                 );
 
+                btnNgay.putClientProperty("theme.compact", true);
                 btnNgay.setFocusPainted(false);
                 btnNgay.setMargin(new Insets(4, 2, 4, 2));
                 btnNgay.setOpaque(true);
@@ -394,6 +400,7 @@ public final class PhieuKhamPanel extends JPanel {
 
                 if (ngay.equals(ngayMacDinh)) {
 
+                    btnNgay.putClientProperty("theme.selected", true);
                     btnNgay.setBackground(SELECTED);
 
                     btnNgay.setFont(
@@ -416,6 +423,7 @@ public final class PhieuKhamPanel extends JPanel {
                 });
                 pnlCacNgay.add(btnNgay);
             }
+            com.quanlynhakhoa.hethong.giaodien.AppTheme.applyButtons(pnlCacNgay);
             pnlCacNgay.revalidate();
             pnlCacNgay.repaint();
         };
@@ -702,6 +710,7 @@ public final class PhieuKhamPanel extends JPanel {
 
     private static JButton button(String text, boolean primary) {
         JButton btnGiaTri = new JButton(text);
+        btnGiaTri.putClientProperty("theme.primary", primary);
         btnGiaTri.setFont(new Font("SansSerif", Font.BOLD, 12));
         btnGiaTri.setFocusPainted(false);
         btnGiaTri.setBorder(new EmptyBorder(8, 13, 8, 13));
@@ -961,40 +970,6 @@ public final class PhieuKhamPanel extends JPanel {
 
     private static String safe(String value) {
         return value == null || value.isBlank() ? "—" : value;
-    }
-
-    private static final class CalendarIcon implements Icon {
-        @Override
-        public int getIconWidth() {
-            return 18;
-        }
-
-        @Override
-        public int getIconHeight() {
-            return 18;
-        }
-
-        @Override
-        public void paintIcon(Component component, Graphics graphics, int x, int y) {
-            Graphics2D g2 = (Graphics2D) graphics.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            g2.setColor(NAVY);
-            g2.setStroke(new BasicStroke(1.5f));
-            g2.drawRoundRect(x + 2, y + 3, 14, 13, 2, 2);
-            g2.drawLine(x + 2, y + 7, x + 16, y + 7);
-            g2.drawLine(x + 6, y + 1, x + 6, y + 5);
-            g2.drawLine(x + 12, y + 1, x + 12, y + 5);
-
-            g2.setStroke(new BasicStroke(1f));
-            g2.drawLine(x + 5, y + 10, x + 5, y + 10);
-            g2.drawLine(x + 9, y + 10, x + 9, y + 10);
-            g2.drawLine(x + 13, y + 10, x + 13, y + 10);
-            g2.drawLine(x + 5, y + 13, x + 5, y + 13);
-            g2.drawLine(x + 9, y + 13, x + 9, y + 13);
-            g2.drawLine(x + 13, y + 13, x + 13, y + 13);
-            g2.dispose();
-        }
     }
 
     private static final class StatusRenderer extends DefaultTableCellRenderer {

@@ -82,6 +82,7 @@ final class TreatmentPlanController {
                 return null;
                 },x->{loadDetails();
                 loadPlans();
+                JOptionPane.showMessageDialog(view,"Đã cập nhật bước điều trị thành công.");
             });
         }catch(RuntimeException e){
             error(e);
@@ -98,6 +99,7 @@ final class TreatmentPlanController {
                 return null;
                 },x->{loadDetails();
                 loadPlans();
+                JOptionPane.showMessageDialog(view,"Đã cập nhật bước điều trị thành công.");
             });
         }catch(RuntimeException e){
             error(e);
@@ -133,6 +135,7 @@ final class TreatmentPlanController {
             return null;
             },x->{loadPlans();
             view.detailModel.setRowCount(0);
+            JOptionPane.showMessageDialog(view,"Đã hủy kế hoạch điều trị.");
         });
     }
 

@@ -20,7 +20,7 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
     private final boolean management;
     private final JTextField from=new JTextField(10),to=new JTextField(10),keyword=new JTextField(14);
     private final JComboBox<NhanVienChon> employees=new JComboBox<>();
-    private final JButton previous=new JButton("‹ Tuần trước"),next=new JButton("Tuần sau ›"),today=new JButton("Tuần này"),refresh=new JButton("Tải lại"),create=new JButton("+ Thêm phân công"),cancel=new JButton("Hủy phân công"),detail=new JButton("Xem chi tiết");
+    private final JButton previous=new JButton("‹ Tuần trước"),next=new JButton("Tuần sau ›"),today=new JButton("Tuần này"),refresh=new JButton("Làm mới"),create=new JButton("+ Thêm phân công"),cancel=new JButton("Hủy phân công"),detail=new JButton("Xem chi tiết");
     private final JLabel status=new JLabel("Chưa tải dữ liệu");
     private final Rows model=new Rows();
     private final JTable table=new JTable(model);
@@ -35,11 +35,11 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
         setLayout(new BorderLayout(0,14));setBackground(new Color(245,248,252));setBorder(new EmptyBorder(24,26,24,26));
         JPanel heading=new JPanel(new BorderLayout(0,8));heading.setOpaque(false);
         JLabel title=new JLabel(management?"Phân công ca":"Lịch làm việc của tôi");title.setFont(new Font("SansSerif",Font.BOLD,23));title.setForeground(new Color(29,61,102));heading.add(title,BorderLayout.NORTH);
-        heading.add(new JLabel(management?"Lịch theo ngày · Tạo và hủy phân công, giữ lịch sử":"Lịch cá nhân theo tài khoản đăng nhập · Chỉ xem"),BorderLayout.SOUTH);add(heading,BorderLayout.NORTH);
+        add(heading,BorderLayout.NORTH);
         JPanel body=new JPanel(new BorderLayout(0,10));body.setOpaque(false);
         JPanel tools=new JPanel();tools.setLayout(new BoxLayout(tools,BoxLayout.Y_AXIS));tools.setBackground(Color.WHITE);tools.setBorder(new EmptyBorder(10,12,10,12));
         JPanel dates=new JPanel(new FlowLayout(FlowLayout.LEFT));dates.setOpaque(false);
-        dates.add(previous);dates.add(today);dates.add(next);dates.add(new JLabel("Từ ngày:"));dates.add(from);dates.add(new JLabel("Đến:"));dates.add(to);dates.add(refresh);dates.setAlignmentX(Component.LEFT_ALIGNMENT);tools.add(dates);
+        dates.add(previous);dates.add(today);dates.add(next);dates.add(new JLabel("Từ ngày:"));dates.add(com.quanlynhakhoa.hethong.giaodien.DateInput.iso(from,"ngày bắt đầu"));dates.add(new JLabel("Đến:"));dates.add(com.quanlynhakhoa.hethong.giaodien.DateInput.iso(to,"ngày kết thúc"));dates.add(refresh);dates.setAlignmentX(Component.LEFT_ALIGNMENT);tools.add(dates);
         setWeek(LocalDate.now());
         if(management){JPanel filters=new JPanel(new GridBagLayout());filters.setOpaque(false);employees.setPreferredSize(new Dimension(260,34));employees.setRenderer(new DefaultListCellRenderer(){
             @Override public Component getListCellRendererComponent(JList<?> l,Object v,int i,boolean s,boolean f){return super.getListCellRendererComponent(l,v==null?"Tất cả nhân viên":v,i,s,f);}
@@ -50,15 +50,15 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
             filterCell.gridx=2;filterCell.weightx=0;filters.add(create,filterCell);
             filters.setAlignmentX(Component.LEFT_ALIGNMENT);tools.add(filters);
             keyword.setToolTipText("Chỉ tìm trong danh sách lựa chọn nhân viên; không tìm nội dung bảng phân công.");
-            employees.setToolTipText("Chọn nhân viên rồi bấm Tải lại để lọc bảng phân công.");
-            JLabel hint=new JLabel("Tìm lựa chọn NV: thu hẹp danh sách chọn. Lọc bảng: chọn nhân viên rồi bấm Tải lại (người đang lọc luôn được giữ).");
-            hint.setBorder(new EmptyBorder(4,4,0,0));hint.setText("Chọn nhân viên rồi bấm Tải lại để xem lịch.");hint.setAlignmentX(Component.LEFT_ALIGNMENT);tools.add(hint);}
+            employees.setToolTipText("Chọn nhân viên rồi nhấn Enter ở ô tìm để lọc bảng phân công.");
+            JLabel hint=new JLabel("Tìm lựa chọn NV: thu hẹp danh sách chọn. Lọc bảng: chọn nhân viên rồi bấm Làm mới (người đang lọc luôn được giữ).");
+            hint.setBorder(new EmptyBorder(4,4,0,0));hint.setText("Chọn nhân viên rồi nhấn Enter ở ô tìm để xem lịch. Làm mới sẽ bỏ lọc nhân viên.");hint.setAlignmentX(Component.LEFT_ALIGNMENT);tools.add(hint);}
         body.add(tools,BorderLayout.NORTH);
         table.setRowHeight(32);table.setAutoCreateRowSorter(true);table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);table.setFillsViewportHeight(true);table.getTableHeader().setReorderingAllowed(false);
         JScrollPane scroll=new JScrollPane(table);scroll.setColumnHeaderView(table.getTableHeader());body.add(scroll,BorderLayout.CENTER);
         JPanel actions=new JPanel(new FlowLayout(FlowLayout.LEFT));actions.setOpaque(false);actions.add(detail);if(management)actions.add(cancel);body.add(actions,BorderLayout.SOUTH);add(body,BorderLayout.CENTER);
         status.setForeground(new Color(62,82,106));add(status,BorderLayout.SOUTH);
-        previous.addActionListener(e->move(-7));next.addActionListener(e->move(7));today.addActionListener(e->{setWeek(LocalDate.now());refreshData();});refresh.addActionListener(e->refreshData());keyword.addActionListener(e->refreshData());
+        previous.addActionListener(e->move(-7));next.addActionListener(e->move(7));today.addActionListener(e->{setWeek(LocalDate.now());refreshData();});refresh.addActionListener(e->{keyword.setText("");if(management&&employees.getItemCount()>0)employees.setSelectedIndex(0);refreshData();});keyword.addActionListener(e->refreshData());
         // Selection is an explicit filter, applied by Tải lại. Avoid recursive reload while replacing choices.
         detail.addActionListener(e->showDetail());create.addActionListener(e->create());cancel.addActionListener(e->cancel());
         for(JComponent control:new JComponent[]{from,to,keyword,employees,previous,next,today,refresh,create,cancel,detail}){
@@ -117,7 +117,7 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
         if(employees.getSelectedItem()!=null)employee.setSelectedItem(employees.getSelectedItem());
         JTextField shiftName=new JTextField(28),startTime=new JTextField("08:00"),endTime=new JTextField("12:00");
         JTextField date=new JTextField(LocalDate.now().toString());date.setEditable(false);date.setHorizontalAlignment(JTextField.CENTER);
-        JButton chooseDate=new JButton("Chọn ngày");
+        JButton chooseDate=new JButton("Lịch");
         JPanel datePicker=new JPanel(new BorderLayout(6,0));datePicker.add(date,BorderLayout.CENTER);datePicker.add(chooseDate,BorderLayout.EAST);
         chooseDate.addActionListener(new java.awt.event.ActionListener(){
             public void actionPerformed(java.awt.event.ActionEvent event){
@@ -193,7 +193,7 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
         busy=true;buttons();status.setText("Đang lưu phân công…");
         new SwingWorker<String,Void>(){
             @Override protected String doInBackground()throws Exception{return operation.run();}
-            @Override protected void done(){busy=false;try{String savedId=get();if(afterSuccess!=null){afterSuccess.run();selectionAfterLoad=savedId;}notice=success;refreshData();}catch(Exception e){status.setText(error(e));}finally{if(!service.isActive())clear();buttons();}}
+            @Override protected void done(){busy=false;try{String savedId=get();if(afterSuccess!=null){afterSuccess.run();selectionAfterLoad=savedId;}notice=success;JOptionPane.showMessageDialog(LichLamViecPanel.this,success,"Kết quả",JOptionPane.INFORMATION_MESSAGE);refreshData();}catch(Exception e){status.setText(error(e));JOptionPane.showMessageDialog(LichLamViecPanel.this,error(e),"Không thể lưu phân công",JOptionPane.ERROR_MESSAGE);}finally{if(!service.isActive())clear();buttons();}}
         }.execute();
     }
     private static String error(Throwable e){

@@ -8,8 +8,8 @@ public record Payment(String maThanhToan, String maHoaDon, LocalDateTime thoiGia
                         TrangThai trangThai, String maNhanVien, String maTaiKhoanHuy,
                         LocalDateTime thoiGianHuy, String lyDoHuy) {
     public enum TrangThai {
-        THANH_CONG, DA_HUY;
-        @Override public String toString() { return this == THANH_CONG ? "Thành công" : "Đã hủy"; }
+        THANH_CONG, DA_HUY, DA_HOAN_TIEN;
+        @Override public String toString() { return switch(this){case THANH_CONG -> "Thành công";case DA_HUY -> "Hủy ghi nhận";case DA_HOAN_TIEN -> "Đã hoàn tiền";}; }
     }
     public enum PhuongThuc {
         TIEN_MAT, CHUYEN_KHOAN, THE_POS;

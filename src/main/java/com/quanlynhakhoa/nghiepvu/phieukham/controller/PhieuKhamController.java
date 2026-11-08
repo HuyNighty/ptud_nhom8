@@ -28,7 +28,7 @@ public final class PhieuKhamController {
             view.xoaBoLoc();
             taiDanhSach();
         });
-        view.getBtnTaiLai().addActionListener(event -> taiBacSiVaDanhSach());
+        view.getBtnTaiLai().addActionListener(event -> { view.xoaBoLoc(); taiBacSiVaDanhSach(); });
         view.getBtnLuuNhap().addActionListener(event -> luuNhap());
         view.getBtnKetLuan().addActionListener(event -> ketLuan());
 
