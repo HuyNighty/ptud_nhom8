@@ -3,8 +3,9 @@ package com.quanlynhakhoa.inventory;
 import com.quanlynhakhoa.nghiepvu.kho.lohang.view.LoHangPanel;
 import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.view.NhaCungCapPanel;
 import com.quanlynhakhoa.nghiepvu.kho.thuoc.view.ThuocPanel;
-import com.quanlynhakhoa.nghiepvu.kho.vattu.view.VatTuPanel;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.nghiepvu.kho.vattu.view.VatTuPanel;
+
 import java.awt.BorderLayout;
 import java.util.Objects;
 import javax.swing.JPanel;

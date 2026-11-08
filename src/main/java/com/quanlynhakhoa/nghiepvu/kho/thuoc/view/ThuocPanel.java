@@ -4,7 +4,7 @@ import com.quanlynhakhoa.nghiepvu.kho.thuoc.controller.ThuocController;
 import com.quanlynhakhoa.nghiepvu.kho.thuoc.model.Thuoc;
 import com.quanlynhakhoa.nghiepvu.kho.thuoc.service.ThuocService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -70,7 +70,7 @@ public final class ThuocPanel extends JPanel {
         north.add(toolbar, BorderLayout.SOUTH);
         add(north, BorderLayout.NORTH);
 
-        String[] columns = {"Mã thuốc", "Tên thuốc", "Hàm lượng", "Đơn vị", "Tồn kho", "Định mức", "Mức tồn", "Hạn gần nhất", "Đã đặt", "Giá bán (VND)"};
+        String[] columns = {"Mã thuốc", "Tên thuốc", "Hàm lượng", "Đơn vị", "Tồn kho", "Định mức", "Mức tồn", "Hạn gần nhất", "Đã đặt"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int row, int column) { return false; }
         };
@@ -111,8 +111,7 @@ public final class ThuocPanel extends JPanel {
                     thuoc.getMaThuoc(), thuoc.getTenThuoc(),
                     thuoc.getHamLuong() == null ? "—" : thuoc.getHamLuong(),
                     thuoc.getDonViTinh(), thuoc.getTongTon(), thuoc.getDinhMucToiThieu(),
-                    mucTon, han, thuoc.isDaDatHang() ? "Có" : "Không",
-                    thuoc.getDonGiaBan() == null ? "Chưa định giá" : com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi.vnd(thuoc.getDonGiaBan())
+                    mucTon, han, thuoc.isDaDatHang() ? "Có" : "Không"
             });
         }
         lblTrangThai.setForeground(MUTED);

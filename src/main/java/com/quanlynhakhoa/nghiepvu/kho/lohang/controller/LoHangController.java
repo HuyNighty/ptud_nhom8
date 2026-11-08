@@ -4,12 +4,11 @@ import com.quanlynhakhoa.nghiepvu.kho.lohang.model.LoHang;
 import com.quanlynhakhoa.nghiepvu.kho.lohang.service.LoHangService;
 import com.quanlynhakhoa.nghiepvu.kho.lohang.view.LoHangPanel;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
-import java.awt.Color;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import javax.swing.SwingWorker;
 
 /** Controller điều phối truy vấn lô hàng; mọi JDBC chạy ngoài Swing EDT. */
@@ -56,9 +55,11 @@ public final class LoHangController implements ActionListener {
     private String thongBaoLoi(Throwable error) {
         Throwable root = error;
         while (root.getCause() != null) root = root.getCause();
-        if (root instanceof AccessDeniedException) return "Tài khoản không có quyền xem lô hàng.";
-        if (root instanceof IllegalArgumentException) return root.getMessage();
-        if (root instanceof SQLException) return "Không thể đọc lô hàng. Kiểm tra kết nối và quyền SELECT M1.";
-        return "Có lỗi khi tải lô hàng. Vui lòng thử lại.";
+        return switch (root) {
+            case AccessDeniedException accessDeniedException -> "Tài khoản không có quyền xem lô hàng.";
+            case IllegalArgumentException illegalArgumentException -> root.getMessage();
+            case SQLException throwables -> "Không thể đọc lô hàng. Kiểm tra kết nối và quyền SELECT M1.";
+            default -> "Có lỗi khi tải lô hàng. Vui lòng thử lại.";
+        };
     }
 }

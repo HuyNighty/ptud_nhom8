@@ -4,7 +4,7 @@ import com.quanlynhakhoa.nghiepvu.kho.vattu.controller.VatTuController;
 import com.quanlynhakhoa.nghiepvu.kho.vattu.model.VatTu;
 import com.quanlynhakhoa.nghiepvu.kho.vattu.service.VatTuService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;

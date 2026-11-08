@@ -9,7 +9,6 @@ import com.quanlynhakhoa.hethong.phanquyen.Permission;
 import java.awt.Window;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import java.awt.event.ActionEvent;
@@ -127,13 +126,12 @@ public final class VatTuController implements ActionListener {
     private String thongBaoLoi(Throwable error) {
         Throwable root = error;
         while (root.getCause() != null) root = root.getCause();
-        if (root instanceof AccessDeniedException) {
-            return "Tài khoản không có quyền xem hoặc quản lý vật tư.";
-        }
-        if (root instanceof IllegalArgumentException) return root.getMessage();
-        if (root instanceof SQLException) {
-            return "Không thể đọc/lưu vật tư. Kiểm tra kết nối và quyền M1 trên database development.";
-        }
-        return "Có lỗi khi xử lý vật tư. Vui lòng thử lại.";
+        return switch (root) {
+            case AccessDeniedException accessDeniedException -> "Tài khoản không có quyền xem hoặc quản lý vật tư.";
+            case IllegalArgumentException illegalArgumentException -> root.getMessage();
+            case SQLException throwables ->
+                    "Không thể đọc/lưu vật tư. Kiểm tra kết nối và quyền M1 trên database development.";
+            default -> "Có lỗi khi xử lý vật tư. Vui lòng thử lại.";
+        };
     }
 }

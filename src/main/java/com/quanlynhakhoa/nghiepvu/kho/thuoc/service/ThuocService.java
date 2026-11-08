@@ -85,10 +85,6 @@ public class ThuocService {
     /** Chuẩn hóa và kiểm tra theo giới hạn cột của dbo.Thuoc. */
     public static void kiemTraVaChuanHoa(Thuoc thuoc) {
         if (thuoc == null) throw new IllegalArgumentException("Thiếu dữ liệu thuốc.");
-        java.math.BigDecimal price = thuoc.getDonGiaBan();
-        if (price != null && (price.signum() < 0 || price.stripTrailingZeros().scale() > 0
-                || price.compareTo(new java.math.BigDecimal("999999999999999999")) > 0))
-            throw new IllegalArgumentException("Giá bán phải là số VND nguyên từ 0 đến 999.999.999.999.999.999; để trống nếu chưa định giá.");
 
         String ma = thuoc.getMaThuoc() == null ? "" : thuoc.getMaThuoc().trim().toUpperCase(Locale.ROOT);
         if (ma.isEmpty() || ma.length() > 10 || !ma.matches("[A-Z0-9_-]+")) {
