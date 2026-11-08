@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.benhnhan.controller;
 
-import com.quanlynhakhoa.nghiepvu.benhnhan.model.BenhNhan;
-import com.quanlynhakhoa.nghiepvu.benhnhan.model.HoSoBenhAn;
+import com.quanlynhakhoa.nghiepvu.benhnhan.entity.BenhNhan;
+import com.quanlynhakhoa.nghiepvu.benhnhan.entity.HoSoBenhAn;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.BenhNhanService;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.HoSoBenhAnService;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.HoSoBenhAnPanel;

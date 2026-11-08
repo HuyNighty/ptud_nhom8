@@ -1,11 +1,11 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.view;
 
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.controller.DonThuocController;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.ChiTietDonThuoc;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.DonThuocData;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.PhieuKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.Thuoc;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.DonThuocData;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.Thuoc;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;

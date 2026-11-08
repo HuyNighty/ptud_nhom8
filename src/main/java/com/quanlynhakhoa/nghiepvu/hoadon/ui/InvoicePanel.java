@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.InvoiceController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
-import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.ClinicalBillingSource;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceIdGenerator;

@@ -2,8 +2,8 @@ package com.quanlynhakhoa.nghiepvu.lichhen.controller;
 
 import com.quanlynhakhoa.nghiepvu.benhnhan.hopdong.BenhNhanTomTat;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.DuLieuDaThayDoiException;
-import com.quanlynhakhoa.nghiepvu.lichhen.model.BacSi;
-import com.quanlynhakhoa.nghiepvu.lichhen.model.LichHen;
+import com.quanlynhakhoa.nghiepvu.lichhen.entity.BacSi;
+import com.quanlynhakhoa.nghiepvu.lichhen.entity.LichHen;
 import com.quanlynhakhoa.nghiepvu.lichhen.service.LichHenService;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.TiepNhanDialog;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.TiepNhanPanel;

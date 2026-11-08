@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.inventory.vattu.controller;
 
-import com.quanlynhakhoa.inventory.vattu.model.VatTu;
+import com.quanlynhakhoa.inventory.vattu.entity.VatTu;
 import com.quanlynhakhoa.inventory.vattu.service.VatTuService;
 import com.quanlynhakhoa.inventory.vattu.view.VatTuDialog;
 import com.quanlynhakhoa.inventory.vattu.view.VatTuPanel;

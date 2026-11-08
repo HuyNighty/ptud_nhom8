@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.kho.lohang.controller;
 
-import com.quanlynhakhoa.nghiepvu.kho.lohang.model.LoHang;
+import com.quanlynhakhoa.nghiepvu.kho.lohang.entity.LoHang;
 import com.quanlynhakhoa.nghiepvu.kho.lohang.service.LoHangService;
 import com.quanlynhakhoa.nghiepvu.kho.lohang.view.LoHangPanel;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;

@@ -5,7 +5,7 @@ import com.quanlynhakhoa.quantri.taikhoan.EligibleEmployee;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.List;
-import com.quanlynhakhoa.quantri.nhanvien.model.EmployeeStatus;
+import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
 import javax.swing.*;
 
 /** Kiểm trình bày và giữ nguyên mã, không mở database hoặc dialog tương tác. */

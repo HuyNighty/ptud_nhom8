@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.model.InvoiceCancellationRequest;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.InvoiceCancellationRequest;
 import java.sql.*;
 import java.time.*;
 import java.util.*;

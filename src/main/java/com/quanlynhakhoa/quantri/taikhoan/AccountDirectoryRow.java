@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
-import com.quanlynhakhoa.quantri.taikhoan.model.AccountStatus;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
-import com.quanlynhakhoa.quantri.taikhoan.model.LockSource;
+import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
 import java.time.LocalDateTime;
 
 public record AccountDirectoryRow(

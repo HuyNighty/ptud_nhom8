@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.lohang.dao;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.kho.lohang.model.LoHang;
+import com.quanlynhakhoa.nghiepvu.kho.lohang.entity.LoHang;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;

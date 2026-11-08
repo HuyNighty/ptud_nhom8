@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.model.ChiDinhCanLamSang;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.DichVuCanLamSang;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiDinhCanLamSang;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.DichVuCanLamSang;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

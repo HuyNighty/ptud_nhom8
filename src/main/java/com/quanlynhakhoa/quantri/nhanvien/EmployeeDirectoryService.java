@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.quantri.nhanvien;
 
-import com.quanlynhakhoa.quantri.nhanvien.model.EmployeeStatus;
+import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;

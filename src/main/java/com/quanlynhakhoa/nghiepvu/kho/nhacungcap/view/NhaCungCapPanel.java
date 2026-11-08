@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.nhacungcap.view;
 
 import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.controller.NhaCungCapController;
-import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.model.NhaCungCap;
+import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.entity.NhaCungCap;
 import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.service.NhaCungCapService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;

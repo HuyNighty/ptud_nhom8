@@ -1,9 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.benhnhan.view;
 
 import com.quanlynhakhoa.nghiepvu.benhnhan.controller.HoSoBenhAnController;
-import com.quanlynhakhoa.nghiepvu.benhnhan.model.BenhNhan;
-import com.quanlynhakhoa.nghiepvu.benhnhan.model.HoSoBenhAn;
-import com.quanlynhakhoa.nghiepvu.benhnhan.model.LuotKham;
+import com.quanlynhakhoa.nghiepvu.benhnhan.entity.BenhNhan;
+import com.quanlynhakhoa.nghiepvu.benhnhan.entity.HoSoBenhAn;
+import com.quanlynhakhoa.nghiepvu.benhnhan.entity.LuotKham;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.BenhNhanService;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.HoSoBenhAnService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;

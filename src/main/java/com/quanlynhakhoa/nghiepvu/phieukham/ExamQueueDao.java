@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.phieukham;
 
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

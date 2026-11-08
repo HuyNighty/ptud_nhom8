@@ -1,14 +1,14 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.service;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.CanLamSangDao;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.DonThuocDao;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.ChiTietDonThuoc;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.DonThuocData;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.PhieuKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.Thuoc;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.DonThuocData;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.Thuoc;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;

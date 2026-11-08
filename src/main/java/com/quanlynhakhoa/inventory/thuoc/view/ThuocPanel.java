@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.inventory.thuoc.view;
 
 import com.quanlynhakhoa.inventory.thuoc.controller.ThuocController;
-import com.quanlynhakhoa.inventory.thuoc.model.Thuoc;
+import com.quanlynhakhoa.inventory.thuoc.entity.Thuoc;
 import com.quanlynhakhoa.inventory.thuoc.service.ThuocService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;

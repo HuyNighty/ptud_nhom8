@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.lohang.service;
 
 import com.quanlynhakhoa.nghiepvu.kho.lohang.dao.LoHangDao;
-import com.quanlynhakhoa.nghiepvu.kho.lohang.model.LoHang;
+import com.quanlynhakhoa.nghiepvu.kho.lohang.entity.LoHang;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;

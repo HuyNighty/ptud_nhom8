@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 
 /** Headless safety checks. Does not instantiate Swing or connect to SQL. */
 public final class DesktopLoginGateSelfTest {

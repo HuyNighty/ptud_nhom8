@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.nhacungcap.dao;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.model.NhaCungCap;
+import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.entity.NhaCungCap;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

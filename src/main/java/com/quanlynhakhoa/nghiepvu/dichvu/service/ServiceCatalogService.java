@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.dichvu.service;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.dichvu.dao.ServiceCatalogDao;
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
+import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
 import java.sql.Connection;

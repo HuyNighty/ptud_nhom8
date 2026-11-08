@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.dichvu.controller;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.SessionWorker;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi;
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
+import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;

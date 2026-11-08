@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.lohang.view;
 
 import com.quanlynhakhoa.nghiepvu.kho.lohang.controller.LoHangController;
-import com.quanlynhakhoa.nghiepvu.kho.lohang.model.LoHang;
+import com.quanlynhakhoa.nghiepvu.kho.lohang.entity.LoHang;
 import com.quanlynhakhoa.nghiepvu.kho.lohang.service.LoHangService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
