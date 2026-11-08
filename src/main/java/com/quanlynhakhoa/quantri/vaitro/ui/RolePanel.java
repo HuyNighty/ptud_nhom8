@@ -145,7 +145,10 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
         status.setForeground(MUTED);
         bottom.add(status, BorderLayout.SOUTH);
         body.add(bottom, BorderLayout.SOUTH);
-        add(body, BorderLayout.CENTER);
+        javax.swing.JTabbedPane roleTabs = new javax.swing.JTabbedPane();
+        roleTabs.addTab("Ma trận quyền hiện tại", body);
+        roleTabs.addTab("Quản lý quyền (MVP)", new BasicRbacPanel(session));
+        add(roleTabs, BorderLayout.CENTER);
 
         rolePicker.addActionListener(e -> showRole());
         refresh.addActionListener(e -> reload());
