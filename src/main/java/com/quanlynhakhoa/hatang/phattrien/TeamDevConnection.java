@@ -18,8 +18,8 @@ import java.util.regex.Pattern;
  * Existing N08AuthIT_ synthetic launcher remains available when no local config exists.
  */
 public final class TeamDevConnection {
-    private static final Pattern DEV_NAME = Pattern.compile("N08Dev(_[0-9a-f]{8})?");
-    private static final Pattern APP_USER = Pattern.compile("n08dev(_[0-9a-f]{8})?");
+    private static final Pattern DEV_NAME = Pattern.compile("N08Dev_[0-9a-f]{8}");
+    private static final Pattern APP_USER = Pattern.compile("n08dev_[0-9a-f]{8}");
     private TeamDevConnection() { }
 
     public static Path configPath() {
