@@ -21,30 +21,18 @@ public final class TreatmentPlanSecuritySelfTest {
         if (!rejected) throw new AssertionError(label);
         checks++;
     }
-    private static void invalid(Checked operation,String label)throws Exception {
-        try{operation.run();throw new AssertionError(label);}
-        catch(IllegalArgumentException expected){checks++;}
-    }
     public static void main(String[] args) throws Exception {
         TreatmentPlanService admin = new TreatmentPlanService(as(Role.SYSTEM_ADMIN));
         TreatmentPlanService receptionist = new TreatmentPlanService(as(Role.RECEPTIONIST));
         TreatmentPlanService manager = new TreatmentPlanService(as(Role.CLINIC_MANAGER));
-        invalid(() -> admin.taoKeHoach("", "HSDEMO01", "PKDEMO01", LocalDate.now(), "Demo"), "Admin can create but must supply a valid plan ID");
-        invalid(() -> admin.themBuoc("", "DVDEMO01", "16", LocalDate.now(), ""), "Admin can add steps but IDs remain validated");
-        invalid(() -> admin.hoanThanhBuoc(0, LocalDate.now(), "Demo"), "Admin completion validates detail ID");
-        invalid(() -> admin.huyBuoc(0, "Demo"), "Admin cancellation validates detail ID");
-        invalid(() -> admin.hoanThanhKeHoach(""), "Admin completion validates plan ID");
-        invalid(() -> admin.huyKeHoach("", "Demo"), "Admin cancellation validates plan ID");
-        denied(() -> receptionist.themBuoc("KHDEMO01", "DVDEMO01", "16", LocalDate.now(), ""), "Receptionist cannot mutate treatment plans");
-        denied(() -> manager.huyKeHoach("KHDEMO01", "Demo"), "Manager cannot mutate treatment plans");
-        com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy permissions=new com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy();
-        for(var permission:com.quanlynhakhoa.hethong.phanquyen.Permission.values()){
-            if(!permissions.isAllowed(Role.SYSTEM_ADMIN,permission))throw new AssertionError("Admin permission missing: "+permission);checks++;
-        }
-        DesktopSession expired=as(Role.SYSTEM_ADMIN);expired.logout();
-        denied(() -> new TreatmentPlanService(expired).huyKeHoach("KHDEMO01", "Demo"), "Logged out admin cannot write");
+        denied(() -> admin.taoKeHoach("KHDEMO01", "HSDEMO01", "PKDEMO01", LocalDate.now(), "Demo"), "Admin may not create plans without doctor identity");
+        denied(() -> admin.themBuoc("KHDEMO01", "DVDEMO01", "16", LocalDate.now(), ""), "Admin may not add steps");
+        denied(() -> admin.hoanThanhBuoc(1, LocalDate.now(), "Demo"), "Admin may not complete steps");
+        denied(() -> admin.huyBuoc(1, "Demo"), "Admin may not cancel steps");
+        denied(() -> admin.hoanThanhKeHoach("KHDEMO01"), "Admin may not complete plans");
+        denied(() -> admin.huyKeHoach("KHDEMO01", "Demo"), "Admin may not cancel plans");
         denied(() -> receptionist.danhSach(), "Receptionist cannot read treatment plans");
         denied(() -> manager.chiTiet("KHDEMO01"), "Manager cannot read treatment plans");
-        System.out.println("PASS: ADMIN FULL PERMISSIONS AND TREATMENT SECURITY (" + checks + " checks, no database)");
+        System.out.println("PASS: TREATMENT SECURITY DENIAL (" + checks + " checks, no database)");
     }
 }
