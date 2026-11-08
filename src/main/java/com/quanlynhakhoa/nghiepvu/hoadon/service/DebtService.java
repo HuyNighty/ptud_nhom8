@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.util.*;
 
 /** Projection of existing invoice data; no separate receivables storage or invented due dates. */

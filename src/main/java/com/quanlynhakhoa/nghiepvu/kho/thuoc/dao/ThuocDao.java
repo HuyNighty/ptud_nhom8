@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.thuoc.dao;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.kho.thuoc.model.Thuoc;
+import com.quanlynhakhoa.nghiepvu.kho.thuoc.entity.Thuoc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

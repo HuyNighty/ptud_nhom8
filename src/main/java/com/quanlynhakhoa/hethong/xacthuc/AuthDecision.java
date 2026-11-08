@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 
 /** Result visible to the desktop caller; never contains credentials or hashes. */
 public record AuthDecision(boolean authenticated, String accountId,

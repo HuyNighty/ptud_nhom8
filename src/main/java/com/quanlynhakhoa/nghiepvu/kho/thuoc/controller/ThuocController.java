@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.kho.thuoc.controller;
 
-import com.quanlynhakhoa.nghiepvu.kho.thuoc.model.Thuoc;
+import com.quanlynhakhoa.nghiepvu.kho.thuoc.entity.Thuoc;
 import com.quanlynhakhoa.nghiepvu.kho.thuoc.service.ThuocService;
 import com.quanlynhakhoa.nghiepvu.kho.thuoc.view.ThuocDialog;
 import com.quanlynhakhoa.nghiepvu.kho.thuoc.view.ThuocPanel;

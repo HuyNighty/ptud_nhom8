@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.quantri.lichlamviec.dao;
 
-import com.quanlynhakhoa.quantri.lichlamviec.model.*;
+import com.quanlynhakhoa.quantri.lichlamviec.entity.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.*;

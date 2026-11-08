@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.controller;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.model.DuLieuCanLamSang;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.DuLieuCanLamSang;
 import com.quanlynhakhoa.nghiepvu.phieukham.service.CanLamSangService;
 import com.quanlynhakhoa.nghiepvu.phieukham.view.CanLamSangPanel;
 import java.util.concurrent.CancellationException;

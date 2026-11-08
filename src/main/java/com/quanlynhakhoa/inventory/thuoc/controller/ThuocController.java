@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.inventory.thuoc.controller;
 
-import com.quanlynhakhoa.inventory.thuoc.model.Thuoc;
+import com.quanlynhakhoa.inventory.thuoc.entity.Thuoc;
 import com.quanlynhakhoa.inventory.thuoc.service.ThuocService;
 import com.quanlynhakhoa.inventory.thuoc.view.ThuocDialog;
 import com.quanlynhakhoa.inventory.thuoc.view.ThuocPanel;

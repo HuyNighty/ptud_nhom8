@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.List;

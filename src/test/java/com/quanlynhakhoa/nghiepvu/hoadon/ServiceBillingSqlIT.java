@@ -1,10 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.hethong.xacthuc.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.model.Invoice;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.Invoice;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
+import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.io.Console;

@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.model.InvoiceDetails;
-import com.quanlynhakhoa.nghiepvu.hoadon.model.PaymentRequest;
-import com.quanlynhakhoa.nghiepvu.hoadon.model.Payment;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.InvoiceDetails;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.PaymentRequest;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.Payment;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;

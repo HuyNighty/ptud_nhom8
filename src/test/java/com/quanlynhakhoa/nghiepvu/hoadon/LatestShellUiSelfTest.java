@@ -1,10 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.BillingChangeBus;
-import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.DebtService;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

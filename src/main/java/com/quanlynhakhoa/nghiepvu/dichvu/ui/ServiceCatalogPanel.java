@@ -4,7 +4,7 @@ import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.dichvu.controller.ServiceCatalogController;
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
+import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.awt.*;

@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.kho.vattu.controller;
 
-import com.quanlynhakhoa.nghiepvu.kho.vattu.model.VatTu;
+import com.quanlynhakhoa.nghiepvu.kho.vattu.entity.VatTu;
 import com.quanlynhakhoa.nghiepvu.kho.vattu.service.VatTuService;
 import com.quanlynhakhoa.nghiepvu.kho.vattu.view.VatTuDialog;
 import com.quanlynhakhoa.nghiepvu.kho.vattu.view.VatTuPanel;

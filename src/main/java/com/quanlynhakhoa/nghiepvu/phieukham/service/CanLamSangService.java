@@ -1,10 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.service;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.CanLamSangDao;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.DuLieuCanLamSang;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.DuLieuCanLamSang;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;

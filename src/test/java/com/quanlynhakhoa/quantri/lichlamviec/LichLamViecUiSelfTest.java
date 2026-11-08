@@ -2,7 +2,7 @@ package com.quanlynhakhoa.quantri.lichlamviec;
 import com.quanlynhakhoa.quantri.lichlamviec.service.PhanCongService;
 import com.quanlynhakhoa.quantri.lichlamviec.view.LichLamViecPanel;
 import com.quanlynhakhoa.hethong.phanquyen.*;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.giaodien.MainFrame;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureRegistry;

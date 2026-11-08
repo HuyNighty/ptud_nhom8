@@ -4,7 +4,7 @@ import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.hethong.xacthuc.BCryptPasswordVerifier;
 import com.quanlynhakhoa.hethong.xacthuc.JdbcAuthService;
 import com.quanlynhakhoa.hethong.xacthuc.LoginPolicy;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;

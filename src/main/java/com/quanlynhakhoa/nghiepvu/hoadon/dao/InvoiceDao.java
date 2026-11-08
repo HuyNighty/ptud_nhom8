@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

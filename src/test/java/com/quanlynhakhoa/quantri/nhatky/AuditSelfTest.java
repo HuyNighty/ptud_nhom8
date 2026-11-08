@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.nhatky;
 
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.InvocationHandler;

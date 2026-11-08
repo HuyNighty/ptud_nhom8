@@ -5,7 +5,7 @@ import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;

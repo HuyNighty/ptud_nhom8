@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.nhanvien.dao;
 
-import com.quanlynhakhoa.quantri.nhanvien.model.Employee;
-import com.quanlynhakhoa.quantri.nhanvien.model.EmployeeStatus;
+import com.quanlynhakhoa.quantri.nhanvien.entity.Employee;
+import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

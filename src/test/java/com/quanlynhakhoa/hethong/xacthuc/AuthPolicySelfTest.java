@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
-import com.quanlynhakhoa.quantri.taikhoan.model.*;
-import com.quanlynhakhoa.quantri.nhanvien.model.*;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.taikhoan.entity.*;
+import com.quanlynhakhoa.quantri.nhanvien.entity.*;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.time.LocalDateTime;
 
 /** Synthetic-only test. Never connects to SQL Server or reads a real credential. */

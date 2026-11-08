@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
+import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
 import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;

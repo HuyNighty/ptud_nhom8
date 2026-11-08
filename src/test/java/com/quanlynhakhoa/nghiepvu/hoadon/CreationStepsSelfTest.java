@@ -2,10 +2,10 @@ package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.InvoiceCreationController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.InvoiceCreateDao;
-import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoiceCreationDialog;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.List;

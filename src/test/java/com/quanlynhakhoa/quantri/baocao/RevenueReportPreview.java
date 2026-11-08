@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 
 /** Synthetic design preview; no database connection or writes. */
 public final class RevenueReportPreview {

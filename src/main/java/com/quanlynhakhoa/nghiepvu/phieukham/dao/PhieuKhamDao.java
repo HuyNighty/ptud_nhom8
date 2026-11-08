@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.model.BacSi;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.PhieuKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.PhieuKhamListItem;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.BacSi;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKhamListItem;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;

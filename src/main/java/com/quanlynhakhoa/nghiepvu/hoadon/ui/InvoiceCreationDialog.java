@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

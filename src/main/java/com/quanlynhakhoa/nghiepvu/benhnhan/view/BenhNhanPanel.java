@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.benhnhan.view;
 
 import com.quanlynhakhoa.nghiepvu.benhnhan.controller.BenhNhanController;
-import com.quanlynhakhoa.nghiepvu.benhnhan.model.BenhNhan;
+import com.quanlynhakhoa.nghiepvu.benhnhan.entity.BenhNhan;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.BenhNhanService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;

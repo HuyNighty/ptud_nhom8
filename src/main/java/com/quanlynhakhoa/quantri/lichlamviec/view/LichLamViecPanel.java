@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.quantri.lichlamviec.view;
 
-import com.quanlynhakhoa.quantri.lichlamviec.model.*;
+import com.quanlynhakhoa.quantri.lichlamviec.entity.*;
 import com.quanlynhakhoa.quantri.lichlamviec.service.PhanCongService;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.*;

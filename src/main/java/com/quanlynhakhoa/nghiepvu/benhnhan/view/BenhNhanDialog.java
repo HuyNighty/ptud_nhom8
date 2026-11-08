@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.benhnhan.view;
 
-import com.quanlynhakhoa.nghiepvu.benhnhan.model.BenhNhan;
+import com.quanlynhakhoa.nghiepvu.benhnhan.entity.BenhNhan;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.BenhNhanService;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.LoiNhapLieuException;
 import java.awt.BorderLayout;

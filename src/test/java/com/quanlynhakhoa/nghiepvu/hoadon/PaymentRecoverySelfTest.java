@@ -1,10 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.PaymentController;
-import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.PendingPaymentStore;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentForm;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.math.BigDecimal;
 import java.nio.file.*;
 import java.sql.Timestamp;

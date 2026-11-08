@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 
 /** Synthetic authorization contract; employee ownership is enforced in Workforce service/DAO. */
 public final class HandoverPermissionContractSelfTest {

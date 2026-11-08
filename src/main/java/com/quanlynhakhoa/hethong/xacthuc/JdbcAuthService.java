@@ -2,8 +2,8 @@ package com.quanlynhakhoa.hethong.xacthuc;
 
 import com.quanlynhakhoa.quantri.taikhoan.dao.AccountDao;
 import com.quanlynhakhoa.quantri.nhanvien.dao.EmployeeDao;
-import com.quanlynhakhoa.quantri.taikhoan.model.Account;
-import com.quanlynhakhoa.quantri.nhanvien.model.Employee;
+import com.quanlynhakhoa.quantri.taikhoan.entity.Account;
+import com.quanlynhakhoa.quantri.nhanvien.entity.Employee;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

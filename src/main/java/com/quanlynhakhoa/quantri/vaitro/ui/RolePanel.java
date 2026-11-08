@@ -2,7 +2,7 @@ package com.quanlynhakhoa.quantri.vaitro.ui;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.quantri.vaitro.RoleOverview;
 import com.quanlynhakhoa.quantri.vaitro.RoleOverviewService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
