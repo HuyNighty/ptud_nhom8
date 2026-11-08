@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.dieutri.view;
 
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.dieutri.service.TreatmentPlanService;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;

@@ -2,7 +2,7 @@ package com.quanlynhakhoa.hethong.tongquan;
 
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.math.BigDecimal;

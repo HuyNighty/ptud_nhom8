@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.taikhoan.ui;
 import com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService;
 import com.quanlynhakhoa.quantri.taikhoan.AccountStateService;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.Field;

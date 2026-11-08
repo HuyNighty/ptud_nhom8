@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.vaitro;
 
 import com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;

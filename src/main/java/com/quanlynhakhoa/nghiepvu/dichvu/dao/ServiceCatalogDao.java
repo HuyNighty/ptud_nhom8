@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.dichvu.dao;
 
-import com.quanlynhakhoa.nghiepvu.dichvu.model.DentalService;
+import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

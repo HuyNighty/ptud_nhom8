@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.benhnhan.dao;
 
-import com.quanlynhakhoa.nghiepvu.benhnhan.model.HoSoBenhAn;
-import com.quanlynhakhoa.nghiepvu.benhnhan.model.LuotKham;
+import com.quanlynhakhoa.nghiepvu.benhnhan.entity.HoSoBenhAn;
+import com.quanlynhakhoa.nghiepvu.benhnhan.entity.LuotKham;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

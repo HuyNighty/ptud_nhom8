@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.controller;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.model.ChiTietDonThuoc;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.DonThuocData;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.DonThuocData;
 import com.quanlynhakhoa.nghiepvu.phieukham.service.DonThuocService;
 import com.quanlynhakhoa.nghiepvu.phieukham.view.DonThuocPanel;
 import java.util.List;

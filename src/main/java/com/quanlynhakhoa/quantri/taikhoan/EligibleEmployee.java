@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.quantri.nhanvien.JobTitleLabels;
 import java.util.Objects;
 

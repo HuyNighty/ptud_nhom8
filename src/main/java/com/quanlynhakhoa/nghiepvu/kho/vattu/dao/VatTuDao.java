@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.vattu.dao;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.kho.vattu.model.VatTu;
+import com.quanlynhakhoa.nghiepvu.kho.vattu.entity.VatTu;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;

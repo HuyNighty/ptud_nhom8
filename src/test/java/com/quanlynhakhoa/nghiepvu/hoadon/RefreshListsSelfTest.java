@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.lang.reflect.Field;
 import javax.swing.*;
 import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;

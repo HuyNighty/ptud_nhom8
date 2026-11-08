@@ -1,6 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.dieutri.view;
 
 import com.quanlynhakhoa.nghiepvu.dieutri.service.TreatmentPlanService;
+import com.quanlynhakhoa.nghiepvu.dieutri.service.TreatmentPlanUnavailableException;
+import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -146,7 +148,19 @@ final class TreatmentPlanController {
     }
 
     private void error(Throwable t){
-        JOptionPane.showMessageDialog(view,t.getMessage()==null?"Không thể xử lý.":t.getMessage(),"Kế hoạch điều trị",JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(view,messageFor(t),"Kế hoạch điều trị",JOptionPane.ERROR_MESSAGE);
+    }
+
+    static String messageFor(Throwable failure){
+        Throwable error = failure instanceof java.util.concurrent.ExecutionException
+                && failure.getCause() != null ? failure.getCause() : failure;
+        if(error instanceof TreatmentPlanUnavailableException)
+            return new TreatmentPlanUnavailableException().getMessage();
+        if(error instanceof AccessDeniedException)
+            return "Bạn không có quyền thực hiện thao tác này hoặc phiên đăng nhập đã kết thúc.";
+        if(error instanceof IllegalArgumentException)
+            return "Thông tin kế hoạch điều trị chưa hợp lệ. Vui lòng kiểm tra lại.";
+        return "Không thể xử lý kế hoạch điều trị. Vui lòng thử lại sau.";
     }
 
     private <T>void async(Callable<T> task,Consumer<T> success){
@@ -157,10 +171,7 @@ final class TreatmentPlanController {
             @Override protected void done(){
                 try{success.accept(get());
                 }catch(Exception e){
-                    Throwable r=e;
-                    while(r.getCause()!=null)
-                        r=r.getCause();
-                    error(r);
+                    error(e);
                 }
             }
         }

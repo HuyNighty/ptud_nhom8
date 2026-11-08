@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ClinicalChargeDao.Evidence;
-import com.quanlynhakhoa.nghiepvu.hoadon.model.InvoiceDraft;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.InvoiceDraft;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import java.math.BigDecimal;
 import java.util.*;

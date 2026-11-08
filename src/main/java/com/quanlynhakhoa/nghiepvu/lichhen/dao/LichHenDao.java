@@ -2,8 +2,8 @@ package com.quanlynhakhoa.nghiepvu.lichhen.dao;
 
 import com.quanlynhakhoa.nghiepvu.benhnhan.dao.BenhNhanDao;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.lichhen.model.BacSi;
-import com.quanlynhakhoa.nghiepvu.lichhen.model.LichHen;
+import com.quanlynhakhoa.nghiepvu.lichhen.entity.BacSi;
+import com.quanlynhakhoa.nghiepvu.lichhen.entity.LichHen;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

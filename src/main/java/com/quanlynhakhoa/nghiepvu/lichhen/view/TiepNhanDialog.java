@@ -3,7 +3,7 @@ package com.quanlynhakhoa.nghiepvu.lichhen.view;
 import com.quanlynhakhoa.nghiepvu.benhnhan.hopdong.BenhNhanTomTat;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.BieuTuong;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.MauNut;
-import com.quanlynhakhoa.nghiepvu.lichhen.model.BacSi;
+import com.quanlynhakhoa.nghiepvu.lichhen.entity.BacSi;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;

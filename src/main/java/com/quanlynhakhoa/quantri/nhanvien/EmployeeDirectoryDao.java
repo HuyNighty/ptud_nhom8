@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.nhanvien;
 
-import com.quanlynhakhoa.quantri.nhanvien.model.EmployeeStatus;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;

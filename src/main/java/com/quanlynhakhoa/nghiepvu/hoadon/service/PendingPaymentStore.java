@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.hoadon.model.Payment;
-import com.quanlynhakhoa.nghiepvu.hoadon.model.PaymentRequest;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.Payment;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.PaymentRequest;
 import java.io.*;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;

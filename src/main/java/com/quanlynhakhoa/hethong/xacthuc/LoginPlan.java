@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
-import com.quanlynhakhoa.quantri.taikhoan.model.Account;
-import com.quanlynhakhoa.quantri.taikhoan.model.AccountStatus;
-import com.quanlynhakhoa.quantri.taikhoan.model.LockSource;
+import com.quanlynhakhoa.quantri.taikhoan.entity.Account;
+import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
+import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
 import java.time.LocalDateTime;
 
 /**

@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.baocao;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;

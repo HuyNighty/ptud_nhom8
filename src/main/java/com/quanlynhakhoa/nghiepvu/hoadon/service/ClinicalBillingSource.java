@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.model.InvoiceDraft;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.InvoiceDraft;
 import java.sql.Connection;
 import java.sql.SQLException;
 

@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.model.ChiTietDonThuoc;
-import com.quanlynhakhoa.nghiepvu.phieukham.model.Thuoc;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
+import com.quanlynhakhoa.nghiepvu.phieukham.entity.Thuoc;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;

@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.*;
 import java.time.LocalDateTime;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 
 public final class DashboardService {
     private static final ZoneId CLINIC_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");

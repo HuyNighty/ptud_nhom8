@@ -4,7 +4,7 @@ import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import java.math.BigDecimal;
 import java.time.LocalDate;

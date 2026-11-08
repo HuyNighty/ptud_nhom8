@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.inventory.lohang.service;
 
 import com.quanlynhakhoa.inventory.lohang.dao.LoHangDao;
-import com.quanlynhakhoa.inventory.lohang.model.LoHang;
+import com.quanlynhakhoa.inventory.lohang.entity.LoHang;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;

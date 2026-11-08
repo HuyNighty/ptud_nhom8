@@ -2,8 +2,8 @@ package com.quanlynhakhoa.quantri.nhanvien.ui;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
-import com.quanlynhakhoa.quantri.nhanvien.model.EmployeeStatus;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.quantri.nhanvien.EmployeeDirectoryDao;
 import com.quanlynhakhoa.quantri.nhanvien.EmployeeDirectoryRow;

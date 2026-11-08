@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,7 +11,7 @@ import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;
 
 public final class InvoiceMedicineSelfTest {
     public static void main(String[] args) throws Exception {
-        var medicine = new com.quanlynhakhoa.nghiepvu.kho.thuoc.model.Thuoc("TESTPR", "Thuốc thử", "Viên", false, null, null, 0, false);
+        var medicine = new com.quanlynhakhoa.nghiepvu.kho.thuoc.entity.Thuoc("TESTPR", "Thuốc thử", "Viên", false, null, null, 0, false);
         com.quanlynhakhoa.nghiepvu.kho.thuoc.service.ThuocService.kiemTraVaChuanHoa(medicine);
         medicine.setDonGiaBan(BigDecimal.ZERO);
         com.quanlynhakhoa.nghiepvu.kho.thuoc.service.ThuocService.kiemTraVaChuanHoa(medicine);

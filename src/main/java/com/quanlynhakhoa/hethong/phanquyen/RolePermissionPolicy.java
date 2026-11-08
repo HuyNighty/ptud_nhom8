@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
-import com.quanlynhakhoa.quantri.vaitro.model.Role;
+import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;

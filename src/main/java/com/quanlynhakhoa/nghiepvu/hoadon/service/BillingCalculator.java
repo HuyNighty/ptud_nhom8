@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.model.*;
+import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.math.BigDecimal;
 import java.util.List;
 
