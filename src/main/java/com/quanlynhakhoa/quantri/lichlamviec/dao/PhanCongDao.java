@@ -1,9 +1,8 @@
 package com.quanlynhakhoa.quantri.lichlamviec.dao;
 
-
-
-
-import com.quanlynhakhoa.quantri.lichlamviec.entity.*;
+import com.quanlynhakhoa.model.lichlamviec.ThongTinPhanCong;
+import com.quanlynhakhoa.model.lichlamviec.NhanVienChon;
+import com.quanlynhakhoa.entity.CaLamViec;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.*;
@@ -28,10 +27,10 @@ public final class PhanCongDao {
     private CaLamViec shift(ResultSet r) throws SQLException {
         return new CaLamViec(r.getString("maCa"),r.getNString("tenCa"),r.getTime("gioBatDau").toLocalTime(),r.getTime("gioKetThuc").toLocalTime());
     }
-    public List<PhanCong> schedule(Connection c, LocalDate from, LocalDate to, String employee) throws SQLException {
+    public List<ThongTinPhanCong> schedule(Connection c, LocalDate from, LocalDate to, String employee) throws SQLException {
         try(var p=query(c,"SELECT p.maPhanCong,p.maNhanVien,n.hoTen,p.ngayLam,p.nhiemVu,p.trangThai,p.lyDoHuy,c.maCa,c.tenCa,c.gioBatDau,c.gioKetThuc FROM dbo.PhanCong p JOIN dbo.NhanVien n ON n.maNhanVien=p.maNhanVien JOIN dbo.CaLamViec c ON c.maCa=p.maCa WHERE p.ngayLam>=? AND p.ngayLam<=? AND (? IS NULL OR p.maNhanVien=?) ORDER BY p.ngayLam,c.gioBatDau,n.hoTen,p.maPhanCong")) {
             p.setDate(1,java.sql.Date.valueOf(from)); p.setDate(2,java.sql.Date.valueOf(to)); p.setString(3,employee);p.setString(4,employee);
-            try(var r=p.executeQuery()){List<PhanCong> rows=new ArrayList<>();while(r.next())rows.add(new PhanCong(r.getString("maPhanCong"),r.getString("maNhanVien"),r.getNString("hoTen"),shift(r),r.getDate("ngayLam").toLocalDate(),r.getNString("nhiemVu"),r.getString("trangThai"),r.getNString("lyDoHuy")));return List.copyOf(rows);}
+            try(var r=p.executeQuery()){List<ThongTinPhanCong> rows=new ArrayList<>();while(r.next())rows.add(new ThongTinPhanCong(r.getString("maPhanCong"),r.getString("maNhanVien"),r.getNString("hoTen"),shift(r),r.getDate("ngayLam").toLocalDate(),r.getNString("nhiemVu"),r.getString("trangThai"),r.getNString("lyDoHuy")));return List.copyOf(rows);}
         }
     }
     public String employeeForAccount(Connection c, String account) throws SQLException {

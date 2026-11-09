@@ -1,10 +1,8 @@
 package com.quanlynhakhoa.quantri.lichlamviec;
 
-
-
-
+import com.quanlynhakhoa.model.lichlamviec.ThongTinPhanCong;
+import com.quanlynhakhoa.entity.CaLamViec;
 import com.quanlynhakhoa.quantri.lichlamviec.service.PhanCongService;
-import com.quanlynhakhoa.quantri.lichlamviec.entity.*;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
@@ -50,9 +48,9 @@ public final class PhanCongSelfTest {
             check(d.commits==0&&d.assignments.isEmpty()&&d.rollbacks==1,"rollback "+failure);
         }
         var ca=new CaLamViec("C","Ca",LocalTime.of(8,0),LocalTime.of(12,0));var adjacent=new CaLamViec("B","Ca sau",LocalTime.of(12,0),LocalTime.of(16,0));
-        var p=new PhanCong("P","N","Tên",ca,day,"task","CHO_HIEU_LUC",null);PhanCongService.checkAssignment(adjacent,List.of(p),2);check(true,"adjacent permitted");
+        var p=new ThongTinPhanCong("P","N","Tên",ca,day,"task","CHO_HIEU_LUC",null);PhanCongService.checkAssignment(adjacent,List.of(p),2);check(true,"adjacent permitted");
         rejects(IllegalArgumentException.class,()->PhanCongService.checkAssignment(adjacent,List.of(p),1));rejects(IllegalArgumentException.class,()->PhanCongService.checkAssignment(ca,List.of(p),2));
-        var cancelled=new PhanCong("P","N","Tên",ca,day,"task","DA_HUY","lý do");PhanCongService.checkAssignment(ca,List.of(cancelled),2);check(true,"cancelled excluded");
+        var cancelled=new ThongTinPhanCong("P","N","Tên",ca,day,"task","DA_HUY","lý do");PhanCongService.checkAssignment(ca,List.of(cancelled),2);check(true,"cancelled excluded");
         rejects(IllegalArgumentException.class,()->PhanCongService.checkAssignment(new CaLamViec("N","Đêm",LocalTime.of(22,0),LocalTime.of(6,0)),List.of(),2));
         // PO APPROVED 01/11/2026 transition matrix: only CHO_HIEU_LUC may be cancelled.
         for(String state:List.of("CHO_HIEU_LUC","DANG_THUC_HIEN","HOAN_THANH","DA_HUY")){

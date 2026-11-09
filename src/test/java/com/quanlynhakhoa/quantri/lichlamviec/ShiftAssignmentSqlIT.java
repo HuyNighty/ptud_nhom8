@@ -69,7 +69,7 @@ public final class ShiftAssignmentSqlIT {
                 }
                 LocalDate day = LocalDate.of(2026, 11, 20);
                 dao.lockEmployee(c, "TSTNV01", day, true);
-                var shift = new com.quanlynhakhoa.quantri.lichlamviec.entity.CaLamViec("TSTCATRY", "[KIỂM THỬ] Ca mới hoàn tác", java.time.LocalTime.of(8,0), java.time.LocalTime.of(12,0));
+                var shift = new com.quanlynhakhoa.entity.CaLamViec("TSTCATRY", "[KIỂM THỬ] Ca mới hoàn tác", java.time.LocalTime.of(8,0), java.time.LocalTime.of(12,0));
                 PhanCongService.checkAssignment(shift, dao.schedule(c, day, day, "TSTNV01"), dao.maximumPerDay(c));
                 dao.insertShift(c, shift);
                 dao.insert(c, id, "TSTNV01", shift.id(), day, "[KIỂM THỬ] Phân công sẽ hoàn tác");
