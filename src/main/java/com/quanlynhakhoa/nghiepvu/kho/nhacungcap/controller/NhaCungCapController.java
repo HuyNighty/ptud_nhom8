@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.kho.nhacungcap.controller;
 
-import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.entity.NhaCungCap;
+import com.quanlynhakhoa.entity.NhaCungCap;
 import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.service.NhaCungCapService;
 import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.view.NhaCungCapDialog;
 import com.quanlynhakhoa.nghiepvu.kho.nhacungcap.view.NhaCungCapPanel;

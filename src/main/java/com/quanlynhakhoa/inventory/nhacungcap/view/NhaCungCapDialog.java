@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.inventory.nhacungcap.view;
 
-import com.quanlynhakhoa.inventory.nhacungcap.entity.NhaCungCap;
+import com.quanlynhakhoa.entity.NhaCungCap;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;

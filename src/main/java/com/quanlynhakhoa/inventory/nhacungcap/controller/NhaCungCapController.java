@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.inventory.nhacungcap.controller;
 
-import com.quanlynhakhoa.inventory.nhacungcap.entity.NhaCungCap;
+import com.quanlynhakhoa.entity.NhaCungCap;
 import com.quanlynhakhoa.inventory.nhacungcap.service.NhaCungCapService;
 import com.quanlynhakhoa.inventory.nhacungcap.view.NhaCungCapDialog;
 import com.quanlynhakhoa.inventory.nhacungcap.view.NhaCungCapPanel;
