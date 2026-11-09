@@ -279,7 +279,7 @@ public final class MainFrame extends JFrame {
     private void openFromDashboard(Module module,String context) {
         navigate(module);
         JPanel page=featurePages.get(module);
-        if(page instanceof com.quanlynhakhoa.nghiepvu.kho.InventoryPanel inventory)inventory.openOverviewSection(context);
+        if(page instanceof com.quanlynhakhoa.view.kho.KhoPanel inventory)inventory.openOverviewSection(context);
         if(page instanceof com.quanlynhakhoa.view.lichhen.LichHenPanel appointments && !context.isBlank()){
             appointments.openDashboardAppointment(context);
         }

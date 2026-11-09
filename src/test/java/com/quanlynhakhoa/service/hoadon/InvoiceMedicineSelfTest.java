@@ -16,12 +16,12 @@ import static com.quanlynhakhoa.service.hoadon.ServiceBillingSelfTest.*;
 public final class InvoiceMedicineSelfTest {
     public static void main(String[] args) throws Exception {
         var medicine = new com.quanlynhakhoa.entity.Thuoc("TESTPR", "Thuốc thử", "Viên", false, null, null, 0, false);
-        com.quanlynhakhoa.nghiepvu.kho.thuoc.service.ThuocService.kiemTraVaChuanHoa(medicine);
+        com.quanlynhakhoa.service.kho.thuoc.ThuocService.kiemTraVaChuanHoa(medicine);
         medicine.setDonGiaBan(BigDecimal.ZERO);
-        com.quanlynhakhoa.nghiepvu.kho.thuoc.service.ThuocService.kiemTraVaChuanHoa(medicine);
+        com.quanlynhakhoa.service.kho.thuoc.ThuocService.kiemTraVaChuanHoa(medicine);
         for (String price : new String[]{"-1", "1.5", "1000000000000000000"}) {
             medicine.setDonGiaBan(new BigDecimal(price));
-            expect(IllegalArgumentException.class, () -> com.quanlynhakhoa.nghiepvu.kho.thuoc.service.ThuocService.kiemTraVaChuanHoa(medicine));
+            expect(IllegalArgumentException.class, () -> com.quanlynhakhoa.service.kho.thuoc.ThuocService.kiemTraVaChuanHoa(medicine));
         }
         var priced = new ThuocKeTinhTien("T1", "Thuốc mẫu", "Viên", 2, new BigDecimal("25000"));
         var unpriced = new ThuocKeTinhTien("T2", "Thuốc chưa tính tiền", "Hộp", 3, null);

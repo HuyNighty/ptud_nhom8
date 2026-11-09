@@ -7,7 +7,7 @@ import com.quanlynhakhoa.view.benhnhan.BenhNhanPanel;
 import com.quanlynhakhoa.view.benhnhan.HoSoBenhAnPanel;
 import com.quanlynhakhoa.view.lichhen.LichHenPanel;
 import com.quanlynhakhoa.view.lichhen.TiepNhanPanel;
-import com.quanlynhakhoa.nghiepvu.kho.InventoryPanel;
+import com.quanlynhakhoa.view.kho.KhoPanel;
 import com.quanlynhakhoa.quantri.nhanvien.ui.EmployeePanel;
 import com.quanlynhakhoa.quantri.vaitro.ui.RolePanel;
 import com.quanlynhakhoa.view.phieukham.PhieuKhamPanel;
@@ -37,7 +37,7 @@ public final class FeatureBootstrap {
                 .register(Module.PATIENTS, BenhNhanPanel::new)
                 .register(Module.APPOINTMENTS, LichHenPanel::new)
                 .register(Module.RECEPTION, TiepNhanPanel::new)
-                .register(Module.INVENTORY, InventoryPanel::new)
+                .register(Module.INVENTORY, KhoPanel::new)
                 .register(Module.SUPPLY_REQUESTS, com.quanlynhakhoa.nghiepvu.kho.supplyrequest.view.SupplyRequestPanel::new)
                 .register(Module.MEDICAL_RECORDS, HoSoBenhAnPanel::new)
                 .register(Module.SERVICE_CATALOG, new FeaturePanelFactory() {
