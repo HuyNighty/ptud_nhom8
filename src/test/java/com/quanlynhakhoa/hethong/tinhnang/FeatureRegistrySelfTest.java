@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.hethong.tinhnang;
 
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
@@ -28,7 +28,7 @@ public final class FeatureRegistrySelfTest {
         check(rejected, "expected " + expected.getSimpleName());
     }
 
-    private static DesktopSession session(Role role) {
+    private static DesktopSession session(VaiTroHeThong role) {
         return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
     }
 
@@ -67,27 +67,27 @@ public final class FeatureRegistrySelfTest {
         check(created.get() == 0, "factory not called during registration");
 
         NavigationPolicy navigation = new NavigationPolicy();
-        check(navigation.canOpen(session(Role.SYSTEM_ADMIN), Module.AUDIT),
+        check(navigation.canOpen(session(VaiTroHeThong.SYSTEM_ADMIN), Module.AUDIT),
                 "admin can open audit");
-        check(navigation.canOpen(session(Role.CLINIC_MANAGER), Module.AUDIT),
+        check(navigation.canOpen(session(VaiTroHeThong.CLINIC_MANAGER), Module.AUDIT),
                 "manager can open audit");
-        check(!navigation.canOpen(session(Role.RECEPTIONIST), Module.AUDIT),
+        check(!navigation.canOpen(session(VaiTroHeThong.RECEPTIONIST), Module.AUDIT),
                 "receptionist cannot open audit");
-        check(!navigation.canOpen(session(Role.DOCTOR), Module.AUDIT),
+        check(!navigation.canOpen(session(VaiTroHeThong.DOCTOR), Module.AUDIT),
                 "doctor cannot open audit");
 
-        check(navigation.canOpen(session(Role.RECEPTIONIST), Module.RECEPTION),
+        check(navigation.canOpen(session(VaiTroHeThong.RECEPTIONIST), Module.RECEPTION),
                 "receptionist can open reception");
-        check(navigation.canOpen(session(Role.SYSTEM_ADMIN), Module.RECEPTION),
+        check(navigation.canOpen(session(VaiTroHeThong.SYSTEM_ADMIN), Module.RECEPTION),
                 "admin can open reception");
-        check(!navigation.canOpen(session(Role.DOCTOR), Module.RECEPTION),
+        check(!navigation.canOpen(session(VaiTroHeThong.DOCTOR), Module.RECEPTION),
                 "doctor cannot open reception");
-        check(!navigation.canOpen(session(Role.CLINIC_MANAGER), Module.RECEPTION),
+        check(!navigation.canOpen(session(VaiTroHeThong.CLINIC_MANAGER), Module.RECEPTION),
                 "manager cannot open reception");
-        DesktopSession receptionist = session(Role.RECEPTIONIST);
+        DesktopSession receptionist = session(VaiTroHeThong.RECEPTIONIST);
         check(navigation.canOpen(receptionist, Module.APPOINTMENTS), "receptionist can open appointments");
         check(!navigation.canOpen(receptionist, Module.MEDICAL_RECORDS), "receptionist cannot open medical records");
-        DesktopSession doctor = session(Role.DOCTOR);
+        DesktopSession doctor = session(VaiTroHeThong.DOCTOR);
         check(navigation.canOpen(doctor, Module.MEDICAL_RECORDS), "doctor can open medical records");
         check(navigation.canOpen(doctor, Module.TREATMENT_PLANS), "doctor can open treatment plans");
         check(!navigation.canOpen(receptionist, Module.TREATMENT_PLANS), "receptionist cannot open treatment plans");
@@ -101,7 +101,7 @@ public final class FeatureRegistrySelfTest {
         reject(AccessDeniedException.class, () -> registry.create(receptionist, Module.PATIENTS));
         check(created.get() == 1, "logged-out session cannot run factory");
 
-        DesktopSession admin = session(Role.SYSTEM_ADMIN);
+        DesktopSession admin = session(VaiTroHeThong.SYSTEM_ADMIN);
         check(navigation.canOpen(admin, Module.APPOINTMENTS), "admin can open appointments");
         check(navigation.canOpen(admin, Module.MEDICAL_RECORDS), "admin can open medical records");
         reject(IllegalArgumentException.class, () -> registry.create(admin, Module.BILLING));

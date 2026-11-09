@@ -2,7 +2,7 @@ package com.quanlynhakhoa.quantri.lichlamviec;
 import com.quanlynhakhoa.quantri.lichlamviec.service.PhanCongService;
 import com.quanlynhakhoa.quantri.lichlamviec.view.LichLamViecPanel;
 import com.quanlynhakhoa.hethong.phanquyen.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.giaodien.MainFrame;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureRegistry;
@@ -25,7 +25,7 @@ public final class LichLamViecUiSelfTest {
     private static void layout(Container c){c.doLayout();for(Component child:c.getComponents())if(child instanceof Container p)layout(p);}
     private static void screenshot(MainFrame frame,String name)throws Exception{edt(()->{try{JComponent root=(JComponent)frame.getContentPane();root.setSize(1280,760);layout(root);var image=new BufferedImage(1280,760,BufferedImage.TYPE_INT_RGB);Graphics2D g=image.createGraphics();root.printAll(g);g.dispose();Path output=Path.of("target/shifts-ui");Files.createDirectories(output);ImageIO.write(image,"png",output.resolve(name).toFile());}catch(Exception e){throw new AssertionError(e);}});}
     public static void main(String[]args)throws Exception{
-        var s=PhanCongSelfTest.session(Role.SYSTEM_ADMIN);var db=new ShiftJdbcDouble();
+        var s=PhanCongSelfTest.session(VaiTroHeThong.SYSTEM_ADMIN);var db=new ShiftJdbcDouble();
         db.assignments.add(ShiftJdbcDouble.assignment("TEST1","NV1","CHO_HIEU_LUC"));db.assignments.add(ShiftJdbcDouble.assignment("TEST2","NV2","DA_HUY"));
         AtomicReference<LichLamViecPanel> management=new AtomicReference<>(),mine=new AtomicReference<>();AtomicReference<MainFrame> frame=new AtomicReference<>();
         FeatureRegistry registry=FeatureRegistry.builder()
@@ -50,8 +50,8 @@ public final class LichLamViecUiSelfTest {
             edt(()->{field(mine.get(),"from",JTextField.class).setText("invalid");mine.get().refreshData();check(field(mine.get(),"status",JLabel.class).getText().contains("không hợp lệ"),"date validation");});
             s.logout();edt(()->{management.get().refreshData();check(field(management.get(),"table",JTable.class).getRowCount()==0,"logout clears data");check(!field(management.get(),"create",JButton.class).isEnabled(),"logout disables writes");});
         }finally{edt(()->{if(frame.get()!=null)frame.get().dispose();});}
-        for(Role role:Role.values()){
-            var principal=PhanCongSelfTest.session(role);boolean manager=role==Role.SYSTEM_ADMIN||role==Role.CLINIC_MANAGER;
+        for(VaiTroHeThong role:VaiTroHeThong.values()){
+            var principal=PhanCongSelfTest.session(role);boolean manager=role==VaiTroHeThong.SYSTEM_ADMIN||role==VaiTroHeThong.CLINIC_MANAGER;
             edt(()->{MainFrame shell=new MainFrame(principal,()->{},FeatureRegistry.builder().build());try{JMenu planning=findMenu(shell.getContentPane(),"Kế hoạch");check(item(planning,"Lịch làm việc của tôi")!=null,"self menu "+role);check((item(planning,"Phân công ca")!=null)==manager,"management menu "+role);}finally{principal.logout();shell.dispose();}});
         }
         System.out.println("PASS: LichLamViecUiSelfTest "+checks+" Swing checks; synthetic JDBC only, screenshots are test fixtures, not database evidence.");

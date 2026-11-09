@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.vaitro.catalog;
 import com.quanlynhakhoa.entity.VaiTro;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -34,7 +34,7 @@ public final class RbacV9SqlContractSelfTest {
     }
     private static Set<String> expectedGrants() {
         Set<String> pairs=new TreeSet<>();RolePermissionPolicy policy=new RolePermissionPolicy();
-        for(Role role:Role.values())for(Permission permission:policy.permissionsFor(role))
+        for(VaiTroHeThong role:VaiTroHeThong.values())for(Permission permission:policy.permissionsFor(role))
             pairs.add(role.name()+":"+permission.name());
         return pairs;
     }
@@ -53,18 +53,18 @@ public final class RbacV9SqlContractSelfTest {
         List<List<String>> roles=rows(sql,"SEED ROLES","\\('([A-Z_]+)',N'([^']*)',N'([^']*)',([01]),([01]),([01])\\)",6);
         List<List<String>> permissions=rows(sql,"SEED PERMISSIONS","\\('([A-Z_]+)',N'([^']*)',([01])\\)",3);
         List<List<String>> grants=rows(sql,"SEED GRANTS","\\('([A-Z_]+)','([A-Z_]+)'\\)",2);
-        check(Role.values().length==6&&Permission.values().length==26,"Baseline enum contract changed");
+        check(VaiTroHeThong.values().length==6&&Permission.values().length==26,"Baseline enum contract changed");
         check(roles.size()==6,"Exactly six role seed rows");
         Set<String> actualRoles=new HashSet<>();
         for(List<String> row:roles) {
             check(actualRoles.add(row.get(0)),"Duplicate role seed");
-            Role.valueOf(row.get(0));
+            VaiTroHeThong.valueOf(row.get(0));
             VaiTro entity=new VaiTro(row.get(0),row.get(1),row.get(2),row.get(3).equals("1"),
                     row.get(4).equals("1"),row.get(5).equals("1"),new byte[8]);
             check(entity.active()&&entity.system(),"Legacy seed active/system");
             check(entity.protectedRole()==(entity.code().equals("SYSTEM_ADMIN")),"Protected role parity");
         }
-        check(actualRoles.equals(Arrays.stream(Role.values()).map(Enum::name).collect(Collectors.toSet())),"Exact role set");
+        check(actualRoles.equals(Arrays.stream(VaiTroHeThong.values()).map(Enum::name).collect(Collectors.toSet())),"Exact role set");
         check(permissions.size()==26,"Exactly 26 permission seed rows");
         Set<String> actualPermissions=new HashSet<>();
         for(List<String> row:permissions) {
@@ -77,7 +77,7 @@ public final class RbacV9SqlContractSelfTest {
         check(grants.size()==63&&actualGrants.size()==grants.size(),"63 unique grants");
         check(actualGrants.equals(expected),"Exact role/permission policy parity (both directions)");
         RolePermissionPolicy policy=new RolePermissionPolicy();
-        for(Role role:Role.values())for(Permission permission:Permission.values())
+        for(VaiTroHeThong role:VaiTroHeThong.values())for(Permission permission:Permission.values())
             check(actualGrants.contains(role+":"+permission)==policy.isAllowed(role,permission),"Per-permission parity "+role+":"+permission);
         List<List<String>> missing=new ArrayList<>(grants);missing.removeFirst();
         check(!pairs(missing).equals(expected),"Parity detects deleted grant");

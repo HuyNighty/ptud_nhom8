@@ -19,7 +19,7 @@ import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.hethong.tinhnang.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.giaodien.MainFrame;
@@ -78,7 +78,7 @@ public final class BillingLayoutSelfTest {
     public static void main(String[] args)throws Exception{
         Files.createDirectories(OUTPUT);Path noConfig=OUTPUT.resolve("no-config");Files.createDirectories(noConfig);String previous=System.getProperty("user.dir");System.setProperty("user.dir",noConfig.toString());
         try{SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-            DesktopSession session=ServiceBillingSelfTest.session(Role.SYSTEM_ADMIN);MainFrame frame=null;
+            DesktopSession session=ServiceBillingSelfTest.session(VaiTroHeThong.SYSTEM_ADMIN);MainFrame frame=null;
             try{
                 check(!com.quanlynhakhoa.hatang.phattrien.TeamDevConnection.hasLocalConfig(),"Synthetic principal must never use real SQL config");
                 check(BillingUi.parseDate("31/10/2026").equals(LocalDate.of(2026,10,31)),"VN date parsing");try{BillingUi.parseDate("31/02/2026");throw new AssertionError("Impossible date accepted");}catch(IllegalArgumentException expected){checks++;}

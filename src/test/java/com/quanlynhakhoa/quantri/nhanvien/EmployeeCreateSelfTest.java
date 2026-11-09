@@ -2,7 +2,7 @@ package com.quanlynhakhoa.quantri.nhanvien;
 
 import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.InvocationHandler;
@@ -35,7 +35,7 @@ public final class EmployeeCreateSelfTest {
         }
     }
 
-    private static DesktopSession session(Role role) {
+    private static DesktopSession session(VaiTroHeThong role) {
         return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
     }
 
@@ -127,16 +127,16 @@ public final class EmployeeCreateSelfTest {
             deniedConnections.incrementAndGet();
             throw new SQLException("Should not connect");
         };
-        rejects(AccessDeniedException.class, () -> new EmployeeCreateService(session(Role.RECEPTIONIST), forbidden).create(good()));
-        rejects(AccessDeniedException.class, () -> new EmployeeCreateService(session(Role.DOCTOR), forbidden).create(good()));
+        rejects(AccessDeniedException.class, () -> new EmployeeCreateService(session(VaiTroHeThong.RECEPTIONIST), forbidden).create(good()));
+        rejects(AccessDeniedException.class, () -> new EmployeeCreateService(session(VaiTroHeThong.DOCTOR), forbidden).create(good()));
         check(deniedConnections.get() == 0, "RBAC checked before JDBC connection");
-        DesktopSession closed = session(Role.CLINIC_MANAGER);
+        DesktopSession closed = session(VaiTroHeThong.CLINIC_MANAGER);
         closed.logout();
         rejects(AccessDeniedException.class, () -> new EmployeeCreateService(closed, forbidden).create(good()));
         check(deniedConnections.get() == 0, "Logged out user cannot connect");
 
         SimulatedDb success = new SimulatedDb();
-        String id = new EmployeeCreateService(session(Role.CLINIC_MANAGER), success::open).create(good());
+        String id = new EmployeeCreateService(session(VaiTroHeThong.CLINIC_MANAGER), success::open).create(good());
         check("TESTBS01".equals(id), "manager created ID");
         check(success.opens == 1 && success.checks == 1, "one connection and duplicate preflight");
         check(success.inserts == 1 && success.audits == 1 && success.commits == 1, "employee and audit committed together");
@@ -144,13 +144,13 @@ public final class EmployeeCreateSelfTest {
 
         SimulatedDb duplicate = new SimulatedDb();
         duplicate.duplicate = true;
-        rejects(IllegalArgumentException.class, () -> new EmployeeCreateService(session(Role.SYSTEM_ADMIN), duplicate::open).create(good()));
+        rejects(IllegalArgumentException.class, () -> new EmployeeCreateService(session(VaiTroHeThong.SYSTEM_ADMIN), duplicate::open).create(good()));
         check(duplicate.inserts == 0 && duplicate.audits == 0, "duplicate never writes");
         check(duplicate.rollbacks == 1 && duplicate.commits == 0, "duplicate rolls back");
 
         SimulatedDb auditFailure = new SimulatedDb();
         auditFailure.failAudit = true;
-        rejects(SQLException.class, () -> new EmployeeCreateService(session(Role.SYSTEM_ADMIN), auditFailure::open).create(good()));
+        rejects(SQLException.class, () -> new EmployeeCreateService(session(VaiTroHeThong.SYSTEM_ADMIN), auditFailure::open).create(good()));
         check(auditFailure.inserts == 1 && auditFailure.audits == 1, "audit failure follows insert");
         check(auditFailure.rollbacks == 1 && auditFailure.commits == 0, "audit failure rolls back transaction");
 

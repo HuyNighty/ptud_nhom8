@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.taikhoan;
 import com.quanlynhakhoa.model.taikhoan.KetQuaDanhSachTaiKhoan;
 import com.quanlynhakhoa.model.taikhoan.DongDanhSachTaiKhoan;
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -35,7 +35,7 @@ public final class AccountDirectoryDao {
 
 
 
-    public KetQuaDanhSachTaiKhoan search(Connection connection, String keyword, Role role,
+    public KetQuaDanhSachTaiKhoan search(Connection connection, String keyword, VaiTroHeThong role,
                          AccountStatus status) throws SQLException {
         Objects.requireNonNull(connection, "connection");
         Objects.requireNonNull(keyword, "keyword");
@@ -62,7 +62,7 @@ public final class AccountDirectoryDao {
                             rs.getString("tenHienThi"),
                             rs.getString("maNhanVien"),
                             rs.getString("tenNhanVien"),
-                            Role.valueOf(rs.getString("vaiTro")),
+                            VaiTroHeThong.valueOf(rs.getString("vaiTro")),
                             AccountStatus.valueOf(rs.getString("trangThai")),
                             rs.getBoolean("phaiDoiMatKhau"),
                             lastLogin == null ? null : lastLogin.toLocalDateTime(),

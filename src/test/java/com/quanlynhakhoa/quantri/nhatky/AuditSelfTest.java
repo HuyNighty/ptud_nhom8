@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.nhatky;
 
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.InvocationHandler;
@@ -107,7 +107,7 @@ public final class AuditSelfTest {
                     new Class<?>[]{ResultSet.class}, handler);
         }
     }
-    private static DesktopSession session(Role role) {
+    private static DesktopSession session(VaiTroHeThong role) {
         return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
     }
     public static void main(String[] args) throws Exception {
@@ -123,7 +123,7 @@ public final class AuditSelfTest {
         AuditFilter filter = new AuditFilter(LocalDate.of(2026, 10, 31),
                 LocalDate.of(2026, 10, 31), "TK01", "SUCCESS");
         FakeDb fake = new FakeDb(3);
-        AuditService service = new AuditService(session(Role.SYSTEM_ADMIN), fake::open);
+        AuditService service = new AuditService(session(VaiTroHeThong.SYSTEM_ADMIN), fake::open);
         AuditDao.Result result = service.search(filter);
         check(fake.opens.get() == 1, "one connection");
         check(fake.closed, "connection closed");
@@ -147,15 +147,15 @@ public final class AuditSelfTest {
         check(hundred.selectedRows == 201, "only 201 rows examined");
 
         FakeDb forbidden = new FakeDb(1);
-        AuditService denied = new AuditService(session(Role.DOCTOR), forbidden::open);
+        AuditService denied = new AuditService(session(VaiTroHeThong.DOCTOR), forbidden::open);
         reject(AccessDeniedException.class, () -> {
             try { denied.search(filter); } catch (java.sql.SQLException error) { throw new RuntimeException(error); }
         });
         check(forbidden.opens.get() == 0, "doctor cannot even open JDBC");
         FakeDb allowed = new FakeDb(1);
-        AuditService manager = new AuditService(session(Role.CLINIC_MANAGER), allowed::open);
+        AuditService manager = new AuditService(session(VaiTroHeThong.CLINIC_MANAGER), allowed::open);
         check(manager.search(filter).rows().size() == 1, "clinic manager allowed");
-        DesktopSession loggedOut = session(Role.SYSTEM_ADMIN);
+        DesktopSession loggedOut = session(VaiTroHeThong.SYSTEM_ADMIN);
         loggedOut.logout();
         FakeDb afterLogout = new FakeDb(1);
         AuditService logoutService = new AuditService(loggedOut, afterLogout::open);

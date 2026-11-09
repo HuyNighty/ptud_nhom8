@@ -11,7 +11,7 @@ import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -28,7 +28,7 @@ public final class ServiceBillingSelfTest {
         }
         throw new AssertionError("Expected " + type);
     }
-    public static DesktopSession session(Role role) { return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "TST_ACC", role, false)); }
+    public static DesktopSession session(VaiTroHeThong role) { return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "TST_ACC", role, false)); }
     private static BigDecimal money(String value) { return new BigDecimal(value); }
     private static DentalService value(String price) { return new DentalService(" TST1 ", " Dịch vụ kiểm thử ", money(price), " ", false, true); }
     private static ThongTinThanhToan payment(String id, String amount, boolean cancelled) {
@@ -69,15 +69,15 @@ public final class ServiceBillingSelfTest {
         check(!stopped.dangApDung() && BillingCalculator.total(lines).intValueExact() == 300, "historical price/link retained");
     }
     private static void permissions() throws Exception {
-        for (Role role : Role.values()) {
+        for (VaiTroHeThong role : VaiTroHeThong.values()) {
             final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final DesktopSession session = session(role);
             final ServiceCatalogService catalog = new ServiceCatalogService(session, jdbc); final InvoiceService billing = new InvoiceService(session, jdbc);
-            if (role != Role.CLINIC_MANAGER && role != Role.SYSTEM_ADMIN) {
+            if (role != VaiTroHeThong.CLINIC_MANAGER && role != VaiTroHeThong.SYSTEM_ADMIN) {
                 expect(AccessDeniedException.class, new Action() { public void run() throws Exception { catalog.find("", null); } });
                 expect(AccessDeniedException.class, new Action() { public void run() throws Exception { catalog.save(value("0"), true); } });
                 expect(AccessDeniedException.class, new Action() { public void run() throws Exception { catalog.changeActive("TST1", false); } });
             } else catalog.find("", null);
-            if (role != Role.CLINIC_MANAGER && role != Role.RECEPTIONIST && role != Role.SYSTEM_ADMIN) {
+            if (role != VaiTroHeThong.CLINIC_MANAGER && role != VaiTroHeThong.RECEPTIONIST && role != VaiTroHeThong.SYSTEM_ADMIN) {
                 expect(AccessDeniedException.class, new Action() { public void run() throws Exception { billing.find("", null, null, null); } });
                 expect(AccessDeniedException.class, new Action() { public void run() throws Exception { billing.detail("H1"); } });
                 check(jdbc.opens == 0, "denied before connection for " + role);
@@ -100,7 +100,7 @@ public final class ServiceBillingSelfTest {
         check(ServiceCatalogService.parsePrice("999999999999999999").precision() == 18, "max precision");
         DentalService normalized = ServiceCatalogService.validate(value("0"));
         check(normalized.maDichVu().equals("TST1") && normalized.moTa() == null && normalized.tenDichVu().equals("Dịch vụ kiểm thử"), "trim/null");
-        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final ServiceCatalogService service = new ServiceCatalogService(session(Role.CLINIC_MANAGER), jdbc);
+        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final ServiceCatalogService service = new ServiceCatalogService(session(VaiTroHeThong.CLINIC_MANAGER), jdbc);
         for (final DentalService invalid : List.of(new DentalService("X".repeat(11), "Name", money("1"), null, false, true),
                 new DentalService("ĐV1", "Name", money("1"), null, false, true), new DentalService("D V", "Name", money("1"), null, false, true),
                 new DentalService("D1", " ", money("1"), null, false, true), new DentalService("D1", "X".repeat(101), money("1"), null, false, true),
@@ -110,7 +110,7 @@ public final class ServiceBillingSelfTest {
         check(jdbc.opens == 0, "invalid data before connection");
     }
     private static void writes() throws Exception {
-        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final ServiceCatalogService service = new ServiceCatalogService(session(Role.CLINIC_MANAGER), jdbc);
+        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final ServiceCatalogService service = new ServiceCatalogService(session(VaiTroHeThong.CLINIC_MANAGER), jdbc);
         service.save(value("0"), true); service.save(value("100"), false); service.changeActive("TST1", false); service.changeActive("TST1", true);
         check(jdbc.commits == 4 && jdbc.audits.size() == 4 && jdbc.persisted.size() == 4, "writes and audit committed together");
         check(jdbc.audits.getFirst().get(1).equals("TST_ACC"), "audit uses authenticated account");
@@ -133,7 +133,7 @@ public final class ServiceBillingSelfTest {
         expect(SQLException.class, new Action() { public void run() throws Exception { service.changeActive("missing", true); } });
     }
     private static void reads() throws Exception {
-        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final InvoiceService service = new InvoiceService(session(Role.RECEPTIONIST), jdbc);
+        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final InvoiceService service = new InvoiceService(session(VaiTroHeThong.RECEPTIONIST), jdbc);
         service.find("O'Brien_%", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31), TrangThaiHoaDon.DA_HUY);
         check(!jdbc.sql.getFirst().contains("O'Brien"), "search is parameterized, wildcard characters literal via CHARINDEX");
         check(jdbc.bindings.getFirst().get(8).equals(Timestamp.valueOf("2026-02-01 00:00:00")), "inclusive end date");

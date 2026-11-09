@@ -4,7 +4,7 @@ import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.quantri.lichlamviec.dao.PhanCongDao;
 import com.quanlynhakhoa.quantri.lichlamviec.service.PhanCongService;
 import com.quanlynhakhoa.quantri.lichlamviec.view.LichLamViecPanel;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.time.LocalDate;
@@ -22,7 +22,7 @@ public final class ShiftAssignmentSqlIT {
     public static void main(String[] args) throws Exception {
         if (args.length != 1 || !(args[0].equals("--read-only") || args[0].equals("--rollback-check"))
                 || !TeamDevConnection.hasLocalConfig()) throw new IllegalArgumentException("Local SQL test mode required");
-        var session = session(Role.CLINIC_MANAGER);
+        var session = session(VaiTroHeThong.CLINIC_MANAGER);
         var service = new PhanCongService(session, TeamDevConnection::open);
         LocalDate day = LocalDate.now();
         var data = service.management(day.minusDays(7), day.plusDays(7), "", null);

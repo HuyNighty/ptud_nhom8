@@ -9,7 +9,7 @@ import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -34,7 +34,7 @@ public final class InvoiceCreationSelfTest {
     private static BanNhapHoaDon draft(String price){return new BanNhapHoaDon("BN1","PK1","revision1",List.of(new DongBanNhapHoaDon("DV1","Synthetic 1",2,new BigDecimal(price)),new DongBanNhapHoaDon("DV2","Synthetic 2",1,BigDecimal.ZERO)));}
     public static void main(String[] args)throws Exception {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final Dao dao=new Dao();final Source source=new Source();
-        final DesktopSession session=session(Role.RECEPTIONIST);
+        final DesktopSession session=session(VaiTroHeThong.RECEPTIONIST);
         final InvoiceCreationService service=new InvoiceCreationService(session,jdbc,source,new InvoiceIdGenerator(){public String next(Connection c){return "HDTEST1";}},dao);
         final BanNhapHoaDon reviewed=service.preview("BN1","PK1");
         check(service.create(reviewed).equals("HDTEST1"),"created id");
@@ -66,7 +66,7 @@ public final class InvoiceCreationSelfTest {
         }
         final InvoiceService defaultService=new InvoiceService(session,jdbc);
         int before=jdbc.opens;expect(IllegalStateException.class,new Action(){public void run()throws Exception{defaultService.createInvoice(reviewed);}});check(jdbc.opens==before,"unconfigured contract blocks before JDBC");
-        final InvoiceCreationService denied=new InvoiceCreationService(session(Role.CLINIC_MANAGER),jdbc,source,new InvoiceIdGenerator(){public String next(Connection c){return "X";}},dao);
+        final InvoiceCreationService denied=new InvoiceCreationService(session(VaiTroHeThong.CLINIC_MANAGER),jdbc,source,new InvoiceIdGenerator(){public String next(Connection c){return "X";}},dao);
         before=jdbc.opens;expect(AccessDeniedException.class,new Action(){public void run()throws Exception{denied.create(reviewed);}});check(jdbc.opens==before,"read role cannot create");
         session.logout();before=jdbc.opens;
         expect(AccessDeniedException.class,new Action(){public void run()throws Exception{service.create(reviewed);}});

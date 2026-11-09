@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.*;
 import java.time.LocalDateTime;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 
 public final class DashboardService {
     private static final ZoneId CLINIC_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -64,7 +64,7 @@ public final class DashboardService {
             }
             if (canExams) {
                 requireActive();
-                exams = session.role()==Role.DOCTOR
+                exams = session.role()==VaiTroHeThong.DOCTOR
                         ? new DashboardDetailsDao().count(connection,"SELECT COUNT_BIG(*) FROM dbo.PhieuKham p JOIN dbo.TaiKhoan a ON a.maNhanVien=p.maNhanVien JOIN dbo.NhanVien n ON n.maNhanVien=a.maNhanVien WHERE p.trangThai='DANG_KHAM' AND a.maTaiKhoan=? AND a.vaiTro='DOCTOR' AND a.trangThai='HOAT_DONG' AND n.chucDanh='BS' AND n.trangThai='DANG_LAM_VIEC'",session.accountId())
                         : dao.countInProgress(connection);
             }
@@ -120,7 +120,7 @@ public final class DashboardService {
                 try{alerts=details.stock(c,today);}catch(SQLException e){warnings.add("Chưa tải được cảnh báo kho");}
             }
             if(visitAccess) {
-                try{visits=details.visits(c,today,session.role()==Role.DOCTOR?session.accountId():null);}
+                try{visits=details.visits(c,today,session.role()==VaiTroHeThong.DOCTOR?session.accountId():null);}
                 catch(SQLException e){warnings.add("Chưa tải được biểu đồ lượt khám");}
             }
             if(moneyAccess) {

@@ -6,7 +6,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.BillingChangeBus;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.DebtService;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,8 +20,8 @@ public final class LatestShellUiSelfTest {
     public static void main(String[] args)throws Exception {
         List<TongHopCongNoBenhNhan> grouped=DebtService.byPatient(List.of(invoice("H1","B1","300","100",TrangThaiHoaDon.THANH_TOAN_MOT_PHAN),invoice("H2","B1","100","0",TrangThaiHoaDon.CHUA_THANH_TOAN),invoice("H3","B2","100","0",TrangThaiHoaDon.DA_HUY),invoice("H4","B3","100","100",TrangThaiHoaDon.DA_THANH_TOAN)));
         check(grouped.size()==1&&grouped.getFirst().invoices().size()==2&&grouped.getFirst().debt().intValueExact()==300,"patient aggregation retains outstanding invoices and excludes cancelled/paid");
-        final DesktopSession session=session(Role.SYSTEM_ADMIN);final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();
-        final FeatureJdbcDouble unrelatedJdbc=new FeatureJdbcDouble();final DesktopSession unrelated=session(Role.CLINIC_MANAGER);
+        final DesktopSession session=session(VaiTroHeThong.SYSTEM_ADMIN);final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();
+        final FeatureJdbcDouble unrelatedJdbc=new FeatureJdbcDouble();final DesktopSession unrelated=session(VaiTroHeThong.CLINIC_MANAGER);
         final DebtPanel[] debt=new DebtPanel[1];final PaymentPanel[] payment=new PaymentPanel[1];
         final java.util.List<JPanel> cached=new java.util.ArrayList<>();
         SwingUtilities.invokeAndWait(new Runnable(){public void run(){

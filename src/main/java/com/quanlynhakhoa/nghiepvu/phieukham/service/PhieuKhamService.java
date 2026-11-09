@@ -1,9 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.service;
 
 import com.quanlynhakhoa.model.phieukham.ThongTinKhoaKetLuanPhieuKham;
-
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
 import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
 import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
@@ -41,7 +40,7 @@ public final class PhieuKhamService {
         authorization.require(session, Permission.MEDICAL_RECORD_READ);
         try (Connection connection = TeamDevConnection.open()) {
             String doctorFilter = safe(maBacSi);
-            if (session.role() == Role.DOCTOR) {
+            if (session.role() == VaiTroHeThong.DOCTOR) {
                 String employeeId = layMaNhanVienDangNhap(connection);
                 doctorFilter = employeeId;
             }
@@ -63,7 +62,7 @@ public final class PhieuKhamService {
         authorization.require(session, Permission.MEDICAL_RECORD_READ);
         try (Connection connection = TeamDevConnection.open()) {
             List<BacSiChonKham> doctors = dao.danhSachBacSiDangLamViec(connection);
-            if (session.role() != Role.DOCTOR) return doctors;
+            if (session.role() != VaiTroHeThong.DOCTOR) return doctors;
 
             String myEmployeeId = layMaNhanVienDangNhap(connection);
             return doctors.stream()
@@ -96,7 +95,7 @@ public final class PhieuKhamService {
                 kiemTraPhuTrach(connection, phieu);
 
                 String doctorId = phieu.maNhanVien();
-                if (session.role() == Role.SYSTEM_ADMIN) {
+                if (session.role() == VaiTroHeThong.SYSTEM_ADMIN) {
                     String selected = safe(maBacSiDuocChon);
                     if (!selected.equals(doctorId)) {
                         throw new IllegalArgumentException("Bác sĩ chịu trách nhiệm phải trùng với bác sĩ đã nhận phiếu.");
@@ -166,7 +165,7 @@ public final class PhieuKhamService {
 
                 String doctorId = visit.maNhanVien();
 
-                if (session.role() == Role.SYSTEM_ADMIN
+                if (session.role() == VaiTroHeThong.SYSTEM_ADMIN
                         && !safe(maBacSiDuocChon).equals(doctorId)) {
                     throw new IllegalArgumentException(
                             "Quản trị hệ thống phải xác nhận đúng bác sĩ chịu trách nhiệm của phiếu.");
@@ -203,7 +202,7 @@ public final class PhieuKhamService {
 
 
     private void kiemTraPhuTrach(Connection connection, ThongTinPhieuKham phieu) throws SQLException {
-        if (session.role() == Role.DOCTOR) {
+        if (session.role() == VaiTroHeThong.DOCTOR) {
             String employeeId = layMaNhanVienDangNhap(connection);
             if (!employeeId.equals(phieu.maNhanVien())) {
                 throw new IllegalStateException("Phiếu khám do bác sĩ khác phụ trách.");

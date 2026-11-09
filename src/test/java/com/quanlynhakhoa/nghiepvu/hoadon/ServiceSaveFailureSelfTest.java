@@ -3,7 +3,7 @@ package com.quanlynhakhoa.nghiepvu.hoadon;
 import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -40,7 +40,7 @@ public final class ServiceSaveFailureSelfTest {
         ServiceCatalogPanel[] panel = new ServiceCatalogPanel[1];
         SwingUtilities.invokeAndWait(() -> {
             try {
-                panel[0] = new ServiceCatalogPanel(session(Role.SYSTEM_ADMIN), provider);
+                panel[0] = new ServiceCatalogPanel(session(VaiTroHeThong.SYSTEM_ADMIN), provider);
                 if (scenario.equals("edit")) panel[0].showForm(new DentalService(
                         "KEEP1", "Original", BigDecimal.TEN, "Original", false, true));
                 field(panel[0], "txtMaDichVu", JTextField.class).setText("KEEP1");

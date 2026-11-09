@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
 import java.util.Set;
@@ -22,7 +22,7 @@ public final class R4RoleSessionSelfTest {
         check(denied, "AccessDeniedException expected");
     }
 
-    private static DesktopSession session(Role role) {
+    private static DesktopSession session(VaiTroHeThong role) {
         return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "synthetic-account", role, false));
     }
 
@@ -30,7 +30,7 @@ public final class R4RoleSessionSelfTest {
         RolePermissionPolicy roles = new RolePermissionPolicy();
         AuthorizationService service = new AuthorizationService(roles);
         NavigationPolicy nav = new NavigationPolicy(service);
-        check(Role.values().length == 6, "Unexpected new role requires policy review");
+        check(VaiTroHeThong.values().length == 6, "Unexpected new role requires policy review");
         check(Permission.values().length == 26, "Unexpected new permission requires policy review");
         check(Module.values().length == 23, "Unexpected module requires policy review");
 
@@ -51,7 +51,7 @@ public final class R4RoleSessionSelfTest {
                 Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
         Set<Permission> inventory = Set.of(
                 Permission.INVENTORY_READ, Permission.INVENTORY_MANAGE, Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
-        for (Role role : Role.values()) {
+        for (VaiTroHeThong role : VaiTroHeThong.values()) {
             for (Permission permission : Permission.values()) {
                 boolean expected = switch (role) {
                     case RECEPTIONIST -> receptionist.contains(permission);
@@ -66,27 +66,27 @@ public final class R4RoleSessionSelfTest {
             }
         }
         check(!roles.isAllowed(null, Permission.PATIENT_READ), "Null role denied");
-        check(!roles.isAllowed(Role.SYSTEM_ADMIN, null), "Null permission denied");
-        check(roles.permissionsFor(Role.SYSTEM_ADMIN).size() == Permission.values().length,
+        check(!roles.isAllowed(VaiTroHeThong.SYSTEM_ADMIN, null), "Null permission denied");
+        check(roles.permissionsFor(VaiTroHeThong.SYSTEM_ADMIN).size() == Permission.values().length,
                 "All admin permissions");
-        check(roles.permissionsFor(Role.RECEPTIONIST).equals(receptionist), "Reception permissions");
-        check(roles.permissionsFor(Role.DOCTOR).equals(doctor), "Doctor permissions");
-        check(roles.permissionsFor(Role.NURSE).equals(nurse), "Nurse permissions");
-        check(roles.permissionsFor(Role.CLINIC_MANAGER).equals(manager), "Manager permissions");
-        check(roles.permissionsFor(Role.INVENTORY_MANAGER).equals(inventory), "Inventory permissions");
+        check(roles.permissionsFor(VaiTroHeThong.RECEPTIONIST).equals(receptionist), "Reception permissions");
+        check(roles.permissionsFor(VaiTroHeThong.DOCTOR).equals(doctor), "Doctor permissions");
+        check(roles.permissionsFor(VaiTroHeThong.NURSE).equals(nurse), "Nurse permissions");
+        check(roles.permissionsFor(VaiTroHeThong.CLINIC_MANAGER).equals(manager), "Manager permissions");
+        check(roles.permissionsFor(VaiTroHeThong.INVENTORY_MANAGER).equals(inventory), "Inventory permissions");
         try {
-            roles.permissionsFor(Role.DOCTOR).clear();
+            roles.permissionsFor(VaiTroHeThong.DOCTOR).clear();
             throw new AssertionError("Grant set must be immutable");
         } catch (UnsupportedOperationException expected) {
             check(true, "Grant set immutable");
         }
 
         denied(() -> DesktopSession.fromSuccessfulLogin(AuthDecision.rejected()));
-        denied(() -> DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "test", Role.DOCTOR, true)));
-        denied(() -> DesktopSession.fromSuccessfulLogin(new AuthDecision(true, " ", Role.DOCTOR, false)));
+        denied(() -> DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "test", VaiTroHeThong.DOCTOR, true)));
+        denied(() -> DesktopSession.fromSuccessfulLogin(new AuthDecision(true, " ", VaiTroHeThong.DOCTOR, false)));
         denied(() -> DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "test", null, false)));
 
-        for (Role role : Role.values()) {
+        for (VaiTroHeThong role : VaiTroHeThong.values()) {
             DesktopSession session = session(role);
             check(session.isActive(), "Session active");
             check(session.accountId().equals("synthetic-account"), "Session account bound");
@@ -120,28 +120,28 @@ public final class R4RoleSessionSelfTest {
         }
         check(nav.visibleModules(null).isEmpty(), "No unauthenticated navigation");
         check(!nav.canOpen(null, Module.HOME), "Unauthenticated home denied");
-        check(!nav.canOpen(session(Role.SYSTEM_ADMIN), null), "Null module denied");
+        check(!nav.canOpen(session(VaiTroHeThong.SYSTEM_ADMIN), null), "Null module denied");
         check(!service.can(null, Permission.PATIENT_READ), "Null session denied");
-        check(!service.can(session(Role.RECEPTIONIST), null), "Null permission denied");
+        check(!service.can(session(VaiTroHeThong.RECEPTIONIST), null), "Null permission denied");
         denied(() -> service.require(null, Permission.PATIENT_READ));
 
-        check(nav.visibleModules(session(Role.RECEPTIONIST)).equals(
+        check(nav.visibleModules(session(VaiTroHeThong.RECEPTIONIST)).equals(
                 List.of(Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING,
                         Module.MY_SCHEDULE, Module.DEBTS, Module.PAYMENTS, Module.RECEPTION)),
                 "Receptionist allowed modules");
-        check(nav.visibleModules(session(Role.DOCTOR)).equals(
+        check(nav.visibleModules(session(VaiTroHeThong.DOCTOR)).equals(
                 List.of(Module.HOME, Module.PATIENTS, Module.MEDICAL_RECORDS,
                         Module.EXAMINATIONS, Module.TREATMENT_PLANS, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE)), "Doctor safe list");
-        check(nav.visibleModules(session(Role.NURSE)).equals(List.of(
+        check(nav.visibleModules(session(VaiTroHeThong.NURSE)).equals(List.of(
                 Module.HOME, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE, Module.EMERGENCY_KIT)),
                 "Nurse routes are restricted to assigned activities");
-        check(nav.visibleModules(session(Role.CLINIC_MANAGER)).equals(
+        check(nav.visibleModules(session(VaiTroHeThong.CLINIC_MANAGER)).equals(
                 List.of(Module.HOME, Module.BILLING, Module.WORKFORCE,
                         Module.ACCOUNTS, Module.ROLES, Module.AUDIT,
                         Module.SERVICE_CATALOG, Module.MY_SCHEDULE, Module.SERVICES, Module.DEBTS, Module.INVOICE_CANCELLATIONS, Module.SHIFT_ASSIGNMENTS, Module.REVENUE_REPORTS)), "Manager allowed modules");
-        check(nav.visibleModules(session(Role.INVENTORY_MANAGER)).equals(
+        check(nav.visibleModules(session(VaiTroHeThong.INVENTORY_MANAGER)).equals(
                 List.of(Module.HOME, Module.INVENTORY, Module.MY_SCHEDULE)), "Inventory allowed modules");
-        check(nav.visibleModules(session(Role.SYSTEM_ADMIN)).size() == Module.values().length,
+        check(nav.visibleModules(session(VaiTroHeThong.SYSTEM_ADMIN)).size() == Module.values().length,
                 "Admin navigation covers all modules");
 
         System.out.println("PASS: R4-A1 ROLE, SESSION AND NAVIGATION SYNTHETIC TESTS (" + checks + " checks)");

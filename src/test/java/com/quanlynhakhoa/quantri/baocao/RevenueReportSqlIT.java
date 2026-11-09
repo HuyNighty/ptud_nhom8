@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.baocao;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
@@ -11,7 +11,7 @@ import static com.quanlynhakhoa.quantri.baocao.RevenueReportSelfTest.*;
 public final class RevenueReportSqlIT {
     public static void main(String[] args)throws Exception{
         if(args.length!=1||!args[0].equals("--read-only")||!TeamDevConnection.hasLocalConfig())throw new IllegalArgumentException("Local read-only mode required");
-        var session=session(Role.CLINIC_MANAGER);var service=new RevenueReportService(session);
+        var session=session(VaiTroHeThong.CLINIC_MANAGER);var service=new RevenueReportService(session);
         LocalDate end=LocalDate.now(),from=end.withDayOfMonth(1);
         var daily=service.load(from,end,false);var monthly=service.load(from,end,true);
         check(daily.revenue().compareTo(monthly.revenue())==0&&daily.collected().compareTo(monthly.collected())==0&&daily.closingDebt().compareTo(monthly.closingDebt())==0,"daily/monthly reconcile");

@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.model.taikhoan;
 
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
 import java.time.LocalDateTime;
 
@@ -12,13 +12,13 @@ public final class DongDanhSachTaiKhoan {
     private final String displayName;
     private final String employeeId;
     private final String employeeName;
-    private final Role role;
+    private final VaiTroHeThong role;
     private final AccountStatus status;
     private final boolean passwordChangeRequired;
     private final LocalDateTime lastLoginUtc;
     private final LockSource lockSource;
 
-    public DongDanhSachTaiKhoan(String accountId, String username, String displayName, String employeeId, String employeeName, Role role, AccountStatus status, boolean passwordChangeRequired, LocalDateTime lastLoginUtc, LockSource lockSource) {
+    public DongDanhSachTaiKhoan(String accountId, String username, String displayName, String employeeId, String employeeName, VaiTroHeThong role, AccountStatus status, boolean passwordChangeRequired, LocalDateTime lastLoginUtc, LockSource lockSource) {
         this.accountId = accountId;
         this.username = username;
         this.displayName = displayName;
@@ -36,7 +36,7 @@ public final class DongDanhSachTaiKhoan {
     public String displayName() { return displayName; }
     public String employeeId() { return employeeId; }
     public String employeeName() { return employeeName; }
-    public Role role() { return role; }
+    public VaiTroHeThong role() { return role; }
     public AccountStatus status() { return status; }
     public boolean passwordChangeRequired() { return passwordChangeRequired; }
     public LocalDateTime lastLoginUtc() { return lastLoginUtc; }

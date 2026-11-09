@@ -1,9 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.service;
 
 import com.quanlynhakhoa.model.phieukham.ThongTinDauDonThuoc;
-
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.CanLamSangDao;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.DonThuocDao;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
@@ -165,7 +164,7 @@ public final class DonThuocService {
 
         ThongTinPhieuKham visit = phieuKhamDao.timTheoMa(connection, visitId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu khám."));
-        if (session.role() == Role.DOCTOR) {
+        if (session.role() == VaiTroHeThong.DOCTOR) {
             Optional<String> employeeId = phieuKhamDao.maNhanVienTheoTaiKhoan(
                     connection, session.accountId());
             String signedInEmployee = employeeId.filter(value -> !value.isBlank())
@@ -174,7 +173,7 @@ public final class DonThuocService {
             if (!signedInEmployee.equals(assignedDoctor)) {
                 throw new IllegalStateException("Phiếu khám do bác sĩ khác phụ trách.");
             }
-        } else if (session.role() == Role.SYSTEM_ADMIN) {
+        } else if (session.role() == VaiTroHeThong.SYSTEM_ADMIN) {
             if (!assignedDoctor.equals(safe(selectedDoctorId))) {
                 throw new IllegalArgumentException(
                         "Quản trị hệ thống phải xác nhận đúng bác sĩ đang phụ trách phiếu.");

@@ -7,7 +7,7 @@ import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.JdbcSessionVerifier;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.awt.EventQueue;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -40,7 +40,7 @@ public final class BasicRbacService {
 
     private void requireAdmin() {
         // A synthetic/unbound in-memory session must never be authorized for catalog writes.
-        if (!session.isActive() || session.role() != Role.SYSTEM_ADMIN || !session.isServerBound()) {
+        if (!session.isActive() || session.role() != VaiTroHeThong.SYSTEM_ADMIN || !session.isServerBound()) {
             throw new AccessDeniedException();
         }
     }
@@ -187,7 +187,7 @@ public final class BasicRbacService {
         return value.trim();
     }
     private static boolean isLegacyRole(String code) {
-        for (Role role : Role.values()) if (role.name().equals(code)) return true;
+        for (VaiTroHeThong role : VaiTroHeThong.values()) if (role.name().equals(code)) return true;
         return false;
     }
     private static void exactlyOne(int n) throws SQLException {

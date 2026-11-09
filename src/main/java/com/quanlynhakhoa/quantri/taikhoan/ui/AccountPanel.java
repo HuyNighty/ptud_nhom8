@@ -16,7 +16,7 @@ import com.quanlynhakhoa.hethong.phanquyen.Permission;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -64,7 +64,7 @@ public final class AccountPanel extends JPanel {
     private final boolean configured;
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
     private final JTextField txtKeyword = new JTextField(19);
-    private final JComboBox<Role> cmbRoleFilter = new JComboBox<>();
+    private final JComboBox<VaiTroHeThong> cmbRoleFilter = new JComboBox<>();
     private final JComboBox<AccountStatus> cmbStatusFilter = new JComboBox<>();
     private final JButton btnSearch = new JButton("Tìm kiếm");
     private final JButton btnRefresh = new JButton("Làm mới");
@@ -178,7 +178,7 @@ public final class AccountPanel extends JPanel {
         pnlFilters.add(new JLabel("Tìm:"));
         pnlFilters.add(txtKeyword);
         cmbRoleFilter.addItem(null);
-        for (Role role : Role.values()) cmbRoleFilter.addItem(role);
+        for (VaiTroHeThong role : VaiTroHeThong.values()) cmbRoleFilter.addItem(role);
         cmbStatusFilter.addItem(null);
         for (AccountStatus status : AccountStatus.values()) cmbStatusFilter.addItem(status);
         cmbRoleFilter.setRenderer(roleRenderer());
@@ -205,7 +205,7 @@ public final class AccountPanel extends JPanel {
                     javax.swing.JList<?> lstValues, Object value, int index,
                     boolean selected, boolean focus) {
                 super.getListCellRendererComponent(lstValues, value, index, selected, focus);
-                setText(value == null ? "Tất cả vai trò" : roleLabel((Role) value));
+                setText(value == null ? "Tất cả vai trò" : roleLabel((VaiTroHeThong) value));
                 return this;
             }
         };
@@ -233,7 +233,7 @@ public final class AccountPanel extends JPanel {
             lblStatus.setText("Từ khóa tối đa 80 ký tự.");
             return;
         }
-        Role role = (Role) cmbRoleFilter.getSelectedItem();
+        VaiTroHeThong role = (VaiTroHeThong) cmbRoleFilter.getSelectedItem();
         AccountStatus status = (AccountStatus) cmbStatusFilter.getSelectedItem();
         loading = true;
         updateControls();
@@ -389,7 +389,7 @@ public final class AccountPanel extends JPanel {
             String staff = employee.employeeId();
             String login = txtUsername.getText().trim();
             String display = txtDisplayName.getText().trim();
-            Role role = employee.role();
+            VaiTroHeThong role = employee.role();
             if (staff.isBlank() || login.isBlank() || display.isBlank() || secret.length == 0) {
                 JOptionPane.showMessageDialog(this, "Vui lòng nhập đủ thông tin.",
                         "Dữ liệu chưa hợp lệ", JOptionPane.WARNING_MESSAGE);
@@ -457,7 +457,7 @@ public final class AccountPanel extends JPanel {
         btnRefresh.setEnabled(ready);
         btnCreate.setEnabled(ready);
         DongDanhSachTaiKhoan row = selectedAccount();
-        boolean targetAllowed = ready && row != null && row.role() != Role.SYSTEM_ADMIN;
+        boolean targetAllowed = ready && row != null && row.role() != VaiTroHeThong.SYSTEM_ADMIN;
         btnLock.setEnabled(targetAllowed && row.status() == AccountStatus.HOAT_DONG
                 && !session.accountId().equalsIgnoreCase(row.accountId()));
         btnUnlock.setEnabled(targetAllowed && row.status() == AccountStatus.BI_KHOA
@@ -553,7 +553,7 @@ public final class AccountPanel extends JPanel {
         return value == null || value.isBlank() ? "—" : value;
     }
 
-    private static String roleLabel(Role role) {
+    private static String roleLabel(VaiTroHeThong role) {
         return switch (role) {
             case SYSTEM_ADMIN -> "Quản trị hệ thống";
             case CLINIC_MANAGER -> "Quản lý phòng khám";

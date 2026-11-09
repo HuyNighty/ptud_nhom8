@@ -6,7 +6,7 @@ package com.quanlynhakhoa.nghiepvu.dieutri;
 
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.nghiepvu.dieutri.service.*;
 import java.sql.*;
 import java.time.LocalDate;
@@ -29,7 +29,7 @@ public final class TreatmentPlanFailClosedSelfTest {
         }
         throw new AssertionError("False success");
     }
-    private static DesktopSession session(Role role) {
+    private static DesktopSession session(VaiTroHeThong role) {
         return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
     }
     private static List<Call> mutations(TreatmentPlanService service) {
@@ -61,12 +61,12 @@ public final class TreatmentPlanFailClosedSelfTest {
             for (Driver installed : Collections.list(DriverManager.getDrivers()))
                 check(installed == driver, "Refusing real SQL drivers");
             rejects(IllegalArgumentException.class, () -> new TreatmentPlanService(null));
-            for (Role role : Role.values()) {
+            for (VaiTroHeThong role : VaiTroHeThong.values()) {
                 DesktopSession actor = session(role);
                 TreatmentPlanService service = new TreatmentPlanService(actor);
                 for (Call mutation : mutations(service))
-                    rejects(role == Role.DOCTOR ? TreatmentPlanUnavailableException.class : AccessDeniedException.class, mutation);
-                Class<? extends Throwable> readFailure = role == Role.DOCTOR || role == Role.SYSTEM_ADMIN
+                    rejects(role == VaiTroHeThong.DOCTOR ? TreatmentPlanUnavailableException.class : AccessDeniedException.class, mutation);
+                Class<? extends Throwable> readFailure = role == VaiTroHeThong.DOCTOR || role == VaiTroHeThong.SYSTEM_ADMIN
                         ? TreatmentPlanUnavailableException.class : AccessDeniedException.class;
                 rejects(readFailure, service::danhSach);
                 rejects(readFailure, () -> service.chiTiet("KH01"));
@@ -78,21 +78,21 @@ public final class TreatmentPlanFailClosedSelfTest {
             }
             // PR118 sessions carry a verifier that may open JDBC. Disabled treatment
             // operations must terminate locally even when that verifier is bound.
-            for (Role role : Role.values()) {
+            for (VaiTroHeThong role : VaiTroHeThong.values()) {
                 DesktopSession actor = session(role);
                 actor.bindCurrentAccountCheck(ignored -> {
                     throw new AssertionError("Disabled operation invoked JDBC-backed verifier");
                 });
                 TreatmentPlanService service = new TreatmentPlanService(actor);
                 for (Call mutation : mutations(service))
-                    rejects(role == Role.DOCTOR ? TreatmentPlanUnavailableException.class : AccessDeniedException.class, mutation);
-                Class<? extends Throwable> readFailure = role == Role.DOCTOR || role == Role.SYSTEM_ADMIN
+                    rejects(role == VaiTroHeThong.DOCTOR ? TreatmentPlanUnavailableException.class : AccessDeniedException.class, mutation);
+                Class<? extends Throwable> readFailure = role == VaiTroHeThong.DOCTOR || role == VaiTroHeThong.SYSTEM_ADMIN
                         ? TreatmentPlanUnavailableException.class : AccessDeniedException.class;
                 rejects(readFailure, service::danhSach);
                 rejects(readFailure, () -> service.chiTiet("KH01"));
             }
             // No argument validation can turn an unauthorized request into apparent success.
-            TreatmentPlanService admin = new TreatmentPlanService(session(Role.SYSTEM_ADMIN));
+            TreatmentPlanService admin = new TreatmentPlanService(session(VaiTroHeThong.SYSTEM_ADMIN));
             rejects(AccessDeniedException.class, () -> admin.taoKeHoach(null,null,null,null,null));
             rejects(AccessDeniedException.class, () -> admin.themBuoc(null,null,null,null,null));
             rejects(AccessDeniedException.class, () -> admin.hoanThanhBuoc(0,null,null));

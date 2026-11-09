@@ -5,7 +5,7 @@ package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.lang.reflect.Field;
 import javax.swing.*;
 import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;
@@ -18,7 +18,7 @@ public final class RefreshListsSelfTest {
     public static void main(String[] args) throws Exception {
         System.setProperty("java.awt.headless","true");
         SwingUtilities.invokeAndWait(new Runnable(){public void run(){try {
-            var session=session(Role.CLINIC_MANAGER);
+            var session=session(VaiTroHeThong.CLINIC_MANAGER);
             var jdbc=new FeatureJdbcDouble();
             var invoice=new InvoicePanel(session,jdbc);
             ((JTextField)field(invoice,"txtTuKhoa")).setText("HD-OLD");

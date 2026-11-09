@@ -9,7 +9,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -42,7 +42,7 @@ public final class PaymentSelfTest {
         @Override public void updateStatus(Connection c,String id,TrangThaiHoaDon status)throws SQLException{nextStatus=status;super.updateStatus(c,id,status);}
     }
     public static void main(String[] args)throws Exception {
-        final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final Dao dao=new Dao();final Invoices invoices=new Invoices();final DesktopSession principal=session(Role.RECEPTIONIST);
+        final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final Dao dao=new Dao();final Invoices invoices=new Invoices();final DesktopSession principal=session(VaiTroHeThong.RECEPTIONIST);
         final PaymentService service=new PaymentService(principal,jdbc,dao,invoices,new Accounts(),new PaymentService.Attempts(){public void reserve(YeuCauThanhToan request){} public void complete(Connection c,YeuCauThanhToan request,String account){}});
         check(!service.pendingCancellation("H1"),"read-only pending cancellation check available to cashier");
         final YeuCauThanhToan mixed=new YeuCauThanhToan("H1",m("100"),List.of(new PhanThanhToan("P2",m("100"),PhuongThucThanhToan.CHUYEN_KHOAN,"BANK001",null)),true);
@@ -77,7 +77,7 @@ public final class PaymentSelfTest {
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{service.collect(mixed);}});dao.duplicateReference=false;
         final YeuCauThanhToan[] bad={cash("ZERO","0"),cash("NEG","-1"),cash("FRACTION","0.5"),new YeuCauThanhToan("H1",m("101"),mixed.parts(),true),new YeuCauThanhToan("H1",m("100"),mixed.parts(),false),cash("BIG","1000000000000000000")};
         for(final YeuCauThanhToan request:bad)expect(IllegalArgumentException.class,new Action(){public void run(){PaymentService.validate(request);}});
-        final PaymentService denied=new PaymentService(session(Role.CLINIC_MANAGER),jdbc,dao,invoices,new Accounts(),new PaymentService.Attempts(){public void reserve(YeuCauThanhToan request){} public void complete(Connection c,YeuCauThanhToan request,String account){}});int before=jdbc.opens;
+        final PaymentService denied=new PaymentService(session(VaiTroHeThong.CLINIC_MANAGER),jdbc,dao,invoices,new Accounts(),new PaymentService.Attempts(){public void reserve(YeuCauThanhToan request){} public void complete(Connection c,YeuCauThanhToan request,String account){}});int before=jdbc.opens;
         expect(AccessDeniedException.class,new Action(){public void run()throws Exception{denied.collect(mixed);}});check(jdbc.opens==before,"manager read permission does not authorize collection");
         expect(AccessDeniedException.class,new Action(){public void run()throws Exception{denied.pendingCancellation("H1");}});check(jdbc.opens==before,"cashier pending check requires billing manage");
         principal.logout();before=jdbc.opens;

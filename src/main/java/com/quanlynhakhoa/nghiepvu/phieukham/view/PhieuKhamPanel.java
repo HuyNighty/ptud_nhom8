@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.view;
 
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.nghiepvu.phieukham.controller.PhieuKhamController;
 import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
 import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
@@ -128,7 +128,7 @@ public final class PhieuKhamPanel extends JPanel {
             }
         });
 
-        if (session.role() == Role.DOCTOR) {
+        if (session.role() == VaiTroHeThong.DOCTOR) {
             cmbBacSiPhuTrach.setEnabled(false);
             cmbBacSiLoc.setEnabled(false);
         }
@@ -746,7 +746,7 @@ public final class PhieuKhamPanel extends JPanel {
             cmbBacSiLoc.addItem(doctor);
             cmbBacSiPhuTrach.addItem(doctor);
         }
-        if (session.role() == Role.DOCTOR) {
+        if (session.role() == VaiTroHeThong.DOCTOR) {
             cmbBacSiLoc.setSelectedIndex(doctors.isEmpty() ? 0 : 1);
             cmbBacSiPhuTrach.setSelectedIndex(doctors.isEmpty() ? 0 : 1);
         }
@@ -839,7 +839,7 @@ public final class PhieuKhamPanel extends JPanel {
                 return;
             }
         }
-        if (maBacSi != null && !maBacSi.isBlank() && session.role() == Role.SYSTEM_ADMIN) {
+        if (maBacSi != null && !maBacSi.isBlank() && session.role() == VaiTroHeThong.SYSTEM_ADMIN) {
             cmbBacSiPhuTrach.addItem(new BacSiChonKham(maBacSi, "Bác sĩ đang phụ trách"));
             cmbBacSiPhuTrach.setSelectedIndex(cmbBacSiPhuTrach.getItemCount() - 1);
         }
@@ -900,7 +900,7 @@ public final class PhieuKhamPanel extends JPanel {
         btnTaiLai.setEnabled(!busy);
         txtNgayKham.setEnabled(!busy);
         btnChonNgay.setEnabled(!busy);
-        cmbBacSiLoc.setEnabled(!busy && session.role() != Role.DOCTOR);
+        cmbBacSiLoc.setEnabled(!busy && session.role() != VaiTroHeThong.DOCTOR);
         cmbTrangThai.setEnabled(!busy);
         txtTimKiem.setEnabled(!busy);
         lblTrangThaiHeThong.setText(message);

@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.taikhoan;
 import com.quanlynhakhoa.model.taikhoan.TaiKhoanDich;
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
 import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -49,7 +49,7 @@ public final class AccountStateDao {
             try (ResultSet rows = statement.executeQuery()) {
                 if (!rows.next()) throw new IllegalArgumentException("Không tìm thấy tài khoản.");
                 String source = rows.getString("nguonKhoa");
-                return new TaiKhoanDich(rows.getString("maTaiKhoan"), Role.valueOf(rows.getString("vaiTro")),
+                return new TaiKhoanDich(rows.getString("maTaiKhoan"), VaiTroHeThong.valueOf(rows.getString("vaiTro")),
                         AccountStatus.valueOf(rows.getString("trangThai")),
                         source == null ? null : LockSource.valueOf(source));
             }

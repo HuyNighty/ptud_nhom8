@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
 import com.quanlynhakhoa.hethong.giaodien.MainFrame;
@@ -24,11 +24,11 @@ public final class R4FinalShellSelfTest {
         try { task.run(); } catch (AccessDeniedException expected) { caught = true; }
         check(caught, why);
     }
-    private static DesktopSession user(Role role) {
+    private static DesktopSession user(VaiTroHeThong role) {
         return DesktopSession.fromSuccessfulLogin(
                 new AuthDecision(true, "SYNTH-R4A4", role, false));
     }
-    private static boolean granted(Role role, Permission p) {
+    private static boolean granted(VaiTroHeThong role, Permission p) {
         return switch (role) {
             case SYSTEM_ADMIN -> true;
             case RECEPTIONIST -> Set.of(
@@ -51,7 +51,7 @@ public final class R4FinalShellSelfTest {
         };
     }
     public static void main(String[] args) {
-        check(Role.values().length == 6, "unreviewed role added");
+        check(VaiTroHeThong.values().length == 6, "unreviewed role added");
         check(Permission.values().length == 26, "unreviewed permission added");
         check(Module.values().length == 23, "unreviewed navigation destination added");
         check(Module.TREATMENT_PLANS.openPermission() == Permission.MEDICAL_RECORD_READ,
@@ -64,19 +64,19 @@ public final class R4FinalShellSelfTest {
         AuthorizedActionGate actions = new AuthorizedActionGate(auth);
         NavigationPolicy nav = new NavigationPolicy(auth);
         check(!auth.can(null, Permission.PATIENT_READ), "anonymous denied");
-        check(!auth.can(user(Role.SYSTEM_ADMIN), null), "missing permission denied");
+        check(!auth.can(user(VaiTroHeThong.SYSTEM_ADMIN), null), "missing permission denied");
         denied(() -> actions.run(null, Permission.PATIENT_READ, () -> {}), "null principal blocked");
         denied(() -> actions.query(null, Permission.PATIENT_READ, () -> "never"), "null query blocked");
-        denied(() -> actions.run(user(Role.SYSTEM_ADMIN), null, () -> {}), "null privilege blocked");
-        denied(() -> actions.query(user(Role.SYSTEM_ADMIN), null, () -> "never"), "null query privilege blocked");
+        denied(() -> actions.run(user(VaiTroHeThong.SYSTEM_ADMIN), null, () -> {}), "null privilege blocked");
+        denied(() -> actions.query(user(VaiTroHeThong.SYSTEM_ADMIN), null, () -> "never"), "null query privilege blocked");
 
         check(!nav.canOpen(null, Module.RECEPTION), "anonymous reception denied");
         denied(() -> nav.requireOpen(null, Module.RECEPTION), "anonymous reception forced route denied");
-        for (Role role : Role.values()) {
+        for (VaiTroHeThong role : VaiTroHeThong.values()) {
             DesktopSession session = user(role);
             MainNavigationModel model = new MainNavigationModel(session);
             // Explicit business expectation, independent of Module.openPermission().
-            boolean receptionAllowed = role == Role.RECEPTIONIST || role == Role.SYSTEM_ADMIN;
+            boolean receptionAllowed = role == VaiTroHeThong.RECEPTIONIST || role == VaiTroHeThong.SYSTEM_ADMIN;
             check(auth.can(session, Permission.PATIENT_CHECK_IN) == receptionAllowed,
                     "check-in role matrix: " + role);
             check(nav.canOpen(session, Module.RECEPTION) == receptionAllowed,
@@ -141,9 +141,9 @@ public final class R4FinalShellSelfTest {
             session.logout();
             check(!session.isActive(), "repeated logout cannot revive");
         }
-        DesktopSession old = user(Role.SYSTEM_ADMIN);
+        DesktopSession old = user(VaiTroHeThong.SYSTEM_ADMIN);
         old.logout();
-        DesktopSession fresh = user(Role.SYSTEM_ADMIN);
+        DesktopSession fresh = user(VaiTroHeThong.SYSTEM_ADMIN);
         check(old != fresh, "new authentication creates new object");
         denied(() -> actions.run(old, Permission.ACCOUNT_MANAGE, () -> {}), "old session remains denied");
         check(auth.can(fresh, Permission.ACCOUNT_MANAGE), "new session can be authorized");

@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 
 /** Synthetic authorization contract; employee ownership is enforced in Workforce service/DAO. */
 public final class HandoverPermissionContractSelfTest {
@@ -13,7 +13,7 @@ public final class HandoverPermissionContractSelfTest {
     public static void main(String[] args) {
         RolePermissionPolicy policy = new RolePermissionPolicy();
         AuthorizationService auth = new AuthorizationService(policy);
-        for (Role role : Role.values()) {
+        for (VaiTroHeThong role : VaiTroHeThong.values()) {
             DesktopSession current = DesktopSession.fromSuccessfulLogin(
                     new AuthDecision(true, "SYNTHETIC", role, false));
             check(policy.isAllowed(role, Permission.SHIFT_HANDOVER_MANAGE), "proposed six-role grant: " + role);

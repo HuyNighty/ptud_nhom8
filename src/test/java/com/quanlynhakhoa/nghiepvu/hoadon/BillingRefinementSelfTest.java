@@ -10,7 +10,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.PaymentService;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -96,7 +96,7 @@ public final class BillingRefinementSelfTest {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();Map<String,Object> header=new HashMap<>();
         header.put("maHoaDon","H1");header.put("maNhanVien","NV1");header.put("maBenhNhan","BN1");header.put("tenBenhNhan","Fixture");header.put("ngayLap",Timestamp.valueOf("2026-10-31 10:00:00"));header.put("trangThai","CHUA_THANH_TOAN");header.put("tongTien",new BigDecimal("1000000"));header.put("daThu",BigDecimal.ZERO);header.put("congNoBenhNhan",new BigDecimal("1000000"));jdbc.invoiceRows=List.of(header);
         Map<String,Object> line=new HashMap<>();line.put("maChiTiet",1);line.put("maHoaDon","H1");line.put("maDichVu","DV1");line.put("soLuong",1);line.put("donGiaApDung",new BigDecimal("1000000"));jdbc.lineRows=List.of(line);
-        var session=ServiceBillingSelfTest.session(Role.RECEPTIONIST);final PaymentPanel[] page={null};
+        var session=ServiceBillingSelfTest.session(VaiTroHeThong.RECEPTIONIST);final PaymentPanel[] page={null};
         edt(new Runnable(){public void run(){page[0]=new PaymentPanel(session,jdbc);page[0].openInvoice("H1");}});waitForDetail(page[0],jdbc);
         edt(new Runnable(){public void run(){check(current(page[0]).btnThuTien.isEnabled(),"Selected real-shaped fixture loaded");jdbc.invoiceRows=List.of();page[0].txtTimHoaDon.setText("NO_MATCH");page[0].btnTim.doClick();}});waitFor(page[0],"Không tìm thấy");
         edt(new Runnable(){public void run(){check(page[0].cmbHoaDon.getSelectedItem()==null&&!current(page[0]).btnThuTien.isEnabled(),"Fresh unmatched search cannot collect old invoice");check(current(page[0]).txtSoTien.getText().isBlank(),"Old receipt cleared on explicit search");}});

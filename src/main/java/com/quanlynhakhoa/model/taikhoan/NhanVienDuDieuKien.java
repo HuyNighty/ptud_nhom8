@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.model.taikhoan;
 
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.quantri.nhanvien.JobTitleLabels;
 
 
@@ -9,9 +9,9 @@ public final class NhanVienDuDieuKien {
     private final String employeeId;
     private final String fullName;
     private final String jobTitle;
-    private final Role role;
+    private final VaiTroHeThong role;
 
-    public NhanVienDuDieuKien(String employeeId, String fullName, String jobTitle, Role role) {
+    public NhanVienDuDieuKien(String employeeId, String fullName, String jobTitle, VaiTroHeThong role) {
         if (employeeId == null || !employeeId.matches("[A-Z0-9]{1,10}")) {
         throw new IllegalArgumentException("Mã nhân viên không hợp lệ.");
         }
@@ -30,18 +30,18 @@ public final class NhanVienDuDieuKien {
     public String employeeId() { return employeeId; }
     public String fullName() { return fullName; }
     public String jobTitle() { return jobTitle; }
-    public Role role() { return role; }
+    public VaiTroHeThong role() { return role; }
 
 
 
-    public static Role roleForJob(String jobTitle) {
+    public static VaiTroHeThong roleForJob(String jobTitle) {
         if (jobTitle == null) throw new IllegalArgumentException("Chức danh không hợp lệ.");
         return switch (jobTitle) {
-            case "LT" -> Role.RECEPTIONIST;
-            case "BS" -> Role.DOCTOR;
-            case "YT" -> Role.NURSE;
-            case "QL" -> Role.CLINIC_MANAGER;
-            case "KHO" -> Role.INVENTORY_MANAGER;
+            case "LT" -> VaiTroHeThong.RECEPTIONIST;
+            case "BS" -> VaiTroHeThong.DOCTOR;
+            case "YT" -> VaiTroHeThong.NURSE;
+            case "QL" -> VaiTroHeThong.CLINIC_MANAGER;
+            case "KHO" -> VaiTroHeThong.INVENTORY_MANAGER;
             default -> throw new IllegalArgumentException("Không thể cấp tài khoản cho chức danh này.");
         };
     }

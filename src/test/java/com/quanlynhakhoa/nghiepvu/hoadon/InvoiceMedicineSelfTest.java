@@ -6,7 +6,7 @@ import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,7 +34,7 @@ public final class InvoiceMedicineSelfTest {
         var detail = new DuLieuChiTietHoaDon(invoice, lines, List.of(), List.of(), List.of(priced,unpriced));
         SwingUtilities.invokeAndWait(() -> {
             try {
-                InvoicePanel panel = new InvoicePanel(session(Role.RECEPTIONIST), new FeatureJdbcDouble());
+                InvoicePanel panel = new InvoicePanel(session(VaiTroHeThong.RECEPTIONIST), new FeatureJdbcDouble());
                 panel.showDetail(detail);
                 var field = InvoicePanel.class.getDeclaredField("tblPrescribedMedicines");field.setAccessible(true);
                 JTable table = (JTable)field.get(panel);

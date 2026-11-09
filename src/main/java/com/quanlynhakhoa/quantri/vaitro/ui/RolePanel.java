@@ -2,7 +2,7 @@ package com.quanlynhakhoa.quantri.vaitro.ui;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
 import com.quanlynhakhoa.quantri.vaitro.RoleOverviewService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -41,7 +41,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
     private static final Color BORDER = new Color(220, 231, 242);
     private final DesktopSession session;
     private final RoleOverviewService service;
-    private final JComboBox<Role> rolePicker = new JComboBox<>(Role.values());
+    private final JComboBox<VaiTroHeThong> rolePicker = new JComboBox<>(VaiTroHeThong.values());
     private final JButton refresh = new JButton("Làm mới");
     private final JLabel status = new JLabel("Chưa tải dữ liệu");
     private final JLabel roleHeading = new JLabel("Vai trò");
@@ -84,7 +84,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
             @Override public Component getListCellRendererComponent(JList<?> list, Object value,
                     int index, boolean selected, boolean focused) {
                 super.getListCellRendererComponent(list, value, index, selected, focused);
-                setText(value instanceof Role role ? roleText(role) : "—");
+                setText(value instanceof VaiTroHeThong role ? roleText(role) : "—");
                 return this;
             }
         });
@@ -116,7 +116,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
 
         JPanel bottom = new JPanel(new BorderLayout(0, 7));
         bottom.setOpaque(false);
-        JLabel matrixHeading = new JLabel("Ma trận quyền thực tế (" + Permission.values().length + " quyền × " + Role.values().length + " vai trò)");
+        JLabel matrixHeading = new JLabel("Ma trận quyền thực tế (" + Permission.values().length + " quyền × " + VaiTroHeThong.values().length + " vai trò)");
         matrixHeading.setForeground(NAVY);
         matrixHeading.setFont(new Font("SansSerif", Font.BOLD, 15));
         bottom.add(matrixHeading, BorderLayout.NORTH);
@@ -234,7 +234,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
     }
 
     private void showRole() {
-        Role selected = (Role) rolePicker.getSelectedItem();
+        VaiTroHeThong selected = (VaiTroHeThong) rolePicker.getSelectedItem();
         TongQuanVaiTro overview = data.stream()
                 .filter(row -> row.role() == selected).findFirst().orElse(null);
         if (overview == null) {
@@ -260,7 +260,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
         rolePicker.setEnabled(session.isActive() && !loading && !data.isEmpty());
     }
 
-    private static String roleText(Role role) {
+    private static String roleText(VaiTroHeThong role) {
         return switch (role) {
             case RECEPTIONIST -> "Lễ tân";
             case DOCTOR -> "Bác sĩ";
@@ -271,7 +271,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
         };
     }
 
-    private static String roleDescription(Role role) {
+    private static String roleDescription(VaiTroHeThong role) {
         return switch (role) {
             case RECEPTIONIST -> "Tiếp nhận, lịch hẹn và nghiệp vụ lễ tân";
             case DOCTOR -> "Hồ sơ bệnh án và nghiệp vụ chuyên môn";
@@ -314,7 +314,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
     }
 
     private static final class PermissionMatrixModel extends AbstractTableModel {
-        private static final Role[] ROLES = Role.values();
+        private static final VaiTroHeThong[] ROLES = VaiTroHeThong.values();
         private List<TongQuanVaiTro> rows = List.of();
         void setRows(List<TongQuanVaiTro> values) {
             rows = List.copyOf(values);
@@ -330,7 +330,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
         @Override public Object getValueAt(int row, int column) {
             Permission permission = Permission.values()[row];
             if (column == 0) return permissionText(permission);
-            Role role = ROLES[column - 1];
+            VaiTroHeThong role = ROLES[column - 1];
             return rows.stream().filter(item -> item.role() == role).findFirst()
                     .map(item -> item.permissions().contains(permission)).orElse(false);
         }

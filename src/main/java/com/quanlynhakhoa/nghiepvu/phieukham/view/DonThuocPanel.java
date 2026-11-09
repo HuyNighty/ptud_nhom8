@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.view;
 
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.nghiepvu.phieukham.controller.DonThuocController;
 import com.quanlynhakhoa.model.phieukham.DongChiTietDonThuoc;
 import com.quanlynhakhoa.model.phieukham.DuLieuDonThuoc;
@@ -314,8 +314,8 @@ public final class DonThuocPanel extends JPanel {
     private void updateControls() {
         boolean open = current != null && ("CHO_KHAM".equals(current.trangThai())
                 || "DANG_KHAM".equals(current.trangThai()));
-        boolean roleAllowed = session.isActive() && (session.role() == Role.DOCTOR
-                || (session.role() == Role.SYSTEM_ADMIN && current != null
+        boolean roleAllowed = session.isActive() && (session.role() == VaiTroHeThong.DOCTOR
+                || (session.role() == VaiTroHeThong.SYSTEM_ADMIN && current != null
                 && selectedDoctorId.equals(current.maNhanVien())));
         boolean editable = open && roleAllowed && !loading && !alreadyPrescribed;
         cmbThuoc.setEnabled(editable && cmbThuoc.getItemCount() > 0);

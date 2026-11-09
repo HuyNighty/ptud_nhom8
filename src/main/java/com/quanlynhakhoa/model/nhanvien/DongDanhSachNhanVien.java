@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.model.nhanvien;
 
 import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.time.LocalDate;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
@@ -12,9 +12,9 @@ public final class DongDanhSachNhanVien {
     private final EmployeeStatus status;
     private final LocalDate joinedAt;
     private final String accountId;
-    private final Role accountRole;
+    private final VaiTroHeThong accountRole;
 
-    public DongDanhSachNhanVien(String employeeId, String fullName, String jobTitle, EmployeeStatus status, LocalDate joinedAt, String accountId, Role accountRole) {
+    public DongDanhSachNhanVien(String employeeId, String fullName, String jobTitle, EmployeeStatus status, LocalDate joinedAt, String accountId, VaiTroHeThong accountRole) {
         this.employeeId = employeeId;
         this.fullName = fullName;
         this.jobTitle = jobTitle;
@@ -30,7 +30,7 @@ public final class DongDanhSachNhanVien {
     public EmployeeStatus status() { return status; }
     public LocalDate joinedAt() { return joinedAt; }
     public String accountId() { return accountId; }
-    public Role accountRole() { return accountRole; }
+    public VaiTroHeThong accountRole() { return accountRole; }
 
     public boolean hasAccount() {
         return accountId != null;

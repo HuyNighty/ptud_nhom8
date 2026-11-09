@@ -10,7 +10,7 @@ import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
 import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
@@ -27,12 +27,12 @@ public final class ServiceBillingPreview {
             public void run() {
                 try {
                     FeatureJdbcDouble jdbc = new FeatureJdbcDouble();
-                    ServiceCatalogPanel pnlCatalog = new ServiceCatalogPanel(ServiceBillingSelfTest.session(Role.CLINIC_MANAGER), jdbc);
+                    ServiceCatalogPanel pnlCatalog = new ServiceCatalogPanel(ServiceBillingSelfTest.session(VaiTroHeThong.CLINIC_MANAGER), jdbc);
                     DentalService value = new DentalService("TST001", "[KIỂM THỬ] Dịch vụ tổng hợp", new BigDecimal("123456"), "Dữ liệu tổng hợp chỉ dùng xem bố cục.", true, true);
                     pnlCatalog.showRows(List.of(value)); pnlCatalog.showForm(value);
                     pnlCatalog.status("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · chưa kiểm thử SQL thật");
                     render(pnlCatalog, "target/service-catalog-preview.png");
-                    InvoicePanel pnlBilling = new InvoicePanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST), jdbc);
+                    InvoicePanel pnlBilling = new InvoicePanel(ServiceBillingSelfTest.session(VaiTroHeThong.RECEPTIONIST), jdbc);
                     ThongTinHoaDon invoice = new ThongTinHoaDon("TSTHD001", "TSTNV", "TSTBN", "Bệnh nhân tổng hợp", "TSTPK",
                             LocalDateTime.of(2026, 10, 30, 9, 0), TrangThaiHoaDon.THANH_TOAN_MOT_PHAN,
                             new BigDecimal("300000"), new BigDecimal("100000"), new BigDecimal("200000"));
@@ -40,21 +40,21 @@ public final class ServiceBillingPreview {
                     pnlBilling.showDetail(new DuLieuChiTietHoaDon(invoice, List.of(new DongChiTietHoaDon(1, "TSTHD001", "TST001", null, null, 2, new BigDecimal("150000"))), List.of()));
                     pnlBilling.status("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · chưa kiểm thử SQL thật");
                     render(pnlBilling, "target/billing-preview.png");
-                    com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel pnlDebt=new com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc);
+                    com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel pnlDebt=new com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel(ServiceBillingSelfTest.session(VaiTroHeThong.RECEPTIONIST),jdbc);
                     pnlDebt.showPatients(com.quanlynhakhoa.nghiepvu.hoadon.service.DebtService.byPatient(List.of(invoice)));
                     pnlDebt.tblBenhNhan.setRowSelectionInterval(0,0);pnlDebt.showDetail(new DuLieuChiTietHoaDon(invoice,List.of(),List.of()));render(pnlDebt,"target/latest-debt-preview.png");
-                    com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel pnlPayment=new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc);
+                    com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel pnlPayment=new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel(ServiceBillingSelfTest.session(VaiTroHeThong.RECEPTIONIST),jdbc);
                     com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentForm pnlForm=new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentForm();pnlForm.showInvoice(new DuLieuChiTietHoaDon(invoice,List.of(),List.of()));pnlForm.busy(false,true,false);pnlForm.txtSoTien.setText("200000");pnlForm.txtTienMat.setText("100000");pnlForm.txtChuyenKhoan.setText("100000");pnlForm.txtKhachDua.setText("100000");pnlPayment.showForm(pnlForm);render(pnlPayment,"target/latest-payment-preview.png");
                     for(CheDoXemHoaDon mode:CheDoXemHoaDon.values()) {
-                        InvoicePanel pnlMode=new InvoicePanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc,mode);
+                        InvoicePanel pnlMode=new InvoicePanel(ServiceBillingSelfTest.session(VaiTroHeThong.RECEPTIONIST),jdbc,mode);
                         pnlMode.showRows(List.of(invoice));pnlMode.showDetail(new DuLieuChiTietHoaDon(invoice,List.of(),List.of()));
                         pnlMode.status("XEM BỐ CỤC · dữ liệu tổng hợp · không SQL");render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
                     }
                     for(ServiceCatalogPanel.EditorMode mode:List.of(ServiceCatalogPanel.EditorMode.SERVICES,ServiceCatalogPanel.EditorMode.PRICES)) {
-                        ServiceCatalogPanel pnlMode=new ServiceCatalogPanel(ServiceBillingSelfTest.session(Role.CLINIC_MANAGER),jdbc,mode);
+                        ServiceCatalogPanel pnlMode=new ServiceCatalogPanel(ServiceBillingSelfTest.session(VaiTroHeThong.CLINIC_MANAGER),jdbc,mode);
                         pnlMode.showRows(List.of(value));pnlMode.showForm(value);render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
                     }
-                    com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel pnlCancellation=new com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel(ServiceBillingSelfTest.session(Role.CLINIC_MANAGER),jdbc);
+                    com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel pnlCancellation=new com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel(ServiceBillingSelfTest.session(VaiTroHeThong.CLINIC_MANAGER),jdbc);
                     ThongTinYeuCauHuyHoaDon request=new ThongTinYeuCauHuyHoaDon("TSTYC001",invoice.maHoaDon(),invoice.maBenhNhan(),invoice.tenBenhNhan(),invoice.tongTien(),invoice.daThu(),"TST_ACC",LocalDateTime.of(2026,10,30,10,0),"[KIỂM THỬ] Đề nghị kiểm tra chứng từ",TrangThaiYeuCauHuyHoaDon.CHO_DUYET,null,null,null);
                     pnlCancellation.showRows(List.of(request));
                     pnlCancellation.showDetail(new com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy(request,new DuLieuChiTietHoaDon(invoice,List.of(),List.of())));

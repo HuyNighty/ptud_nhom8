@@ -11,7 +11,7 @@ import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -38,8 +38,8 @@ public final class CancellationSelfTest {
     public static void main(String[] args)throws Exception {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final Dao dao=new Dao();final Invoices invoices=new Invoices();
         InvoiceIdGenerator ids=new InvoiceIdGenerator(){public String next(Connection c){return "Y1";}};
-        final DesktopSession receptionist=session(Role.RECEPTIONIST);
-        final DesktopSession manager=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,"REVIEWER",Role.CLINIC_MANAGER,false));
+        final DesktopSession receptionist=session(VaiTroHeThong.RECEPTIONIST);
+        final DesktopSession manager=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,"REVIEWER",VaiTroHeThong.CLINIC_MANAGER,false));
         final CancellationService requests=new CancellationService(receptionist,jdbc,dao,invoices,ids);
         final CancellationService reviews=new CancellationService(manager,jdbc,dao,invoices,ids);
         check(requests.preview("H1").invoice().hoaDon().tongTien().intValueExact()==300,"preview contains trusted header, lines and history");

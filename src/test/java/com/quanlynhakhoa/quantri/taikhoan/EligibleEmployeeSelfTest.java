@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.taikhoan;
 import com.quanlynhakhoa.model.taikhoan.NhanVienDuDieuKien;
 import com.quanlynhakhoa.model.taikhoan.KetQuaNhanVienDuDieuKien;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.Proxy;
@@ -33,7 +33,7 @@ public final class EligibleEmployeeSelfTest {
             check(true, "Rejected " + expected.getSimpleName());
         }
     }
-    private static DesktopSession user(Role role) {
+    private static DesktopSession user(VaiTroHeThong role) {
         return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
     }
 
@@ -86,21 +86,21 @@ public final class EligibleEmployeeSelfTest {
     }
 
     public static void main(String[] args) throws Exception {
-        check(NhanVienDuDieuKien.roleForJob("LT") == Role.RECEPTIONIST, "Receptionist mapping");
-        check(NhanVienDuDieuKien.roleForJob("BS") == Role.DOCTOR, "Doctor mapping");
-        check(NhanVienDuDieuKien.roleForJob("YT") == Role.NURSE, "Nurse mapping");
-        check(NhanVienDuDieuKien.roleForJob("QL") == Role.CLINIC_MANAGER, "Clinic manager mapping");
-        check(NhanVienDuDieuKien.roleForJob("KHO") == Role.INVENTORY_MANAGER, "Inventory mapping");
+        check(NhanVienDuDieuKien.roleForJob("LT") == VaiTroHeThong.RECEPTIONIST, "Receptionist mapping");
+        check(NhanVienDuDieuKien.roleForJob("BS") == VaiTroHeThong.DOCTOR, "Doctor mapping");
+        check(NhanVienDuDieuKien.roleForJob("YT") == VaiTroHeThong.NURSE, "Nurse mapping");
+        check(NhanVienDuDieuKien.roleForJob("QL") == VaiTroHeThong.CLINIC_MANAGER, "Clinic manager mapping");
+        check(NhanVienDuDieuKien.roleForJob("KHO") == VaiTroHeThong.INVENTORY_MANAGER, "Inventory mapping");
         reject(IllegalArgumentException.class, () -> NhanVienDuDieuKien.roleForJob("AD"));
         reject(IllegalArgumentException.class, () -> NhanVienDuDieuKien.roleForJob("??"));
         reject(IllegalArgumentException.class, () -> NhanVienDuDieuKien.roleForJob(null));
         reject(IllegalArgumentException.class,
-                () -> new NhanVienDuDieuKien("NV01", "Doctor", "BS", Role.RECEPTIONIST));
+                () -> new NhanVienDuDieuKien("NV01", "Doctor", "BS", VaiTroHeThong.RECEPTIONIST));
         reject(IllegalArgumentException.class,
-                () -> new NhanVienDuDieuKien("bad id", "Doctor", "BS", Role.DOCTOR));
+                () -> new NhanVienDuDieuKien("bad id", "Doctor", "BS", VaiTroHeThong.DOCTOR));
         reject(IllegalArgumentException.class,
-                () -> new NhanVienDuDieuKien("NV01", " ", "BS", Role.DOCTOR));
-        NhanVienDuDieuKien doctor = new NhanVienDuDieuKien("NV01", "Bác sĩ thử nghiệm", "BS", Role.DOCTOR);
+                () -> new NhanVienDuDieuKien("NV01", " ", "BS", VaiTroHeThong.DOCTOR));
+        NhanVienDuDieuKien doctor = new NhanVienDuDieuKien("NV01", "Bác sĩ thử nghiệm", "BS", VaiTroHeThong.DOCTOR);
         check(doctor.displayLabel().contains("NV01"), "Display includes ID");
         check(doctor.displayLabel().contains("Bác sĩ"), "Display includes name");
 
@@ -117,19 +117,19 @@ public final class EligibleEmployeeSelfTest {
             throw new SQLException("Synthetic: do not open SQL");
         };
         reject(AccessDeniedException.class,
-                () -> new EligibleEmployeeService(user(Role.DOCTOR), provider).listEligible());
+                () -> new EligibleEmployeeService(user(VaiTroHeThong.DOCTOR), provider).listEligible());
         reject(AccessDeniedException.class,
-                () -> new EligibleEmployeeService(user(Role.RECEPTIONIST), provider).listEligible());
+                () -> new EligibleEmployeeService(user(VaiTroHeThong.RECEPTIONIST), provider).listEligible());
         reject(AccessDeniedException.class,
-                () -> new EligibleEmployeeService(user(Role.NURSE), provider).listEligible());
+                () -> new EligibleEmployeeService(user(VaiTroHeThong.NURSE), provider).listEligible());
         check(opens.get() == 0, "Denied roles never open connection");
-        DesktopSession manager = user(Role.CLINIC_MANAGER);
+        DesktopSession manager = user(VaiTroHeThong.CLINIC_MANAGER);
         reject(SQLException.class, () -> new EligibleEmployeeService(manager, provider).listEligible());
         check(opens.get() == 1, "Manager permission reaches provider");
         manager.logout();
         reject(AccessDeniedException.class, () -> new EligibleEmployeeService(manager, provider).listEligible());
         check(opens.get() == 1, "Logged out cannot open connection");
-        reject(SQLException.class, () -> new EligibleEmployeeService(user(Role.SYSTEM_ADMIN), provider).listEligible());
+        reject(SQLException.class, () -> new EligibleEmployeeService(user(VaiTroHeThong.SYSTEM_ADMIN), provider).listEligible());
         check(opens.get() == 2, "Admin reaches provider");
 
         AtomicInteger closes = new AtomicInteger();
@@ -137,18 +137,18 @@ public final class EligibleEmployeeSelfTest {
         List<String[]> dbRows = List.of(
                 new String[]{"TESTLT09", "Lễ tân kiểm thử", "LT"},
                 new String[]{"TESTBS09", "Bác sĩ kiểm thử", "BS"});
-        EligibleEmployeeService service = new EligibleEmployeeService(user(Role.SYSTEM_ADMIN),
+        EligibleEmployeeService service = new EligibleEmployeeService(user(VaiTroHeThong.SYSTEM_ADMIN),
                 () -> fakeConnection(dbRows, closes, verified));
         KetQuaNhanVienDuDieuKien found = service.listEligible();
         check(verified.get(), "SQL validated");
         check(closes.get() == 1, "Connection closed");
         check(found.employees().size() == 2, "Two eligible rows");
-        check(found.employees().get(0).role() == Role.RECEPTIONIST, "Employee LT projected");
-        check(found.employees().get(1).role() == Role.DOCTOR, "Employee BS projected");
+        check(found.employees().get(0).role() == VaiTroHeThong.RECEPTIONIST, "Employee LT projected");
+        check(found.employees().get(1).role() == VaiTroHeThong.DOCTOR, "Employee BS projected");
         check(!found.truncated(), "Not truncated");
 
         AtomicInteger zeroClosed = new AtomicInteger();
-        KetQuaNhanVienDuDieuKien zero = new EligibleEmployeeService(user(Role.SYSTEM_ADMIN),
+        KetQuaNhanVienDuDieuKien zero = new EligibleEmployeeService(user(VaiTroHeThong.SYSTEM_ADMIN),
                 () -> fakeConnection(List.of(), zeroClosed, new AtomicBoolean())).listEligible();
         check(zero.employees().isEmpty(), "Empty eligible list");
         check(zeroClosed.get() == 1, "Empty connection closed");
@@ -157,7 +157,7 @@ public final class EligibleEmployeeSelfTest {
         for (int i = 0; i < 201; i++) {
             many.add(new String[]{"NV" + String.format("%08d", i), "Name " + i, "BS"});
         }
-        KetQuaNhanVienDuDieuKien limited = new EligibleEmployeeService(user(Role.SYSTEM_ADMIN),
+        KetQuaNhanVienDuDieuKien limited = new EligibleEmployeeService(user(VaiTroHeThong.SYSTEM_ADMIN),
                 () -> fakeConnection(many, new AtomicInteger(), new AtomicBoolean())).listEligible();
         check(limited.employees().size() == 200, "200 row limit");
         check(limited.truncated(), "Truncation signaled");

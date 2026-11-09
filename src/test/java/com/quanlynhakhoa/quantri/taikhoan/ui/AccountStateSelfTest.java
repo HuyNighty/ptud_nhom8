@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.taikhoan.ui;
 import com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService;
 import com.quanlynhakhoa.quantri.taikhoan.AccountStateService;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.Field;
@@ -43,7 +43,7 @@ public final class AccountStateSelfTest {
         checks++;
         if (!value) throw new AssertionError(message);
     }
-    private static DesktopSession session(Role role) {
+    private static DesktopSession session(VaiTroHeThong role) {
         return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "ACTOR", role, false));
     }
     private static AccountStateService service(FakeJdbc jdbc, DesktopSession actor) {
@@ -75,18 +75,18 @@ public final class AccountStateSelfTest {
     }
 
     private static void serviceRules() throws Exception {
-        for (Role role : Role.values()) {
+        for (VaiTroHeThong role : VaiTroHeThong.values()) {
             FakeJdbc jdbc = new FakeJdbc();
             DesktopSession actor = session(role);
             AccountStateService service = service(jdbc, actor);
-            if (role != Role.CLINIC_MANAGER && role != Role.SYSTEM_ADMIN) {
+            if (role != VaiTroHeThong.CLINIC_MANAGER && role != VaiTroHeThong.SYSTEM_ADMIN) {
                 expect(AccessDeniedException.class, () -> service.lock(TARGET, "Reason"));
                 expect(AccessDeniedException.class, () -> service.unlock(TARGET));
                 check(jdbc.opens == 0, "unauthorized role never opens JDBC");
             }
         }
         FakeJdbc noSql = new FakeJdbc();
-        DesktopSession actor = session(Role.CLINIC_MANAGER);
+        DesktopSession actor = session(VaiTroHeThong.CLINIC_MANAGER);
         AccountStateService service = service(noSql, actor);
         for (String reason : new String[]{null, "", " ", "\t\n", "x".repeat(301)}) {
             expect(IllegalArgumentException.class, () -> service.lock(TARGET, reason));
@@ -106,7 +106,7 @@ public final class AccountStateSelfTest {
             FakeJdbc admin = new FakeJdbc();
             admin.row.put("vaiTro", "SYSTEM_ADMIN");
             if (unlocking) admin.adminLocked();
-            AccountStateService blocked = service(admin, session(Role.SYSTEM_ADMIN));
+            AccountStateService blocked = service(admin, session(VaiTroHeThong.SYSTEM_ADMIN));
             atomicFailure(admin, () -> { if (unlocking) blocked.unlock(TARGET); else blocked.lock(TARGET, "Reason"); },
                     IllegalArgumentException.class);
             check(admin.updates == 0, "SYSTEM_ADMIN target never updated");
@@ -114,28 +114,28 @@ public final class AccountStateSelfTest {
         for (String state : List.of("BI_KHOA", "VO_HIEU")) {
             FakeJdbc jdbc = new FakeJdbc();
             jdbc.row.put("trangThai", state);
-            atomicFailure(jdbc, () -> service(jdbc, session(Role.CLINIC_MANAGER)).lock(TARGET, "Reason"),
+            atomicFailure(jdbc, () -> service(jdbc, session(VaiTroHeThong.CLINIC_MANAGER)).lock(TARGET, "Reason"),
                     IllegalArgumentException.class);
         }
         for (String state : List.of("HOAT_DONG", "VO_HIEU", "FAILED_LOGIN", "MISSING_SOURCE")) {
             FakeJdbc jdbc = new FakeJdbc();
             jdbc.row.put("trangThai", state.equals("FAILED_LOGIN") || state.equals("MISSING_SOURCE") ? "BI_KHOA" : state);
             jdbc.row.put("nguonKhoa", state.equals("FAILED_LOGIN") ? "FAILED_LOGIN" : null);
-            atomicFailure(jdbc, () -> service(jdbc, session(Role.CLINIC_MANAGER)).unlock(TARGET),
+            atomicFailure(jdbc, () -> service(jdbc, session(VaiTroHeThong.CLINIC_MANAGER)).unlock(TARGET),
                     IllegalArgumentException.class);
             check(jdbc.updates == 0, "unlock rejects non-admin-lock state");
         }
         FakeJdbc absent = new FakeJdbc();
         absent.present = false;
-        atomicFailure(absent, () -> service(absent, session(Role.CLINIC_MANAGER)).lock(TARGET, "Reason"),
+        atomicFailure(absent, () -> service(absent, session(VaiTroHeThong.CLINIC_MANAGER)).lock(TARGET, "Reason"),
                 IllegalArgumentException.class);
         FakeJdbc canonicalSelf = new FakeJdbc();
         canonicalSelf.row.put("maTaiKhoan", "ACTOR");
-        atomicFailure(canonicalSelf, () -> service(canonicalSelf, session(Role.CLINIC_MANAGER)).lock(TARGET, "Reason"),
+        atomicFailure(canonicalSelf, () -> service(canonicalSelf, session(VaiTroHeThong.CLINIC_MANAGER)).lock(TARGET, "Reason"),
                 IllegalArgumentException.class);
 
         FakeJdbc lock = new FakeJdbc();
-        DesktopSession manager = session(Role.CLINIC_MANAGER);
+        DesktopSession manager = session(VaiTroHeThong.CLINIC_MANAGER);
         service(lock, manager).lock(" TARGET ", "  Lý do hợp lệ  ");
         check(lock.row.get("trangThai").equals("BI_KHOA") && lock.row.get("nguonKhoa").equals("ADMIN_ACTION"),
                 "active account becomes administrator locked");
@@ -150,7 +150,7 @@ public final class AccountStateSelfTest {
 
         FakeJdbc unlock = new FakeJdbc();
         unlock.adminLocked();
-        service(unlock, session(Role.SYSTEM_ADMIN)).unlock(TARGET);
+        service(unlock, session(VaiTroHeThong.SYSTEM_ADMIN)).unlock(TARGET);
         check("HOAT_DONG".equals(unlock.row.get("trangThai")), "administrator lock becomes active");
         check(Integer.valueOf(0).equals(unlock.row.get("soLanSai")), "failed attempts reset");
         for (String column : List.of("lanSaiDau", "khoaLuc", "khoaDen", "nguonKhoa", "lyDoKhoa")) {
@@ -159,7 +159,7 @@ public final class AccountStateSelfTest {
         check(unlock.commits == 1 && unlock.audits == 1 && unlock.rollbacks == 0, "unlock with audit atomic");
         unlock.checkClosed();
         FakeJdbc boundary = new FakeJdbc();
-        service(boundary, session(Role.CLINIC_MANAGER)).lock(TARGET, "x".repeat(300));
+        service(boundary, session(VaiTroHeThong.CLINIC_MANAGER)).lock(TARGET, "x".repeat(300));
         check(((String) boundary.row.get("lyDoKhoa")).length() == 300, "NVARCHAR(300) boundary accepted");
     }
 
@@ -169,7 +169,7 @@ public final class AccountStateSelfTest {
                 FakeJdbc jdbc = new FakeJdbc();
                 if (unlocking) jdbc.adminLocked();
                 jdbc.failAt = step;
-                AccountStateService service = service(jdbc, session(Role.CLINIC_MANAGER));
+                AccountStateService service = service(jdbc, session(VaiTroHeThong.CLINIC_MANAGER));
                 atomicFailure(jdbc, () -> { if (unlocking) service.unlock(TARGET); else service.lock(TARGET, "Reason"); },
                         SQLTimeoutException.class);
                 check(jdbc.steps == step, "timeout stops subsequent SQL");
@@ -177,7 +177,7 @@ public final class AccountStateSelfTest {
             for (int step = 1; step <= 3; step++) {
                 FakeJdbc jdbc = new FakeJdbc();
                 if (unlocking) jdbc.adminLocked();
-                DesktopSession actor = session(Role.CLINIC_MANAGER);
+                DesktopSession actor = session(VaiTroHeThong.CLINIC_MANAGER);
                 int logoutAt = step;
                 jdbc.afterStep = current -> { if (current == logoutAt) actor.logout(); };
                 AccountStateService service = service(jdbc, actor);
@@ -189,19 +189,19 @@ public final class AccountStateSelfTest {
         for (int updateCount : new int[]{0, 2}) {
             FakeJdbc jdbc = new FakeJdbc();
             jdbc.updateCount = updateCount;
-            atomicFailure(jdbc, () -> service(jdbc, session(Role.CLINIC_MANAGER)).lock(TARGET, "Reason"), SQLException.class);
+            atomicFailure(jdbc, () -> service(jdbc, session(VaiTroHeThong.CLINIC_MANAGER)).lock(TARGET, "Reason"), SQLException.class);
         }
         FakeJdbc audit = new FakeJdbc();
         audit.auditCount = 0;
-        atomicFailure(audit, () -> service(audit, session(Role.CLINIC_MANAGER)).lock(TARGET, "Reason"), SQLException.class);
+        atomicFailure(audit, () -> service(audit, session(VaiTroHeThong.CLINIC_MANAGER)).lock(TARGET, "Reason"), SQLException.class);
         FakeJdbc commit = new FakeJdbc();
         commit.failCommit = true;
-        atomicFailure(commit, () -> service(commit, session(Role.CLINIC_MANAGER)).lock(TARGET, "Reason"), SQLException.class);
+        atomicFailure(commit, () -> service(commit, session(VaiTroHeThong.CLINIC_MANAGER)).lock(TARGET, "Reason"), SQLException.class);
         FakeJdbc rollback = new FakeJdbc();
         rollback.failAt = 2;
         rollback.failRollback = true;
         SQLTimeoutException original = expect(SQLTimeoutException.class,
-                () -> service(rollback, session(Role.CLINIC_MANAGER)).lock(TARGET, "Reason"));
+                () -> service(rollback, session(VaiTroHeThong.CLINIC_MANAGER)).lock(TARGET, "Reason"));
         check(original.getSuppressed().length == 1, "rollback failure suppressed on original timeout");
         rollback.checkClosed();
     }
@@ -260,12 +260,12 @@ public final class AccountStateSelfTest {
             if (ineligible.equals("FAILED_LOGIN")) { jdbc.adminLocked(); jdbc.row.put("nguonKhoa", "FAILED_LOGIN"); }
             if (ineligible.equals("SELF")) jdbc.row.put("maTaiKhoan", "ACTOR");
             if (ineligible.equals("VO_HIEU")) jdbc.row.put("trangThai", "VO_HIEU");
-            AccountPanel panel = panel(jdbc, session(Role.CLINIC_MANAGER));
+            AccountPanel panel = panel(jdbc, session(VaiTroHeThong.CLINIC_MANAGER));
             check(edt(() -> !button(panel, "btnLock").isEnabled() && !button(panel, "btnUnlock").isEnabled()),
                     "UI blocks " + ineligible);
         }
         FakeJdbc jdbc = new FakeJdbc();
-        DesktopSession actor = session(Role.CLINIC_MANAGER);
+        DesktopSession actor = session(VaiTroHeThong.CLINIC_MANAGER);
         AccountPanel panel = panel(jdbc, actor);
         check(edt(() -> button(panel, "btnLock").isEnabled() && !button(panel, "btnUnlock").isEnabled()), "UI active target eligibility");
         jdbc.failAt = 2;

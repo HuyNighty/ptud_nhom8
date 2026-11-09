@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.view;
 
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.nghiepvu.phieukham.controller.CanLamSangController;
 import com.quanlynhakhoa.model.phieukham.ThongTinChiDinhCanLamSang;
 import com.quanlynhakhoa.model.phieukham.DichVuCanLamSangChon;
@@ -279,8 +279,8 @@ public final class CanLamSangPanel extends JPanel {
 
     private boolean canEdit() {
         if (!session.isActive()) return false;
-        if (session.role() == Role.DOCTOR) return true;
-        return session.role() == Role.SYSTEM_ADMIN && current != null
+        if (session.role() == VaiTroHeThong.DOCTOR) return true;
+        return session.role() == VaiTroHeThong.SYSTEM_ADMIN && current != null
                 && selectedDoctorId.equals(current.maNhanVien());
     }
 

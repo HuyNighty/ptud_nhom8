@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.hethong.giaodien;
 
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
@@ -33,7 +33,7 @@ public final class R4SessionLifecycleSelfTest {
         try { task.run(); } catch (AccessDeniedException expected) { rejected = true; }
         check(rejected, label);
     }
-    private static DesktopSession make(Role role, String id) {
+    private static DesktopSession make(VaiTroHeThong role, String id) {
         return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, id, role, false));
     }
     private static void rejectSession(AuthDecision decision, String label) {
@@ -52,11 +52,11 @@ public final class R4SessionLifecycleSelfTest {
         }
         rejectSession(null, "null auth result");
         rejectSession(AuthDecision.rejected(), "rejected auth");
-        rejectSession(new AuthDecision(true, "SYNTH", Role.SYSTEM_ADMIN, true), "forced password reset");
+        rejectSession(new AuthDecision(true, "SYNTH", VaiTroHeThong.SYSTEM_ADMIN, true), "forced password reset");
         rejectSession(new AuthDecision(true, "SYNTH", null, false), "missing role");
-        rejectSession(new AuthDecision(true, " ", Role.SYSTEM_ADMIN, false), "blank account id");
+        rejectSession(new AuthDecision(true, " ", VaiTroHeThong.SYSTEM_ADMIN, false), "blank account id");
 
-        for (Role role : Role.values()) {
+        for (VaiTroHeThong role : VaiTroHeThong.values()) {
             DesktopSession session = make(role, "SYNTH-" + role);
             MainNavigationModel model = new MainNavigationModel(session);
             Instant began = session.startedAt();
@@ -97,10 +97,10 @@ public final class R4SessionLifecycleSelfTest {
             }
         }
 
-        DesktopSession old = make(Role.SYSTEM_ADMIN, "SYNTH-RELOGIN");
+        DesktopSession old = make(VaiTroHeThong.SYSTEM_ADMIN, "SYNTH-RELOGIN");
         MainNavigationModel oldModel = new MainNavigationModel(old);
         old.logout();
-        DesktopSession fresh = make(Role.SYSTEM_ADMIN, "SYNTH-RELOGIN");
+        DesktopSession fresh = make(VaiTroHeThong.SYSTEM_ADMIN, "SYNTH-RELOGIN");
         MainNavigationModel freshModel = new MainNavigationModel(fresh);
         check(old != fresh, "relogin makes distinct instance");
         check(!old.isActive(), "old remains inactive");
@@ -112,7 +112,7 @@ public final class R4SessionLifecycleSelfTest {
         fresh.logout();
         denied(() -> freshModel.select(Module.HOME), "new model also invalidates after logout");
 
-        DesktopSession concurrent = make(Role.SYSTEM_ADMIN, "SYNTH-RACE");
+        DesktopSession concurrent = make(VaiTroHeThong.SYSTEM_ADMIN, "SYNTH-RACE");
         ExecutorService pool = Executors.newFixedThreadPool(8);
         try {
             CountDownLatch start = new CountDownLatch(1);

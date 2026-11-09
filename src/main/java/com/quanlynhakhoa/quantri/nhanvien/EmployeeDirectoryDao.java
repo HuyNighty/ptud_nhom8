@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.nhanvien;
 import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.model.nhanvien.DongDanhSachNhanVien;
 import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -59,7 +59,7 @@ public final class EmployeeDirectoryDao {
                             EmployeeStatus.valueOf(result.getString("trangThai")),
                             joined == null ? null : joined.toLocalDate(),
                             result.getString("maTaiKhoan"),
-                            accountRole == null ? null : Role.valueOf(accountRole)));
+                            accountRole == null ? null : VaiTroHeThong.valueOf(accountRole)));
                 }
             }
             return new KetQuaDanhSachNhanVien(rows, truncated);

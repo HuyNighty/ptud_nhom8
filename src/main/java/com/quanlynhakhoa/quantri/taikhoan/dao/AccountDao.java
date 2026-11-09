@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.taikhoan.dao;
 import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
 import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -50,7 +50,7 @@ public final class AccountDao {
                 rs.getString("tenDangNhap"),
                 rs.getString("tenHienThi"),
                 rs.getString("matKhauHash"),
-                Role.valueOf(rs.getString("vaiTro")),
+                VaiTroHeThong.valueOf(rs.getString("vaiTro")),
                 AccountStatus.valueOf(rs.getString("trangThai")),
                 rs.getInt("soLanSai"),
                 at(rs, "lanSaiDau"),

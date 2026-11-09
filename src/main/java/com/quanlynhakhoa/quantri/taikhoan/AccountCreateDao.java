@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,7 +34,7 @@ public final class AccountCreateDao {
                     'SUCCESS', N'TaiKhoan', ?, N'Tạo tài khoản nhân viên')
             """;
 
-    public void requireEligibleEmployee(Connection connection, String employeeId, Role role)
+    public void requireEligibleEmployee(Connection connection, String employeeId, VaiTroHeThong role)
             throws SQLException {
         Objects.requireNonNull(connection, "connection");
         try (PreparedStatement statement = connection.prepareStatement(EMPLOYEE_SQL)) {
@@ -65,7 +65,7 @@ public final class AccountCreateDao {
     }
 
     public void insertAccount(Connection connection, String id, String employeeId,
-                              String username, String displayName, String hash, Role role)
+                              String username, String displayName, String hash, VaiTroHeThong role)
             throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(INSERT_SQL)) {
             statement.setString(1, id);

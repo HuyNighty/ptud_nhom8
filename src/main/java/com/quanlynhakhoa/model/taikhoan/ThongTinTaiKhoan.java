@@ -2,7 +2,7 @@ package com.quanlynhakhoa.model.taikhoan;
 
 import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.time.LocalDateTime;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
@@ -12,7 +12,7 @@ public final class ThongTinTaiKhoan {
     private final String username;
     private final String displayName;
     private final String passwordHash;
-    private final Role role;
+    private final VaiTroHeThong role;
     private final AccountStatus status;
     private final int failedAttempts;
     private final LocalDateTime firstFailureAt;
@@ -28,7 +28,7 @@ public final class ThongTinTaiKhoan {
     private final LocalDateTime disabledAt;
     private final String disableReason;
 
-    public ThongTinTaiKhoan(String id, String employeeId, String username, String displayName, String passwordHash, Role role, AccountStatus status, int failedAttempts, LocalDateTime firstFailureAt, LocalDateTime lockedAt, LocalDateTime lockedUntil, LockSource lockSource, String lockReason, boolean forcePasswordChange, LocalDateTime passwordUpdatedAt, LocalDateTime lastLoginAt, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime disabledAt, String disableReason) {
+    public ThongTinTaiKhoan(String id, String employeeId, String username, String displayName, String passwordHash, VaiTroHeThong role, AccountStatus status, int failedAttempts, LocalDateTime firstFailureAt, LocalDateTime lockedAt, LocalDateTime lockedUntil, LockSource lockSource, String lockReason, boolean forcePasswordChange, LocalDateTime passwordUpdatedAt, LocalDateTime lastLoginAt, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime disabledAt, String disableReason) {
         this.id = id;
         this.employeeId = employeeId;
         this.username = username;
@@ -56,7 +56,7 @@ public final class ThongTinTaiKhoan {
     public String username() { return username; }
     public String displayName() { return displayName; }
     public String passwordHash() { return passwordHash; }
-    public Role role() { return role; }
+    public VaiTroHeThong role() { return role; }
     public AccountStatus status() { return status; }
     public int failedAttempts() { return failedAttempts; }
     public LocalDateTime firstFailureAt() { return firstFailureAt; }

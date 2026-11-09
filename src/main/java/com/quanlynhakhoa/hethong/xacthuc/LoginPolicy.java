@@ -5,7 +5,7 @@ import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
 import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
 import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
 import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -66,7 +66,7 @@ public final class LoginPolicy {
     }
 
     private static boolean employeeEligible(ThongTinTaiKhoan account, ThongTinNhanVien employee) {
-        if (account.employeeId() == null) return account.role() == Role.SYSTEM_ADMIN;
+        if (account.employeeId() == null) return account.role() == VaiTroHeThong.SYSTEM_ADMIN;
         return employee != null && account.employeeId().equals(employee.id()) &&
                 employee.status() == EmployeeStatus.DANG_LAM_VIEC;
     }

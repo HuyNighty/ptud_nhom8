@@ -14,7 +14,7 @@ import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.dieutri.dao.TreatmentPlanDao;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,7 +31,7 @@ public final class BillingHardeningSqlIT {
     private static void denied(Action a,String label)throws Exception{boolean rejected=false;try{a.run();}catch(IllegalArgumentException|AccessDeniedException expected){rejected=true;}check(rejected,label);}
     private static void sql(String text)throws Exception{try(Connection c=connections.open();Statement s=c.createStatement()){s.executeUpdate(text);}}
     private static BigDecimal scalar(String text)throws Exception{try(Connection c=connections.open();Statement s=c.createStatement();ResultSet r=s.executeQuery(text)){r.next();return r.getBigDecimal(1);}}
-    private static DesktopSession session(String account,Role role){var s=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,account,role,false));s.bindCurrentAccountCheck(new JdbcSessionVerifier(connections::open));return s;}
+    private static DesktopSession session(String account,VaiTroHeThong role){var s=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,account,role,false));s.bindCurrentAccountCheck(new JdbcSessionVerifier(connections::open));return s;}
     private static YeuCauThanhToan cash(String invoice,String id,int amount){var m=BigDecimal.valueOf(amount);return new YeuCauThanhToan(invoice,m,List.of(new PhanThanhToan(id,m,PhuongThucThanhToan.TIEN_MAT,null,m)),false);}
     private static void header(String id,String visit,int total)throws Exception{
         sql("INSERT dbo.HoaDon(maHoaDon,maNhanVien,maBenhNhan,maPhieuKham,ngayLap,trangThai) VALUES('"+id+"','N1','B1',"+(visit==null?"NULL":"'"+visit+"'")+",CURRENT_TIMESTAMP,'CHUA_THANH_TOAN')");
@@ -47,7 +47,7 @@ public final class BillingHardeningSqlIT {
         sql("INSERT dbo.TaiKhoan(maTaiKhoan,maNhanVien,tenDangNhap,tenHienThi,matKhauHash,vaiTro,matKhauCapNhatLuc) VALUES('A1','N1','test.cashier',N'Synthetic','not-a-login-hash','RECEPTIONIST',SYSUTCDATETIME()),('A2','N2','test.cashier2',N'Synthetic','not-a-login-hash','RECEPTIONIST',SYSUTCDATETIME()),('AM','NM','test.manager',N'Synthetic','not-a-login-hash','CLINIC_MANAGER',SYSUTCDATETIME()),('AD','ND','test.doctor',N'Synthetic','not-a-login-hash','DOCTOR',SYSUTCDATETIME())");
         sql("INSERT dbo.BenhNhan(maBenhNhan,hoTen,ngaySinh,gioiTinh,soDienThoai) VALUES('B1',N'Original synthetic name','2000-01-01','NAM','0991111111'); INSERT dbo.HoSoBenhAn(maHoSo,maBenhNhan,ngayLap) VALUES('C1','B1','2026-01-01'); INSERT dbo.DichVu(maDichVu,tenDichVu,donGia) VALUES('D1',N'Original service',100)");
         sql("INSERT dbo.PhieuKham(maPhieuKham,maBenhNhan,maHoSo,maNhanVien,thoiGianTiepNhan,trangThai,chanDoan,ketLuan) VALUES('V1','B1','C1','ND',CURRENT_TIMESTAMP,'DA_KET_LUAN',N'test',N'test'),('V0','B1','C1','ND',CURRENT_TIMESTAMP,'DA_KET_LUAN',N'test',N'test')");
-        var cashier=session("A1",Role.RECEPTIONIST);var second=session("A2",Role.RECEPTIONIST);var manager=session("AM",Role.CLINIC_MANAGER);
+        var cashier=session("A1",VaiTroHeThong.RECEPTIONIST);var second=session("A2",VaiTroHeThong.RECEPTIONIST);var manager=session("AM",VaiTroHeThong.CLINIC_MANAGER);
         header("H1","V1",300);header("H2",null,300);header("HC",null,300);
         try(Connection c=connections.open()){
             c.setAutoCommit(false);

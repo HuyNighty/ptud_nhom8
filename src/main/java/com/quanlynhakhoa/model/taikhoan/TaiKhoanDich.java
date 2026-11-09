@@ -2,7 +2,7 @@ package com.quanlynhakhoa.model.taikhoan;
 
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
 import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 
 
 
@@ -11,11 +11,11 @@ import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class TaiKhoanDich {
     private final String accountId;
-    private final Role role;
+    private final VaiTroHeThong role;
     private final AccountStatus status;
     private final LockSource lockSource;
 
-    public TaiKhoanDich(String accountId, Role role, AccountStatus status, LockSource lockSource) {
+    public TaiKhoanDich(String accountId, VaiTroHeThong role, AccountStatus status, LockSource lockSource) {
         this.accountId = accountId;
         this.role = role;
         this.status = status;
@@ -23,7 +23,7 @@ public final class TaiKhoanDich {
     }
 
     public String accountId() { return accountId; }
-    public Role role() { return role; }
+    public VaiTroHeThong role() { return role; }
     public AccountStatus status() { return status; }
     public LockSource lockSource() { return lockSource; }
 

@@ -8,13 +8,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 
 /** Synthetic design preview; no database connection or writes. */
 public final class RevenueReportPreview {
     public static void main(String[] args)throws Exception{
         SwingUtilities.invokeAndWait(()->{try{
-            var session=RevenueReportSelfTest.session(Role.CLINIC_MANAGER);
+            var session=RevenueReportSelfTest.session(VaiTroHeThong.CLINIC_MANAGER);
             var panel=new RevenueReportPanel(session,new RevenueReportService(session,()->{throw new AssertionError("preview cannot access database");}),false);
             LocalDate from=LocalDate.of(2026,11,1),to=LocalDate.of(2026,11,6);
             long[] revenue={2400000,3850000,1750000,4200000,3100000,2900000},paid={1900000,3100000,2100000,3450000,2700000,3350000};

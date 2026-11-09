@@ -7,7 +7,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
@@ -54,7 +54,7 @@ public final class CancellationConcurrencySelfTest {
         };
         final InvoiceDao invoices=new InvoiceDao(){public ThongTinHoaDon getForPayment(Connection c,String id){return new ThongTinHoaDon("H1","NV1","BN1","Synthetic",null,LocalDateTime.now(),cancelled?TrangThaiHoaDon.DA_HUY:TrangThaiHoaDon.CHUA_THANH_TOAN,BigDecimal.TEN,BigDecimal.ZERO,BigDecimal.ZERO);}};
         ThongTinYeuCauHuyHoaDon record(String id,String account,String reason,TrangThaiYeuCauHuyHoaDon status,String reviewer,String decision){return new ThongTinYeuCauHuyHoaDon(id,"H1","BN1","Synthetic",BigDecimal.TEN,BigDecimal.ZERO,account,LocalDateTime.now(),reason,status,reviewer,reviewer==null?null:LocalDateTime.now(),decision);}
-        CancellationService service(String account,Role role){DesktopSession session=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,account,role,false));return new CancellationService(session,this,dao,invoices,new InvoiceIdGenerator(){public String next(Connection c){return "Y"+ids.incrementAndGet();}});}
+        CancellationService service(String account,VaiTroHeThong role){DesktopSession session=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,account,role,false));return new CancellationService(session,this,dao,invoices,new InvoiceIdGenerator(){public String next(Connection c){return "Y"+ids.incrementAndGet();}});}
     }
     private static void race(final Action first,final Action second)throws Exception {
         final CountDownLatch ready=new CountDownLatch(2),go=new CountDownLatch(1);final AtomicInteger successes=new AtomicInteger(),rejected=new AtomicInteger();final List<Throwable> failures=Collections.synchronizedList(new ArrayList<>());
@@ -66,10 +66,10 @@ public final class CancellationConcurrencySelfTest {
         }finally{pool.shutdownNow();}
     }
     public static void main(String[] args)throws Exception {
-        final Store store=new Store();final CancellationService first=store.service("REQ1",Role.RECEPTIONIST),second=store.service("REQ2",Role.RECEPTIONIST);
+        final Store store=new Store();final CancellationService first=store.service("REQ1",VaiTroHeThong.RECEPTIONIST),second=store.service("REQ2",VaiTroHeThong.RECEPTIONIST);
         race(new Action(){public void run()throws Exception{first.request("H1","First reason");}},new Action(){public void run()throws Exception{second.request("H1","Second reason");}});
         check(store.request!=null&&store.request.trangThai()==TrangThaiYeuCauHuyHoaDon.CHO_DUYET&&store.audits==1&&!store.cancelled,"one pending request, invoice unchanged");
-        final String id=store.request.maYeuCau();final CancellationService managerA=store.service("MANAGER1",Role.CLINIC_MANAGER),managerB=store.service("MANAGER2",Role.CLINIC_MANAGER);
+        final String id=store.request.maYeuCau();final CancellationService managerA=store.service("MANAGER1",VaiTroHeThong.CLINIC_MANAGER),managerB=store.service("MANAGER2",VaiTroHeThong.CLINIC_MANAGER);
         race(new Action(){public void run()throws Exception{managerA.decide(id,true,"");}},new Action(){public void run()throws Exception{managerB.decide(id,false,"Reject concurrently");}});
         check(store.audits==2&&store.request.trangThai()!=TrangThaiYeuCauHuyHoaDon.CHO_DUYET,"decision and audit persisted once");
         check(store.cancelled==(store.request.trangThai()==TrangThaiYeuCauHuyHoaDon.DA_DUYET),"invoice cancelled iff approval won");

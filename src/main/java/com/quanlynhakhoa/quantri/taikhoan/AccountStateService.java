@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.taikhoan;
 import com.quanlynhakhoa.model.taikhoan.TaiKhoanDich;
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
 import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -54,7 +54,7 @@ public final class AccountStateService {
                 requireAuthorized();
                 TaiKhoanDich target = dao.lockTarget(connection, id);
                 requireAuthorized();
-                if (target.role() == Role.SYSTEM_ADMIN) {
+                if (target.role() == VaiTroHeThong.SYSTEM_ADMIN) {
                     throw new IllegalArgumentException("Không được khóa hoặc mở khóa tài khoản quản trị hệ thống.");
                 }
                 if (locking) {

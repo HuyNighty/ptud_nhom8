@@ -4,7 +4,7 @@ import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.quantri.nhanvien.EmployeeDirectoryDao;
 import com.quanlynhakhoa.model.nhanvien.DongDanhSachNhanVien;
@@ -347,7 +347,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         return status == EmployeeStatus.DANG_LAM_VIEC ? "Đang làm việc" : "Nghỉ việc";
     }
 
-    private static String roleText(Role role) {
+    private static String roleText(VaiTroHeThong role) {
         if (role == null) return "—";
         return switch (role) {
             case SYSTEM_ADMIN -> "Quản trị hệ thống";

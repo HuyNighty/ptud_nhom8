@@ -6,7 +6,7 @@ import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
 import com.quanlynhakhoa.quantri.vaitro.catalog.BasicRbacService;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -58,7 +58,7 @@ public final class BasicRbacPanel extends JPanel {
         this.service = new BasicRbacService(session, TeamDevConnection::open);
         setLayout(new BorderLayout(0, 8));
         setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
-        boolean admin = session.isActive() && session.role() == Role.SYSTEM_ADMIN;
+        boolean admin = session.isActive() && session.role() == VaiTroHeThong.SYSTEM_ADMIN;
         JLabel explanation = new JLabel(admin
                 ? "Chỉ lưu catalog V9; chưa gán role mới cho tài khoản và chưa kích hoạt authorization động."
                 : "Chỉ SYSTEM_ADMIN được tạo vai trò và khai báo quyền trong MVP.");
@@ -227,7 +227,7 @@ public final class BasicRbacPanel extends JPanel {
         }.execute();
     }
     private void setEnabledActions(boolean enabled) {
-        boolean admin = enabled && session.isActive() && session.role() == Role.SYSTEM_ADMIN;
+        boolean admin = enabled && session.isActive() && session.role() == VaiTroHeThong.SYSTEM_ADMIN;
         saveRole.setEnabled(admin);
         savePermission.setEnabled(admin);
         reload.setEnabled(admin);

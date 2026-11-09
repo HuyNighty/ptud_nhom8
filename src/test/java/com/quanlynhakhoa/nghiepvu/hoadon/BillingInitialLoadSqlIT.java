@@ -10,7 +10,7 @@ import com.quanlynhakhoa.nghiepvu.hoadon.dao.InvoiceDao;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.CancellationDao;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.DebtService;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.List;
@@ -39,7 +39,7 @@ public final class BillingInitialLoadSqlIT {
             CancellationDao cancellations = new CancellationDao();
             var requests = cancellations.find(c, "", null, null, null);
             expectedRequests = requests.size();
-            var historySession = session(Role.RECEPTIONIST);
+            var historySession = session(VaiTroHeThong.RECEPTIONIST);
             try {
                 var invoiceService = new com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService(
                         historySession, TeamDevConnection::open);
@@ -103,8 +103,8 @@ public final class BillingInitialLoadSqlIT {
             for (ThongTinHoaDon invoice : all) if (invoice.ngayLap().toLocalDate().equals(day)) expected++;
             check(dao.find(c, "", day, day, null).size() == expected, "inclusive date filter");
         }
-        var session = session(Role.RECEPTIONIST);
-        var approvalSession = session(Role.CLINIC_MANAGER);
+        var session = session(VaiTroHeThong.RECEPTIONIST);
+        var approvalSession = session(VaiTroHeThong.CLINIC_MANAGER);
         InvoicePanel[] invoices = new InvoicePanel[1];
         DebtPanel[] debt = new DebtPanel[1];
         PaymentPanel[] payment = new PaymentPanel[1];

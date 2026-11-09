@@ -11,7 +11,7 @@ import com.quanlynhakhoa.nghiepvu.hoadon.controller.InvoiceCreationController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.InvoiceCreateDao;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoiceCreationDialog;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.List;
@@ -25,7 +25,7 @@ public final class CreationStepsSelfTest {
     private static void edt(Runnable work)throws Exception{SwingUtilities.invokeAndWait(work);}
     private static void waitFor(InvoiceCreationDialog view,String text)throws Exception{long until=System.nanoTime()+10_000_000_000L;while(System.nanoTime()<until){boolean[] done={false};edt(new Runnable(){public void run(){done[0]=view.lblTrangThai.getText().contains(text)&&view.btnTimBenhNhan.isEnabled();}});if(done[0])return;Thread.sleep(20);}throw new AssertionError("Missing step: "+text);}
     public static void main(String[] args)throws Exception{
-        var session=ServiceBillingSelfTest.session(Role.RECEPTIONIST);var jdbc=new FeatureJdbcDouble();
+        var session=ServiceBillingSelfTest.session(VaiTroHeThong.RECEPTIONIST);var jdbc=new FeatureJdbcDouble();
         InvoiceCreateDao dao=new InvoiceCreateDao(){
             @Override public List<LuaChonLapHoaDon> patients(Connection c,String text){return noPatients?List.of():List.of(new LuaChonLapHoaDon("BN1","Logic fixture"));}
             @Override public List<LuaChonLapHoaDon> visits(Connection c,String patient){return noVisits?List.of():List.of(new LuaChonLapHoaDon("PK1","Logic fixture"),new LuaChonLapHoaDon("PK2","Logic fixture"));}

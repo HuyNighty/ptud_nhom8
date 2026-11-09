@@ -6,7 +6,7 @@ package com.quanlynhakhoa.hethong.tongquan;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.*;
 import java.math.BigDecimal;
 
@@ -15,7 +15,7 @@ public final class DashboardOverviewSqlIT {
     private static void check(boolean ok,String label){if(!ok)throw new AssertionError(label);}
     public static void main(String[] args)throws Exception{
         if(args.length!=1||!"--read-only".equals(args[0])||!TeamDevConnection.hasLocalConfig())throw new IllegalArgumentException("Requires --read-only and local dev config");
-        for(Role role:Role.values()){
+        for(VaiTroHeThong role:VaiTroHeThong.values()){
             String account="TST_DASH";
             try(Connection c=TeamDevConnection.open();PreparedStatement s=c.prepareStatement("SELECT TOP (1) maTaiKhoan FROM dbo.TaiKhoan WHERE vaiTro=? AND trangThai='HOAT_DONG' ORDER BY maTaiKhoan")){
                 s.setString(1,role.name());try(ResultSet rows=s.executeQuery()){if(rows.next())account=rows.getString(1);}
@@ -32,7 +32,7 @@ public final class DashboardOverviewSqlIT {
                 check((day.collected()!=null)==service.can(Permission.REVENUE_REPORT_READ),"money permission");
                 check((day.visits()!=null)==service.can(Permission.MEDICAL_RECORD_READ),"visit permission");
             }
-            if(role==Role.SYSTEM_ADMIN){
+            if(role==VaiTroHeThong.SYSTEM_ADMIN){
                 BigDecimal sum=BigDecimal.ZERO;for(var day:overview.days())sum=sum.add(day.collected());
                 try(Connection c=TeamDevConnection.open();PreparedStatement s=c.prepareStatement("SELECT COALESCE(SUM(soTien),0) FROM dbo.ThanhToan WHERE thoiGian>=? AND thoiGian<? AND trangThai='THANH_CONG'")){
                     s.setObject(1,overview.summary().date().minusDays(6).atStartOfDay());s.setObject(2,overview.summary().date().plusDays(1).atStartOfDay());
