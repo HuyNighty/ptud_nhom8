@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
@@ -58,7 +59,7 @@ public final class BillingActualUiPreview {
             case BILLING -> {var view=(InvoicePanel)panel;view.showRows(data.invoices());if(!data.invoices().isEmpty()){select(firstTable(view));view.showDetail(data.details().get(data.invoices().getFirst().maHoaDon()));}view.setBusy(false);view.status(data.invoices().isEmpty()?"Chưa có hóa đơn.":"Dữ liệu chứng từ từ SQL development.");}
             case DEBTS -> {var view=(DebtPanel)panel;view.showPatients(DebtService.byPatient(data.invoices()));select(view.tblBenhNhan);view.selectPatient();select(view.tblHoaDon);if(view.selectedInvoice()!=null)view.showDetail(data.details().get(view.selectedInvoice()));view.busy(false);view.lblTrangThai.setText("Các số tổng hợp tính theo bộ lọc ngày lập hóa đơn.");}
             case PAYMENTS -> {var view=(PaymentPanel)panel;var found=DebtService.outstanding(data.invoices());var listeners=view.cmbHoaDon.getActionListeners();for(var listener:listeners)view.cmbHoaDon.removeActionListener(listener);view.showChoices(found,null);for(var listener:listeners)view.cmbHoaDon.addActionListener(listener);view.lblTrangThai.setText(found.isEmpty()?"Chưa có hóa đơn còn phải thu.":"Chọn hóa đơn từ kết quả tìm kiếm.");}
-            case INVOICE_CANCELLATIONS -> {var view=(CancellationPanel)panel;view.showRows(data.requests());if(!data.requests().isEmpty()){var y=data.requests().getFirst();select(view.tblYeuCau);if(data.details().containsKey(y.maHoaDon()))view.showDetail(new CancellationService.Detail(y,data.details().get(y.maHoaDon())));}view.lblTrangThai.setText("Lọc theo ngày gửi và trạng thái yêu cầu.");view.tableStatus(data.requests().isEmpty()?"Chưa có yêu cầu hủy hóa đơn.":"");}
+            case INVOICE_CANCELLATIONS -> {var view=(CancellationPanel)panel;view.showRows(data.requests());if(!data.requests().isEmpty()){var y=data.requests().getFirst();select(view.tblYeuCau);if(data.details().containsKey(y.maHoaDon()))view.showDetail(new ChiTietYeuCauHuy(y,data.details().get(y.maHoaDon())));}view.lblTrangThai.setText("Lọc theo ngày gửi và trạng thái yêu cầu.");view.tableStatus(data.requests().isEmpty()?"Chưa có yêu cầu hủy hóa đơn.":"");}
             default -> throw new AssertionError(module);
         }
     }

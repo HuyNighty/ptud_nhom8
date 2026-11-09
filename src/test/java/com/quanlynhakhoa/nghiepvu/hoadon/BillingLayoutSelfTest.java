@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
@@ -66,7 +67,7 @@ public final class BillingLayoutSelfTest {
             case BILLING -> {var view=(InvoicePanel)panel;view.showRows(List.of(invoice()));select(field(view,"tblHoaDon",JTable.class));view.showDetail(detail());view.setBusy(false);check(field(view,"btnThanhToan",JButton.class).isEnabled(),"Pay enabled on eligible selected invoice");}
             case DEBTS -> {var view=(DebtPanel)panel;view.showPatients(DebtService.byPatient(List.of(invoice())));select(view.tblBenhNhan);view.selectPatient();select(view.tblHoaDon);view.showDetail(detail());view.busy(false);check(view.btnThuNo.isEnabled()&&view.btnXemChiTiet.isEnabled(),"Debt actions bound to selected invoice");}
             case PAYMENTS -> {var view=(PaymentPanel)panel;var form=new PaymentForm();form.cmbPhuongThuc.setSelectedItem(PaymentForm.Method.BANK);form.showInvoice(detail());form.busy(false,true,false);form.txtSoTien.setText("800.000");form.txtKhachDua.setText("300.000");form.txtMaGiaoDich.setText("TEST-REF");var listeners=view.cmbHoaDon.getActionListeners();for(var listener:listeners)view.cmbHoaDon.removeActionListener(listener);view.showChoices(List.of(invoice()),"TESTHD01");for(var listener:listeners)view.cmbHoaDon.addActionListener(listener);view.showForm(form);view.pickerEnabled(true);view.lblTrangThai.setText("Đang xem hóa đơn TESTHD01 · dữ liệu tổng hợp kiểm tra bố cục.");form.lblTrangThai.setText("Kiểm tra khoản thu và xác nhận đã nhận tiền thực tế trước khi lưu.");check(form.lblPhanBo.getText().contains("Khớp")&&form.lblNoSauThu.getText().contains("200.000"),"Allocation and remaining-debt preview exact");}
-            case INVOICE_CANCELLATIONS -> {var view=(CancellationPanel)panel;var request=new ThongTinYeuCauHuyHoaDon("TESTYC01","TESTHD01","TESTBN","[KIỂM THỬ] Nguyễn An",invoice().tongTien(),invoice().daThu(),"TESTACC",LocalDateTime.of(2026,10,31,11,0),"[KIỂM THỬ] Cần kiểm tra lại chứng từ",ThongTinYeuCauHuyHoaDon.TrangThai.CHO_DUYET,null,null,null);view.showRows(List.of(request));select(view.tblYeuCau);view.showDetail(new CancellationService.Detail(request,detail()));view.buttons(false,true);view.lblTrangThai.setText("Hóa đơn đã có khoản thu: chặn duyệt hủy khi chưa có quy trình hoàn tiền.");}
+            case INVOICE_CANCELLATIONS -> {var view=(CancellationPanel)panel;var request=new ThongTinYeuCauHuyHoaDon("TESTYC01","TESTHD01","TESTBN","[KIỂM THỬ] Nguyễn An",invoice().tongTien(),invoice().daThu(),"TESTACC",LocalDateTime.of(2026,10,31,11,0),"[KIỂM THỬ] Cần kiểm tra lại chứng từ",ThongTinYeuCauHuyHoaDon.TrangThai.CHO_DUYET,null,null,null);view.showRows(List.of(request));select(view.tblYeuCau);view.showDetail(new ChiTietYeuCauHuy(request,detail()));view.buttons(false,true);view.lblTrangThai.setText("Hóa đơn đã có khoản thu: chặn duyệt hủy khi chưa có quy trình hoàn tiền.");}
             default -> throw new AssertionError(module);
         }
     }

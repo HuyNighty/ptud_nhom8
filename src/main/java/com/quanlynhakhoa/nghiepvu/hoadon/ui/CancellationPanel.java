@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.CancellationController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
@@ -53,7 +54,7 @@ public final class CancellationPanel extends JPanel implements RefreshableFeatur
     public String selectedId(){int index=tblYeuCau.getSelectedRow();if(index<0)return null;index=tblYeuCau.convertRowIndexToModel(index);return index<rows.size()?rows.get(index).maYeuCau():null;}
     public void showRows(List<ThongTinYeuCauHuyHoaDon> values){rows=List.of();requestModel.setRowCount(0);rows=List.copyOf(values);for(var y:rows)requestModel.addRow(new Object[]{y.maYeuCau(),y.maHoaDon(),y.maBenhNhan()+" · "+y.tenBenhNhan(),y.tongTien(),y.daThu(),y.maTaiKhoanTao(),y.thoiGianTao(),y.trangThai(),y.lyDo()});clearDetail();}
     public void clearDetail(){lineModel.setRowCount(0);paymentModel.setRowCount(0);txaThongTin.setText("Chọn yêu cầu để xem và xét duyệt");txaLyDoDuyet.setText("");buttons(false,false);}
-    public void showDetail(CancellationService.Detail detail){
+    public void showDetail(ChiTietYeuCauHuy detail){
         clearDetail();var y=detail.request();var h=detail.invoice().hoaDon();
         txaThongTin.setText("Yêu cầu "+y.maYeuCau()+" · Hóa đơn "+h.maHoaDon()+" · "+h.trangThai()+"\nBệnh nhân: "+h.maBenhNhan()+" · "+h.tenBenhNhan()+"\nTổng: "+BillingUi.vnd(h.tongTien())+" · Đã thu: "+BillingUi.vnd(h.daThu())+" · Còn nợ: "+BillingUi.vnd(h.conNo())+"\nNgười gửi: "+y.maTaiKhoanTao()+" · "+BillingUi.time(y.thoiGianTao())+"\nLý do: "+y.lyDo()+"\nKết quả: "+y.trangThai()+" · Người xử lý: "+(y.maTaiKhoanDuyet()==null?"—":y.maTaiKhoanDuyet())+" · "+BillingUi.time(y.thoiGianDuyet())+"\nÝ kiến: "+(y.lyDoDuyet()==null?"":y.lyDoDuyet()));
         txaThongTin.setCaretPosition(0);

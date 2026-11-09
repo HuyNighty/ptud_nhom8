@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.model.hoadon.TongHopCongNoBenhNhan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.BillingChangeBus;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -17,7 +18,7 @@ import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;
 public final class LatestShellUiSelfTest {
     private static ThongTinHoaDon invoice(String id,String patient,String total,String paid,InvoiceStatus status){return new ThongTinHoaDon(id,"NV1",patient,"Synthetic "+patient,null,LocalDateTime.now(),status,new BigDecimal(total),new BigDecimal(paid),BigDecimal.ZERO);}
     public static void main(String[] args)throws Exception {
-        List<PatientDebt> grouped=DebtService.byPatient(List.of(invoice("H1","B1","300","100",InvoiceStatus.THANH_TOAN_MOT_PHAN),invoice("H2","B1","100","0",InvoiceStatus.CHUA_THANH_TOAN),invoice("H3","B2","100","0",InvoiceStatus.DA_HUY),invoice("H4","B3","100","100",InvoiceStatus.DA_THANH_TOAN)));
+        List<TongHopCongNoBenhNhan> grouped=DebtService.byPatient(List.of(invoice("H1","B1","300","100",InvoiceStatus.THANH_TOAN_MOT_PHAN),invoice("H2","B1","100","0",InvoiceStatus.CHUA_THANH_TOAN),invoice("H3","B2","100","0",InvoiceStatus.DA_HUY),invoice("H4","B3","100","100",InvoiceStatus.DA_THANH_TOAN)));
         check(grouped.size()==1&&grouped.getFirst().invoices().size()==2&&grouped.getFirst().debt().intValueExact()==300,"patient aggregation retains outstanding invoices and excludes cancelled/paid");
         final DesktopSession session=session(Role.SYSTEM_ADMIN);final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();
         final FeatureJdbcDouble unrelatedJdbc=new FeatureJdbcDouble();final DesktopSession unrelated=session(Role.CLINIC_MANAGER);
