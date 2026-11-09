@@ -9,7 +9,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.*;
@@ -30,7 +30,7 @@ public final class ServiceBillingSelfTest {
     }
     public static DesktopSession session(VaiTroHeThong role) { return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "TST_ACC", role, false)); }
     private static BigDecimal money(String value) { return new BigDecimal(value); }
-    private static DentalService value(String price) { return new DentalService(" TST1 ", " Dịch vụ kiểm thử ", money(price), " ", false, true); }
+    private static DichVuNhaKhoa value(String price) { return new DichVuNhaKhoa(" TST1 ", " Dịch vụ kiểm thử ", money(price), " ", false, true); }
     private static ThongTinThanhToan payment(String id, String amount, boolean cancelled) {
         return new ThongTinThanhToan(id, "H1", LocalDateTime.of(2026, 1, 1, 8, 0), money(amount), PhuongThucThanhToan.TIEN_MAT,
                 null, money("999999"), cancelled ? TrangThaiThanhToan.DA_HUY : TrangThaiThanhToan.THANH_CONG, "NV1", null, null, null);
@@ -64,8 +64,8 @@ public final class ServiceBillingSelfTest {
         expect(IllegalArgumentException.class, new Action() { public void run() { new DongChiTietHoaDon(1, "H1", "D1", "T1", null, 1, money("1")); } });
         expect(IllegalArgumentException.class, new Action() { public void run() { new DongChiTietHoaDon(1, "H1", "D1", null, null, 0, money("1")); } });
         // A price catalogue update cannot mutate immutable historical unit prices or rows.
-        DentalService changed = value("9999");
-        DentalService stopped = new DentalService(changed.maDichVu(), changed.tenDichVu(), changed.donGia(), null, false, false);
+        DichVuNhaKhoa changed = value("9999");
+        DichVuNhaKhoa stopped = new DichVuNhaKhoa(changed.maDichVu(), changed.tenDichVu(), changed.donGia(), null, false, false);
         check(!stopped.dangApDung() && BillingCalculator.total(lines).intValueExact() == 300, "historical price/link retained");
     }
     private static void permissions() throws Exception {
@@ -98,13 +98,13 @@ public final class ServiceBillingSelfTest {
         }
         check(ServiceCatalogService.parsePrice(" 0 ").signum() == 0, "zero allowed");
         check(ServiceCatalogService.parsePrice("999999999999999999").precision() == 18, "max precision");
-        DentalService normalized = ServiceCatalogService.validate(value("0"));
+        DichVuNhaKhoa normalized = ServiceCatalogService.validate(value("0"));
         check(normalized.maDichVu().equals("TST1") && normalized.moTa() == null && normalized.tenDichVu().equals("Dịch vụ kiểm thử"), "trim/null");
         final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final ServiceCatalogService service = new ServiceCatalogService(session(VaiTroHeThong.CLINIC_MANAGER), jdbc);
-        for (final DentalService invalid : List.of(new DentalService("X".repeat(11), "Name", money("1"), null, false, true),
-                new DentalService("ĐV1", "Name", money("1"), null, false, true), new DentalService("D V", "Name", money("1"), null, false, true),
-                new DentalService("D1", " ", money("1"), null, false, true), new DentalService("D1", "X".repeat(101), money("1"), null, false, true),
-                new DentalService("D1", "Name", money("1"), "X".repeat(301), false, true), value("-1"), value("0.1"), value("1000000000000000000"))) {
+        for (final DichVuNhaKhoa invalid : List.of(new DichVuNhaKhoa("X".repeat(11), "Name", money("1"), null, false, true),
+                new DichVuNhaKhoa("ĐV1", "Name", money("1"), null, false, true), new DichVuNhaKhoa("D V", "Name", money("1"), null, false, true),
+                new DichVuNhaKhoa("D1", " ", money("1"), null, false, true), new DichVuNhaKhoa("D1", "X".repeat(101), money("1"), null, false, true),
+                new DichVuNhaKhoa("D1", "Name", money("1"), "X".repeat(301), false, true), value("-1"), value("0.1"), value("1000000000000000000"))) {
             expect(IllegalArgumentException.class, new Action() { public void run() throws Exception { service.save(invalid, true); } });
         }
         check(jdbc.opens == 0, "invalid data before connection");

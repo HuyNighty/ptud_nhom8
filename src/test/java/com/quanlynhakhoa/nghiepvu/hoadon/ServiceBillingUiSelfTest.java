@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -44,8 +44,8 @@ public final class ServiceBillingUiSelfTest {
         } });
         check(jdbc.opens == 0, "constructors must not open JDBC");
         edt(new Action() { public void run() throws Exception {
-            panel[0].showRows(List.of(new DentalService("B", "B", new BigDecimal("20"), null, false, true),
-                    new DentalService("A", "A", new BigDecimal("100"), null, true, false)));
+            panel[0].showRows(List.of(new DichVuNhaKhoa("B", "B", new BigDecimal("20"), null, false, true),
+                    new DichVuNhaKhoa("A", "A", new BigDecimal("100"), null, true, false)));
             JTable tblDichVu = field(panel[0], "tblDichVu", JTable.class);
             tblDichVu.getRowSorter().toggleSortOrder(0); tblDichVu.setRowSelectionInterval(0, 0);
             check(panel[0].selected().maDichVu().equals("A"), "view to model index after sort");
@@ -112,7 +112,7 @@ public final class ServiceBillingUiSelfTest {
         final ServiceCatalogPanel[] expiredPanel = new ServiceCatalogPanel[1];
         edt(new Action() { public void run() throws Exception {
             expiredPanel[0] = new ServiceCatalogPanel(expiredSession, delayed);
-            expiredPanel[0].showForm(new DentalService("TST1", "Synthetic", BigDecimal.ONE, null, false, true));
+            expiredPanel[0].showForm(new DichVuNhaKhoa("TST1", "Synthetic", BigDecimal.ONE, null, false, true));
             field(expiredPanel[0], "btnTaiLai", JButton.class).doClick();
         } });
         check(delayed.opened.await(5, TimeUnit.SECONDS), "delayed query started");

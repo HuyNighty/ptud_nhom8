@@ -7,8 +7,8 @@ import com.quanlynhakhoa.nghiepvu.benhnhan.dao.BenhNhanDao;
 import com.quanlynhakhoa.nghiepvu.benhnhan.dao.HoSoBenhAnDao;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.DuLieuDaThayDoiException;
 import com.quanlynhakhoa.nghiepvu.lichhen.dao.LichHenDao;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.BacSi;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.LichHen;
+import com.quanlynhakhoa.model.lichhen.BacSiChonLichHen;
+import com.quanlynhakhoa.entity.LichHen;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -62,7 +62,7 @@ public class LichHenService {
         return lichHenDao.layDanhSachTheoNgay(ngay, tuKhoa);
     }
 
-    public ArrayList<BacSi> layDanhSachBacSi() throws SQLException {
+    public ArrayList<BacSiChonLichHen> layDanhSachBacSi() throws SQLException {
         phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_READ);
         return lichHenDao.layDanhSachBacSi();
     }
@@ -309,14 +309,14 @@ public class LichHenService {
         return traCuuBenhNhan.timBenhNhan(tuKhoa);
     }
 
-    public ArrayList<BacSi> layBacSiDangTrongCa() throws SQLException {
+    public ArrayList<BacSiChonLichHen> layBacSiDangTrongCa() throws SQLException {
         phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
-        ArrayList<BacSi> tatCaBacSi = lichHenDao.layDanhSachBacSi();
-        ArrayList<BacSi> danhSachBacSiTrongCa = new ArrayList<>();
+        ArrayList<BacSiChonLichHen> tatCaBacSi = lichHenDao.layDanhSachBacSi();
+        ArrayList<BacSiChonLichHen> danhSachBacSiTrongCa = new ArrayList<>();
         LocalDateTime bayGio = LocalDateTime.now();
 
         try (Connection ketNoi = lichHenDao.moKetNoi()) {
-            for (BacSi bacSi : tatCaBacSi) {
+            for (BacSiChonLichHen bacSi : tatCaBacSi) {
                 if (dangTrongCa(ketNoi, bacSi.getMaNhanVien(), bayGio)) {
                     int soNguoiDangCho = lichHenDao.demNguoiDangCho(ketNoi, bacSi.getMaNhanVien(), bayGio.toLocalDate());
                     bacSi.setSoNguoiDangCho(soNguoiDangCho);

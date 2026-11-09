@@ -8,7 +8,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.awt.*;
@@ -28,7 +28,7 @@ public final class ServiceBillingPreview {
                 try {
                     FeatureJdbcDouble jdbc = new FeatureJdbcDouble();
                     ServiceCatalogPanel pnlCatalog = new ServiceCatalogPanel(ServiceBillingSelfTest.session(VaiTroHeThong.CLINIC_MANAGER), jdbc);
-                    DentalService value = new DentalService("TST001", "[KIỂM THỬ] Dịch vụ tổng hợp", new BigDecimal("123456"), "Dữ liệu tổng hợp chỉ dùng xem bố cục.", true, true);
+                    DichVuNhaKhoa value = new DichVuNhaKhoa("TST001", "[KIỂM THỬ] Dịch vụ tổng hợp", new BigDecimal("123456"), "Dữ liệu tổng hợp chỉ dùng xem bố cục.", true, true);
                     pnlCatalog.showRows(List.of(value)); pnlCatalog.showForm(value);
                     pnlCatalog.status("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · chưa kiểm thử SQL thật");
                     render(pnlCatalog, "target/service-catalog-preview.png");

@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
@@ -41,7 +41,7 @@ public final class ServiceSaveFailureSelfTest {
         SwingUtilities.invokeAndWait(() -> {
             try {
                 panel[0] = new ServiceCatalogPanel(session(VaiTroHeThong.SYSTEM_ADMIN), provider);
-                if (scenario.equals("edit")) panel[0].showForm(new DentalService(
+                if (scenario.equals("edit")) panel[0].showForm(new DichVuNhaKhoa(
                         "KEEP1", "Original", BigDecimal.TEN, "Original", false, true));
                 field(panel[0], "txtMaDichVu", JTextField.class).setText("KEEP1");
                 field(panel[0], "txtTenDichVu", JTextField.class).setText("Tên đang sửa");

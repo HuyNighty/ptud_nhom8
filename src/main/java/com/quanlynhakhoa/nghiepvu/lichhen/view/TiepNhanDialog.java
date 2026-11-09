@@ -3,7 +3,7 @@ package com.quanlynhakhoa.nghiepvu.lichhen.view;
 import com.quanlynhakhoa.nghiepvu.benhnhan.hopdong.BenhNhanTomTat;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.BieuTuong;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.MauNut;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.BacSi;
+import com.quanlynhakhoa.model.lichhen.BacSiChonLichHen;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -35,7 +35,7 @@ public class TiepNhanDialog extends JDialog {
     private JTextField txtTimBenhNhan;
     private JButton btnTimBenhNhan;
     private JComboBox<BenhNhanTomTat> cmbBenhNhan;
-    private JComboBox<BacSi> cmbBacSi;
+    private JComboBox<BacSiChonLichHen> cmbBacSi;
     private JTextArea txaLyDoDen;
     private JScrollPane scrLyDoDen;
 
@@ -140,9 +140,9 @@ public class TiepNhanDialog extends JDialog {
         }
     }
 
-    public void hienDanhSachBacSi(ArrayList<BacSi> danhSachBacSi) {
+    public void hienDanhSachBacSi(ArrayList<BacSiChonLichHen> danhSachBacSi) {
         cmbBacSi.removeAllItems();
-        for (BacSi bacSi : danhSachBacSi) {
+        for (BacSiChonLichHen bacSi : danhSachBacSi) {
             cmbBacSi.addItem(bacSi);
         }
         if (danhSachBacSi.isEmpty()) {
@@ -154,8 +154,8 @@ public class TiepNhanDialog extends JDialog {
         return (BenhNhanTomTat) cmbBenhNhan.getSelectedItem();
     }
 
-    public BacSi layBacSiDaChon() {
-        return (BacSi) cmbBacSi.getSelectedItem();
+    public BacSiChonLichHen layBacSiDaChon() {
+        return (BacSiChonLichHen) cmbBacSi.getSelectedItem();
     }
 
     public String layLyDoDen() {

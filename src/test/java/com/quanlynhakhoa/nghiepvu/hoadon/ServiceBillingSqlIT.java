@@ -8,7 +8,7 @@ import com.quanlynhakhoa.hethong.xacthuc.*;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.io.Console;
@@ -39,9 +39,9 @@ public final class ServiceBillingSqlIT {
             ServiceCatalogService catalog = new ServiceCatalogService(session, TeamDevConnection::open);
             if (args[0].equals("--write")) {
                 if (!catalog.find(args[1], null).isEmpty()) throw new IllegalArgumentException("Test ID exists; choose a fresh ID. No automatic overwrite/retry.");
-                catalog.save(new DentalService(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", BigDecimal.ZERO, "Dữ liệu kiểm thử giữ lại, không xóa.", false, true), true);
+                catalog.save(new DichVuNhaKhoa(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", BigDecimal.ZERO, "Dữ liệu kiểm thử giữ lại, không xóa.", false, true), true);
                 verify(catalog, args[1], "0", true);
-                catalog.save(new DentalService(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", new BigDecimal("123456"), "Dữ liệu kiểm thử giữ lại, không xóa.", true, true), false);
+                catalog.save(new DichVuNhaKhoa(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", new BigDecimal("123456"), "Dữ liệu kiểm thử giữ lại, không xóa.", true, true), false);
                 verify(catalog, args[1], "123456", true);
                 catalog.changeActive(args[1], false); verify(catalog, args[1], "123456", false);
                 catalog.changeActive(args[1], true);
@@ -53,7 +53,7 @@ public final class ServiceBillingSqlIT {
         } finally { session.logout(); }
     }
     private static void verify(ServiceCatalogService service, String id, String price, boolean active) throws Exception {
-        for (DentalService value : service.find(id, null)) {
+        for (DichVuNhaKhoa value : service.find(id, null)) {
             if (value.maDichVu().equals(id) && value.donGia().compareTo(new BigDecimal(price)) == 0 && value.dangApDung() == active) return;
         }
         throw new AssertionError("Service readback failed");

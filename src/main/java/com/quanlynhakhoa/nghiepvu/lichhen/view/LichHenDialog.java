@@ -4,8 +4,8 @@ import com.quanlynhakhoa.nghiepvu.benhnhan.hopdong.BenhNhanTomTat;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.BieuTuong;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.ChonNgayDialog;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.MauNut;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.BacSi;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.LichHen;
+import com.quanlynhakhoa.model.lichhen.BacSiChonLichHen;
+import com.quanlynhakhoa.entity.LichHen;
 import com.quanlynhakhoa.nghiepvu.lichhen.service.LichHenService;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -46,7 +46,7 @@ public class LichHenDialog extends JDialog {
     private JTextField txtTimBenhNhan;
     private JButton btnTimBenhNhan;
     private JComboBox<BenhNhanTomTat> cmbBenhNhan;
-    private JComboBox<BacSi> cmbBacSi;
+    private JComboBox<BacSiChonLichHen> cmbBacSi;
     private JTextField txtNgayHen;
     private JButton btnChonNgay;
     private JComboBox<LocalTime> cmbGioHen;
@@ -208,9 +208,9 @@ public class LichHenDialog extends JDialog {
         }
     }
 
-    public void hienDanhSachBacSi(ArrayList<BacSi> danhSachBacSi, String maBacSiChonSan) {
+    public void hienDanhSachBacSi(ArrayList<BacSiChonLichHen> danhSachBacSi, String maBacSiChonSan) {
         cmbBacSi.removeAllItems();
-        for (BacSi bacSi : danhSachBacSi) {
+        for (BacSiChonLichHen bacSi : danhSachBacSi) {
             cmbBacSi.addItem(bacSi);
             if (bacSi.getMaNhanVien().equals(maBacSiChonSan)) {
                 cmbBacSi.setSelectedItem(bacSi);
@@ -246,12 +246,12 @@ public class LichHenDialog extends JDialog {
         return (BenhNhanTomTat) cmbBenhNhan.getSelectedItem();
     }
 
-    public BacSi layBacSiDaChon() {
-        return (BacSi) cmbBacSi.getSelectedItem();
+    public BacSiChonLichHen layBacSiDaChon() {
+        return (BacSiChonLichHen) cmbBacSi.getSelectedItem();
     }
 
     public String layMaBacSiDaChon() {
-        BacSi bacSi = layBacSiDaChon();
+        BacSiChonLichHen bacSi = layBacSiDaChon();
         if (bacSi == null) {
             return null;
         }
@@ -314,7 +314,7 @@ public class LichHenDialog extends JDialog {
         return btnTimBenhNhan;
     }
 
-    public JComboBox<BacSi> getCmbBacSi() {
+    public JComboBox<BacSiChonLichHen> getCmbBacSi() {
         return cmbBacSi;
     }
 

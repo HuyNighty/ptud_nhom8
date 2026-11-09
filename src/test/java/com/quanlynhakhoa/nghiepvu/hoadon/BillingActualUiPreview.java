@@ -11,7 +11,7 @@ import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.dichvu.dao.ServiceCatalogDao;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.hethong.tinhnang.*;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
@@ -30,7 +30,7 @@ import javax.swing.event.ListSelectionListener;
 
 /** Read actual permitted dev data before rendering. No invented business rows or authenticated GUI session. */
 public final class BillingActualUiPreview {
-    private record Data(List<DentalService> services,List<ThongTinHoaDon> invoices,List<ThongTinYeuCauHuyHoaDon> requests,List<LuaChonLapHoaDon> patients,List<LuaChonLapHoaDon> visits,Map<String,DuLieuChiTietHoaDon> details){}
+    private record Data(List<DichVuNhaKhoa> services,List<ThongTinHoaDon> invoices,List<ThongTinYeuCauHuyHoaDon> requests,List<LuaChonLapHoaDon> patients,List<LuaChonLapHoaDon> visits,Map<String,DuLieuChiTietHoaDon> details){}
     private static Data read()throws Exception{
         if(!TeamDevConnection.hasLocalConfig())throw new IllegalStateException("Approved local dev configuration required");
         try(Connection c=TeamDevConnection.open()){

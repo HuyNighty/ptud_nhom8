@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.hoadon;
 
 
 
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.*;
@@ -13,7 +13,7 @@ public final class CatalogSeparationSelfTest {
     public static void main(String[] args)throws Exception {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final DesktopSession principal=session(VaiTroHeThong.CLINIC_MANAGER);
         final ServiceCatalogService service=new ServiceCatalogService(principal,jdbc);
-        final DentalService value=new DentalService("DV1","Name",new BigDecimal("9999"),"Description",true,true);
+        final DichVuNhaKhoa value=new DichVuNhaKhoa("DV1","Name",new BigDecimal("9999"),"Description",true,true);
         service.saveInformation(value,false);
         check(jdbc.sql.getFirst().contains("SET tenDichVu=")&&!jdbc.sql.getFirst().contains("donGia="),"information updates cannot overwrite catalogue price");
         int before=jdbc.sql.size();service.savePrice(value);

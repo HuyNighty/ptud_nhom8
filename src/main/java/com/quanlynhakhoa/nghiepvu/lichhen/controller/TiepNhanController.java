@@ -2,8 +2,8 @@ package com.quanlynhakhoa.nghiepvu.lichhen.controller;
 
 import com.quanlynhakhoa.nghiepvu.benhnhan.hopdong.BenhNhanTomTat;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.DuLieuDaThayDoiException;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.BacSi;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.LichHen;
+import com.quanlynhakhoa.model.lichhen.BacSiChonLichHen;
+import com.quanlynhakhoa.entity.LichHen;
 import com.quanlynhakhoa.nghiepvu.lichhen.service.LichHenService;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.TiepNhanDialog;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.TiepNhanPanel;
@@ -190,9 +190,9 @@ public class TiepNhanController implements ActionListener, MouseListener {
         dangXuLyForm = true;
         winDangMo.datDangXuLy(true);
 
-        new SwingWorker<ArrayList<BacSi>, Void>() {
+        new SwingWorker<ArrayList<BacSiChonLichHen>, Void>() {
             @Override
-            protected ArrayList<BacSi> doInBackground() throws Exception {
+            protected ArrayList<BacSiChonLichHen> doInBackground() throws Exception {
                 return lichHenService.layBacSiDangTrongCa();
             }
 
@@ -249,7 +249,7 @@ public class TiepNhanController implements ActionListener, MouseListener {
         }
         TiepNhanDialog winDangMo = winTiepNhan;
         BenhNhanTomTat benhNhan = winDangMo.layBenhNhanDaChon();
-        BacSi bacSi = winDangMo.layBacSiDaChon();
+        BacSiChonLichHen bacSi = winDangMo.layBacSiDaChon();
         if (benhNhan == null) {
             winDangMo.hienLoi("Chọn bệnh nhân.");
             return;

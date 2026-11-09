@@ -1,11 +1,11 @@
-package com.quanlynhakhoa.nghiepvu.lichhen.entity;
+package com.quanlynhakhoa.model.lichhen;
 
-public class BacSi {
+public class BacSiChonLichHen {
     private String maNhanVien;
     private String hoTen;
     private int soNguoiDangCho = -1;
 
-    public BacSi(String maNhanVien, String hoTen) {
+    public BacSiChonLichHen(String maNhanVien, String hoTen) {
         this.maNhanVien = maNhanVien;
         this.hoTen = hoTen;
     }

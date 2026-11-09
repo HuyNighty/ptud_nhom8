@@ -3,8 +3,8 @@ package com.quanlynhakhoa.nghiepvu.lichhen.controller;
 import com.quanlynhakhoa.nghiepvu.benhnhan.hopdong.BenhNhanTomTat;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.DuLieuDaThayDoiException;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.ChonNgayDialog;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.BacSi;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.LichHen;
+import com.quanlynhakhoa.model.lichhen.BacSiChonLichHen;
+import com.quanlynhakhoa.entity.LichHen;
 import com.quanlynhakhoa.nghiepvu.lichhen.service.LichHenService;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.LichHenDialog;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.LichHenPanel;
@@ -294,9 +294,9 @@ public class LichHenController implements ActionListener, MouseListener {
         dangXuLyForm = true;
         winDangMo.datDangXuLy(true);
 
-        new SwingWorker<ArrayList<BacSi>, Void>() {
+        new SwingWorker<ArrayList<BacSiChonLichHen>, Void>() {
             @Override
-            protected ArrayList<BacSi> doInBackground() throws Exception {
+            protected ArrayList<BacSiChonLichHen> doInBackground() throws Exception {
                 return lichHenService.layDanhSachBacSi();
             }
 

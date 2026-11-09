@@ -16,7 +16,7 @@ import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.hethong.tinhnang.*;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
@@ -67,7 +67,7 @@ public final class BillingLayoutSelfTest {
     private static void empty(Module module,JPanel panel){switch(module){case SERVICE_CATALOG -> ((ServiceCatalogPanel)panel).showRows(List.of());case BILLING -> ((InvoicePanel)panel).showRows(List.of());case DEBTS -> ((DebtPanel)panel).showPatients(List.of());case PAYMENTS -> {var view=(PaymentPanel)panel;view.showChoices(List.of(),null);view.showForm(new PaymentForm());view.pickerEnabled(true);}case INVOICE_CANCELLATIONS -> ((CancellationPanel)panel).showRows(List.of());default -> throw new AssertionError(module);}}
     private static void seed(Module module,JPanel panel){
         switch(module){
-            case SERVICE_CATALOG -> {var view=(ServiceCatalogPanel)panel;var item=new DentalService("TESTDV","[KIỂM THỬ] Điều trị răng",new BigDecimal("1500000"),"Giá hiện hành; hóa đơn cũ giữ giá đã chốt.",false,true);view.showRows(List.of(item));view.showForm(item);}
+            case SERVICE_CATALOG -> {var view=(ServiceCatalogPanel)panel;var item=new DichVuNhaKhoa("TESTDV","[KIỂM THỬ] Điều trị răng",new BigDecimal("1500000"),"Giá hiện hành; hóa đơn cũ giữ giá đã chốt.",false,true);view.showRows(List.of(item));view.showForm(item);}
             case BILLING -> {var view=(InvoicePanel)panel;view.showRows(List.of(invoice()));select(field(view,"tblHoaDon",JTable.class));view.showDetail(detail());view.setBusy(false);check(field(view,"btnThanhToan",JButton.class).isEnabled(),"Pay enabled on eligible selected invoice");}
             case DEBTS -> {var view=(DebtPanel)panel;view.showPatients(DebtService.byPatient(List.of(invoice())));select(view.tblBenhNhan);view.selectPatient();select(view.tblHoaDon);view.showDetail(detail());view.busy(false);check(view.btnThuNo.isEnabled()&&view.btnXemChiTiet.isEnabled(),"Debt actions bound to selected invoice");}
             case PAYMENTS -> {var view=(PaymentPanel)panel;var form=new PaymentForm();form.cmbPhuongThuc.setSelectedItem(PhuongThucNhapThanhToan.BANK);form.showInvoice(detail());form.busy(false,true,false);form.txtSoTien.setText("800.000");form.txtKhachDua.setText("300.000");form.txtMaGiaoDich.setText("TEST-REF");var listeners=view.cmbHoaDon.getActionListeners();for(var listener:listeners)view.cmbHoaDon.removeActionListener(listener);view.showChoices(List.of(invoice()),"TESTHD01");for(var listener:listeners)view.cmbHoaDon.addActionListener(listener);view.showForm(form);view.pickerEnabled(true);view.lblTrangThai.setText("Đang xem hóa đơn TESTHD01 · dữ liệu tổng hợp kiểm tra bố cục.");form.lblTrangThai.setText("Kiểm tra khoản thu và xác nhận đã nhận tiền thực tế trước khi lưu.");check(form.lblPhanBo.getText().contains("Khớp")&&form.lblNoSauThu.getText().contains("200.000"),"Allocation and remaining-debt preview exact");}
