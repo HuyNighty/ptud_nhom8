@@ -3,8 +3,8 @@ package com.quanlynhakhoa.hethong.giaodien;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.AccessDeniedException;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.util.List;
 
 /** R4-A2: Pure Java navigation tests. No Swing JFrame or database is instantiated. */

@@ -5,7 +5,7 @@ import com.quanlynhakhoa.entity.HoSoBenhAn;
 import com.quanlynhakhoa.service.benhnhan.BenhNhanService;
 import com.quanlynhakhoa.service.benhnhan.HoSoBenhAnService;
 import com.quanlynhakhoa.view.benhnhan.HoSoBenhAnPanel;
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;

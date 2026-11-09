@@ -6,7 +6,7 @@ import com.quanlynhakhoa.entity.HoSoBenhAn;
 import com.quanlynhakhoa.entity.LuotKham;
 import com.quanlynhakhoa.service.benhnhan.BenhNhanService;
 import com.quanlynhakhoa.service.benhnhan.HoSoBenhAnService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;

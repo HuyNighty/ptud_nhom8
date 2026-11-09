@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.dao.kho.nhacungcap;
 
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.entity.NhaCungCap;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

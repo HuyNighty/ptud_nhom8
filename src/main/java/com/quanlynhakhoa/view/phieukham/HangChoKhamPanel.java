@@ -1,11 +1,11 @@
 package com.quanlynhakhoa.view.phieukham;
 
 import com.quanlynhakhoa.model.phieukham.KetQuaHangChoKham;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.model.phieukham.DongHangChoKham;
 import com.quanlynhakhoa.service.phieukham.HangChoKhamService;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;

@@ -4,7 +4,7 @@ import com.quanlynhakhoa.view.hoadon.HoaDonPanel;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.List;

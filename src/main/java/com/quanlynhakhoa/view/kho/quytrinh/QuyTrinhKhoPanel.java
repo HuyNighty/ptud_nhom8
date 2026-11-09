@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.view.kho.quytrinh;
 
 import com.quanlynhakhoa.controller.kho.quytrinh.QuyTrinhKhoController;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.view.kho.cungung.YeuCauCungUngPanel;
 import com.quanlynhakhoa.service.kho.quytrinh.QuyTrinhKhoService;
 import java.awt.BorderLayout;

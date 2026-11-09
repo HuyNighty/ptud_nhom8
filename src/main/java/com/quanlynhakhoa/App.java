@@ -1,11 +1,11 @@
 package com.quanlynhakhoa;
 
-import com.quanlynhakhoa.hatang.cosodulieu.Database;
-import com.quanlynhakhoa.hatang.cosodulieu.DbInspector;
-import com.quanlynhakhoa.hethong.xacthuc.BCryptPasswordVerifier;
-import com.quanlynhakhoa.hethong.xacthuc.JdbcAuthService;
-import com.quanlynhakhoa.hethong.xacthuc.LoginPolicy;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.Database;
+import com.quanlynhakhoa.config.DbInspector;
+import com.quanlynhakhoa.security.BCryptPasswordVerifier;
+import com.quanlynhakhoa.security.JdbcAuthService;
+import com.quanlynhakhoa.security.LoginPolicy;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.giaodien.LoginFrame;
 import java.time.Clock;
 import javax.swing.SwingUtilities;

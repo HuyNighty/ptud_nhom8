@@ -3,7 +3,7 @@ package com.quanlynhakhoa.hethong.giaodien;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureRegistry;
 import com.quanlynhakhoa.enums.Module;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;

@@ -1,10 +1,10 @@
 package com.quanlynhakhoa.service.dieutri;
 
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
-import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.AccessDeniedException;
+import com.quanlynhakhoa.security.AuthorizationService;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.SQLException;
 import java.time.LocalDate;

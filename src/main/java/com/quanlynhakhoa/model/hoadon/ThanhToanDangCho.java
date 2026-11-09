@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.model.hoadon;
 
 
-import com.quanlynhakhoa.hethong.phanquyen.*;
+
 import java.sql.*;
 import java.util.*;
 

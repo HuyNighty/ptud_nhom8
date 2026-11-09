@@ -1,19 +1,19 @@
 package com.quanlynhakhoa.view.nhanvien;
 
 import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.model.nhanvien.DongDanhSachNhanVien;
 import com.quanlynhakhoa.service.nhanvien.DanhSachNhanVienService;
 import com.quanlynhakhoa.service.nhanvien.TaoNhanVienService;
 import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
 import com.quanlynhakhoa.model.nhanvien.NhanChucDanh;
-import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
+import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;

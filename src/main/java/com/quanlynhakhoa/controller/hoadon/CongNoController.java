@@ -7,7 +7,7 @@ import com.quanlynhakhoa.service.hoadon.CongNoService;
 import com.quanlynhakhoa.model.hoadon.TongHopCongNoBenhNhan;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.event.*;
 import java.time.LocalDate;
 import java.util.List;

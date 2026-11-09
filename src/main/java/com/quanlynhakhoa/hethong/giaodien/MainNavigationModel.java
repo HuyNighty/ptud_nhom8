@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.hethong.giaodien;
 
 import com.quanlynhakhoa.enums.Module;
-import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.NavigationPolicy;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.util.List;
 import java.util.Objects;
 

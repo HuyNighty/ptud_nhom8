@@ -18,7 +18,7 @@ import com.quanlynhakhoa.model.hoadon.ThanhToanDangCho;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.model.hoadon.DuLieuThanhToanDaTai;
 import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.math.BigDecimal;
 import java.awt.event.*;
 import java.util.*;

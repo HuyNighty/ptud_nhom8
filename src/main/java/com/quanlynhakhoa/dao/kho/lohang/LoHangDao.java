@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.dao.kho.lohang;
 
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.model.kho.ThongTinLoHang;
 import java.sql.Connection;
 import java.sql.Date;

@@ -1,5 +1,8 @@
 package com.quanlynhakhoa.view.hoadon;
 
+import com.quanlynhakhoa.security.RolePermissionPolicy;
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
@@ -16,8 +19,7 @@ import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
 import com.quanlynhakhoa.service.hoadon.HoaDonService;
 import com.quanlynhakhoa.service.hoadon.NguonTinhPhiLamSang;
 import com.quanlynhakhoa.service.hoadon.InvoiceIdGenerator;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.hethong.phanquyen.*;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.List;

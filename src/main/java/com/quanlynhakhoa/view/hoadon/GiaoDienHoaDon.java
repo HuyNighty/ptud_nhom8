@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.view.hoadon;
 
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.text.NumberFormat;

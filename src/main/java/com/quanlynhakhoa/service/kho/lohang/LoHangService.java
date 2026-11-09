@@ -2,10 +2,10 @@ package com.quanlynhakhoa.service.kho.lohang;
 
 import com.quanlynhakhoa.dao.kho.lohang.LoHangDao;
 import com.quanlynhakhoa.model.kho.ThongTinLoHang;
-import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import java.sql.SQLException;
 import java.util.List;
 

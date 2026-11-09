@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.tinhnang;
 
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import javax.swing.JPanel;
 
 @FunctionalInterface

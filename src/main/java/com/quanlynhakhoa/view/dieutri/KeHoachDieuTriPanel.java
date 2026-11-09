@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.view.dieutri;
 
 import com.quanlynhakhoa.controller.dieutri.KeHoachDieuTriController;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.service.dieutri.KeHoachDieuTriService;
 import java.awt.BorderLayout;

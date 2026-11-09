@@ -1,11 +1,11 @@
 package com.quanlynhakhoa.service.kho.hopcapcuu;
 
 import com.quanlynhakhoa.model.kho.DongKiemTraCapCuu;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.security.AuthorizationService;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import com.quanlynhakhoa.dao.kho.hopcapcuu.HopCapCuuDao;
 import java.sql.Connection;
 import java.sql.SQLException;

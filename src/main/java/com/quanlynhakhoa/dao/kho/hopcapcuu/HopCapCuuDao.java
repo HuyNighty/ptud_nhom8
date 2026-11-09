@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.dao.kho.hopcapcuu;
 
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.model.kho.DongKiemTraCapCuu;
 import com.quanlynhakhoa.dao.kho.quytrinh.QuyTrinhKhoDao;
 import java.sql.*;

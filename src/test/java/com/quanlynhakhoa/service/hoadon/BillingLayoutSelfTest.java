@@ -26,7 +26,7 @@ import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.hethong.tinhnang.*;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.hethong.giaodien.MainFrame;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -85,7 +85,7 @@ public final class BillingLayoutSelfTest {
         try{SwingUtilities.invokeAndWait(new Runnable(){public void run(){
             DesktopSession session=ServiceBillingSelfTest.session(VaiTroHeThong.SYSTEM_ADMIN);MainFrame frame=null;
             try{
-                check(!com.quanlynhakhoa.hatang.phattrien.TeamDevConnection.hasLocalConfig(),"Synthetic principal must never use real SQL config");
+                check(!com.quanlynhakhoa.config.phattrien.TeamDevConnection.hasLocalConfig(),"Synthetic principal must never use real SQL config");
                 check(GiaoDienHoaDon.parseDate("31/10/2026").equals(LocalDate.of(2026,10,31)),"VN date parsing");try{GiaoDienHoaDon.parseDate("31/02/2026");throw new AssertionError("Impossible date accepted");}catch(IllegalArgumentException expected){checks++;}
                 check(GiaoDienHoaDon.moneyInput("1.500.000").equals(new BigDecimal("1500000")),"Grouped money exact");try{GiaoDienHoaDon.moneyInput("15.00");throw new AssertionError("Malformed grouping accepted");}catch(IllegalArgumentException expected){checks++;}
                 String error=GiaoDienHoaDon.error(new SQLException("secret SQL parameter must not be logged","S0005",229));check(!error.contains("S0005")&&!error.contains("229")&&error.contains("quyền"),"Human SQL error");

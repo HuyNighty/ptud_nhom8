@@ -1,15 +1,15 @@
 package com.quanlynhakhoa.service.phieukham;
 
 import com.quanlynhakhoa.model.phieukham.ThongTinPhanCongKham;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.dao.phieukham.CanLamSangDao;
 import com.quanlynhakhoa.dao.phieukham.PhieuKhamDao;
 import com.quanlynhakhoa.model.phieukham.DuLieuCanLamSang;
-import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.SQLException;

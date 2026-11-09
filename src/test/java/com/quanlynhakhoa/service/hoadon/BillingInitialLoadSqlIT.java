@@ -9,7 +9,7 @@ import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.dao.hoadon.HoaDonDao;
 import com.quanlynhakhoa.dao.hoadon.HuyHoaDonDao;
 import com.quanlynhakhoa.service.hoadon.CongNoService;

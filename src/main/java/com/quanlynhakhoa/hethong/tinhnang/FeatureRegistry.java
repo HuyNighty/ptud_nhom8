@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.hethong.tinhnang;
 
 import com.quanlynhakhoa.enums.Module;
-import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.NavigationPolicy;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;

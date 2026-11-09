@@ -4,7 +4,7 @@ import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.*;
@@ -24,7 +24,7 @@ public final class LatestMainShellSelfTest {
         String previous=System.getProperty("user.dir");System.setProperty("user.dir",empty.toString());
         try{SwingUtilities.invokeAndWait(new Runnable(){public void run(){
             DesktopSession session=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"SYNTHETIC",VaiTroHeThong.SYSTEM_ADMIN,false));
-            check(!com.quanlynhakhoa.hatang.phattrien.TeamDevConnection.hasLocalConfig(),"never run synthetic shell test against a configured DB");
+            check(!com.quanlynhakhoa.config.phattrien.TeamDevConnection.hasLocalConfig(),"never run synthetic shell test against a configured DB");
             MainFrame winMain=new MainFrame(session,new Runnable(){public void run(){}},FeatureBootstrap.createRegistry());
             try{
                 JMenuBar bar=menu(winMain.getContentPane());check(bar!=null,"latest main horizontal menu retained");

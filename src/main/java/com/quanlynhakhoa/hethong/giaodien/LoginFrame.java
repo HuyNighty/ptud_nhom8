@@ -1,9 +1,9 @@
 package com.quanlynhakhoa.hethong.giaodien;
 
 import com.quanlynhakhoa.security.KetQuaDangNhap;
-import com.quanlynhakhoa.hethong.xacthuc.DesktopLoginGate;
-import com.quanlynhakhoa.hethong.xacthuc.JdbcAuthService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopLoginGate;
+import com.quanlynhakhoa.security.JdbcAuthService;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;

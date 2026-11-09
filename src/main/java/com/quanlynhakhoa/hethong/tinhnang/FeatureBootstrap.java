@@ -15,8 +15,8 @@ import com.quanlynhakhoa.view.dieutri.KeHoachDieuTriPanel;
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.view.hoadon.HoaDonPanel;
 import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.view.lichlamviec.LichLamViecPanel;
 import javax.swing.JPanel;
 

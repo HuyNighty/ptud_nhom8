@@ -1,7 +1,6 @@
 package com.quanlynhakhoa.model.lichlamviec;
 
 import com.quanlynhakhoa.entity.CaLamViec;
-import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.sql.*;
 import java.util.*;
 

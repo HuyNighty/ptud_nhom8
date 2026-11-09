@@ -3,7 +3,7 @@ package com.quanlynhakhoa.view.kho.vattu;
 import com.quanlynhakhoa.controller.kho.vattu.VatTuController;
 import com.quanlynhakhoa.entity.VatTu;
 import com.quanlynhakhoa.service.kho.vattu.VatTuService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
