@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.controller;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.DonThuocData;
+import com.quanlynhakhoa.model.phieukham.DongChiTietDonThuoc;
+import com.quanlynhakhoa.model.phieukham.DuLieuDonThuoc;
 import com.quanlynhakhoa.nghiepvu.phieukham.service.DonThuocService;
 import com.quanlynhakhoa.nghiepvu.phieukham.view.DonThuocPanel;
 import java.util.List;
@@ -29,9 +29,9 @@ public final class DonThuocController {
         if (visitId.isBlank()) return;
         int requestVersion = ++loadVersion;
         view.setLoading(true, "Đang tải danh mục và đơn thuốc...");
-        new SwingWorker<DonThuocData, Void>() {
+        new SwingWorker<DuLieuDonThuoc, Void>() {
             @Override
-            protected DonThuocData doInBackground() throws Exception {
+            protected DuLieuDonThuoc doInBackground() throws Exception {
                 return service.taiDuLieu(visitId, doctorId);
             }
 
@@ -53,7 +53,7 @@ public final class DonThuocController {
 
     public void themThuoc() {
         try {
-            ChiTietDonThuoc item = view.taoChiTietDangNhap();
+            DongChiTietDonThuoc item = view.taoChiTietDangNhap();
             view.themVaoDanhSach(item);
         } catch (IllegalArgumentException ex) {
             view.showError(ex.getMessage());
@@ -63,7 +63,7 @@ public final class DonThuocController {
     public void luuDonThuoc() {
         String visitId = view.getMaPhieuKham();
         String doctorId = view.getMaBacSiPhuTrach();
-        List<ChiTietDonThuoc> items = view.layChiTietNhap();
+        List<DongChiTietDonThuoc> items = view.layChiTietNhap();
         String instructions = view.getLoiDan();
         if (visitId.isBlank()) {
             view.showError("Chọn phiếu khám cần kê đơn.");
@@ -79,7 +79,7 @@ public final class DonThuocController {
         runSave(visitId, doctorId, items, instructions, false);
     }
 
-    private void runSave(String visitId, String doctorId, List<ChiTietDonThuoc> items,
+    private void runSave(String visitId, String doctorId, List<DongChiTietDonThuoc> items,
                          String instructions, boolean acknowledgedWarnings) {
         view.setLoading(true, "Đang lưu đơn thuốc...");
         new SwingWorker<Void, Void>() {

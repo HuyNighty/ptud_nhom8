@@ -5,8 +5,8 @@ import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.CanLamSangDao;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.DonThuocDao;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.DonThuocData;
+import com.quanlynhakhoa.model.phieukham.DongChiTietDonThuoc;
+import com.quanlynhakhoa.model.phieukham.DuLieuDonThuoc;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
 import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
@@ -59,7 +59,7 @@ public final class DonThuocService {
         this.canLamSangDao = Objects.requireNonNull(canLamSangDao, "canLamSangDao");
     }
 
-    public DonThuocData taiDuLieu(String maPhieuKham, String maBacSiDuocChon)
+    public DuLieuDonThuoc taiDuLieu(String maPhieuKham, String maBacSiDuocChon)
             throws SQLException {
         authorization.require(session, Permission.MEDICAL_RECORD_READ);
         String visitId = validateId(maPhieuKham, "Mã phiếu khám");
@@ -69,16 +69,16 @@ public final class DonThuocService {
             Optional<DonThuocDao.DonThuocHeader> header =
                     dao.timDonThuocTheoPhieu(connection, visitId);
             if (header.isEmpty()) {
-                return new DonThuocData(medicines, List.of(), "", false);
+                return new DuLieuDonThuoc(medicines, List.of(), "", false);
             }
-            List<ChiTietDonThuoc> details = dao.danhSachChiTiet(
+            List<DongChiTietDonThuoc> details = dao.danhSachChiTiet(
                     connection, header.get().maDonThuoc());
-            return new DonThuocData(medicines, details, header.get().loiDan(), true);
+            return new DuLieuDonThuoc(medicines, details, header.get().loiDan(), true);
         }
     }
 
     public void luuDonThuoc(String maPhieuKham, String maBacSiDuocChon,
-                            List<ChiTietDonThuoc> requestedItems, String loiDan,
+                            List<DongChiTietDonThuoc> requestedItems, String loiDan,
                             boolean daXacNhanCanhBao) throws SQLException {
         authorization.require(session, Permission.MEDICAL_RECORD_UPDATE);
         String visitId = validateId(maPhieuKham, "Mã phiếu khám");
@@ -86,7 +86,7 @@ public final class DonThuocService {
         if (instructions.length() > MAX_LOI_DAN) {
             throw new IllegalArgumentException("Lời dặn tối đa 500 ký tự.");
         }
-        List<ChiTietDonThuoc> items = validateItems(requestedItems);
+        List<DongChiTietDonThuoc> items = validateItems(requestedItems);
 
         try (Connection connection = TeamDevConnection.open()) {
             connection.setAutoCommit(false);
@@ -101,13 +101,13 @@ public final class DonThuocService {
                     catalog.put(medicine.maThuoc(), medicine);
                 }
 
-                List<ChiTietDonThuoc> canonicalItems = new ArrayList<>();
-                for (ChiTietDonThuoc item : items) {
+                List<DongChiTietDonThuoc> canonicalItems = new ArrayList<>();
+                for (DongChiTietDonThuoc item : items) {
                     ThuocChonKeDon medicine = catalog.get(item.maThuoc());
                     if (medicine == null) {
                         throw new IllegalArgumentException("Không tìm thấy thuốc " + item.maThuoc() + ".");
                     }
-                    canonicalItems.add(new ChiTietDonThuoc(
+                    canonicalItems.add(new DongChiTietDonThuoc(
                             medicine.maThuoc(), medicine.tenThuoc(), medicine.donViTinh(),
                             item.soLuong(), item.lieuDung(), item.cachDung(), item.soNgayDung(),
                             medicine.kiemSoatDacBiet(), medicine.hoatChat()));
@@ -124,7 +124,7 @@ public final class DonThuocService {
                 String doctorId = visit.maNhanVien();
                 dao.taoDonThuoc(connection, prescriptionId, visitId,
                         visit.maBenhNhan(), doctorId, instructions);
-                for (ChiTietDonThuoc item : canonicalItems) {
+                for (DongChiTietDonThuoc item : canonicalItems) {
                     dao.taoChiTiet(connection, prescriptionId, item);
                 }
 
@@ -183,16 +183,16 @@ public final class DonThuocService {
         return visit;
     }
 
-    private static List<ChiTietDonThuoc> validateItems(List<ChiTietDonThuoc> requested) {
+    private static List<DongChiTietDonThuoc> validateItems(List<DongChiTietDonThuoc> requested) {
         if (requested == null || requested.isEmpty()) {
             throw new IllegalArgumentException("Đơn thuốc phải có ít nhất một loại thuốc.");
         }
         if (requested.size() > 50) {
             throw new IllegalArgumentException("Một đơn thuốc tối đa 50 loại thuốc.");
         }
-        List<ChiTietDonThuoc> result = new ArrayList<>();
+        List<DongChiTietDonThuoc> result = new ArrayList<>();
         Set<String> medicineIds = new HashSet<>();
-        for (ChiTietDonThuoc item : requested) {
+        for (DongChiTietDonThuoc item : requested) {
             if (item == null) throw new IllegalArgumentException("Dòng thuốc không hợp lệ.");
             String medicineId = validateId(item.maThuoc(), "Mã thuốc");
             if (!medicineIds.add(medicineId)) {
@@ -212,16 +212,16 @@ public final class DonThuocService {
             if (usage.isEmpty() || usage.length() > MAX_CACH_DUNG) {
                 throw new IllegalArgumentException("Cách dùng không được để trống và tối đa 200 ký tự.");
             }
-            result.add(new ChiTietDonThuoc(medicineId, "", "", item.soLuong(),
+            result.add(new DongChiTietDonThuoc(medicineId, "", "", item.soLuong(),
                     dosage, usage, item.soNgayDung(), false, ""));
         }
         return List.copyOf(result);
     }
 
-    private static List<String> buildWarnings(String allergies, List<ChiTietDonThuoc> items) {
+    private static List<String> buildWarnings(String allergies, List<DongChiTietDonThuoc> items) {
         List<String> warnings = new ArrayList<>();
         String allergyText = safe(allergies).toLowerCase(Locale.ROOT);
-        for (ChiTietDonThuoc item : items) {
+        for (DongChiTietDonThuoc item : items) {
             if (item.kiemSoatDacBiet()) {
                 warnings.add("Thuốc " + item.tenThuoc() + " thuộc nhóm kiểm soát đặc biệt.");
             }
