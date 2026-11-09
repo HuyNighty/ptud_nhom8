@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.inventory.vattu.entity;
+package com.quanlynhakhoa.entity;
 
 import java.time.LocalDate;
 
