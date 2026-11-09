@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
 import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKhamListItem;
+import com.quanlynhakhoa.model.phieukham.DongDanhSachPhieuKham;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -124,7 +124,7 @@ public final class PhieuKhamDao {
             WHERE pk.maPhieuKham = ?
             """;
 
-    public List<PhieuKhamListItem> timKiem(Connection connection,
+    public List<DongDanhSachPhieuKham> timKiem(Connection connection,
                                             LocalDate ngayKham,
                                             String maBacSi,
                                             String trangThai,
@@ -136,7 +136,7 @@ public final class PhieuKhamDao {
         String status = safe(trangThai);
         String keyword = safe(tuKhoa);
         String pattern = "%" + keyword + "%";
-        List<PhieuKhamListItem> result = new ArrayList<>();
+        List<DongDanhSachPhieuKham> result = new ArrayList<>();
 
         try (PreparedStatement statement = connection.prepareStatement(SQL_DANH_SACH)) {
             statement.setDate(1, Date.valueOf(ngayKham));
@@ -151,7 +151,7 @@ public final class PhieuKhamDao {
             statement.setQueryTimeout(10);
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
-                    result.add(new PhieuKhamListItem(
+                    result.add(new DongDanhSachPhieuKham(
                             rs.getString("maPhieuKham"),
                             rs.getString("maBenhNhan"),
                             rs.getNString("tenBenhNhan"),

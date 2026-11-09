@@ -2,8 +2,8 @@ package com.quanlynhakhoa.nghiepvu.phieukham.view;
 
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.controller.DonThuocController;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.DonThuocData;
+import com.quanlynhakhoa.model.phieukham.DongChiTietDonThuoc;
+import com.quanlynhakhoa.model.phieukham.DuLieuDonThuoc;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
 import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -56,7 +56,7 @@ public final class DonThuocPanel extends JPanel {
         @Override public boolean isCellEditable(int row, int column) { return false; }
     };
     private final JTable tblChiTiet = new JTable(tableModel);
-    private final List<ChiTietDonThuoc> cart = new ArrayList<>();
+    private final List<DongChiTietDonThuoc> cart = new ArrayList<>();
     private final DonThuocController controller;
 
     private PhieuKham current;
@@ -225,13 +225,13 @@ public final class DonThuocPanel extends JPanel {
         updateControls();
     }
 
-    public void hienDuLieu(DonThuocData data) {
+    public void hienDuLieu(DuLieuDonThuoc data) {
         cmbThuoc.removeAllItems();
         for (ThuocChonKeDon medicine : data.danhSachThuoc()) cmbThuoc.addItem(medicine);
         cart.clear();
         cart.addAll(data.chiTiet());
         tableModel.setRowCount(0);
-        for (ChiTietDonThuoc item : cart) addTableRow(item);
+        for (DongChiTietDonThuoc item : cart) addTableRow(item);
         txaLoiDan.setText(data.loiDan());
         alreadyPrescribed = data.daKeDon();
         if (alreadyPrescribed) {
@@ -244,26 +244,26 @@ public final class DonThuocPanel extends JPanel {
         updateControls();
     }
 
-    private void addTableRow(ChiTietDonThuoc item) {
+    private void addTableRow(DongChiTietDonThuoc item) {
         tableModel.addRow(new Object[]{item.maThuoc(), item.tenThuoc(), item.soLuong(),
                 item.lieuDung(), item.cachDung(), item.soNgayDung()});
     }
 
-    public ChiTietDonThuoc taoChiTietDangNhap() {
+    public DongChiTietDonThuoc taoChiTietDangNhap() {
         ThuocChonKeDon medicine = (ThuocChonKeDon) cmbThuoc.getSelectedItem();
         if (medicine == null) throw new IllegalArgumentException("Chọn thuốc cần kê.");
         String dosage = txtLieuDung.getText() == null ? "" : txtLieuDung.getText().trim();
         String usage = txtCachDung.getText() == null ? "" : txtCachDung.getText().trim();
         if (dosage.isEmpty()) throw new IllegalArgumentException("Nhập liều dùng.");
         if (usage.isEmpty()) throw new IllegalArgumentException("Nhập cách dùng.");
-        return new ChiTietDonThuoc(medicine.maThuoc(), medicine.tenThuoc(), medicine.donViTinh(),
+        return new DongChiTietDonThuoc(medicine.maThuoc(), medicine.tenThuoc(), medicine.donViTinh(),
                 ((Number) spnSoLuong.getValue()).intValue(), dosage, usage,
                 ((Number) spnSoNgayDung.getValue()).intValue(),
                 medicine.kiemSoatDacBiet(), medicine.hoatChat());
     }
 
-    public void themVaoDanhSach(ChiTietDonThuoc item) {
-        for (ChiTietDonThuoc old : cart) {
+    public void themVaoDanhSach(DongChiTietDonThuoc item) {
+        for (DongChiTietDonThuoc old : cart) {
             if (old.maThuoc().equals(item.maThuoc())) {
                 throw new IllegalArgumentException("Thuốc này đã có trong đơn. Hãy xóa dòng cũ nếu muốn thay đổi.");
             }
@@ -285,7 +285,7 @@ public final class DonThuocPanel extends JPanel {
         updateControls();
     }
 
-    public List<ChiTietDonThuoc> layChiTietNhap() {
+    public List<DongChiTietDonThuoc> layChiTietNhap() {
         return List.copyOf(cart);
     }
 

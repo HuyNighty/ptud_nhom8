@@ -2,9 +2,9 @@ package com.quanlynhakhoa.nghiepvu.phieukham.view;
 
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.controller.CanLamSangController;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiDinhCanLamSang;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.DichVuCanLamSang;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.DuLieuCanLamSang;
+import com.quanlynhakhoa.model.phieukham.ThongTinChiDinhCanLamSang;
+import com.quanlynhakhoa.model.phieukham.DichVuCanLamSangChon;
+import com.quanlynhakhoa.model.phieukham.DuLieuCanLamSang;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.service.CanLamSangService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -39,7 +39,7 @@ public final class CanLamSangPanel extends JPanel {
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final DesktopSession session;
-    private final JComboBox<DichVuCanLamSang> cmbDichVu = new JComboBox<>();
+    private final JComboBox<DichVuCanLamSangChon> cmbDichVu = new JComboBox<>();
     private final JTextArea txaYeuCau = textArea(3);
     private final JTextArea txaYeuCauChiTiet = textArea(2);
     private final JTextArea txaKetQua = textArea(5);
@@ -53,7 +53,7 @@ public final class CanLamSangPanel extends JPanel {
         @Override public boolean isCellEditable(int row, int column) { return false; }
     };
     private final JTable tblChiDinh = new JTable(tableModel);
-    private final List<ChiDinhCanLamSang> rows = new ArrayList<>();
+    private final List<ThongTinChiDinhCanLamSang> rows = new ArrayList<>();
     private final CanLamSangController controller;
     private PhieuKham current;
     private String selectedDoctorId = "";
@@ -181,7 +181,7 @@ public final class CanLamSangPanel extends JPanel {
         }
         int modelRow = tblChiDinh.convertRowIndexToModel(selected);
         if (modelRow < 0 || modelRow >= rows.size()) return;
-        ChiDinhCanLamSang order = rows.get(modelRow);
+        ThongTinChiDinhCanLamSang order = rows.get(modelRow);
         txaYeuCauChiTiet.setText(safe(order.yeuCau()));
         txaKetQua.setText(order.ketQua() == null ? "" : order.ketQua());
         boolean pending = "CHO_THUC_HIEN".equals(order.trangThai());
@@ -228,11 +228,11 @@ public final class CanLamSangPanel extends JPanel {
 
     public void hienDuLieu(DuLieuCanLamSang data) {
         cmbDichVu.removeAllItems();
-        for (DichVuCanLamSang service : data.dichVu()) cmbDichVu.addItem(service);
+        for (DichVuCanLamSangChon service : data.dichVu()) cmbDichVu.addItem(service);
         rows.clear();
         rows.addAll(data.chiDinh());
         tableModel.setRowCount(0);
-        for (ChiDinhCanLamSang order : rows) {
+        for (ThongTinChiDinhCanLamSang order : rows) {
             LocalDateTime orderedAt = order.thoiGianChiDinh();
             tableModel.addRow(new Object[]{
                     order.maChiDinh(), order.tenDichVu(),
@@ -287,7 +287,7 @@ public final class CanLamSangPanel extends JPanel {
     public String getMaPhieuKham() { return current == null ? "" : current.maPhieuKham(); }
     public String getMaBacSiPhuTrach() { return selectedDoctorId; }
     public String getMaDichVu() {
-        DichVuCanLamSang selected = (DichVuCanLamSang) cmbDichVu.getSelectedItem();
+        DichVuCanLamSangChon selected = (DichVuCanLamSangChon) cmbDichVu.getSelectedItem();
         return selected == null ? "" : selected.maDichVu();
     }
     public String getYeuCau() { return txaYeuCau.getText(); }

@@ -4,7 +4,7 @@ import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.CanLamSangDao;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.DuLieuCanLamSang;
+import com.quanlynhakhoa.model.phieukham.DuLieuCanLamSang;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
