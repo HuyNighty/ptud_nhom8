@@ -92,7 +92,7 @@ public final class RoleOverviewSelfTest {
         check(!policy.isAllowed(VaiTroHeThong.DOCTOR, Quyen.ROLE_MANAGE), "Doctor cannot read role console");
         check(policy.isAllowed(VaiTroHeThong.CLINIC_MANAGER, Quyen.ROLE_MANAGE), "Manager can read role console");
         AtomicInteger attempts = new AtomicInteger();
-        var unreachable = (com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService.ConnectionProvider) () -> {
+        var unreachable = (com.quanlynhakhoa.service.taikhoan.DanhSachTaiKhoanService.ConnectionProvider) () -> {
             attempts.incrementAndGet();
             throw new SQLException("synthetic no SQL");
         };
@@ -109,7 +109,7 @@ public final class RoleOverviewSelfTest {
         String[][] counts = {
                 {"SYSTEM_ADMIN", "1"}, {"RECEPTIONIST", "1"}, {"DOCTOR", "2"}
         };
-        var provider = (com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService.ConnectionProvider) () -> {
+        var provider = (com.quanlynhakhoa.service.taikhoan.DanhSachTaiKhoanService.ConnectionProvider) () -> {
             attempts.incrementAndGet();
             return fakeConnection(closes, queries, counts);
         };
@@ -139,7 +139,7 @@ public final class RoleOverviewSelfTest {
         check(closes.get() == 2, "Connection closed after administrator read");
 
         DesktopSession bad = session(VaiTroHeThong.CLINIC_MANAGER);
-        var badProvider = (com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService.ConnectionProvider)
+        var badProvider = (com.quanlynhakhoa.service.taikhoan.DanhSachTaiKhoanService.ConnectionProvider)
                 () -> fakeConnection(closes, queries, new String[][]{{"INVENTED_ROLE", "1"}});
         reject(SQLException.class, () -> new RoleOverviewService(bad, badProvider).load());
         check(closes.get() == 3, "Connection closed after malformed SQL result");

@@ -1,0 +1,90 @@
+package com.quanlynhakhoa.service.taikhoan;
+
+import com.quanlynhakhoa.dao.taikhoan.TrangThaiTaiKhoanDao;
+import com.quanlynhakhoa.model.taikhoan.TaiKhoanDich;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
+import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
+import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.enums.Quyen;
+import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Objects;
+
+/** Administrator locks affect new logins; existing desktop sessions are not revoked. */
+public final class TrangThaiTaiKhoanService {
+    private final DesktopSession session;
+    private final DanhSachTaiKhoanService.ConnectionProvider connections;
+    private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
+    private final TrangThaiTaiKhoanDao dao = new TrangThaiTaiKhoanDao();
+
+    public TrangThaiTaiKhoanService(DesktopSession session, DanhSachTaiKhoanService.ConnectionProvider connections) {
+        this.session = Objects.requireNonNull(session, "session");
+        this.connections = Objects.requireNonNull(connections, "connections");
+    }
+
+    public void lock(String targetId, String reason) throws SQLException {
+        requireAuthorized();
+        String normalized = reason == null ? "" : reason.strip();
+        if (normalized.isBlank() || normalized.length() > 300) {
+            throw new IllegalArgumentException("Lý do khóa phải có từ 1 đến 300 ký tự.");
+        }
+        change(targetId, true, normalized);
+    }
+
+    public void unlock(String targetId) throws SQLException {
+        change(targetId, false, null);
+    }
+
+    private void change(String targetId, boolean locking, String reason) throws SQLException {
+        requireAuthorized();
+        String id = targetId == null ? "" : targetId.strip();
+        if (id.isBlank() || id.length() > 10) {
+            throw new IllegalArgumentException("Mã tài khoản không hợp lệ.");
+        }
+        if (locking && session.accountId().equalsIgnoreCase(id)) {
+            throw new IllegalArgumentException("Không được tự khóa tài khoản đang đăng nhập.");
+        }
+        try (Connection connection = connections.open()) {
+            if (!connection.getAutoCommit()) throw new SQLException("Expected a fresh JDBC connection");
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setAutoCommit(false);
+            try {
+                requireAuthorized();
+                TaiKhoanDich target = dao.lockTarget(connection, id);
+                requireAuthorized();
+                if (target.role() == VaiTroHeThong.SYSTEM_ADMIN) {
+                    throw new IllegalArgumentException("Không được khóa hoặc mở khóa tài khoản quản trị hệ thống.");
+                }
+                if (locking) {
+                    if (session.accountId().equalsIgnoreCase(target.accountId())) {
+                        throw new IllegalArgumentException("Không được tự khóa tài khoản đang đăng nhập.");
+                    }
+                    if (target.status() != TrangThaiTaiKhoan.HOAT_DONG) {
+                        throw new IllegalArgumentException("Chỉ được khóa tài khoản đang hoạt động. Hãy làm mới danh sách.");
+                    }
+                    dao.lock(connection, target.accountId(), session.accountId(), reason);
+                } else {
+                    if (target.status() != TrangThaiTaiKhoan.BI_KHOA || target.lockSource() != NguonKhoaTaiKhoan.ADMIN_ACTION) {
+                        throw new IllegalArgumentException("Chỉ được mở khóa tài khoản do quản trị viên khóa. Hãy làm mới danh sách.");
+                    }
+                    dao.unlock(connection, target.accountId());
+                }
+                requireAuthorized();
+                dao.audit(connection, session.accountId(), target.accountId(), locking, reason);
+                requireAuthorized();
+                connection.commit();
+            } catch (SQLException | RuntimeException failure) {
+                try { connection.rollback(); }
+                catch (SQLException rollbackFailure) { failure.addSuppressed(rollbackFailure); }
+                throw failure;
+            }
+        }
+    }
+
+    private void requireAuthorized() {
+        authorization.require(session, Quyen.ACCOUNT_MANAGE);
+    }
+}

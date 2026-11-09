@@ -1,14 +1,14 @@
 package com.quanlynhakhoa.hethong.tinhnang;
 
 import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
-import com.quanlynhakhoa.quantri.taikhoan.ui.AccountPanel;
+import com.quanlynhakhoa.view.taikhoan.TaiKhoanPanel;
 import com.quanlynhakhoa.quantri.nhatky.ui.AuditPanel;
 import com.quanlynhakhoa.view.benhnhan.BenhNhanPanel;
 import com.quanlynhakhoa.view.benhnhan.HoSoBenhAnPanel;
 import com.quanlynhakhoa.view.lichhen.LichHenPanel;
 import com.quanlynhakhoa.view.lichhen.TiepNhanPanel;
 import com.quanlynhakhoa.view.kho.KhoPanel;
-import com.quanlynhakhoa.quantri.nhanvien.ui.EmployeePanel;
+import com.quanlynhakhoa.view.nhanvien.NhanVienPanel;
 import com.quanlynhakhoa.quantri.vaitro.ui.RolePanel;
 import com.quanlynhakhoa.view.phieukham.PhieuKhamPanel;
 import com.quanlynhakhoa.view.dieutri.KeHoachDieuTriPanel;
@@ -17,7 +17,7 @@ import com.quanlynhakhoa.view.hoadon.HoaDonPanel;
 import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.quantri.lichlamviec.view.LichLamViecPanel;
+import com.quanlynhakhoa.view.lichlamviec.LichLamViecPanel;
 import javax.swing.JPanel;
 
 public final class FeatureBootstrap {
@@ -25,8 +25,8 @@ public final class FeatureBootstrap {
 
     public static FeatureRegistry createRegistry() {
         return FeatureRegistry.builder()
-                .register(Module.ACCOUNTS, AccountPanel::new)
-                .register(Module.WORKFORCE, EmployeePanel::new)
+                .register(Module.ACCOUNTS, TaiKhoanPanel::new)
+                .register(Module.WORKFORCE, NhanVienPanel::new)
                 .register(Module.SHIFT_ASSIGNMENTS, session -> new LichLamViecPanel(session, true))
                 .register(Module.MY_SCHEDULE, session -> new LichLamViecPanel(session, false))
                 .register(Module.ROLES, RolePanel::new)

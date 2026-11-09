@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.vaitro;
 
 import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
-import com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService;
+import com.quanlynhakhoa.service.taikhoan.DanhSachTaiKhoanService;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -17,13 +17,13 @@ import java.util.Objects;
 /** The existing RolePermissionPolicy remains the only source of authority. */
 public final class RoleOverviewService {
     private final DesktopSession session;
-    private final AccountDirectoryService.ConnectionProvider connections;
+    private final DanhSachTaiKhoanService.ConnectionProvider connections;
     private final RolePermissionPolicy policy = new RolePermissionPolicy();
     private final AuthorizationService authorization = new AuthorizationService(policy);
     private final RoleOverviewDao dao = new RoleOverviewDao();
 
     public RoleOverviewService(DesktopSession session,
-                               AccountDirectoryService.ConnectionProvider connections) {
+                               DanhSachTaiKhoanService.ConnectionProvider connections) {
         this.session = Objects.requireNonNull(session, "session");
         this.connections = Objects.requireNonNull(connections, "connections");
     }
