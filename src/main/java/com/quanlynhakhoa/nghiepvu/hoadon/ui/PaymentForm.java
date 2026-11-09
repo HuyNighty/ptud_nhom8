@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.InvoiceDetails;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.PaymentRequest;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.Payment;
+import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
@@ -101,8 +101,8 @@ public final class PaymentForm extends JPanel {
         btnThuTien.setEnabled(enabled);btnKiemTra.setEnabled(!busy&&uncertain);btnThuLai.setVisible(retryAllowed);btnThuLai.setEnabled(!busy&&uncertain&&retryAllowed);((CardLayout)pnlActions.getLayout()).show(pnlActions,uncertain?"verify":"collect");
         if(!bank)chkDaNhanChuyenKhoan.setVisible(false);revalidate();repaint();
     }
-    public void restoreRequest(PaymentRequest request){
-        var part=request.parts().getFirst();boolean bank=part.method()==Payment.PhuongThuc.CHUYEN_KHOAN;
+    public void restoreRequest(YeuCauThanhToan request){
+        var part=request.parts().getFirst();boolean bank=part.method()==ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN;
         synchronizing=true;
         try{
             cmbPhuongThuc.setSelectedItem(bank?Method.BANK:Method.CASH);

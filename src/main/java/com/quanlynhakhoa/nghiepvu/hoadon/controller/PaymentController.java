@@ -1,17 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
-
-
-
-
-
-
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.model.hoadon.ThanhToanDangCho;
+import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
+import com.quanlynhakhoa.model.hoadon.DuLieuThanhToanDaTai;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
@@ -24,10 +17,10 @@ import javax.swing.JOptionPane;
 
 public final class PaymentController {
     private final PaymentForm view;private final DesktopSession session;private final InvoiceService invoices;private final PaymentService payments;
-    private final String invoiceId;private final Runnable saved;private InvoiceDetails detail;private boolean busy;private PaymentRequest pending;
+    private final String invoiceId;private final Runnable saved;private InvoiceDetails detail;private boolean busy;private YeuCauThanhToan pending;
     private final PendingPaymentStore journal;
     private final PaymentAttemptService attempts;
-    private final java.util.function.Predicate<PaymentRequest> confirmation;
+    private final java.util.function.Predicate<YeuCauThanhToan> confirmation;
     private boolean retryAllowed;
     private boolean pendingCancellation;
     private boolean reloadPending;
@@ -38,14 +31,14 @@ public final class PaymentController {
         this(view,session,connections,invoiceId,saved,PendingPaymentStore.local());
     }
     public PaymentController(PaymentForm view,DesktopSession session,ConnectionProvider connections,String invoiceId,Runnable saved,PendingPaymentStore journal) {
-        this(view,session,connections,invoiceId,saved,journal,new java.util.function.Predicate<PaymentRequest>(){
-            public boolean test(PaymentRequest request){return JOptionPane.showConfirmDialog(view,
+        this(view,session,connections,invoiceId,saved,journal,new java.util.function.Predicate<YeuCauThanhToan>(){
+            public boolean test(YeuCauThanhToan request){return JOptionPane.showConfirmDialog(view,
                     "Xác nhận đã nhận "+BillingUi.vnd(request.amount())+" cho hóa đơn "+request.invoiceId()+"?",
                     "Ghi nhận thu tiền",JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION;}
         });
     }
     public PaymentController(PaymentForm view,DesktopSession session,ConnectionProvider connections,String invoiceId,Runnable saved,
-            PendingPaymentStore journal,java.util.function.Predicate<PaymentRequest> confirmation) {
+            PendingPaymentStore journal,java.util.function.Predicate<YeuCauThanhToan> confirmation) {
         this.journal=journal;this.confirmation=confirmation;attempts=new PaymentAttemptService(session,connections);
         this.view=view;this.session=session;this.invoiceId=invoiceId;this.saved=saved;invoices=new InvoiceService(session,connections);payments=new PaymentService(session,connections);
         view.btnThuTien.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){collect();}});
@@ -61,27 +54,27 @@ public final class PaymentController {
         protected void expired(){view.closeView();}
         protected void failed(Throwable failure){view.lblTrangThai.setText(failure instanceof java.io.IOException?"Không đọc được lần thu chờ đối soát. Chưa thể thu mới; liên hệ quản trị viên.":BillingUi.error(failure));}
     }
-    private record Loaded(InvoiceDetails invoice,PaymentRequest pending,boolean cancellation,String owner) { }
+
     private void load() {
         if(busy){reloadPending=true;return;}reloadPending=false;busy=true;retryAllowed=false;view.allowRetry(false);detail=null;view.loading();view.busy(true,false,pending!=null);
-        new Task<Loaded>() {
-            protected Loaded doInBackground()throws Exception{
-                PaymentRequest local=journal.read(invoiceId);
-                PaymentAttemptService.Pending shared=attempts.pending(invoiceId);
+        new Task<DuLieuThanhToanDaTai>() {
+            protected DuLieuThanhToanDaTai doInBackground()throws Exception{
+                YeuCauThanhToan local=journal.read(invoiceId);
+                ThanhToanDangCho shared=attempts.pending(invoiceId);
                 if(local!=null&&shared!=null&&!local.equals(shared.request()))throw new java.io.IOException("Lần thu trên máy khác không khớp nhật ký cục bộ; cần quản lý đối soát.");
-                PaymentRequest restored=shared==null?local:shared.request();
+                YeuCauThanhToan restored=shared==null?local:shared.request();
                 InvoiceDetails result=invoices.detail(invoiceId);
-                return new Loaded(result,restored,payments.pendingCancellation(invoiceId),shared==null?session.accountId():shared.owner());
+                return new DuLieuThanhToanDaTai(result,restored,payments.pendingCancellation(invoiceId),shared==null?session.accountId():shared.owner());
             }
-            protected void succeeded(Loaded loaded){
+            protected void succeeded(DuLieuThanhToanDaTai loaded){
                 InvoiceDetails result=loaded.invoice();pending=loaded.pending();
                 detail=result;pendingCancellation=loaded.cancellation();view.showInvoice(result);
                 if(pending!=null){
                     view.restoreRequest(pending);
                     int found=0;boolean mismatch=false;
-                    for(PaymentRequest.Part part:pending.parts())for(Payment prior:result.thanhToan())if(part.id().equals(prior.maThanhToan())){
+                    for(PhanThanhToan part:pending.parts())for(ThongTinThanhToan prior:result.thanhToan())if(part.id().equals(prior.maThanhToan())){
                         found++;
-                        if(prior.trangThai()!=Payment.TrangThai.THANH_CONG||prior.phuongThuc()!=part.method()
+                        if(prior.trangThai()!=ThongTinThanhToan.TrangThai.THANH_CONG||prior.phuongThuc()!=part.method()
                                 ||prior.soTien().compareTo(part.amount())!=0||!Objects.equals(prior.maGiaoDich(),part.reference())
                                 ||(prior.tienKhachDua()==null?part.customerTender()!=null:part.customerTender()==null||prior.tienKhachDua().compareTo(part.customerTender())!=0))mismatch=true;
                     }
@@ -102,14 +95,14 @@ public final class PaymentController {
         if(busy||!session.isActive())return;
         final boolean retrying=pending!=null;
         if(retrying?!retryAllowed:!allowed()||!view.collectionContextAllowed())return;
-        final PaymentRequest request;
+        final YeuCauThanhToan request;
         try {
             if(retrying){request=pending;}else{
             BigDecimal cash=view.cashAmount(),bank=view.bankAmount();
-            List<PaymentRequest.Part> parts=new ArrayList<>();RandomInvoiceIdGenerator ids=new RandomInvoiceIdGenerator();
-            if(cash.signum()>0)parts.add(new PaymentRequest.Part(ids.next(null),cash,Payment.PhuongThuc.TIEN_MAT,null,BillingUi.moneyInput(view.txtKhachDua.getText())));
-            if(bank.signum()>0)parts.add(new PaymentRequest.Part(ids.next(null),bank,Payment.PhuongThuc.CHUYEN_KHOAN,view.txtMaGiaoDich.getText().trim(),null));
-            request=new PaymentRequest(invoiceId,BillingUi.moneyInput(view.txtSoTien.getText()),parts,view.chkDaNhanChuyenKhoan.isSelected());PaymentService.validate(request);
+            List<PhanThanhToan> parts=new ArrayList<>();RandomInvoiceIdGenerator ids=new RandomInvoiceIdGenerator();
+            if(cash.signum()>0)parts.add(new PhanThanhToan(ids.next(null),cash,ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,BillingUi.moneyInput(view.txtKhachDua.getText())));
+            if(bank.signum()>0)parts.add(new PhanThanhToan(ids.next(null),bank,ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN,view.txtMaGiaoDich.getText().trim(),null));
+            request=new YeuCauThanhToan(invoiceId,BillingUi.moneyInput(view.txtSoTien.getText()),parts,view.chkDaNhanChuyenKhoan.isSelected());PaymentService.validate(request);
             }
         }catch(RuntimeException failure){view.lblTrangThai.setText(BillingUi.error(failure));return;}
         if(!confirmation.test(request))return;
@@ -135,7 +128,7 @@ public final class PaymentController {
     }
     public void refresh(){load();}
     private void complete(){
-        final PaymentRequest completed=pending;busy=true;view.busy(true,false,true);
+        final YeuCauThanhToan completed=pending;busy=true;view.busy(true,false,true);
         new Task<Void>(){
             protected Void doInBackground()throws Exception{
                 if(completed!=null){

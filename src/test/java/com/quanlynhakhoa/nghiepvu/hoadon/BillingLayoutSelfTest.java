@@ -1,19 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
@@ -68,7 +55,7 @@ public final class BillingLayoutSelfTest {
     private static void navigate(MainFrame frame,Module module)throws Exception{var method=MainFrame.class.getDeclaredMethod("navigate",Module.class);method.setAccessible(true);method.invoke(frame,module);}
     private static FeaturePanelFactory factory(final Module module,final com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider jdbc){return new FeaturePanelFactory(){public JPanel create(DesktopSession session){JPanel result=switch(module){case SERVICE_CATALOG -> new ServiceCatalogPanel(session,jdbc);case BILLING -> new InvoicePanel(session,jdbc);case DEBTS -> new DebtPanel(session,jdbc);case PAYMENTS -> new PaymentPanel(session,jdbc);case INVOICE_CANCELLATIONS -> new CancellationPanel(session,jdbc);default -> throw new AssertionError(module);};pages.put(module,result);return result;}};}
     private static Invoice invoice(){return new Invoice("TESTHD01","TESTNV","TESTBN","[KIỂM THỬ] Nguyễn An","TESTPK",LocalDateTime.of(2026,10,31,9,15),InvoiceStatus.THANH_TOAN_MOT_PHAN,new BigDecimal("1500000"),new BigDecimal("500000"),BigDecimal.ZERO);}
-    private static InvoiceDetails detail(){return new InvoiceDetails(invoice(),List.of(new DongChiTietHoaDon(1,"TESTHD01","TESTDV",null,null,1,new BigDecimal("1500000"),"[KIỂM THỬ] Điều trị răng")),List.of(new Payment("TESTTT01","TESTHD01",LocalDateTime.of(2026,10,31,10,0),new BigDecimal("500000"),Payment.PhuongThuc.TIEN_MAT,null,new BigDecimal("500000"),Payment.TrangThai.THANH_CONG,"TESTNV",null,null,null)));}
+    private static InvoiceDetails detail(){return new InvoiceDetails(invoice(),List.of(new DongChiTietHoaDon(1,"TESTHD01","TESTDV",null,null,1,new BigDecimal("1500000"),"[KIỂM THỬ] Điều trị răng")),List.of(new ThongTinThanhToan("TESTTT01","TESTHD01",LocalDateTime.of(2026,10,31,10,0),new BigDecimal("500000"),ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,new BigDecimal("500000"),ThongTinThanhToan.TrangThai.THANH_CONG,"TESTNV",null,null,null)));}
     private static void empty(Module module,JPanel panel){switch(module){case SERVICE_CATALOG -> ((ServiceCatalogPanel)panel).showRows(List.of());case BILLING -> ((InvoicePanel)panel).showRows(List.of());case DEBTS -> ((DebtPanel)panel).showPatients(List.of());case PAYMENTS -> {var view=(PaymentPanel)panel;view.showChoices(List.of(),null);view.showForm(new PaymentForm());view.pickerEnabled(true);}case INVOICE_CANCELLATIONS -> ((CancellationPanel)panel).showRows(List.of());default -> throw new AssertionError(module);}}
     private static void seed(Module module,JPanel panel){
         switch(module){

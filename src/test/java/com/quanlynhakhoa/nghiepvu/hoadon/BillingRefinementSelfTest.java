@@ -1,12 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.PaymentService;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
@@ -83,9 +79,9 @@ public final class BillingRefinementSelfTest {
             view.chkDaNhanChuyenKhoan.setSelected(true);view.txtMaGiaoDich.setText("");
             check(!view.chkDaNhanChuyenKhoan.isSelected(),"Cleared transfer reference requires reconfirmation");
             check(view.cmbPhuongThuc.getItemCount()==2,"Only cash and bank methods available");
-            List<PaymentRequest.Part> parts=List.of(new PaymentRequest.Part("P2",new BigDecimal("700000"),Payment.PhuongThuc.CHUYEN_KHOAN,"TESTREF",null));
-            try{PaymentService.validate(new PaymentRequest("H1",new BigDecimal("700000"),parts,false));throw new AssertionError("Bank confirmation bypassed");}catch(IllegalArgumentException expected){checks++;}
-            PaymentService.validate(new PaymentRequest("H1",new BigDecimal("700000"),parts,true));checks++;
+            List<PhanThanhToan> parts=List.of(new PhanThanhToan("P2",new BigDecimal("700000"),ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN,"TESTREF",null));
+            try{PaymentService.validate(new YeuCauThanhToan("H1",new BigDecimal("700000"),parts,false));throw new AssertionError("Bank confirmation bypassed");}catch(IllegalArgumentException expected){checks++;}
+            PaymentService.validate(new YeuCauThanhToan("H1",new BigDecimal("700000"),parts,true));checks++;
             view.cmbPhuongThuc.setSelectedItem(PaymentForm.Method.CASH);view.txtKhachDua.setText("100.000");
             check(view.lblTienThua.getText().contains("chưa đủ"),"Insufficient tender visible");
             view.txtSoTien.setText("1.000.001");check(view.lblNoSauThu.getText().contains("vượt"),"Overcollection visible");

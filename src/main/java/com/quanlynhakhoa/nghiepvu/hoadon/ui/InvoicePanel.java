@@ -1,10 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
@@ -149,7 +145,7 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
         }
         java.util.List<LuaChonLapHoaDon> choices=new java.util.ArrayList<>();
         for(int row=0;row<paymentModel.getRowCount();row++){
-            if(paymentModel.getValueAt(row,6)==Payment.TrangThai.THANH_CONG){
+            if(paymentModel.getValueAt(row,6)==ThongTinThanhToan.TrangThai.THANH_CONG){
                 String id=String.valueOf(paymentModel.getValueAt(row,0));
                 choices.add(new LuaChonLapHoaDon(id,BillingUi.vnd((java.math.BigDecimal)paymentModel.getValueAt(row,2))+" · "+paymentModel.getValueAt(row,3)));
             }
@@ -237,7 +233,7 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
                     medicine.unitPrice()==null?"Chưa chốt":medicine.unitPrice(),medicine.total()});
         }
         BillingUi.tableState(tblPrescribedMedicines,"Lượt khám của hóa đơn chưa có thuốc được kê.");
-        for (Payment payment : value.thanhToan()) paymentModel.addRow(new Object[]{payment.maThanhToan(), payment.thoiGian(),
+        for (ThongTinThanhToan payment : value.thanhToan()) paymentModel.addRow(new Object[]{payment.maThanhToan(), payment.thoiGian(),
                 payment.soTien(), payment.phuongThuc(), payment.maGiaoDich(), payment.tienKhachDua(), payment.trangThai(),
                 payment.maNhanVien(), payment.maTaiKhoanHuy(), BillingUi.time(payment.thoiGianHuy()), payment.lyDoHuy()});
         for (InvoiceCancellationRequest request : value.cancellationHistory()) {
