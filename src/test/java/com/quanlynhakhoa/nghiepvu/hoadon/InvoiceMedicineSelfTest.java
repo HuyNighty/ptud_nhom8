@@ -11,7 +11,7 @@ import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;
 
 public final class InvoiceMedicineSelfTest {
     public static void main(String[] args) throws Exception {
-        var medicine = new com.quanlynhakhoa.nghiepvu.kho.thuoc.entity.Thuoc("TESTPR", "Thuốc thử", "Viên", false, null, null, 0, false);
+        var medicine = new com.quanlynhakhoa.entity.Thuoc("TESTPR", "Thuốc thử", "Viên", false, null, null, 0, false);
         com.quanlynhakhoa.nghiepvu.kho.thuoc.service.ThuocService.kiemTraVaChuanHoa(medicine);
         medicine.setDonGiaBan(BigDecimal.ZERO);
         com.quanlynhakhoa.nghiepvu.kho.thuoc.service.ThuocService.kiemTraVaChuanHoa(medicine);

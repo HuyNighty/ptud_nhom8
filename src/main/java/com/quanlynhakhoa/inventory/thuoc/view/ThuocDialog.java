@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.inventory.thuoc.view;
 
-import com.quanlynhakhoa.inventory.thuoc.entity.Thuoc;
+import com.quanlynhakhoa.entity.Thuoc;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;

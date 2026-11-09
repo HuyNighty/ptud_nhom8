@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.kho.thuoc.view;
 
-import com.quanlynhakhoa.nghiepvu.kho.thuoc.entity.Thuoc;
+import com.quanlynhakhoa.entity.Thuoc;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
