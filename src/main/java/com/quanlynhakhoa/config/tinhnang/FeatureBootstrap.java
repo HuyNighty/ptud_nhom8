@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.hethong.tinhnang;
+package com.quanlynhakhoa.config.tinhnang;
 
 import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
 import com.quanlynhakhoa.view.taikhoan.TaiKhoanPanel;

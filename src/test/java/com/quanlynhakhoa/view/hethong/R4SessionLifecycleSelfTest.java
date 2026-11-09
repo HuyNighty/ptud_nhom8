@@ -1,5 +1,6 @@
-package com.quanlynhakhoa.hethong.giaodien;
+package com.quanlynhakhoa.view.hethong;
 
+import com.quanlynhakhoa.model.dieuhuong.DieuHuongChinh;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
@@ -58,7 +59,7 @@ public final class R4SessionLifecycleSelfTest {
 
         for (VaiTroHeThong role : VaiTroHeThong.values()) {
             DesktopSession session = make(role, "SYNTH-" + role);
-            MainNavigationModel model = new MainNavigationModel(session);
+            DieuHuongChinh model = new DieuHuongChinh(session);
             Instant began = session.startedAt();
             check(session.isActive(), "session starts active " + role);
             check(model.isActive(), "model starts active " + role);
@@ -98,10 +99,10 @@ public final class R4SessionLifecycleSelfTest {
         }
 
         DesktopSession old = make(VaiTroHeThong.SYSTEM_ADMIN, "SYNTH-RELOGIN");
-        MainNavigationModel oldModel = new MainNavigationModel(old);
+        DieuHuongChinh oldModel = new DieuHuongChinh(old);
         old.logout();
         DesktopSession fresh = make(VaiTroHeThong.SYSTEM_ADMIN, "SYNTH-RELOGIN");
-        MainNavigationModel freshModel = new MainNavigationModel(fresh);
+        DieuHuongChinh freshModel = new DieuHuongChinh(fresh);
         check(old != fresh, "relogin makes distinct instance");
         check(!old.isActive(), "old remains inactive");
         check(fresh.isActive(), "fresh is active");

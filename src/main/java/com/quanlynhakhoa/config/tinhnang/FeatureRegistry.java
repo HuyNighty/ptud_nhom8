@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.hethong.tinhnang;
+package com.quanlynhakhoa.config.tinhnang;
 
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.security.NavigationPolicy;
@@ -31,7 +31,7 @@ public final class FeatureRegistry {
             throw new IllegalArgumentException("Module has no registered panel: " + module);
         }
         JPanel page = Objects.requireNonNull(factory.create(session), "Feature panel cannot be null");
-        com.quanlynhakhoa.hethong.giaodien.AppTheme.applyPage(page);
+        com.quanlynhakhoa.view.hethong.AppTheme.applyPage(page);
         return page;
     }
 

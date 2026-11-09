@@ -2,7 +2,7 @@ package com.quanlynhakhoa.view.nhanvien;
 
 import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
+import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.security.DesktopSession;
@@ -239,10 +239,10 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
         form.add(new JLabel("Họ tên (*):")); form.add(txtName);
         form.add(new JLabel("Số điện thoại (*):")); form.add(txtPhone);
         form.add(new JLabel("Chức danh (*):")); form.add(cmbJob);
-        form.add(new JLabel("Ngày sinh (yyyy-MM-dd):")); form.add(com.quanlynhakhoa.hethong.giaodien.DateInput.wrap(txtBirth,"ngày sinh",java.time.format.DateTimeFormatter.ISO_LOCAL_DATE,LocalDate.now().minusYears(120),LocalDate.now()));
+        form.add(new JLabel("Ngày sinh (yyyy-MM-dd):")); form.add(com.quanlynhakhoa.view.hethong.DateInput.wrap(txtBirth,"ngày sinh",java.time.format.DateTimeFormatter.ISO_LOCAL_DATE,LocalDate.now().minusYears(120),LocalDate.now()));
         form.add(new JLabel("Giới tính:")); form.add(cmbGender);
         form.add(new JLabel("Email:")); form.add(txtEmail);
-        form.add(new JLabel("Ngày vào làm (yyyy-MM-dd):")); form.add(com.quanlynhakhoa.hethong.giaodien.DateInput.iso(txtJoined,"ngày vào làm"));
+        form.add(new JLabel("Ngày vào làm (yyyy-MM-dd):")); form.add(com.quanlynhakhoa.view.hethong.DateInput.iso(txtJoined,"ngày vào làm"));
         form.add(new JLabel("Chuyên môn:")); form.add(txtSpecialty);
 
         int choice = JOptionPane.showConfirmDialog(this, form, "Thêm nhân viên (chưa cấp tài khoản)",

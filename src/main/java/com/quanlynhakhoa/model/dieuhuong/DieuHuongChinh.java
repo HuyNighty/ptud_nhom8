@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.hethong.giaodien;
+package com.quanlynhakhoa.model.dieuhuong;
 
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.security.NavigationPolicy;
@@ -7,16 +7,16 @@ import java.util.List;
 import java.util.Objects;
 
 /** Pure-Java state model; can be tested without Swing, SQL, or credentials. */
-public final class MainNavigationModel {
+public final class DieuHuongChinh {
     private final DesktopSession session;
     private final NavigationPolicy policy;
     private Module selected = Module.HOME;
 
-    public MainNavigationModel(DesktopSession session) {
+    public DieuHuongChinh(DesktopSession session) {
         this(session, new NavigationPolicy());
     }
 
-    public MainNavigationModel(DesktopSession session, NavigationPolicy policy) {
+    public DieuHuongChinh(DesktopSession session, NavigationPolicy policy) {
         this.session = Objects.requireNonNull(session, "session");
         this.policy = Objects.requireNonNull(policy, "policy");
         this.policy.requireOpen(session, Module.HOME);

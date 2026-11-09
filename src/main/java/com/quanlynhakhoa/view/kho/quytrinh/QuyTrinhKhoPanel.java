@@ -69,8 +69,8 @@ public final class QuyTrinhKhoPanel extends JPanel {
             row(form, "Mã nhà cung cấp", maNcc);
             row(form, "Loại hàng", loai);
             row(form, "Mã thuốc/vật tư", maHang);
-            row(form, "Ngày sản xuất yyyy-MM-dd", com.quanlynhakhoa.hethong.giaodien.DateInput.iso(ngaySX,"ngày sản xuất"));
-            row(form, "Hạn sử dụng yyyy-MM-dd", com.quanlynhakhoa.hethong.giaodien.DateInput.iso(hanSD,"hạn sử dụng"));
+            row(form, "Ngày sản xuất yyyy-MM-dd", com.quanlynhakhoa.view.hethong.DateInput.iso(ngaySX,"ngày sản xuất"));
+            row(form, "Hạn sử dụng yyyy-MM-dd", com.quanlynhakhoa.view.hethong.DateInput.iso(hanSD,"hạn sử dụng"));
             row(form, "Số lượng", soLuong);
             row(form, "Đơn giá nhập", donGia);
             row(form, "Ghi chú", ghiChu);

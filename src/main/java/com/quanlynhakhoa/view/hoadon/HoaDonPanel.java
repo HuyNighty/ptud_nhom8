@@ -27,7 +27,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
+public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.config.tinhnang.RefreshableFeature {
 
     public interface PaymentNavigation { void open(String invoiceId); }
     private final CheDoXemHoaDon mode;

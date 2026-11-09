@@ -18,7 +18,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-public final class DanhMucDichVuPanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
+public final class DanhMucDichVuPanel extends JPanel implements com.quanlynhakhoa.config.tinhnang.RefreshableFeature {
 
     private final CheDoSuaDanhMucDichVu mode;
     private final JTextField txtTuKhoa = new JTextField(18);

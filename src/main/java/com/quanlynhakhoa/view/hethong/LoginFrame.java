@@ -1,11 +1,9 @@
-package com.quanlynhakhoa.hethong.giaodien;
+package com.quanlynhakhoa.view.hethong;
 
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.security.DesktopLoginGate;
 import com.quanlynhakhoa.security.JdbcAuthService;
 import com.quanlynhakhoa.security.DesktopSession;
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -19,7 +17,6 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.geom.GeneralPath;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.concurrent.CancellationException;

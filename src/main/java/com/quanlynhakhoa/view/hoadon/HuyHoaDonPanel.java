@@ -10,7 +10,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.controller.hoadon.HuyHoaDonController;
 import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
 import com.quanlynhakhoa.service.hoadon.HuyHoaDonService;
-import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
+import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
 import java.awt.*;
 import java.util.List;
 import javax.swing.*;

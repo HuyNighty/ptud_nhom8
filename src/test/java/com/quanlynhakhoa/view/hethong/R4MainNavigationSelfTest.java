@@ -1,5 +1,6 @@
-package com.quanlynhakhoa.hethong.giaodien;
+package com.quanlynhakhoa.view.hethong;
 
+import com.quanlynhakhoa.model.dieuhuong.DieuHuongChinh;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
@@ -23,7 +24,7 @@ public final class R4MainNavigationSelfTest {
         return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
     public static void main(String[] args) {
-        MainNavigationModel admin = new MainNavigationModel(session(VaiTroHeThong.SYSTEM_ADMIN));
+        DieuHuongChinh admin = new DieuHuongChinh(session(VaiTroHeThong.SYSTEM_ADMIN));
         check(admin.availableModules().size() == Module.values().length);
         check(admin.selected() == Module.HOME);
         for (Module item : Module.values()) {
@@ -38,7 +39,7 @@ public final class R4MainNavigationSelfTest {
         denied(() -> admin.select(Module.HOME));
         denied(() -> admin.select(Module.PATIENTS));
 
-        MainNavigationModel reception = new MainNavigationModel(session(VaiTroHeThong.RECEPTIONIST));
+        DieuHuongChinh reception = new DieuHuongChinh(session(VaiTroHeThong.RECEPTIONIST));
         check(reception.availableModules().equals(List.of(
                 Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING,
                 Module.MY_SCHEDULE, Module.DEBTS, Module.PAYMENTS, Module.RECEPTION)));
@@ -55,7 +56,7 @@ public final class R4MainNavigationSelfTest {
         denied(() -> reception.select(Module.PATIENTS));
         denied(() -> reception.select(Module.RECEPTION));
 
-        MainNavigationModel doctor = new MainNavigationModel(session(VaiTroHeThong.DOCTOR));
+        DieuHuongChinh doctor = new DieuHuongChinh(session(VaiTroHeThong.DOCTOR));
         check(doctor.availableModules().equals(List.of(
                 Module.HOME, Module.PATIENTS, Module.MEDICAL_RECORDS,
                 Module.EXAMINATIONS, Module.TREATMENT_PLANS, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE)));
@@ -65,25 +66,25 @@ public final class R4MainNavigationSelfTest {
         check(doctor.selected() == Module.MEDICAL_RECORDS);
         denied(() -> doctor.select(Module.WORKFORCE));
 
-        MainNavigationModel nurse = new MainNavigationModel(session(VaiTroHeThong.NURSE));
+        DieuHuongChinh nurse = new DieuHuongChinh(session(VaiTroHeThong.NURSE));
         check(nurse.availableModules().equals(List.of(
                 Module.HOME, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE, Module.EMERGENCY_KIT)));
         for (Module module : Module.values()) {
             if (!nurse.availableModules().contains(module)) denied(() -> nurse.select(module));
         }
-        MainNavigationModel manager = new MainNavigationModel(session(VaiTroHeThong.CLINIC_MANAGER));
+        DieuHuongChinh manager = new DieuHuongChinh(session(VaiTroHeThong.CLINIC_MANAGER));
         check(manager.availableModules().equals(List.of(
                 Module.HOME, Module.BILLING, Module.WORKFORCE,
                 Module.ACCOUNTS, Module.ROLES, Module.AUDIT,
                 Module.SERVICE_CATALOG, Module.MY_SCHEDULE, Module.SERVICES, Module.DEBTS, Module.INVOICE_CANCELLATIONS, Module.SHIFT_ASSIGNMENTS, Module.REVENUE_REPORTS)));
         manager.select(Module.WORKFORCE);
         denied(() -> manager.select(Module.INVENTORY));
-        MainNavigationModel inventory = new MainNavigationModel(session(VaiTroHeThong.INVENTORY_MANAGER));
+        DieuHuongChinh inventory = new DieuHuongChinh(session(VaiTroHeThong.INVENTORY_MANAGER));
         check(inventory.availableModules().equals(List.of(Module.HOME, Module.INVENTORY, Module.MY_SCHEDULE)));
         inventory.select(Module.INVENTORY);
         denied(() -> inventory.select(Module.BILLING));
         boolean nullRejected = false;
-        try { new MainNavigationModel(null); } catch (NullPointerException expected) { nullRejected = true; }
+        try { new DieuHuongChinh(null); } catch (NullPointerException expected) { nullRejected = true; }
         check(nullRejected);
         System.out.println("PASS: R4-A2 NAVIGATION MODEL TESTS (" + checks + " checks)");
         System.out.println("NO SWING WINDOW, NO DATABASE, NO SQL WRITES");

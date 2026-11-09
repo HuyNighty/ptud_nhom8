@@ -9,7 +9,7 @@ import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.security.NavigationPolicy;
-import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
+import com.quanlynhakhoa.config.tinhnang.FeatureBootstrap;
 import java.time.*;
 import java.util.*;
 import java.sql.SQLException;

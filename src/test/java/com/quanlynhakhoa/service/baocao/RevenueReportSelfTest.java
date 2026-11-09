@@ -7,7 +7,7 @@ import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
 import com.quanlynhakhoa.model.baocao.BaoCaoDoanhThu;
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.security.NavigationPolicy;
-import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
+import com.quanlynhakhoa.config.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import java.math.BigDecimal;

@@ -1,11 +1,11 @@
-package com.quanlynhakhoa.hethong.giaodien;
+package com.quanlynhakhoa.view.hethong;
 
 import com.quanlynhakhoa.model.tongquan.SoLieuNgay;
 import com.quanlynhakhoa.model.tongquan.LichHenTongQuan;
 import com.quanlynhakhoa.model.tongquan.DuLieuTongQuan;
 import com.quanlynhakhoa.model.tongquan.CongViecTongQuan;
 import com.quanlynhakhoa.model.tongquan.CanhBaoTonKho;
-import com.quanlynhakhoa.hethong.tongquan.DashboardService;
+import com.quanlynhakhoa.service.tongquan.TongQuanService;
 import com.quanlynhakhoa.model.tongquan.TomTatTongQuan;
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.security.DesktopSession;
@@ -29,7 +29,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
-import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -38,10 +37,10 @@ import java.awt.*;
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.security.NavigationPolicy;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.hethong.tongquan.DashboardService.*;
+import com.quanlynhakhoa.service.tongquan.TongQuanService.*;
 
 
-public final class DashboardPanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
+public final class TongQuanPanel extends JPanel implements com.quanlynhakhoa.config.tinhnang.RefreshableFeature {
     private static final Color NAVY = new Color(29, 61, 102);
     private static final Color MUTED = new Color(97, 115, 137);
     private static final Color BORDER = new Color(225, 233, 241);
@@ -50,7 +49,7 @@ public final class DashboardPanel extends JPanel implements com.quanlynhakhoa.he
     private static final Locale VIETNAMESE = Locale.forLanguageTag("vi-VN");
 
     private final DesktopSession session;
-    private final DashboardService service;
+    private final TongQuanService service;
     private final JLabel[] lblValues = new JLabel[4];
     private final JLabel[] lblDescriptions = new JLabel[4];
     private final JLabel lblStatus = label("Chưa tải dữ liệu", 12, MUTED, false);
@@ -74,16 +73,16 @@ public final class DashboardPanel extends JPanel implements com.quanlynhakhoa.he
     @Override public void refreshData() { if(SwingUtilities.isEventDispatchThread())refresh();else SwingUtilities.invokeLater(this::refresh); }
 
 
-    public DashboardPanel(DesktopSession session) {
-        this(session, new DashboardService(session, TeamDevConnection::open),
+    public TongQuanPanel(DesktopSession session) {
+        this(session, new TongQuanService(session, TeamDevConnection::open),
                 TeamDevConnection.hasLocalConfig());
     }
 
-    public DashboardPanel(DesktopSession session, DashboardService service) {
+    public TongQuanPanel(DesktopSession session, TongQuanService service) {
         this(session, service, true);
     }
 
-    private DashboardPanel(DesktopSession session, DashboardService service, boolean configured) {
+    private TongQuanPanel(DesktopSession session, TongQuanService service, boolean configured) {
         this.session = java.util.Objects.requireNonNull(session, "session");
         this.service = java.util.Objects.requireNonNull(service, "service");
         setLayout(new BorderLayout(0, 22));

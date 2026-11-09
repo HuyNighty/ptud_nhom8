@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.hethong.tongquan;
+package com.quanlynhakhoa.service.tongquan;
 
 import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.security.AccessDeniedException;
@@ -20,7 +20,7 @@ public final class DashboardOverviewSqlIT {
                 s.setString(1,role.name());try(ResultSet rows=s.executeQuery()){if(rows.next())account=rows.getString(1);}
             }
             DesktopSession session=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,account,role,false));
-            DashboardService service=new DashboardService(session,TeamDevConnection::open);
+            TongQuanService service=new TongQuanService(session,TeamDevConnection::open);
             var overview=service.loadOverview();
             check(overview.warnings().isEmpty(),role+" incomplete sections: "+overview.warnings());
             check(overview.days().size()==7,"seven calendar days");

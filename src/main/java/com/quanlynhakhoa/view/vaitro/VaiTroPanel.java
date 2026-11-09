@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.view.vaitro;
 
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
+import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
 import com.quanlynhakhoa.service.vaitro.TongQuanVaiTroService;

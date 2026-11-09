@@ -6,7 +6,7 @@ import com.quanlynhakhoa.security.BCryptPasswordVerifier;
 import com.quanlynhakhoa.security.JdbcAuthService;
 import com.quanlynhakhoa.security.LoginPolicy;
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.hethong.giaodien.LoginFrame;
+import com.quanlynhakhoa.view.hethong.LoginFrame;
 import java.time.Clock;
 import javax.swing.SwingUtilities;
 

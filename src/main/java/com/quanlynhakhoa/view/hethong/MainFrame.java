@@ -1,7 +1,8 @@
-package com.quanlynhakhoa.hethong.giaodien;
+package com.quanlynhakhoa.view.hethong;
 
-import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
-import com.quanlynhakhoa.hethong.tinhnang.FeatureRegistry;
+import com.quanlynhakhoa.model.dieuhuong.DieuHuongChinh;
+import com.quanlynhakhoa.config.tinhnang.FeatureBootstrap;
+import com.quanlynhakhoa.config.tinhnang.FeatureRegistry;
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
@@ -27,7 +28,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
@@ -36,7 +36,7 @@ public final class MainFrame extends JFrame {
     private static final Color BACKGROUND = new Color(245, 248, 252);
     private static final Color INK = new Color(28, 48, 75);
     private static final Color LINE = new Color(221, 231, 242);
-    private final MainNavigationModel model;
+    private final DieuHuongChinh model;
     private final DesktopSession session;
     private final FeatureRegistry registry;
     private final Set<Module> loaded = EnumSet.noneOf(Module.class);
@@ -56,7 +56,7 @@ public final class MainFrame extends JFrame {
     public MainFrame(DesktopSession session, Runnable returnToLogin, FeatureRegistry registry) {
         super("Nhóm 8 - Quản lý nha khoa");
         AppTheme.install();
-        this.model = new MainNavigationModel(session);
+        this.model = new DieuHuongChinh(session);
         this.session = session;
         this.registry = Objects.requireNonNull(registry, "registry");
         this.returnToLogin = Objects.requireNonNull(returnToLogin, "returnToLogin");
@@ -80,8 +80,8 @@ public final class MainFrame extends JFrame {
 
         pnlContent.setBackground(BACKGROUND);
         for (Module module : model.availableModules()) {
-            JPanel pnlPage = module == Module.HOME ? new DashboardPanel(session) : buildPlaceholder(module);
-            if(pnlPage instanceof DashboardPanel dashboard){
+            JPanel pnlPage = module == Module.HOME ? new TongQuanPanel(session) : buildPlaceholder(module);
+            if(pnlPage instanceof TongQuanPanel dashboard){
                 dashboard.setNavigation(this::openFromDashboard);
                 featurePages.put(Module.HOME,dashboard);loaded.add(Module.HOME);
             }
@@ -265,7 +265,7 @@ public final class MainFrame extends JFrame {
             JPanel pnlSlot = slots.get(module);
             pnlSlot.removeAll();
             // Responsive business pages own their table/long-content scrolling.
-            pnlSlot.add(pnlPage instanceof com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature
+            pnlSlot.add(pnlPage instanceof com.quanlynhakhoa.config.tinhnang.RefreshableFeature
                     ? pnlPage : scroll(pnlPage), BorderLayout.CENTER);
             pnlSlot.revalidate();
             pnlSlot.repaint();
@@ -290,7 +290,7 @@ public final class MainFrame extends JFrame {
         model.select(module);
         boolean existing=loaded.contains(module);
         loadFeature(module);
-        if(existing&&featurePages.get(module) instanceof com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature page)page.refreshData();
+        if(existing&&featurePages.get(module) instanceof com.quanlynhakhoa.config.tinhnang.RefreshableFeature page)page.refreshData();
         cards.show(pnlContent, module.name());
         if (btnOverview != null) {
             btnOverview.setBackground(module == Module.HOME ? new Color(43, 110, 190) : NAVY);

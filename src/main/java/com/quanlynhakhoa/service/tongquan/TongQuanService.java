@@ -1,5 +1,7 @@
-package com.quanlynhakhoa.hethong.tongquan;
+package com.quanlynhakhoa.service.tongquan;
 
+import com.quanlynhakhoa.dao.tongquan.TongQuanDao;
+import com.quanlynhakhoa.dao.tongquan.ChiTietTongQuanDao;
 import com.quanlynhakhoa.model.tongquan.TomTatTongQuan;
 import com.quanlynhakhoa.model.tongquan.SoLieuNgay;
 import com.quanlynhakhoa.model.tongquan.LichHenTongQuan;
@@ -18,17 +20,16 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Objects;
 import java.util.*;
-import java.time.LocalDateTime;
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 
-public final class DashboardService {
+public final class TongQuanService {
     private static final ZoneId CLINIC_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     private final DesktopSession session;
     private final ConnectionProvider connections;
     private final AuthorizationService authorization =
             new AuthorizationService(new RolePermissionPolicy());
-    private final DashboardDao dao = new DashboardDao();
+    private final TongQuanDao dao = new TongQuanDao();
 
     @FunctionalInterface
     public interface ConnectionProvider {
@@ -37,7 +38,7 @@ public final class DashboardService {
 
 
 
-    public DashboardService(DesktopSession session, ConnectionProvider connections) {
+    public TongQuanService(DesktopSession session, ConnectionProvider connections) {
         this.session = Objects.requireNonNull(session, "session");
         this.connections = Objects.requireNonNull(connections, "connections");
     }
@@ -70,7 +71,7 @@ public final class DashboardService {
             if (canExams) {
                 requireActive();
                 exams = session.role()==VaiTroHeThong.DOCTOR
-                        ? new DashboardDetailsDao().count(connection,"SELECT COUNT_BIG(*) FROM dbo.PhieuKham p JOIN dbo.TaiKhoan a ON a.maNhanVien=p.maNhanVien JOIN dbo.NhanVien n ON n.maNhanVien=a.maNhanVien WHERE p.trangThai='DANG_KHAM' AND a.maTaiKhoan=? AND a.vaiTro='DOCTOR' AND a.trangThai='HOAT_DONG' AND n.chucDanh='BS' AND n.trangThai='DANG_LAM_VIEC'",session.accountId())
+                        ? new ChiTietTongQuanDao().count(connection,"SELECT COUNT_BIG(*) FROM dbo.PhieuKham p JOIN dbo.TaiKhoan a ON a.maNhanVien=p.maNhanVien JOIN dbo.NhanVien n ON n.maNhanVien=a.maNhanVien WHERE p.trangThai='DANG_KHAM' AND a.maTaiKhoan=? AND a.vaiTro='DOCTOR' AND a.trangThai='HOAT_DONG' AND n.chucDanh='BS' AND n.trangThai='DANG_LAM_VIEC'",session.accountId())
                         : dao.countInProgress(connection);
             }
             if (canBilling) {
@@ -93,7 +94,7 @@ public final class DashboardService {
         requireActive();
         TomTatTongQuan summary=load();
         LocalDate today=summary.date();
-        DashboardDetailsDao details=new DashboardDetailsDao();
+        ChiTietTongQuanDao details=new ChiTietTongQuanDao();
         List<LichHenTongQuan> appointments=List.of();List<CongViecTongQuan> work=new ArrayList<>();
         List<CanhBaoTonKho> alerts=List.of();List<SoLieuNgay> days=new ArrayList<>();List<String> warnings=new ArrayList<>();
         boolean visitAccess=can(Quyen.MEDICAL_RECORD_READ), moneyAccess=can(Quyen.REVENUE_REPORT_READ);

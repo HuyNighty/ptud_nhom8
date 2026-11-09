@@ -422,7 +422,7 @@ public final class PhieuKhamPanel extends JPanel {
                 });
                 pnlCacNgay.add(btnNgay);
             }
-            com.quanlynhakhoa.hethong.giaodien.AppTheme.applyButtons(pnlCacNgay);
+            com.quanlynhakhoa.view.hethong.AppTheme.applyButtons(pnlCacNgay);
             pnlCacNgay.revalidate();
             pnlCacNgay.repaint();
         };

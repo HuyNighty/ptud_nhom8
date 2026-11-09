@@ -1,7 +1,7 @@
-package com.quanlynhakhoa.hethong.giaodien;
+package com.quanlynhakhoa.view.hethong;
 
 import com.quanlynhakhoa.security.KetQuaDangNhap;
-import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
+import com.quanlynhakhoa.config.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.security.DesktopSession;

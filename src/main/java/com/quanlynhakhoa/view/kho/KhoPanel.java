@@ -52,7 +52,7 @@ public final class KhoPanel extends JPanel {
             case 4 -> new com.quanlynhakhoa.view.kho.quytrinh.QuyTrinhKhoPanel(phienDangNhap);
             default -> throw new IllegalArgumentException("Tab inventory không hợp lệ: " + chiSo);
         };
-        com.quanlynhakhoa.hethong.giaodien.AppTheme.apply(panel);
+        com.quanlynhakhoa.view.hethong.AppTheme.apply(panel);
         tabbedPane.setComponentAt(chiSo, panel);
     }
 }

@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.service.hoadon;
 
+import com.quanlynhakhoa.config.tinhnang.FeatureRegistry;
+import com.quanlynhakhoa.config.tinhnang.FeaturePanelFactory;
 import com.quanlynhakhoa.view.hoadon.ThanhToanPanel;
 import com.quanlynhakhoa.view.hoadon.ThanhToanForm;
 import com.quanlynhakhoa.view.hoadon.TaoHoaDonDialog;
@@ -23,11 +25,10 @@ import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
-import com.quanlynhakhoa.hethong.tinhnang.*;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.security.DesktopSession;
-import com.quanlynhakhoa.hethong.giaodien.MainFrame;
+import com.quanlynhakhoa.view.hethong.MainFrame;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;

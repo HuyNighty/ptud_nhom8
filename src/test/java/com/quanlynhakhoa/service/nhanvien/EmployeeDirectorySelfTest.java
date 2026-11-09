@@ -2,7 +2,7 @@ package com.quanlynhakhoa.service.nhanvien;
 
 import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
-import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
+import com.quanlynhakhoa.config.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;

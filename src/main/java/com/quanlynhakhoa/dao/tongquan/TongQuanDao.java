@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.hethong.tongquan;
+package com.quanlynhakhoa.dao.tongquan;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
-final class DashboardDao {
+public final class TongQuanDao {
     private static final String PATIENTS = "SELECT COUNT_BIG(*) FROM dbo.BenhNhan";
     private static final String APPOINTMENTS = """
             SELECT COUNT_BIG(*) FROM dbo.LichHen
@@ -22,19 +22,19 @@ final class DashboardDao {
             WHERE thoiGian >= ? AND thoiGian < ?
             """;
 
-    long countPatients(Connection connection) throws SQLException {
+    public long countPatients(Connection connection) throws SQLException {
         return count(connection, PATIENTS);
     }
 
-    long countAppointments(Connection connection, LocalDate day) throws SQLException {
+    public long countAppointments(Connection connection, LocalDate day) throws SQLException {
         return countForDay(connection, APPOINTMENTS, day);
     }
 
-    long countInProgress(Connection connection) throws SQLException {
+    public long countInProgress(Connection connection) throws SQLException {
         return count(connection, IN_PROGRESS);
     }
 
-    BigDecimal collectedToday(Connection connection, LocalDate day) throws SQLException {
+    public BigDecimal collectedToday(Connection connection, LocalDate day) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(RECEIVED)) {
             statement.setQueryTimeout(10);
             bindDay(statement, day);

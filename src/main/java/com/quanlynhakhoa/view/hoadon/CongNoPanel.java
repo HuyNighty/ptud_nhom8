@@ -10,7 +10,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.controller.hoadon.CongNoController;
 import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
-import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
+import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.util.List;

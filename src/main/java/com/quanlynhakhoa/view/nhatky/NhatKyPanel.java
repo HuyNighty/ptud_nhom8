@@ -5,7 +5,7 @@ import com.quanlynhakhoa.model.nhatky.BanGhiNhatKy;
 import com.quanlynhakhoa.model.nhatky.BoLocNhatKy;
 import com.quanlynhakhoa.service.nhatky.NhatKyService;
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
+import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
@@ -83,9 +83,9 @@ public final class NhatKyPanel extends JPanel implements RefreshableFeature {
         controls.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(220, 231, 242)), new EmptyBorder(7, 10, 7, 10)));
         controls.add(new JLabel("Từ ngày (yyyy-MM-dd):"));
-        controls.add(com.quanlynhakhoa.hethong.giaodien.DateInput.iso(from,"ngày bắt đầu"));
+        controls.add(com.quanlynhakhoa.view.hethong.DateInput.iso(from,"ngày bắt đầu"));
         controls.add(new JLabel("Đến ngày:"));
-        controls.add(com.quanlynhakhoa.hethong.giaodien.DateInput.iso(to,"ngày kết thúc"));
+        controls.add(com.quanlynhakhoa.view.hethong.DateInput.iso(to,"ngày kết thúc"));
         controls.add(new JLabel("Tìm:"));
         controls.add(keyword);
         controls.add(outcome);

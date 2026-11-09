@@ -5,9 +5,9 @@ import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.security.NavigationPolicy;
-import com.quanlynhakhoa.hethong.giaodien.MainFrame;
-import com.quanlynhakhoa.hethong.giaodien.MainNavigationModel;
-import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
+import com.quanlynhakhoa.view.hethong.MainFrame;
+import com.quanlynhakhoa.model.dieuhuong.DieuHuongChinh;
+import com.quanlynhakhoa.config.tinhnang.FeatureBootstrap;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Set;
@@ -75,7 +75,7 @@ public final class R4FinalShellSelfTest {
         denied(() -> nav.requireOpen(null, Module.RECEPTION), "anonymous reception forced route denied");
         for (VaiTroHeThong role : VaiTroHeThong.values()) {
             DesktopSession session = user(role);
-            MainNavigationModel model = new MainNavigationModel(session);
+            DieuHuongChinh model = new DieuHuongChinh(session);
             // Explicit business expectation, independent of Module.openPermission().
             boolean receptionAllowed = role == VaiTroHeThong.RECEPTIONIST || role == VaiTroHeThong.SYSTEM_ADMIN;
             check(auth.can(session, Quyen.PATIENT_CHECK_IN) == receptionAllowed,

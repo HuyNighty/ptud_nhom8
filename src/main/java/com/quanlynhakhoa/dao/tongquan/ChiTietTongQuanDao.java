@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.hethong.tongquan;
+package com.quanlynhakhoa.dao.tongquan;
 
 import com.quanlynhakhoa.model.tongquan.LichHenTongQuan;
 import com.quanlynhakhoa.model.tongquan.CanhBaoTonKho;
@@ -6,20 +6,20 @@ import java.sql.*;
 import java.time.*;
 import java.math.BigDecimal;
 import java.util.*;
-import com.quanlynhakhoa.hethong.tongquan.DashboardService.*;
+import com.quanlynhakhoa.service.tongquan.TongQuanService.*;
 
 /** Bounded, read-only queries for the overview. */
-final class DashboardDetailsDao {
+public final class ChiTietTongQuanDao {
     private PreparedStatement prepare(Connection c, String sql) throws SQLException {
         PreparedStatement s=c.prepareStatement(sql);s.setQueryTimeout(10);return s;
     }
-    long count(Connection c, String sql, String account) throws SQLException {
+    public long count(Connection c, String sql, String account) throws SQLException {
         try(PreparedStatement s=prepare(c,sql)) {
             if(account!=null)s.setString(1,account);
             try(ResultSet rows=s.executeQuery()){if(!rows.next())throw new SQLException("Missing count");return rows.getLong(1);}
         }
     }
-    List<LichHenTongQuan> appointments(Connection c, LocalDate today) throws SQLException {
+    public List<LichHenTongQuan> appointments(Connection c, LocalDate today) throws SQLException {
         String sql="""
             SELECT TOP (8) l.maLichHen,l.thoiGianHen,b.hoTen,n.hoTen,l.trangThai
             FROM dbo.LichHen l JOIN dbo.BenhNhan b ON b.maBenhNhan=l.maBenhNhan
@@ -35,7 +35,7 @@ final class DashboardDetailsDao {
         }
         return List.copyOf(result);
     }
-    List<CanhBaoTonKho> stock(Connection c, LocalDate today) throws SQLException {
+    public List<CanhBaoTonKho> stock(Connection c, LocalDate today) throws SQLException {
         List<CanhBaoTonKho> result=new ArrayList<>();
         String low="""
             WITH items AS (
@@ -72,7 +72,7 @@ final class DashboardDetailsDao {
         }
         return List.copyOf(result);
     }
-    Map<LocalDate,Long> visits(Connection c, LocalDate today, String doctorAccount) throws SQLException {
+    public Map<LocalDate,Long> visits(Connection c, LocalDate today, String doctorAccount) throws SQLException {
         String sql="""
             SELECT CAST(p.thoiGianTiepNhan AS date),COUNT_BIG(*) FROM dbo.PhieuKham p
             WHERE p.thoiGianTiepNhan>=? AND p.thoiGianTiepNhan<? AND p.trangThai<>'DA_HUY'
@@ -84,7 +84,7 @@ final class DashboardDetailsDao {
         }
         return values;
     }
-    Map<LocalDate,BigDecimal> collections(Connection c, LocalDate today) throws SQLException {
+    public Map<LocalDate,BigDecimal> collections(Connection c, LocalDate today) throws SQLException {
         Map<LocalDate,BigDecimal> values=new HashMap<>();
         try(PreparedStatement s=prepare(c,"SELECT CAST(thoiGian AS date),SUM(soTien) FROM dbo.DongTienHoaDon WHERE thoiGian>=? AND thoiGian<? GROUP BY CAST(thoiGian AS date)")) {
             s.setObject(1,today.minusDays(6).atStartOfDay());s.setObject(2,today.plusDays(1).atStartOfDay());

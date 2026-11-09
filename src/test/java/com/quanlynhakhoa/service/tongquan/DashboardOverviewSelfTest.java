@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.hethong.tongquan;
+package com.quanlynhakhoa.service.tongquan;
 
 import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.security.AccessDeniedException;
@@ -46,7 +46,7 @@ public final class DashboardOverviewSelfTest {
         System.setProperty("java.awt.headless","true");
         for(VaiTroHeThong role:VaiTroHeThong.values()){
             var session=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"TEST",role,false));
-            List<String> queries=new ArrayList<>();DashboardService service=new DashboardService(session,()->connection(queries,false));
+            List<String> queries=new ArrayList<>();TongQuanService service=new TongQuanService(session,()->connection(queries,false));
             var result=service.loadOverview();check(result.warnings().isEmpty(),"no synthetic failures");check(result.days().size()==7,"seven zero-filled days");
             for(var day:result.days()){
                 check((day.visits()!=null)==service.can(Quyen.MEDICAL_RECORD_READ),"visit permission");
@@ -59,13 +59,13 @@ public final class DashboardOverviewSelfTest {
             int before=queries.size();session.logout();boolean denied=false;try{service.loadOverview();}catch(AccessDeniedException expected){denied=true;}check(denied&&before==queries.size(),"logout rejects before SQL");
         }
         var admin=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"TEST",VaiTroHeThong.SYSTEM_ADMIN,false));
-        var partial=new DashboardService(admin,()->connection(new ArrayList<>(),true)).loadOverview();
+        var partial=new TongQuanService(admin,()->connection(new ArrayList<>(),true)).loadOverview();
         check(partial.warnings().contains("Chưa tải được cảnh báo kho"),"stock error reported");
         check(partial.work().size()==3&&partial.days().get(0).collected()!=null,"unrelated sections survive");
-        var panel=new com.quanlynhakhoa.hethong.giaodien.DashboardPanel[1];
+        var panel=new com.quanlynhakhoa.view.hethong.TongQuanPanel[1];
         var destination=new String[1];
         javax.swing.SwingUtilities.invokeAndWait(()->{
-            panel[0]=new com.quanlynhakhoa.hethong.giaodien.DashboardPanel(admin,new DashboardService(admin,()->connection(new ArrayList<>(),false)));
+            panel[0]=new com.quanlynhakhoa.view.hethong.TongQuanPanel(admin,new TongQuanService(admin,()->connection(new ArrayList<>(),false)));
             panel[0].setNavigation((module,context)->destination[0]=module.name()+":"+context);
         });
         for(int i=0;i<100;i++){

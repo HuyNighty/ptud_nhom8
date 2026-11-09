@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.hethong.giaodien;
+package com.quanlynhakhoa.view.hethong;
 
 import com.quanlynhakhoa.view.benhnhan.ChonNgayDialog;
 import java.awt.BorderLayout;
