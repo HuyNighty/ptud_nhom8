@@ -1,11 +1,11 @@
-package com.quanlynhakhoa.quantri.vaitro.catalog;
+package com.quanlynhakhoa.entity;
 
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 /** Immutable V8 catalog entity; separate from the legacy Role enum in C2A. */
-public final class RoleEntity {
+public final class VaiTro {
     private static final Pattern CODE = Pattern.compile("[A-Z][A-Z0-9_]{0,31}");
     private static final Set<String> SYSTEM_CODES = Set.of(
             "RECEPTIONIST", "DOCTOR", "NURSE", "CLINIC_MANAGER", "INVENTORY_MANAGER", "SYSTEM_ADMIN");
@@ -17,7 +17,7 @@ public final class RoleEntity {
     private final boolean protectedRole;
     private final byte[] revision;
 
-    public RoleEntity(String code, String displayName, String description, boolean active,
+    public VaiTro(String code, String displayName, String description, boolean active,
                       boolean system, boolean protectedRole, byte[] revision) {
         requireCode(code);
         if (displayName == null || displayName.isBlank() || displayName.length() > 100)
@@ -52,7 +52,7 @@ public final class RoleEntity {
     public byte[] revision() { return revision.clone(); }
 
     @Override public boolean equals(Object other) {
-        return other instanceof RoleEntity role && code.equals(role.code);
+        return other instanceof VaiTro role && code.equals(role.code);
     }
     @Override public int hashCode() { return Objects.hash(code); }
     @Override public String toString() { return "RoleEntity[code=" + code + "]"; }

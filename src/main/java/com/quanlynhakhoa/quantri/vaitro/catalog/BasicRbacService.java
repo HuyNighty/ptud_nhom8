@@ -1,5 +1,8 @@
 package com.quanlynhakhoa.quantri.vaitro.catalog;
 
+import com.quanlynhakhoa.model.vaitro.DongVaiTro;
+import com.quanlynhakhoa.model.vaitro.DongQuyen;
+import com.quanlynhakhoa.entity.VaiTro;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.JdbcSessionVerifier;
@@ -24,8 +27,8 @@ import java.util.regex.Pattern;
  */
 public final class BasicRbacService {
     @FunctionalInterface public interface Connections { Connection open() throws SQLException; }
-    public record RoleRow(String code, String name, boolean system, boolean active) { }
-    public record PermissionRow(String code, String name, boolean builtIn) { }
+
+
     private static final Pattern PERMISSION_CODE = Pattern.compile("[A-Z][A-Z0-9_]{0,63}");
     private final DesktopSession session;
     private final Connections connections;
@@ -63,30 +66,30 @@ public final class BasicRbacService {
             return value;
         }
     }
-    public List<RoleRow> listRoles() throws SQLException {
+    public List<DongVaiTro> listRoles() throws SQLException {
         requireAdmin();
         requireWorker();
         try (Connection c = connections.open()) {
             verify(c);
             epoch(c);
-            List<RoleRow> result = new ArrayList<>();
+            List<DongVaiTro> result = new ArrayList<>();
             try (PreparedStatement ps = statement(c,
                     "SELECT roleCode,roleName,isSystem,enabled FROM dbo.VaiTro ORDER BY roleCode");
                  ResultSet rows = ps.executeQuery()) {
-                while (rows.next()) result.add(new RoleRow(rows.getString(1), rows.getNString(2),
+                while (rows.next()) result.add(new DongVaiTro(rows.getString(1), rows.getNString(2),
                         rows.getBoolean(3), rows.getBoolean(4)));
             }
             verify(c);
             return List.copyOf(result);
         }
     }
-    public List<PermissionRow> listPermissions() throws SQLException {
+    public List<DongQuyen> listPermissions() throws SQLException {
         requireAdmin();
         requireWorker();
         try (Connection c = connections.open()) {
             verify(c);
             epoch(c);
-            List<PermissionRow> result = new ArrayList<>();
+            List<DongQuyen> result = new ArrayList<>();
             try (PreparedStatement ps = statement(c,
                     "SELECT permissionCode,permissionName FROM dbo.Quyen ORDER BY permissionCode");
                  ResultSet rows = ps.executeQuery()) {
@@ -96,7 +99,7 @@ public final class BasicRbacService {
                         throw new SQLException("RBAC permission code không hợp lệ.");
                     boolean builtIn = false;
                     for (Permission p : Permission.values()) if (p.name().equals(code)) builtIn = true;
-                    result.add(new PermissionRow(code, rows.getNString(2), builtIn));
+                    result.add(new DongQuyen(code, rows.getNString(2), builtIn));
                 }
             }
             verify(c);
@@ -107,7 +110,7 @@ public final class BasicRbacService {
             throws SQLException {
         requireAdmin();
         requireWorker();
-        RoleEntity.requireCode(code);
+        VaiTro.requireCode(code);
         if (isLegacyRole(code)) throw new IllegalArgumentException("Không được tạo lại vai trò hệ thống.");
         String cleanName = label(name, 100, "Tên vai trò");
         String cleanDescription = description == null ? "" : description.trim();

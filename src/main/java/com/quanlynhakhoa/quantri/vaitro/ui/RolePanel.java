@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.vaitro.ui;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
-import com.quanlynhakhoa.quantri.vaitro.RoleOverview;
+import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
 import com.quanlynhakhoa.quantri.vaitro.RoleOverviewService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -50,7 +50,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
     private final JTextArea grantedList = new JTextArea(8, 20);
     private final PermissionMatrixModel matrix = new PermissionMatrixModel();
     private final JTable table = new JTable(matrix);
-    private List<RoleOverview> data = List.of();
+    private List<TongQuanVaiTro> data = List.of();
     private boolean loading;
     private boolean reloadPending;
 
@@ -177,8 +177,8 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
         loading = true;
         setControls();
         status.setText("Đang tải số tài khoản theo vai trò...");
-        new SwingWorker<List<RoleOverview>, Void>() {
-            @Override protected List<RoleOverview> doInBackground() throws Exception {
+        new SwingWorker<List<TongQuanVaiTro>, Void>() {
+            @Override protected List<TongQuanVaiTro> doInBackground() throws Exception {
                 return service.load();
             }
             @Override protected void done() {
@@ -193,12 +193,12 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
                     return;
                 }
                 try {
-                    List<RoleOverview> result = get();
+                    List<TongQuanVaiTro> result = get();
                     if (!reloadPending) {
                         data = result;
                         matrix.setRows(result);
                         showRole();
-                        int total = result.stream().mapToInt(RoleOverview::accountCount).sum();
+                        int total = result.stream().mapToInt(TongQuanVaiTro::accountCount).sum();
                         status.setText(result.size() + " vai trò · " + total
                                 + " tài khoản (mọi trạng thái)");
                     }
@@ -235,7 +235,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
 
     private void showRole() {
         Role selected = (Role) rolePicker.getSelectedItem();
-        RoleOverview overview = data.stream()
+        TongQuanVaiTro overview = data.stream()
                 .filter(row -> row.role() == selected).findFirst().orElse(null);
         if (overview == null) {
             clearDetails();
@@ -315,8 +315,8 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
 
     private static final class PermissionMatrixModel extends AbstractTableModel {
         private static final Role[] ROLES = Role.values();
-        private List<RoleOverview> rows = List.of();
-        void setRows(List<RoleOverview> values) {
+        private List<TongQuanVaiTro> rows = List.of();
+        void setRows(List<TongQuanVaiTro> values) {
             rows = List.copyOf(values);
             fireTableDataChanged();
         }

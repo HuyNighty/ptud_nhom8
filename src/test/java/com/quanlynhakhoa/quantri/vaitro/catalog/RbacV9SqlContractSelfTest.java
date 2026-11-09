@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.vaitro.catalog;
 
+import com.quanlynhakhoa.entity.VaiTro;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
@@ -58,7 +59,7 @@ public final class RbacV9SqlContractSelfTest {
         for(List<String> row:roles) {
             check(actualRoles.add(row.get(0)),"Duplicate role seed");
             Role.valueOf(row.get(0));
-            RoleEntity entity=new RoleEntity(row.get(0),row.get(1),row.get(2),row.get(3).equals("1"),
+            VaiTro entity=new VaiTro(row.get(0),row.get(1),row.get(2),row.get(3).equals("1"),
                     row.get(4).equals("1"),row.get(5).equals("1"),new byte[8]);
             check(entity.active()&&entity.system(),"Legacy seed active/system");
             check(entity.protectedRole()==(entity.code().equals("SYSTEM_ADMIN")),"Protected role parity");

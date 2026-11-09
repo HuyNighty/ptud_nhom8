@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.vaitro;
 
+import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
@@ -113,7 +114,7 @@ public final class RoleOverviewSelfTest {
             return fakeConnection(closes, queries, counts);
         };
         DesktopSession manager = session(Role.CLINIC_MANAGER);
-        List<RoleOverview> overviews = new RoleOverviewService(manager, provider).load();
+        List<TongQuanVaiTro> overviews = new RoleOverviewService(manager, provider).load();
         check(overviews.size() == Role.values().length, "Six summary rows");
         check(overviews.get(0).role() == Role.RECEPTIONIST, "Order matches canonical Role enum");
         check(overviews.get(0).accountCount() == 1, "Receptionist count");
@@ -127,7 +128,7 @@ public final class RoleOverviewSelfTest {
         reject(UnsupportedOperationException.class,
                 () -> overviews.get(1).permissions().clear());
         reject(IllegalArgumentException.class,
-                () -> new RoleOverview(Role.DOCTOR, policy.permissionsFor(Role.DOCTOR), -1));
+                () -> new TongQuanVaiTro(Role.DOCTOR, policy.permissionsFor(Role.DOCTOR), -1));
 
         manager.logout();
         reject(AccessDeniedException.class, () -> new RoleOverviewService(manager, provider).load());

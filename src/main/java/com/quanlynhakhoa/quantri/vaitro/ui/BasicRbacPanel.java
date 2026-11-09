@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.quantri.vaitro.ui;
 
+import com.quanlynhakhoa.model.vaitro.DongVaiTro;
+import com.quanlynhakhoa.model.vaitro.DongQuyen;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -148,17 +150,17 @@ public final class BasicRbacPanel extends JPanel {
         working = true;
         setEnabledActions(false);
         status.setText("Đang đọc danh mục quyền...");
-        new SwingWorker<List<BasicRbacService.PermissionRow>, Void>() {
-            @Override protected List<BasicRbacService.PermissionRow> doInBackground() throws Exception {
+        new SwingWorker<List<DongQuyen>, Void>() {
+            @Override protected List<DongQuyen> doInBackground() throws Exception {
                 return service.listPermissions();
             }
             @Override protected void done() {
                 working = false;
                 setEnabledActions(true);
                 try {
-                    List<BasicRbacService.PermissionRow> rows = get();
+                    List<DongQuyen> rows = get();
                     permissionModel.setRowCount(0);
-                    for (BasicRbacService.PermissionRow p : rows) permissionModel.addRow(new Object[]{
+                    for (DongQuyen p : rows) permissionModel.addRow(new Object[]{
                             p.code(), p.name(), p.builtIn() ? "Đã có trong ứng dụng" : "Chưa tích hợp nghiệp vụ"});
                     status.setText("Đã tải " + rows.size() + " quyền V9.");
                 } catch (Exception ex) { status.setText(safeFailure(ex)); }
@@ -188,17 +190,17 @@ public final class BasicRbacPanel extends JPanel {
         working = true;
         setEnabledActions(false);
         status.setText("Đang đọc vai trò...");
-        new SwingWorker<List<BasicRbacService.RoleRow>, Void>() {
-            @Override protected List<BasicRbacService.RoleRow> doInBackground() throws Exception {
+        new SwingWorker<List<DongVaiTro>, Void>() {
+            @Override protected List<DongVaiTro> doInBackground() throws Exception {
                 return service.listRoles();
             }
             @Override protected void done() {
                 working = false;
                 setEnabledActions(true);
                 try {
-                    List<BasicRbacService.RoleRow> rows = get();
+                    List<DongVaiTro> rows = get();
                     model.setRowCount(0);
-                    for (BasicRbacService.RoleRow r : rows) model.addRow(new Object[]{
+                    for (DongVaiTro r : rows) model.addRow(new Object[]{
                             r.code(), r.name(), r.system() ? "Hệ thống" : "Tùy chỉnh",
                             r.active() ? "Đang bật" : "Đã tắt"});
                     status.setText("Đã tải " + rows.size() + " vai trò V9.");
