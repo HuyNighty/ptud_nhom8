@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.nhanvien;
 
 import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
-import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -28,7 +28,7 @@ public final class EmployeeDirectoryService {
         this.connections = Objects.requireNonNull(connections, "connections");
     }
 
-    public KetQuaDanhSachNhanVien search(String keyword, EmployeeStatus status) throws SQLException {
+    public KetQuaDanhSachNhanVien search(String keyword, TrangThaiNhanVien status) throws SQLException {
         authorization.require(session, Permission.WORKFORCE_READ);
         String normalized = Objects.requireNonNull(keyword, "keyword").trim();
         if (normalized.length() > 80) {

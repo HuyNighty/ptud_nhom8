@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -95,7 +95,7 @@ public final class JdbcAuthTransactionSelfTest {
         check(!service(blank).authenticate(" ", "correct").authenticated(), "blank rejects");
         check(blank.opens == 0, "blank never accesses database");
 
-        check(AccountStatus.HOAT_DONG != null && LockSource.FAILED_LOGIN != null,
+        check(TrangThaiTaiKhoan.HOAT_DONG != null && NguonKhoaTaiKhoan.FAILED_LOGIN != null,
                 "compile-time enum linkage");
         System.out.println("PASS: R3-A2B TRANSACTION SYNTHETIC TESTS (" + checks + " checks)");
         System.out.println("FAKE JDBC ONLY; NO REAL DB CONNECTION OR WRITES");

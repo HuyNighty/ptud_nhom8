@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.quantri.taikhoan.dao;
 
 import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -51,12 +51,12 @@ public final class AccountDao {
                 rs.getString("tenHienThi"),
                 rs.getString("matKhauHash"),
                 VaiTroHeThong.valueOf(rs.getString("vaiTro")),
-                AccountStatus.valueOf(rs.getString("trangThai")),
+                TrangThaiTaiKhoan.valueOf(rs.getString("trangThai")),
                 rs.getInt("soLanSai"),
                 at(rs, "lanSaiDau"),
                 at(rs, "khoaLuc"),
                 at(rs, "khoaDen"),
-                lock == null ? null : LockSource.valueOf(lock),
+                lock == null ? null : NguonKhoaTaiKhoan.valueOf(lock),
                 rs.getString("lyDoKhoa"),
                 rs.getBoolean("phaiDoiMatKhau"),
                 at(rs, "matKhauCapNhatLuc"),

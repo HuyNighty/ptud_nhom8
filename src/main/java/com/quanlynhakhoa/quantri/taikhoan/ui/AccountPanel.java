@@ -10,12 +10,12 @@ import com.quanlynhakhoa.model.taikhoan.NhanVienDuDieuKien;
 import com.quanlynhakhoa.quantri.taikhoan.EligibleEmployeeDao;
 import com.quanlynhakhoa.quantri.taikhoan.EligibleEmployeeService;
 import com.quanlynhakhoa.quantri.taikhoan.AccountStateService;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
@@ -65,7 +65,7 @@ public final class AccountPanel extends JPanel {
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
     private final JTextField txtKeyword = new JTextField(19);
     private final JComboBox<VaiTroHeThong> cmbRoleFilter = new JComboBox<>();
-    private final JComboBox<AccountStatus> cmbStatusFilter = new JComboBox<>();
+    private final JComboBox<TrangThaiTaiKhoan> cmbStatusFilter = new JComboBox<>();
     private final JButton btnSearch = new JButton("Tìm kiếm");
     private final JButton btnRefresh = new JButton("Làm mới");
     private final JButton btnCreate = new JButton("Tạo tài khoản");
@@ -180,14 +180,14 @@ public final class AccountPanel extends JPanel {
         cmbRoleFilter.addItem(null);
         for (VaiTroHeThong role : VaiTroHeThong.values()) cmbRoleFilter.addItem(role);
         cmbStatusFilter.addItem(null);
-        for (AccountStatus status : AccountStatus.values()) cmbStatusFilter.addItem(status);
+        for (TrangThaiTaiKhoan status : TrangThaiTaiKhoan.values()) cmbStatusFilter.addItem(status);
         cmbRoleFilter.setRenderer(roleRenderer());
         cmbStatusFilter.setRenderer(new DefaultListCellRenderer() {
             @Override public java.awt.Component getListCellRendererComponent(
                     javax.swing.JList<?> lstValues, Object value, int index,
                     boolean selected, boolean focus) {
                 super.getListCellRendererComponent(lstValues, value, index, selected, focus);
-                setText(value == null ? "Tất cả trạng thái" : statusLabel((AccountStatus) value));
+                setText(value == null ? "Tất cả trạng thái" : statusLabel((TrangThaiTaiKhoan) value));
                 return this;
             }
         });
@@ -234,7 +234,7 @@ public final class AccountPanel extends JPanel {
             return;
         }
         VaiTroHeThong role = (VaiTroHeThong) cmbRoleFilter.getSelectedItem();
-        AccountStatus status = (AccountStatus) cmbStatusFilter.getSelectedItem();
+        TrangThaiTaiKhoan status = (TrangThaiTaiKhoan) cmbStatusFilter.getSelectedItem();
         loading = true;
         updateControls();
         lblStatus.setText("Đang tải dữ liệu...");
@@ -458,10 +458,10 @@ public final class AccountPanel extends JPanel {
         btnCreate.setEnabled(ready);
         DongDanhSachTaiKhoan row = selectedAccount();
         boolean targetAllowed = ready && row != null && row.role() != VaiTroHeThong.SYSTEM_ADMIN;
-        btnLock.setEnabled(targetAllowed && row.status() == AccountStatus.HOAT_DONG
+        btnLock.setEnabled(targetAllowed && row.status() == TrangThaiTaiKhoan.HOAT_DONG
                 && !session.accountId().equalsIgnoreCase(row.accountId()));
-        btnUnlock.setEnabled(targetAllowed && row.status() == AccountStatus.BI_KHOA
-                && row.lockSource() == LockSource.ADMIN_ACTION);
+        btnUnlock.setEnabled(targetAllowed && row.status() == TrangThaiTaiKhoan.BI_KHOA
+                && row.lockSource() == NguonKhoaTaiKhoan.ADMIN_ACTION);
     }
 
     private void requestStateChange(boolean locking) {
@@ -564,7 +564,7 @@ public final class AccountPanel extends JPanel {
         };
     }
 
-    private static String statusLabel(AccountStatus status) {
+    private static String statusLabel(TrangThaiTaiKhoan status) {
         return switch (status) {
             case HOAT_DONG -> "Hoạt động";
             case BI_KHOA -> "Bị khóa";

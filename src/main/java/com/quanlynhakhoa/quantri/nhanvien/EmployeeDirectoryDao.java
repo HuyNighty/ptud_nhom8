@@ -2,7 +2,7 @@ package com.quanlynhakhoa.quantri.nhanvien;
 
 import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.model.nhanvien.DongDanhSachNhanVien;
-import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.Date;
@@ -31,7 +31,7 @@ public final class EmployeeDirectoryDao {
 
 
 
-    public KetQuaDanhSachNhanVien search(Connection connection, String keyword, EmployeeStatus status) throws SQLException {
+    public KetQuaDanhSachNhanVien search(Connection connection, String keyword, TrangThaiNhanVien status) throws SQLException {
         Objects.requireNonNull(connection, "connection");
         Objects.requireNonNull(keyword, "keyword");
         try (PreparedStatement statement = connection.prepareStatement(SEARCH_SQL)) {
@@ -56,7 +56,7 @@ public final class EmployeeDirectoryDao {
                             result.getString("maNhanVien"),
                             result.getNString("hoTen"),
                             result.getString("chucDanh"),
-                            EmployeeStatus.valueOf(result.getString("trangThai")),
+                            TrangThaiNhanVien.valueOf(result.getString("trangThai")),
                             joined == null ? null : joined.toLocalDate(),
                             result.getString("maTaiKhoan"),
                             accountRole == null ? null : VaiTroHeThong.valueOf(accountRole)));

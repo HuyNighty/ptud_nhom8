@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.model.taikhoan;
 
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.time.LocalDateTime;
 
@@ -13,12 +13,12 @@ public final class ThongTinTaiKhoan {
     private final String displayName;
     private final String passwordHash;
     private final VaiTroHeThong role;
-    private final AccountStatus status;
+    private final TrangThaiTaiKhoan status;
     private final int failedAttempts;
     private final LocalDateTime firstFailureAt;
     private final LocalDateTime lockedAt;
     private final LocalDateTime lockedUntil;
-    private final LockSource lockSource;
+    private final NguonKhoaTaiKhoan lockSource;
     private final String lockReason;
     private final boolean forcePasswordChange;
     private final LocalDateTime passwordUpdatedAt;
@@ -28,7 +28,7 @@ public final class ThongTinTaiKhoan {
     private final LocalDateTime disabledAt;
     private final String disableReason;
 
-    public ThongTinTaiKhoan(String id, String employeeId, String username, String displayName, String passwordHash, VaiTroHeThong role, AccountStatus status, int failedAttempts, LocalDateTime firstFailureAt, LocalDateTime lockedAt, LocalDateTime lockedUntil, LockSource lockSource, String lockReason, boolean forcePasswordChange, LocalDateTime passwordUpdatedAt, LocalDateTime lastLoginAt, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime disabledAt, String disableReason) {
+    public ThongTinTaiKhoan(String id, String employeeId, String username, String displayName, String passwordHash, VaiTroHeThong role, TrangThaiTaiKhoan status, int failedAttempts, LocalDateTime firstFailureAt, LocalDateTime lockedAt, LocalDateTime lockedUntil, NguonKhoaTaiKhoan lockSource, String lockReason, boolean forcePasswordChange, LocalDateTime passwordUpdatedAt, LocalDateTime lastLoginAt, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime disabledAt, String disableReason) {
         this.id = id;
         this.employeeId = employeeId;
         this.username = username;
@@ -57,12 +57,12 @@ public final class ThongTinTaiKhoan {
     public String displayName() { return displayName; }
     public String passwordHash() { return passwordHash; }
     public VaiTroHeThong role() { return role; }
-    public AccountStatus status() { return status; }
+    public TrangThaiTaiKhoan status() { return status; }
     public int failedAttempts() { return failedAttempts; }
     public LocalDateTime firstFailureAt() { return firstFailureAt; }
     public LocalDateTime lockedAt() { return lockedAt; }
     public LocalDateTime lockedUntil() { return lockedUntil; }
-    public LockSource lockSource() { return lockSource; }
+    public NguonKhoaTaiKhoan lockSource() { return lockSource; }
     public String lockReason() { return lockReason; }
     public boolean forcePasswordChange() { return forcePasswordChange; }
     public LocalDateTime passwordUpdatedAt() { return passwordUpdatedAt; }

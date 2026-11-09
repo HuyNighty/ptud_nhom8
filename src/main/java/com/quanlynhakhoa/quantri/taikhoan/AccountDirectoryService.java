@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
 import com.quanlynhakhoa.model.taikhoan.KetQuaDanhSachTaiKhoan;
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -29,7 +29,7 @@ public final class AccountDirectoryService {
     }
 
     public KetQuaDanhSachTaiKhoan search(String keyword, VaiTroHeThong role,
-                                             AccountStatus status) throws SQLException {
+                                             TrangThaiTaiKhoan status) throws SQLException {
         authorization.require(session, Permission.ACCOUNT_MANAGE);
         String normalized = Objects.requireNonNull(keyword, "keyword").trim();
         if (normalized.length() > 80) {

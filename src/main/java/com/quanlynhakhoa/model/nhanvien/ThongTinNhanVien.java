@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.model.nhanvien;
 
-import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import java.time.LocalDate;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
@@ -8,10 +8,10 @@ public final class ThongTinNhanVien {
     private final String id;
     private final String fullName;
     private final String jobTitle;
-    private final EmployeeStatus status;
+    private final TrangThaiNhanVien status;
     private final LocalDate departureDate;
 
-    public ThongTinNhanVien(String id, String fullName, String jobTitle, EmployeeStatus status, LocalDate departureDate) {
+    public ThongTinNhanVien(String id, String fullName, String jobTitle, TrangThaiNhanVien status, LocalDate departureDate) {
         this.id = id;
         this.fullName = fullName;
         this.jobTitle = jobTitle;
@@ -22,7 +22,7 @@ public final class ThongTinNhanVien {
     public String id() { return id; }
     public String fullName() { return fullName; }
     public String jobTitle() { return jobTitle; }
-    public EmployeeStatus status() { return status; }
+    public TrangThaiNhanVien status() { return status; }
     public LocalDate departureDate() { return departureDate; }
 
     @Override

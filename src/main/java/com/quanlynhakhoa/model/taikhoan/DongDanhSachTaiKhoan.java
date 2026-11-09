@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.model.taikhoan;
 
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import java.time.LocalDateTime;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
@@ -13,12 +13,12 @@ public final class DongDanhSachTaiKhoan {
     private final String employeeId;
     private final String employeeName;
     private final VaiTroHeThong role;
-    private final AccountStatus status;
+    private final TrangThaiTaiKhoan status;
     private final boolean passwordChangeRequired;
     private final LocalDateTime lastLoginUtc;
-    private final LockSource lockSource;
+    private final NguonKhoaTaiKhoan lockSource;
 
-    public DongDanhSachTaiKhoan(String accountId, String username, String displayName, String employeeId, String employeeName, VaiTroHeThong role, AccountStatus status, boolean passwordChangeRequired, LocalDateTime lastLoginUtc, LockSource lockSource) {
+    public DongDanhSachTaiKhoan(String accountId, String username, String displayName, String employeeId, String employeeName, VaiTroHeThong role, TrangThaiTaiKhoan status, boolean passwordChangeRequired, LocalDateTime lastLoginUtc, NguonKhoaTaiKhoan lockSource) {
         this.accountId = accountId;
         this.username = username;
         this.displayName = displayName;
@@ -37,10 +37,10 @@ public final class DongDanhSachTaiKhoan {
     public String employeeId() { return employeeId; }
     public String employeeName() { return employeeName; }
     public VaiTroHeThong role() { return role; }
-    public AccountStatus status() { return status; }
+    public TrangThaiTaiKhoan status() { return status; }
     public boolean passwordChangeRequired() { return passwordChangeRequired; }
     public LocalDateTime lastLoginUtc() { return lastLoginUtc; }
-    public LockSource lockSource() { return lockSource; }
+    public NguonKhoaTaiKhoan lockSource() { return lockSource; }
 
     @Override
     public boolean equals(Object other) {

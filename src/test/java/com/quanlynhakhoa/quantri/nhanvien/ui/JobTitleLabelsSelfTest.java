@@ -7,7 +7,7 @@ import com.quanlynhakhoa.model.taikhoan.NhanVienDuDieuKien;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.List;
-import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import javax.swing.*;
 
 /** Kiểm trình bày và giữ nguyên mã, không mở database hoặc dialog tương tác. */
@@ -53,7 +53,7 @@ public final class JobTitleLabelsSelfTest {
             setRows.setAccessible(true);
             for (var entry : expected.entrySet()) {
                 var row = new DongDanhSachNhanVien("NVTEST", "Kiểm thử", entry.getKey(),
-                        EmployeeStatus.DANG_LAM_VIEC, null, null, null);
+                        TrangThaiNhanVien.DANG_LAM_VIEC, null, null, null);
                 setRows.invoke(model, List.of(row));
                 require(entry.getValue().equals(model.getValueAt(0, 2)));
                 require(entry.getKey().equals(row.jobTitle()));

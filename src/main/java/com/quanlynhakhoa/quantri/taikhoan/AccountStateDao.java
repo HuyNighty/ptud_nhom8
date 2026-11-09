@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
 import com.quanlynhakhoa.model.taikhoan.TaiKhoanDich;
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -50,8 +50,8 @@ public final class AccountStateDao {
                 if (!rows.next()) throw new IllegalArgumentException("Không tìm thấy tài khoản.");
                 String source = rows.getString("nguonKhoa");
                 return new TaiKhoanDich(rows.getString("maTaiKhoan"), VaiTroHeThong.valueOf(rows.getString("vaiTro")),
-                        AccountStatus.valueOf(rows.getString("trangThai")),
-                        source == null ? null : LockSource.valueOf(source));
+                        TrangThaiTaiKhoan.valueOf(rows.getString("trangThai")),
+                        source == null ? null : NguonKhoaTaiKhoan.valueOf(source));
             }
         }
     }

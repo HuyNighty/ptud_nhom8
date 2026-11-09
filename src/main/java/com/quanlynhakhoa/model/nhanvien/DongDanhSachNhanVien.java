@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.model.nhanvien;
 
-import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.time.LocalDate;
 
@@ -9,12 +9,12 @@ public final class DongDanhSachNhanVien {
     private final String employeeId;
     private final String fullName;
     private final String jobTitle;
-    private final EmployeeStatus status;
+    private final TrangThaiNhanVien status;
     private final LocalDate joinedAt;
     private final String accountId;
     private final VaiTroHeThong accountRole;
 
-    public DongDanhSachNhanVien(String employeeId, String fullName, String jobTitle, EmployeeStatus status, LocalDate joinedAt, String accountId, VaiTroHeThong accountRole) {
+    public DongDanhSachNhanVien(String employeeId, String fullName, String jobTitle, TrangThaiNhanVien status, LocalDate joinedAt, String accountId, VaiTroHeThong accountRole) {
         this.employeeId = employeeId;
         this.fullName = fullName;
         this.jobTitle = jobTitle;
@@ -27,7 +27,7 @@ public final class DongDanhSachNhanVien {
     public String employeeId() { return employeeId; }
     public String fullName() { return fullName; }
     public String jobTitle() { return jobTitle; }
-    public EmployeeStatus status() { return status; }
+    public TrangThaiNhanVien status() { return status; }
     public LocalDate joinedAt() { return joinedAt; }
     public String accountId() { return accountId; }
     public VaiTroHeThong accountRole() { return accountRole; }

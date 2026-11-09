@@ -2,9 +2,9 @@ package com.quanlynhakhoa.quantri.taikhoan;
 
 import com.quanlynhakhoa.model.taikhoan.KetQuaDanhSachTaiKhoan;
 import com.quanlynhakhoa.model.taikhoan.DongDanhSachTaiKhoan;
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,7 +36,7 @@ public final class AccountDirectoryDao {
 
 
     public KetQuaDanhSachTaiKhoan search(Connection connection, String keyword, VaiTroHeThong role,
-                         AccountStatus status) throws SQLException {
+                         TrangThaiTaiKhoan status) throws SQLException {
         Objects.requireNonNull(connection, "connection");
         Objects.requireNonNull(keyword, "keyword");
         try (PreparedStatement statement = connection.prepareStatement(SEARCH_SQL)) {
@@ -63,10 +63,10 @@ public final class AccountDirectoryDao {
                             rs.getString("maNhanVien"),
                             rs.getString("tenNhanVien"),
                             VaiTroHeThong.valueOf(rs.getString("vaiTro")),
-                            AccountStatus.valueOf(rs.getString("trangThai")),
+                            TrangThaiTaiKhoan.valueOf(rs.getString("trangThai")),
                             rs.getBoolean("phaiDoiMatKhau"),
                             lastLogin == null ? null : lastLogin.toLocalDateTime(),
-                            lockSource == null ? null : LockSource.valueOf(lockSource)));
+                            lockSource == null ? null : NguonKhoaTaiKhoan.valueOf(lockSource)));
                 }
             }
             return new KetQuaDanhSachTaiKhoan(rows, truncated);

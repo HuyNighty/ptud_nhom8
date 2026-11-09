@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.nhanvien.ui;
 import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
-import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.quantri.nhanvien.EmployeeDirectoryDao;
@@ -55,7 +55,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
     private final EmployeeCreateService creator;
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
     private final JTextField txtKeyword = new JTextField(20);
-    private final JComboBox<EmployeeStatus> cmbStatus = new JComboBox<>();
+    private final JComboBox<TrangThaiNhanVien> cmbStatus = new JComboBox<>();
     private final JButton btnSearch = new JButton("Tìm kiếm");
     private final JButton btnRefresh = new JButton("Làm mới");
     private final JButton btnCreate = new JButton("Thêm nhân viên");
@@ -97,13 +97,13 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         filters.add(new JLabel("Mã / tên nhân viên:"));
         filters.add(txtKeyword);
         cmbStatus.addItem(null);
-        for (EmployeeStatus status : EmployeeStatus.values()) cmbStatus.addItem(status);
+        for (TrangThaiNhanVien status : TrangThaiNhanVien.values()) cmbStatus.addItem(status);
         cmbStatus.setRenderer(new DefaultListCellRenderer() {
             @Override public java.awt.Component getListCellRendererComponent(
                     javax.swing.JList<?> list, Object value, int index,
                     boolean selected, boolean focused) {
                 super.getListCellRendererComponent(list, value, index, selected, focused);
-                setText(value == null ? "Tất cả trạng thái" : statusText((EmployeeStatus) value));
+                setText(value == null ? "Tất cả trạng thái" : statusText((TrangThaiNhanVien) value));
                 return this;
             }
         });
@@ -166,7 +166,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
             lblStatus.setText("Từ khóa tìm kiếm tối đa 80 ký tự.");
             return;
         }
-        EmployeeStatus status = (EmployeeStatus) cmbStatus.getSelectedItem();
+        TrangThaiNhanVien status = (TrangThaiNhanVien) cmbStatus.getSelectedItem();
         loading = true;
         updateControls();
         lblStatus.setText("Đang tải nhân viên...");
@@ -343,8 +343,8 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         return picker;
     }
 
-    private static String statusText(EmployeeStatus status) {
-        return status == EmployeeStatus.DANG_LAM_VIEC ? "Đang làm việc" : "Nghỉ việc";
+    private static String statusText(TrangThaiNhanVien status) {
+        return status == TrangThaiNhanVien.DANG_LAM_VIEC ? "Đang làm việc" : "Nghỉ việc";
     }
 
     private static String roleText(VaiTroHeThong role) {

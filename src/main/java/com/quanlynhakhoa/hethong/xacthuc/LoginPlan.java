@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
 import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import java.time.LocalDateTime;
 
 /**
@@ -13,12 +13,12 @@ public record LoginPlan(
         boolean authenticated,
         boolean forcePasswordChange,
         boolean stateChanged,
-        AccountStatus nextStatus,
+        TrangThaiTaiKhoan nextStatus,
         int nextFailedAttempts,
         LocalDateTime nextFirstFailureAt,
         LocalDateTime nextLockedAt,
         LocalDateTime nextLockedUntil,
-        LockSource nextLockSource,
+        NguonKhoaTaiKhoan nextLockSource,
         String nextLockReason,
         LocalDateTime nextLastLoginAt,
         LocalDateTime nextUpdatedAt

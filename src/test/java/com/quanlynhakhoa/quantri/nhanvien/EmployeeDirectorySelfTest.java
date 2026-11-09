@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.nhanvien;
 import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
-import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
@@ -59,7 +59,7 @@ public final class EmployeeDirectorySelfTest {
                 () -> new EmployeeDirectoryService(manager, unreachable).search("a".repeat(81), null));
         check(opens.get() == 0, "Bad keyword rejected before JDBC connection");
         reject(SQLException.class,
-                () -> new EmployeeDirectoryService(manager, unreachable).search("Huy", EmployeeStatus.DANG_LAM_VIEC));
+                () -> new EmployeeDirectoryService(manager, unreachable).search("Huy", TrangThaiNhanVien.DANG_LAM_VIEC));
         check(opens.get() == 1, "Manager reaches DB provider after validation");
         manager.logout();
         reject(AccessDeniedException.class,

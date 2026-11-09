@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.nhanvien.dao;
 
 import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
-import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,7 +31,7 @@ public final class EmployeeDao {
                         rs.getString("maNhanVien"),
                         rs.getString("hoTen"),
                         rs.getString("chucDanh"),
-                        EmployeeStatus.valueOf(rs.getString("trangThai")),
+                        TrangThaiNhanVien.valueOf(rs.getString("trangThai")),
                         end == null ? null : end.toLocalDate()
                 ));
             }

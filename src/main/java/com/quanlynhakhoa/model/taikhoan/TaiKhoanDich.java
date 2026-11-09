@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.model.taikhoan;
 
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 
 
@@ -12,10 +12,10 @@ import com.quanlynhakhoa.enums.VaiTroHeThong;
 public final class TaiKhoanDich {
     private final String accountId;
     private final VaiTroHeThong role;
-    private final AccountStatus status;
-    private final LockSource lockSource;
+    private final TrangThaiTaiKhoan status;
+    private final NguonKhoaTaiKhoan lockSource;
 
-    public TaiKhoanDich(String accountId, VaiTroHeThong role, AccountStatus status, LockSource lockSource) {
+    public TaiKhoanDich(String accountId, VaiTroHeThong role, TrangThaiTaiKhoan status, NguonKhoaTaiKhoan lockSource) {
         this.accountId = accountId;
         this.role = role;
         this.status = status;
@@ -24,8 +24,8 @@ public final class TaiKhoanDich {
 
     public String accountId() { return accountId; }
     public VaiTroHeThong role() { return role; }
-    public AccountStatus status() { return status; }
-    public LockSource lockSource() { return lockSource; }
+    public TrangThaiTaiKhoan status() { return status; }
+    public NguonKhoaTaiKhoan lockSource() { return lockSource; }
 
     @Override
     public boolean equals(Object other) {
