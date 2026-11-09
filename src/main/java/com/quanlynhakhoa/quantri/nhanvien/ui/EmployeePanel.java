@@ -1,15 +1,16 @@
 package com.quanlynhakhoa.quantri.nhanvien.ui;
 
+import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.quantri.nhanvien.EmployeeDirectoryDao;
-import com.quanlynhakhoa.quantri.nhanvien.EmployeeDirectoryRow;
+import com.quanlynhakhoa.model.nhanvien.DongDanhSachNhanVien;
 import com.quanlynhakhoa.quantri.nhanvien.EmployeeDirectoryService;
 import com.quanlynhakhoa.quantri.nhanvien.EmployeeCreateService;
-import com.quanlynhakhoa.quantri.nhanvien.EmployeeCreateRequest;
+import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
 import com.quanlynhakhoa.quantri.nhanvien.JobTitleLabels;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -169,8 +170,8 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         loading = true;
         updateControls();
         lblStatus.setText("Đang tải nhân viên...");
-        new SwingWorker<EmployeeDirectoryDao.Result, Void>() {
-            @Override protected EmployeeDirectoryDao.Result doInBackground() throws Exception {
+        new SwingWorker<KetQuaDanhSachNhanVien, Void>() {
+            @Override protected KetQuaDanhSachNhanVien doInBackground() throws Exception {
                 return service.search(keyword, status);
             }
             @Override protected void done() {
@@ -183,7 +184,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
                     return;
                 }
                 try {
-                    EmployeeDirectoryDao.Result result = get();
+                    KetQuaDanhSachNhanVien result = get();
                     if (!reloadPending) {
                         tableModel.setRows(result.rows());
                         lblDetail.setText("Chọn một nhân viên để xem thông tin.");
@@ -249,9 +250,9 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (choice != JOptionPane.OK_OPTION) return;
 
-        final EmployeeCreateRequest request;
+        final YeuCauTaoNhanVien request;
         try {
-            request = EmployeeCreateService.validate(new EmployeeCreateRequest(
+            request = EmployeeCreateService.validate(new YeuCauTaoNhanVien(
                     txtId.getText(), txtName.getText(), txtPhone.getText(),
                     (String) cmbJob.getSelectedItem(), parseOptionalDate(txtBirth.getText()),
                     (String) cmbGender.getSelectedItem(), txtEmail.getText(),
@@ -320,7 +321,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
     private void showSelected() {
         int viewIndex = table.getSelectedRow();
         if (viewIndex < 0) return;
-        EmployeeDirectoryRow row = tableModel.rowAt(table.convertRowIndexToModel(viewIndex));
+        DongDanhSachNhanVien row = tableModel.rowAt(table.convertRowIndexToModel(viewIndex));
         lblDetail.setText("Nhân viên " + row.employeeId() + " · " + row.fullName()
                 + " · " + (row.hasAccount() ? "Tài khoản " + row.accountId() : "Chưa có tài khoản"));
     }
@@ -362,14 +363,14 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         private static final String[] COLUMNS = {
                 "Mã NV", "Họ tên", "Chức danh", "Trạng thái", "Ngày vào làm", "Tài khoản", "Vai trò"
         };
-        private List<EmployeeDirectoryRow> rows = new ArrayList<>();
+        private List<DongDanhSachNhanVien> rows = new ArrayList<>();
 
-        void setRows(List<EmployeeDirectoryRow> values) {
+        void setRows(List<DongDanhSachNhanVien> values) {
             rows = List.copyOf(values);
             fireTableDataChanged();
         }
 
-        EmployeeDirectoryRow rowAt(int index) {
+        DongDanhSachNhanVien rowAt(int index) {
             return rows.get(index);
         }
 
@@ -377,7 +378,7 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         @Override public int getColumnCount() { return COLUMNS.length; }
         @Override public String getColumnName(int column) { return COLUMNS[column]; }
         @Override public Object getValueAt(int rowIndex, int columnIndex) {
-            EmployeeDirectoryRow row = rows.get(rowIndex);
+            DongDanhSachNhanVien row = rows.get(rowIndex);
             return switch (columnIndex) {
                 case 0 -> row.employeeId();
                 case 1 -> row.fullName();

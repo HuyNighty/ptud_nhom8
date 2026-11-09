@@ -1,10 +1,7 @@
 package com.quanlynhakhoa.quantri.nhanvien.ui;
 
-
-
-
-
-
+import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
+import com.quanlynhakhoa.model.nhanvien.DongDanhSachNhanVien;
 import com.quanlynhakhoa.quantri.nhanvien.*;
 import com.quanlynhakhoa.quantri.taikhoan.EligibleEmployee;
 import java.time.LocalDate;
@@ -29,7 +26,7 @@ public final class JobTitleLabelsSelfTest {
                 JLabel rendered=(JLabel)picker.getRenderer().getListCellRendererComponent(new JList<>(),code,i,false,false);
                 require(expected.get(code).equals(rendered.getText()));
                 require(code.equals(picker.getSelectedItem()));
-                var request=EmployeeCreateService.validate(new EmployeeCreateRequest(
+                var request=EmployeeCreateService.validate(new YeuCauTaoNhanVien(
                         "NVTEST","Kiểm thử","0000000001",(String)picker.getSelectedItem(),
                         null,null,null,LocalDate.of(2020,1,1),null));
                 require(code.equals(request.jobTitle()));
@@ -39,7 +36,7 @@ public final class JobTitleLabelsSelfTest {
                 require(employee.jobTitle().equals(code));
             }
             try {
-                EmployeeCreateService.validate(new EmployeeCreateRequest("NVTEST","Kiểm thử","0000000001",
+                EmployeeCreateService.validate(new YeuCauTaoNhanVien("NVTEST","Kiểm thử","0000000001",
                         "AD",null,null,null,LocalDate.of(2020,1,1),null));
                 throw new AssertionError("Không được mở thêm quyền tạo AD");
             } catch(IllegalArgumentException expectedRejection) { }
@@ -55,7 +52,7 @@ public final class JobTitleLabelsSelfTest {
             var setRows = type.getDeclaredMethod("setRows", List.class);
             setRows.setAccessible(true);
             for (var entry : expected.entrySet()) {
-                var row = new EmployeeDirectoryRow("NVTEST", "Kiểm thử", entry.getKey(),
+                var row = new DongDanhSachNhanVien("NVTEST", "Kiểm thử", entry.getKey(),
                         EmployeeStatus.DANG_LAM_VIEC, null, null, null);
                 setRows.invoke(model, List.of(row));
                 require(entry.getValue().equals(model.getValueAt(0, 2)));
@@ -66,7 +63,7 @@ public final class JobTitleLabelsSelfTest {
         }
     }
     /** Chỉ kiểm hợp đồng bind PreparedStatement; không phải tích hợp SQL Server. */
-    private static void verifyJdbcBinding(EmployeeCreateRequest request) {
+    private static void verifyJdbcBinding(YeuCauTaoNhanVien request) {
         var boundCode = new java.util.concurrent.atomic.AtomicReference<String>();
         var statement = (java.sql.PreparedStatement) java.lang.reflect.Proxy.newProxyInstance(
                 JobTitleLabelsSelfTest.class.getClassLoader(), new Class<?>[] {java.sql.PreparedStatement.class},

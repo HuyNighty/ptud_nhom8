@@ -1,10 +1,6 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
-
-
-
-
-
+import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
 import com.quanlynhakhoa.quantri.taikhoan.entity.*;
 import com.quanlynhakhoa.quantri.nhanvien.entity.*;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
@@ -77,15 +73,15 @@ public final class AuthPolicySelfTest {
                 0, null, null, null, false);
         check(!SYNTH.evaluate(worker, null, "correct", NOW).authenticated(),
                 "missing employee rejected");
-        Employee departed = new Employee("NV0001", "Synthetic Person", "LT",
+        ThongTinNhanVien departed = new ThongTinNhanVien("NV0001", "Synthetic Person", "LT",
                 EmployeeStatus.NGHI_VIEC, NOW.toLocalDate());
         check(!SYNTH.evaluate(worker, departed, "correct", NOW).authenticated(),
                 "departed employee rejected");
-        Employee working = new Employee("NV0001", "Synthetic Person", "LT",
+        ThongTinNhanVien working = new ThongTinNhanVien("NV0001", "Synthetic Person", "LT",
                 EmployeeStatus.DANG_LAM_VIEC, null);
         check(SYNTH.evaluate(worker, working, "correct", NOW).authenticated(),
                 "working employee accepted");
-        Employee mismatched = new Employee("NV9999", "Other", "LT",
+        ThongTinNhanVien mismatched = new ThongTinNhanVien("NV9999", "Other", "LT",
                 EmployeeStatus.DANG_LAM_VIEC, null);
         check(!SYNTH.evaluate(worker, mismatched, "correct", NOW).authenticated(),
                 "different employee ID rejected");

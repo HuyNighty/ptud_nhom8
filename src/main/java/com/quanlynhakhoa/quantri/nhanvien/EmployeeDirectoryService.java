@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.nhanvien;
 
+import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -27,7 +28,7 @@ public final class EmployeeDirectoryService {
         this.connections = Objects.requireNonNull(connections, "connections");
     }
 
-    public EmployeeDirectoryDao.Result search(String keyword, EmployeeStatus status) throws SQLException {
+    public KetQuaDanhSachNhanVien search(String keyword, EmployeeStatus status) throws SQLException {
         authorization.require(session, Permission.WORKFORCE_READ);
         String normalized = Objects.requireNonNull(keyword, "keyword").trim();
         if (normalized.length() > 80) {
@@ -35,7 +36,7 @@ public final class EmployeeDirectoryService {
         }
         try (Connection connection = connections.open()) {
             authorization.require(session, Permission.WORKFORCE_READ);
-            EmployeeDirectoryDao.Result result = dao.search(connection, normalized, status);
+            KetQuaDanhSachNhanVien result = dao.search(connection, normalized, status);
             authorization.require(session, Permission.WORKFORCE_READ);
             return result;
         }

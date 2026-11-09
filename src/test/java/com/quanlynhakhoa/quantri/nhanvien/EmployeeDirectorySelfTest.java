@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.nhanvien;
 
+import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
@@ -67,7 +68,7 @@ public final class EmployeeDirectorySelfTest {
         reject(SQLException.class,
                 () -> new EmployeeDirectoryService(admin, unreachable).search("", null));
         check(opens.get() == 2, "Admin is permitted to reach DB provider");
-        EmployeeDirectoryDao.Result empty = new EmployeeDirectoryDao.Result(List.of(), false);
+        KetQuaDanhSachNhanVien empty = new KetQuaDanhSachNhanVien(List.of(), false);
         check(empty.rows().isEmpty() && !empty.truncated(), "Immutable empty result works");
         System.out.println("PASS: W1A employee directory (" + checks + " checks; no DB)");
     }
