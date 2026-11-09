@@ -5,7 +5,7 @@ import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -45,7 +45,7 @@ public final class ExamQueueService {
     }
 
     private void requireQueueAccess() {
-        auth.require(session, Permission.MEDICAL_RECORD_READ);
+        auth.require(session, Quyen.MEDICAL_RECORD_READ);
         if (session.role() != VaiTroHeThong.DOCTOR && session.role() != VaiTroHeThong.SYSTEM_ADMIN) {
             throw new AccessDeniedException();
         }

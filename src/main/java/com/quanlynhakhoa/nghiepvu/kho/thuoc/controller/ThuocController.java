@@ -5,7 +5,7 @@ import com.quanlynhakhoa.nghiepvu.kho.thuoc.service.ThuocService;
 import com.quanlynhakhoa.nghiepvu.kho.thuoc.view.ThuocDialog;
 import com.quanlynhakhoa.nghiepvu.kho.thuoc.view.ThuocPanel;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,10 +32,10 @@ public final class ThuocController implements ActionListener {
         view.getBtnSua().addActionListener(this);
         view.getTblThuoc().getSelectionModel().addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting()) {
-                view.datQuyen(service.coQuyen(Permission.INVENTORY_MANAGE));
+                view.datQuyen(service.coQuyen(Quyen.INVENTORY_MANAGE));
             }
         });
-        view.datQuyen(service.coQuyen(Permission.INVENTORY_MANAGE));
+        view.datQuyen(service.coQuyen(Quyen.INVENTORY_MANAGE));
         taiDanhSach();
     }
 
@@ -73,7 +73,7 @@ public final class ThuocController implements ActionListener {
                 view.datDangTai(false);
                 try {
                     view.hienDanhSach(get());
-                    view.datQuyen(service.coQuyen(Permission.INVENTORY_MANAGE));
+                    view.datQuyen(service.coQuyen(Quyen.INVENTORY_MANAGE));
                 } catch (Exception error) {
                     view.hienLoi(thongBaoLoi(error));
                 }

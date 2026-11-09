@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.TongHopCongNoBenhNhan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
@@ -29,7 +30,7 @@ public final class DebtPanel extends JPanel implements RefreshableFeature {
     private InvoicePanel.PaymentNavigation paymentNavigation;
     private List<TongHopCongNoBenhNhan> patients=List.of();private List<ThongTinHoaDon> invoices=List.of();
     public DebtPanel(DesktopSession session,ConnectionProvider connections){
-        this.session=session;new AuthorizationService(new RolePermissionPolicy()).require(session,Permission.BILLING_READ);mayCollect=new AuthorizationService(new RolePermissionPolicy()).can(session,Permission.BILLING_MANAGE);
+        this.session=session;new AuthorizationService(new RolePermissionPolicy()).require(session,Quyen.BILLING_READ);mayCollect=new AuthorizationService(new RolePermissionPolicy()).can(session,Quyen.BILLING_MANAGE);
         setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
         JLabel lblTitle=new JLabel("Công nợ theo bệnh nhân");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
         JPanel pnlFilter=BillingUi.filters(BillingUi.field("Bệnh nhân / hóa đơn / SĐT",txtTuKhoa),BillingUi.dateField(txtTuNgay,"Ngày lập hóa đơn từ"),BillingUi.dateField(txtDenNgay,"Đến ngày"),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)));

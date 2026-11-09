@@ -11,7 +11,7 @@ import com.quanlynhakhoa.quantri.nhanvien.ui.EmployeePanel;
 import com.quanlynhakhoa.quantri.vaitro.ui.RolePanel;
 import com.quanlynhakhoa.nghiepvu.phieukham.view.PhieuKhamPanel;
 import com.quanlynhakhoa.nghiepvu.dieutri.view.TreatmentPlanPanel;
-import com.quanlynhakhoa.hethong.dieuhuong.Module;
+import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;

@@ -9,7 +9,7 @@ import com.quanlynhakhoa.nghiepvu.lichhen.service.LichHenService;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.LichHenDialog;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.LichHenPanel;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -49,7 +49,7 @@ public class LichHenController implements ActionListener, MouseListener {
         view.getBtnHuyLich().addActionListener(this);
         view.getTblLichHen().addMouseListener(this);
 
-        boolean duocQuanLyLich = lichHenService.coQuyen(Permission.APPOINTMENT_MANAGE);
+        boolean duocQuanLyLich = lichHenService.coQuyen(Quyen.APPOINTMENT_MANAGE);
         view.datQuyen(duocQuanLyLich);
 
         taiDanhSach(null);

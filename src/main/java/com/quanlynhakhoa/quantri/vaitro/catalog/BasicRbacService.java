@@ -6,7 +6,7 @@ import com.quanlynhakhoa.entity.VaiTro;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.JdbcSessionVerifier;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.awt.EventQueue;
 import java.sql.Connection;
@@ -98,7 +98,7 @@ public final class BasicRbacService {
                     if (code == null || !PERMISSION_CODE.matcher(code).matches())
                         throw new SQLException("RBAC permission code không hợp lệ.");
                     boolean builtIn = false;
-                    for (Permission p : Permission.values()) if (p.name().equals(code)) builtIn = true;
+                    for (Quyen p : Quyen.values()) if (p.name().equals(code)) builtIn = true;
                     result.add(new DongQuyen(code, rows.getNString(2), builtIn));
                 }
             }
@@ -106,7 +106,7 @@ public final class BasicRbacService {
             return List.copyOf(result);
         }
     }
-    public void createRole(String code, String name, String description, Set<Permission> permissions)
+    public void createRole(String code, String name, String description, Set<Quyen> permissions)
             throws SQLException {
         requireAdmin();
         requireWorker();
@@ -116,7 +116,7 @@ public final class BasicRbacService {
         String cleanDescription = description == null ? "" : description.trim();
         if (cleanDescription.length() > 500) throw new IllegalArgumentException("Mô tả tối đa 500 ký tự.");
         Objects.requireNonNull(permissions, "permissions");
-        EnumSet<Permission> selected = EnumSet.noneOf(Permission.class);
+        EnumSet<Quyen> selected = EnumSet.noneOf(Quyen.class);
         selected.addAll(permissions);
         transaction(c -> {
             long before = epoch(c);
@@ -131,7 +131,7 @@ public final class BasicRbacService {
             try (PreparedStatement grant = statement(c,
                     "INSERT INTO dbo.VaiTroQuyen(roleCode,permissionCode) " +
                             "SELECT ?,permissionCode FROM dbo.Quyen WHERE permissionCode=?")) {
-                for (Permission permission : selected) {
+                for (Quyen permission : selected) {
                     grant.setString(1, code);
                     grant.setString(2, permission.name());
                     exactlyOne(grant.executeUpdate());
@@ -150,7 +150,7 @@ public final class BasicRbacService {
         requireWorker();
         if (code == null || !PERMISSION_CODE.matcher(code).matches())
             throw new IllegalArgumentException("Mã quyền phải là A-Z, 0-9, _, tối đa 64 ký tự.");
-        for (Permission known : Permission.values()) {
+        for (Quyen known : Quyen.values()) {
             if (known.name().equals(code)) throw new IllegalArgumentException("Quyền hệ thống đã tồn tại.");
         }
         String cleanName = label(name, 100, "Tên quyền");

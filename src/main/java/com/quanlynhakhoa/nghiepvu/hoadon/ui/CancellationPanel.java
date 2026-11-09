@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
@@ -27,7 +28,7 @@ public final class CancellationPanel extends JPanel implements RefreshableFeatur
     public final JTable tblYeuCau=BillingUi.table(requestModel);
     private final CancellationController controller;private List<ThongTinYeuCauHuyHoaDon> rows=List.of();private boolean loaded;
     public CancellationPanel(DesktopSession session,ConnectionProvider connections){
-        new AuthorizationService(new RolePermissionPolicy()).require(session,Permission.INVOICE_CANCEL_APPROVE);
+        new AuthorizationService(new RolePermissionPolicy()).require(session,Quyen.INVOICE_CANCEL_APPROVE);
         setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
         JLabel lblTitle=new JLabel("Duyệt hủy hóa đơn");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
         JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);

@@ -23,7 +23,7 @@ public final class InventoryPanel extends JPanel {
         tabbedPane.addTab("Vật tư", new JPanel());
         tabbedPane.addTab("Nhà cung cấp", new JPanel());
         tabbedPane.addTab("Lô hàng", new JPanel());
-        if(new com.quanlynhakhoa.hethong.phanquyen.AuthorizationService(new com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy()).can(phienDangNhap,com.quanlynhakhoa.hethong.phanquyen.Permission.INVENTORY_MANAGE))
+        if(new com.quanlynhakhoa.hethong.phanquyen.AuthorizationService(new com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy()).can(phienDangNhap,com.quanlynhakhoa.enums.Quyen.INVENTORY_MANAGE))
             tabbedPane.addTab("Nhập / xuất / kiểm kê",new JPanel());
         add(tabbedPane, BorderLayout.CENTER);
         tabbedPane.addChangeListener(event -> khoiTaoTab(tabbedPane.getSelectedIndex()));

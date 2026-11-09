@@ -5,7 +5,7 @@ import com.quanlynhakhoa.inventory.vattu.dao.VatTuDao;
 import com.quanlynhakhoa.entity.VatTu;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -29,12 +29,12 @@ public class VatTuService {
         this.dao = dao;
     }
 
-    public boolean coQuyen(Permission quyen) {
+    public boolean coQuyen(Quyen quyen) {
         return phanQuyen.can(phien, quyen);
     }
 
     public List<VatTu> timKiem(String tuKhoa) throws SQLException {
-        phanQuyen.require(phien, Permission.INVENTORY_READ);
+        phanQuyen.require(phien, Quyen.INVENTORY_READ);
         String keyword = tuKhoa == null ? "" : tuKhoa.trim();
         if (keyword.length() > 100) {
             throw new IllegalArgumentException("Từ khóa tìm kiếm tối đa 100 ký tự.");
@@ -43,7 +43,7 @@ public class VatTuService {
     }
 
     public void them(VatTu vatTu) throws SQLException {
-        phanQuyen.require(phien, Permission.INVENTORY_MANAGE);
+        phanQuyen.require(phien, Quyen.INVENTORY_MANAGE);
         kiemTraVaChuanHoa(vatTu);
         try (Connection con = TeamDevConnection.open()) {
             con.setAutoCommit(false);
@@ -65,7 +65,7 @@ public class VatTuService {
     }
 
     public void capNhat(VatTu vatTu) throws SQLException {
-        phanQuyen.require(phien, Permission.INVENTORY_MANAGE);
+        phanQuyen.require(phien, Quyen.INVENTORY_MANAGE);
         kiemTraVaChuanHoa(vatTu);
         try (Connection con = TeamDevConnection.open()) {
             con.setAutoCommit(false);

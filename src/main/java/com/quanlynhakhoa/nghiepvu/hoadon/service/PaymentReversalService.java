@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.LoaiDaoThanhToan;
@@ -18,7 +19,7 @@ public final class PaymentReversalService {
     public PaymentReversalService(DesktopSession session,ConnectionProvider connections){this.session=session;this.connections=connections;}
     private PreparedStatement statement(Connection c,String sql)throws SQLException{PreparedStatement s=c.prepareStatement(sql);s.setQueryTimeout(15);return s;}
     public void reverse(String invoiceId,String paymentId,LoaiDaoThanhToan kind,String reason,String reference)throws SQLException {
-        auth.require(session,Permission.INVOICE_CANCEL_APPROVE);
+        auth.require(session,Quyen.INVOICE_CANCEL_APPROVE);
         if(kind==null||reason==null||reason.isBlank()||reason.length()>300||reference==null||reference.isBlank()||reference.length()>100)throw new IllegalArgumentException("Cần lý do (tối đa 300 ký tự) và bằng chứng/tham chiếu (tối đa 100 ký tự).");
         boolean committed=false;
         try(Connection c=connections.open()){
@@ -44,7 +45,7 @@ public final class PaymentReversalService {
                 try(PreparedStatement s=statement(c,"INSERT INTO dbo.NhatKyThaoTac(loaiTacNhan,maTaiKhoan,chucNang,hanhDong,ketQua,doiTuong,maDoiTuong) VALUES('ACCOUNT',?,N'Thanh toán',?,'SUCCESS','ThanhToan',?)")){
                     s.setString(1,session.accountId());s.setNString(2,kind==LoaiDaoThanhToan.HOAN_TIEN?"Hoàn tiền":"Hủy ghi nhận thu sai");s.setString(3,paymentId);s.executeUpdate();
                 }
-                auth.requireCurrent(session,Permission.INVOICE_CANCEL_APPROVE,c);auth.require(session,Permission.INVOICE_CANCEL_APPROVE);c.commit();committed=true;
+                auth.requireCurrent(session,Quyen.INVOICE_CANCEL_APPROVE,c);auth.require(session,Quyen.INVOICE_CANCEL_APPROVE);c.commit();committed=true;
             }catch(SQLException|RuntimeException e){try{c.rollback();}catch(SQLException rollback){e.addSuppressed(rollback);}throw e;}
         }catch(SQLException e){if(committed)throw new CommittedReversalException(e);throw e;}
     }

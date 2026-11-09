@@ -6,7 +6,7 @@ import com.quanlynhakhoa.entity.BenhNhan;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -50,12 +50,12 @@ public class BenhNhanService {
         this.hoSoBenhAnDao = new HoSoBenhAnDao(cachMoKetNoi);
     }
 
-    public boolean coQuyen(Permission quyen) {
+    public boolean coQuyen(Quyen quyen) {
         return phanQuyen.can(phienDangNhap, quyen);
     }
 
     public ArrayList<BenhNhan> timKiem(String tuKhoa, String gioiTinh) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_READ);
+        phanQuyen.require(phienDangNhap, Quyen.PATIENT_READ);
 
         tuKhoa = tuKhoa.trim();
         if (tuKhoa.length() > 100) {
@@ -76,7 +76,7 @@ public class BenhNhanService {
     }
 
     public BenhNhan xemChiTiet(String maBenhNhan) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_READ);
+        phanQuyen.require(phienDangNhap, Quyen.PATIENT_READ);
         return benhNhanDao.timTheoMa(maBenhNhan);
     }
 
@@ -175,14 +175,14 @@ public class BenhNhanService {
     }
 
     public ArrayList<BenhNhan> timNghiTrung(BenhNhan benhNhan) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_READ);
+        phanQuyen.require(phienDangNhap, Quyen.PATIENT_READ);
         kiemTraDuLieu(benhNhan);
         return benhNhanDao.timNghiTrung(benhNhan.getSoDienThoai(), benhNhan.getHoTen(),
                 benhNhan.getNgaySinh(), benhNhan.getMaBenhNhan());
     }
 
     public String themBenhNhan(BenhNhan benhNhan) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_CREATE);
+        phanQuyen.require(phienDangNhap, Quyen.PATIENT_CREATE);
         kiemTraDuLieu(benhNhan);
 
         try (Connection ketNoi = cachMoKetNoi.open()) {
@@ -200,7 +200,7 @@ public class BenhNhanService {
                         benhNhan.getTienSuBenh(), benhNhan.getDiUng());
 
                 benhNhanDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Thêm bệnh nhân", maBenhNhan);
-                phanQuyen.require(phienDangNhap, Permission.PATIENT_CREATE);
+                phanQuyen.require(phienDangNhap, Quyen.PATIENT_CREATE);
 
                 ketNoi.commit();
                 return maBenhNhan;
@@ -213,7 +213,7 @@ public class BenhNhanService {
     }
 
     public void capNhatBenhNhan(BenhNhan benhNhanMoi, BenhNhan benhNhanLucMoForm) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_UPDATE);
+        phanQuyen.require(phienDangNhap, Quyen.PATIENT_UPDATE);
         if (benhNhanMoi.getMaBenhNhan() == null) {
             throw new IllegalArgumentException("Chưa chọn bệnh nhân cần sửa.");
         }
@@ -257,7 +257,7 @@ public class BenhNhanService {
                 benhNhanDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Sửa thông tin bệnh nhân",
                         maBenhNhan, noiDungThayDoi);
 
-                phanQuyen.require(phienDangNhap, Permission.PATIENT_UPDATE);
+                phanQuyen.require(phienDangNhap, Quyen.PATIENT_UPDATE);
                 ketNoi.commit();
             } catch (SQLException | RuntimeException loi) {
                 ketNoi.rollback();

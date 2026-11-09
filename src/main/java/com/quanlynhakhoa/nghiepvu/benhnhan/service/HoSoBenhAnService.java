@@ -6,7 +6,7 @@ import com.quanlynhakhoa.entity.HoSoBenhAn;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.SQLException;
 
@@ -24,12 +24,12 @@ public class HoSoBenhAnService {
         this.hoSoBenhAnDao = new HoSoBenhAnDao(java.util.Objects.requireNonNull(cachMoKetNoi, "cachMoKetNoi"));
     }
 
-    public boolean coQuyen(Permission quyen) {
+    public boolean coQuyen(Quyen quyen) {
         return phanQuyen.can(phienDangNhap, quyen);
     }
 
     public HoSoBenhAn moHoSo(String maBenhNhan) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.MEDICAL_RECORD_READ);
+        phanQuyen.require(phienDangNhap, Quyen.MEDICAL_RECORD_READ);
         if (maBenhNhan == null || maBenhNhan.isBlank()) {
             throw new IllegalArgumentException("Chưa chọn bệnh nhân.");
         }

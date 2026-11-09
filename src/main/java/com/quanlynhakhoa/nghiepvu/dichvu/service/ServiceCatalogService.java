@@ -1,9 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.dichvu.service;
 
-
-
-
-
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.dichvu.dao.ServiceCatalogDao;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
@@ -137,7 +134,7 @@ public final class ServiceCatalogService {
         return false;
     }
 
-    private void require() { authorization.require(session, Permission.SERVICE_CATALOG_MANAGE); }
+    private void require() { authorization.require(session, Quyen.SERVICE_CATALOG_MANAGE); }
     private static String trimmed(String value) { return value == null ? "" : value.trim(); }
     private static String validateId(String text) {
         String id = trimmed(text);

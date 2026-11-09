@@ -4,7 +4,7 @@ import com.quanlynhakhoa.model.vaitro.DongVaiTro;
 import com.quanlynhakhoa.model.vaitro.DongQuyen;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.quantri.vaitro.catalog.BasicRbacService;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.awt.BorderLayout;
@@ -41,7 +41,7 @@ public final class BasicRbacPanel extends JPanel {
     private final JButton savePermission = new JButton("Khai báo quyền (chưa kích hoạt)");
     private final JButton reload = new JButton("Tải danh sách");
     private final JButton reloadPermissions = new JButton("Tải quyền");
-    private final EnumSet<Permission> chosen = EnumSet.noneOf(Permission.class);
+    private final EnumSet<Quyen> chosen = EnumSet.noneOf(Quyen.class);
     private final List<JCheckBox> selection = new ArrayList<>();
     private final DefaultTableModel model = new DefaultTableModel(
             new Object[]{"Mã vai trò", "Tên", "Nguồn", "Trạng thái"}, 0) {
@@ -91,7 +91,7 @@ public final class BasicRbacPanel extends JPanel {
         fields.add(new JScrollPane(roleDescription));
         content.add(fields, BorderLayout.NORTH);
         JPanel checkGrid = new JPanel(new GridLayout(0, 2, 8, 4));
-        for (Permission permission : Permission.values()) {
+        for (Quyen permission : Quyen.values()) {
             JCheckBox check = new JCheckBox(permission.name());
             check.addActionListener(e -> {
                 if (check.isSelected()) chosen.add(permission);
@@ -171,7 +171,7 @@ public final class BasicRbacPanel extends JPanel {
         String code = roleCode.getText().trim();
         String name = roleName.getText().trim();
         String description = roleDescription.getText();
-        EnumSet<Permission> snapshot = EnumSet.copyOf(chosen);
+        EnumSet<Quyen> snapshot = EnumSet.copyOf(chosen);
         run("Đang lưu vai trò...", () -> {
             service.createRole(code, name, description, snapshot);
             return "Đã tạo vai trò " + code + " (chưa thể gán vào tài khoản).";

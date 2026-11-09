@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.PaymentScreenController;
@@ -19,7 +20,7 @@ public final class PaymentPanel extends JPanel implements RefreshableFeature {
     private final JPanel pnlCollection=new JPanel(new BorderLayout());
     private final PaymentScreenController controller;
     public PaymentPanel(DesktopSession session,ConnectionProvider connections){
-        new AuthorizationService(new RolePermissionPolicy()).require(session,Permission.BILLING_MANAGE);
+        new AuthorizationService(new RolePermissionPolicy()).require(session,Quyen.BILLING_MANAGE);
         setLayout(new BorderLayout(12,12));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
         JLabel lblTitle=new JLabel("Thanh toán");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
         cmbHoaDon.setPrototypeDisplayValue(new LuaChonLapHoaDon("HD00000000","Bệnh nhân · Còn nợ 999.999.999 ₫"));

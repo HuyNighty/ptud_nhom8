@@ -1,9 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.dichvu.ui;
 
-
-
-
-
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
@@ -44,7 +41,7 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
     }
     public ServiceCatalogPanel(DesktopSession session, ConnectionProvider connections,EditorMode mode) {
         this.mode=mode;
-        new AuthorizationService(new RolePermissionPolicy()).require(session, Permission.SERVICE_CATALOG_MANAGE);
+        new AuthorizationService(new RolePermissionPolicy()).require(session, Quyen.SERVICE_CATALOG_MANAGE);
         setLayout(new BorderLayout(12, 12));
         setBorder(BorderFactory.createEmptyBorder(24, 26, 24, 26));
         JPanel pnlTop = new JPanel(new BorderLayout(0, 8));

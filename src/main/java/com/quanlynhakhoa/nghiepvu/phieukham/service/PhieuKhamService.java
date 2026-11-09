@@ -9,7 +9,7 @@ import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
 import com.quanlynhakhoa.model.phieukham.DongDanhSachPhieuKham;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -37,7 +37,7 @@ public final class PhieuKhamService {
 
     public List<DongDanhSachPhieuKham> timKiem(LocalDate ngayKham, String maBacSi,
                                             String trangThai, String tuKhoa) throws SQLException {
-        authorization.require(session, Permission.MEDICAL_RECORD_READ);
+        authorization.require(session, Quyen.MEDICAL_RECORD_READ);
         try (Connection connection = TeamDevConnection.open()) {
             String doctorFilter = safe(maBacSi);
             if (session.role() == VaiTroHeThong.DOCTOR) {
@@ -49,7 +49,7 @@ public final class PhieuKhamService {
     }
 
     public ThongTinPhieuKham chiTiet(String maPhieuKham) throws SQLException {
-        authorization.require(session, Permission.MEDICAL_RECORD_READ);
+        authorization.require(session, Quyen.MEDICAL_RECORD_READ);
         try (Connection connection = TeamDevConnection.open()) {
             ThongTinPhieuKham phieu = dao.timTheoMa(connection, maPhieuKham)
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu khám."));
@@ -59,7 +59,7 @@ public final class PhieuKhamService {
     }
 
     public List<BacSiChonKham> danhSachBacSi() throws SQLException {
-        authorization.require(session, Permission.MEDICAL_RECORD_READ);
+        authorization.require(session, Quyen.MEDICAL_RECORD_READ);
         try (Connection connection = TeamDevConnection.open()) {
             List<BacSiChonKham> doctors = dao.danhSachBacSiDangLamViec(connection);
             if (session.role() != VaiTroHeThong.DOCTOR) return doctors;
@@ -73,7 +73,7 @@ public final class PhieuKhamService {
 
     public void luuNhap(String maPhieuKham, String maBacSiDuocChon,
                         String trieuChung, String chanDoan) throws SQLException {
-        authorization.require(session, Permission.MEDICAL_RECORD_UPDATE);
+        authorization.require(session, Quyen.MEDICAL_RECORD_UPDATE);
         String symptom = normalize(trieuChung);
         String diagnosis = normalize(chanDoan);
         if (symptom.length() > MAX_TRIEU_CHUNG) {
@@ -115,7 +115,7 @@ public final class PhieuKhamService {
     public void ketLuan(String maPhieuKham, String maBacSiDuocChon,
                         String chanDoan, String ketLuan) throws SQLException {
 
-        authorization.require(session, Permission.MEDICAL_RECORD_UPDATE);
+        authorization.require(session, Quyen.MEDICAL_RECORD_UPDATE);
 
         String diagnosis = normalize(chanDoan);
         String conclusion = normalize(ketLuan);

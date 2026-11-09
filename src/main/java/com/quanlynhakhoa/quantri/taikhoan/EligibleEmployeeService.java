@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.taikhoan;
 import com.quanlynhakhoa.model.taikhoan.KetQuaNhanVienDuDieuKien;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -27,11 +27,11 @@ public final class EligibleEmployeeService {
     }
 
     public KetQuaNhanVienDuDieuKien listEligible() throws SQLException {
-        authorization.require(session, Permission.ACCOUNT_MANAGE);
+        authorization.require(session, Quyen.ACCOUNT_MANAGE);
         try (Connection connection = connections.open()) {
-            authorization.require(session, Permission.ACCOUNT_MANAGE);
+            authorization.require(session, Quyen.ACCOUNT_MANAGE);
             KetQuaNhanVienDuDieuKien result = dao.findEligible(connection);
-            authorization.require(session, Permission.ACCOUNT_MANAGE);
+            authorization.require(session, Quyen.ACCOUNT_MANAGE);
             return result;
         }
     }

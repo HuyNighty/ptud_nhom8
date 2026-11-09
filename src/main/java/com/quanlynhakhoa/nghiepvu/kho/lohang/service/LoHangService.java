@@ -4,7 +4,7 @@ import com.quanlynhakhoa.nghiepvu.kho.lohang.dao.LoHangDao;
 import com.quanlynhakhoa.model.kho.ThongTinLoHang;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.SQLException;
 import java.util.List;
@@ -24,11 +24,11 @@ public class LoHangService {
         this.dao = dao;
     }
 
-    public boolean coQuyen(Permission quyen) { return phanQuyen.can(phien, quyen); }
+    public boolean coQuyen(Quyen quyen) { return phanQuyen.can(phien, quyen); }
 
     public List<ThongTinLoHang> timKiem(String tuKhoa, String loaiHang, String hanSuDung)
             throws SQLException {
-        phanQuyen.require(phien, Permission.INVENTORY_READ);
+        phanQuyen.require(phien, Quyen.INVENTORY_READ);
         String keyword = tuKhoa == null ? "" : tuKhoa.trim();
         if (keyword.length() > 100) throw new IllegalArgumentException("Từ khóa tìm kiếm tối đa 100 ký tự.");
         String kind = loaiHang == null || loaiHang.isBlank() ? ThongTinLoHang.LOAI_TAT_CA : loaiHang.trim();

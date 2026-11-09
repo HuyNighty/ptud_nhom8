@@ -7,7 +7,7 @@ import com.quanlynhakhoa.nghiepvu.benhnhan.service.LoiNhapLieuException;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.BenhNhanDialog;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.BenhNhanPanel;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -63,8 +63,8 @@ public class BenhNhanController implements ActionListener, MouseListener {
         view.getBtnSua().addActionListener(this);
         view.getTblBenhNhan().addMouseListener(this);
 
-        boolean duocThem = benhNhanService.coQuyen(Permission.PATIENT_CREATE);
-        boolean duocSua = benhNhanService.coQuyen(Permission.PATIENT_UPDATE);
+        boolean duocThem = benhNhanService.coQuyen(Quyen.PATIENT_CREATE);
+        boolean duocSua = benhNhanService.coQuyen(Quyen.PATIENT_UPDATE);
         view.datQuyen(duocThem, duocSua);
 
         docDuLieuVaoTable(null);

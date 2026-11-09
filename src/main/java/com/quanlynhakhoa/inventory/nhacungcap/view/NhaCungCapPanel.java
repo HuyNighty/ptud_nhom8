@@ -4,7 +4,7 @@ import com.quanlynhakhoa.inventory.nhacungcap.controller.NhaCungCapController;
 import com.quanlynhakhoa.entity.NhaCungCap;
 import com.quanlynhakhoa.inventory.nhacungcap.service.NhaCungCapService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;

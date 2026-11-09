@@ -5,7 +5,7 @@ import com.quanlynhakhoa.nghiepvu.kho.thuoc.dao.ThuocDao;
 import com.quanlynhakhoa.entity.Thuoc;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -29,12 +29,12 @@ public class ThuocService {
         this.dao = dao;
     }
 
-    public boolean coQuyen(Permission quyen) {
+    public boolean coQuyen(Quyen quyen) {
         return phanQuyen.can(phien, quyen);
     }
 
     public List<Thuoc> timKiem(String tuKhoa) throws SQLException {
-        phanQuyen.require(phien, Permission.INVENTORY_READ);
+        phanQuyen.require(phien, Quyen.INVENTORY_READ);
         String keyword = tuKhoa == null ? "" : tuKhoa.trim();
         if (keyword.length() > 100) {
             throw new IllegalArgumentException("Từ khóa tìm kiếm tối đa 100 ký tự.");
@@ -43,7 +43,7 @@ public class ThuocService {
     }
 
     public void them(Thuoc thuoc) throws SQLException {
-        phanQuyen.require(phien, Permission.INVENTORY_MANAGE);
+        phanQuyen.require(phien, Quyen.INVENTORY_MANAGE);
         kiemTraVaChuanHoa(thuoc);
         try (Connection con = TeamDevConnection.open()) {
             con.setAutoCommit(false);
@@ -65,7 +65,7 @@ public class ThuocService {
     }
 
     public void capNhat(Thuoc thuoc) throws SQLException {
-        phanQuyen.require(phien, Permission.INVENTORY_MANAGE);
+        phanQuyen.require(phien, Quyen.INVENTORY_MANAGE);
         kiemTraVaChuanHoa(thuoc);
         try (Connection con = TeamDevConnection.open()) {
             con.setAutoCommit(false);

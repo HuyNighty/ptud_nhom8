@@ -11,7 +11,7 @@ import com.quanlynhakhoa.model.lichhen.BacSiChonLichHen;
 import com.quanlynhakhoa.entity.LichHen;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -43,12 +43,12 @@ public class LichHenService {
         this.traCuuBenhNhan = new TraCuuBenhNhanService(phienDangNhap);
     }
 
-    public boolean coQuyen(Permission quyen) {
+    public boolean coQuyen(Quyen quyen) {
         return phanQuyen.can(phienDangNhap, quyen);
     }
 
     public ArrayList<LichHen> layDanhSachLichHen(LocalDate ngay, String tuKhoa) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_READ);
+        phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_READ);
         if (ngay == null) {
             throw new IllegalArgumentException("Chọn ngày cần xem.");
         }
@@ -63,18 +63,18 @@ public class LichHenService {
     }
 
     public ArrayList<BacSiChonLichHen> layDanhSachBacSi() throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_READ);
+        phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_READ);
         return lichHenDao.layDanhSachBacSi();
     }
 
     public ArrayList<BenhNhanTomTat> timBenhNhan(String tuKhoa) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+        phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_MANAGE);
         return traCuuBenhNhan.timBenhNhan(tuKhoa);
     }
 
     public ArrayList<LocalTime> layGioTrong(String maBacSi, LocalDate ngay, String maLichHenDangDoi)
             throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+        phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_MANAGE);
         kiemTraBacSiVaNgay(maBacSi, ngay);
 
         ArrayList<LocalTime> danhSachGioTrong = new ArrayList<>();
@@ -116,7 +116,7 @@ public class LichHenService {
 
     public String datLich(String maBenhNhan, String maBacSi, LocalDateTime thoiGianHen, String lyDoHen)
             throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+        phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_MANAGE);
         if (maBenhNhan == null || maBenhNhan.isBlank()) {
             throw new IllegalArgumentException("Chọn bệnh nhân.");
         }
@@ -144,7 +144,7 @@ public class LichHenService {
                         "Bệnh nhân " + maBenhNhan + ", bác sĩ " + maBacSi
                         + ", lúc " + thoiGianHen.format(DINH_DANG_NGAY_GIO));
 
-                phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+                phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_MANAGE);
                 ketNoi.commit();
                 return lichHenMoi.getMaLichHen();
             } catch (SQLException | RuntimeException loi) {
@@ -156,7 +156,7 @@ public class LichHenService {
 
     public String doiLich(String maLichHenCu, String maBacSiMoi, LocalDateTime thoiGianMoi, String lyDoHen)
             throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+        phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_MANAGE);
         if (maLichHenCu == null || maLichHenCu.isBlank()) {
             throw new IllegalArgumentException("Chọn lịch hẹn cần đổi.");
         }
@@ -185,7 +185,7 @@ public class LichHenService {
                         + ", " + lichHenCu.getThoiGianHen().format(DINH_DANG_NGAY_GIO) + ") → "
                         + "bác sĩ " + maBacSiMoi + ", " + thoiGianMoi.format(DINH_DANG_NGAY_GIO));
 
-                phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+                phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_MANAGE);
                 ketNoi.commit();
                 return lichHenMoi.getMaLichHen();
             } catch (SQLException | RuntimeException loi) {
@@ -196,7 +196,7 @@ public class LichHenService {
     }
 
     public void huyLich(String maLichHen, String lyDoHuy) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+        phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_MANAGE);
         if (maLichHen == null || maLichHen.isBlank()) {
             throw new IllegalArgumentException("Chọn lịch hẹn cần hủy.");
         }
@@ -210,7 +210,7 @@ public class LichHenService {
                 lichHenDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Hủy lịch hẹn", maLichHen,
                         "Lý do: " + lyDoHuy);
 
-                phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+                phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_MANAGE);
                 ketNoi.commit();
             } catch (SQLException | RuntimeException loi) {
                 ketNoi.rollback();
@@ -220,7 +220,7 @@ public class LichHenService {
     }
 
     public void xacNhanLichHen(String maLichHen) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+        phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_MANAGE);
         if (maLichHen == null || maLichHen.isBlank()) {
             throw new IllegalArgumentException("Chọn lịch hẹn cần xác nhận.");
         }
@@ -236,7 +236,7 @@ public class LichHenService {
                 lichHenDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Xác nhận lịch hẹn", maLichHen,
                         "Đã gọi bệnh nhân, bệnh nhân xác nhận sẽ đến");
 
-                phanQuyen.require(phienDangNhap, Permission.APPOINTMENT_MANAGE);
+                phanQuyen.require(phienDangNhap, Quyen.APPOINTMENT_MANAGE);
                 ketNoi.commit();
             } catch (SQLException | RuntimeException loi) {
                 ketNoi.rollback();
@@ -246,7 +246,7 @@ public class LichHenService {
     }
 
     public ArrayList<LichHen> layLichHenHomNay(String tuKhoa) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+        phanQuyen.require(phienDangNhap, Quyen.PATIENT_CHECK_IN);
         if (tuKhoa == null) {
             tuKhoa = "";
         }
@@ -267,7 +267,7 @@ public class LichHenService {
     }
 
     public String tiepDonBenhNhan(String maLichHen) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+        phanQuyen.require(phienDangNhap, Quyen.PATIENT_CHECK_IN);
         if (maLichHen == null || maLichHen.isBlank()) {
             throw new IllegalArgumentException("Chọn lịch hẹn của bệnh nhân cần tiếp đón.");
         }
@@ -294,7 +294,7 @@ public class LichHenService {
                 lichHenDao.ghiNhatKy(ketNoi, phienDangNhap.accountId(), "Check-in bệnh nhân", maLichHen,
                         "Tạo lượt khám " + maPhieuKham + " (Chờ khám), bác sĩ " + lichHen.getMaBacSi());
 
-                phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+                phanQuyen.require(phienDangNhap, Quyen.PATIENT_CHECK_IN);
                 ketNoi.commit();
                 return maPhieuKham;
             } catch (SQLException | RuntimeException loi) {
@@ -305,12 +305,12 @@ public class LichHenService {
     }
 
     public ArrayList<BenhNhanTomTat> timBenhNhanDeTiepNhan(String tuKhoa) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+        phanQuyen.require(phienDangNhap, Quyen.PATIENT_CHECK_IN);
         return traCuuBenhNhan.timBenhNhan(tuKhoa);
     }
 
     public ArrayList<BacSiChonLichHen> layBacSiDangTrongCa() throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+        phanQuyen.require(phienDangNhap, Quyen.PATIENT_CHECK_IN);
         ArrayList<BacSiChonLichHen> tatCaBacSi = lichHenDao.layDanhSachBacSi();
         ArrayList<BacSiChonLichHen> danhSachBacSiTrongCa = new ArrayList<>();
         LocalDateTime bayGio = LocalDateTime.now();
@@ -328,7 +328,7 @@ public class LichHenService {
     }
 
     public String tiepNhanKhongHen(String maBenhNhan, String maBacSi, String lyDoDen) throws SQLException {
-        phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+        phanQuyen.require(phienDangNhap, Quyen.PATIENT_CHECK_IN);
         if (maBenhNhan == null || maBenhNhan.isBlank()) {
             throw new IllegalArgumentException("Chọn bệnh nhân.");
         }
@@ -366,7 +366,7 @@ public class LichHenService {
                 lichHenDao.ghiNhatKyTiepNhan(ketNoi, phienDangNhap.accountId(), maPhieuKham,
                         "Bệnh nhân " + maBenhNhan + ", bác sĩ " + maBacSi + ", lý do: " + lyDoDen);
 
-                phanQuyen.require(phienDangNhap, Permission.PATIENT_CHECK_IN);
+                phanQuyen.require(phienDangNhap, Quyen.PATIENT_CHECK_IN);
                 ketNoi.commit();
                 return maPhieuKham;
             } catch (SQLException | RuntimeException loi) {

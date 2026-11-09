@@ -1,6 +1,9 @@
-package com.quanlynhakhoa.hethong.phanquyen;
+package com.quanlynhakhoa.enums;
 
-public enum Permission {
+
+
+public enum Quyen {
+
     PATIENT_READ,
     PATIENT_CREATE,
     PATIENT_UPDATE,
@@ -27,4 +30,5 @@ public enum Permission {
     INVOICE_CANCEL_APPROVE,
     SHIFT_HANDOVER_MANAGE,
     REVENUE_REPORT_READ
+
 }

@@ -8,7 +8,7 @@ import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
 import com.quanlynhakhoa.model.phieukham.DuLieuCanLamSang;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.security.SecureRandom;
 import java.sql.Connection;
@@ -48,21 +48,21 @@ public final class CanLamSangService {
 
     public DuLieuCanLamSang taiDuLieu(String maPhieuKham, String maBacSiDuocChon)
             throws SQLException {
-        authorization.require(session, Permission.MEDICAL_RECORD_READ);
+        authorization.require(session, Quyen.MEDICAL_RECORD_READ);
         String visitId = validateId(maPhieuKham, "Mã phiếu khám");
         try (Connection connection = connections.open()) {
             verifyAssignment(connection, visitId, maBacSiDuocChon, false);
             DuLieuCanLamSang data = new DuLieuCanLamSang(
                     dao.danhSachDichVu(connection),
                     dao.danhSachChiDinh(connection, visitId));
-            authorization.require(session, Permission.MEDICAL_RECORD_READ);
+            authorization.require(session, Quyen.MEDICAL_RECORD_READ);
             return data;
         }
     }
 
     public void taoChiDinh(String maPhieuKham, String maBacSiDuocChon,
                            String maDichVu, String yeuCau) throws SQLException {
-        authorization.require(session, Permission.MEDICAL_RECORD_UPDATE);
+        authorization.require(session, Quyen.MEDICAL_RECORD_UPDATE);
         String visitId = validateId(maPhieuKham, "Mã phiếu khám");
         String serviceId = validateId(maDichVu, "Mã dịch vụ");
         String request = normalize(yeuCau);
@@ -81,7 +81,7 @@ public final class CanLamSangService {
                 String orderId = generateId();
                 dao.taoChiDinh(connection, orderId, visitId, serviceId,
                         request, doctorId, session.accountId());
-                authorization.require(session, Permission.MEDICAL_RECORD_UPDATE);
+                authorization.require(session, Quyen.MEDICAL_RECORD_UPDATE);
                 connection.commit();
             } catch (SQLException | RuntimeException failure) {
                 rollback(connection, failure);
@@ -92,7 +92,7 @@ public final class CanLamSangService {
 
     public void luuKetQua(String maPhieuKham, String maBacSiDuocChon,
                           String maChiDinh, String ketQua) throws SQLException {
-        authorization.require(session, Permission.MEDICAL_RECORD_UPDATE);
+        authorization.require(session, Quyen.MEDICAL_RECORD_UPDATE);
         String visitId = validateId(maPhieuKham, "Mã phiếu khám");
         String orderId = validateId(maChiDinh, "Mã chỉ định");
         String result = normalize(ketQua);
@@ -107,7 +107,7 @@ public final class CanLamSangService {
                 String doctorId = verifyAssignment(connection, visitId, maBacSiDuocChon, true);
                 dao.luuKetQua(connection, orderId, visitId, result,
                         doctorId, session.accountId());
-                authorization.require(session, Permission.MEDICAL_RECORD_UPDATE);
+                authorization.require(session, Quyen.MEDICAL_RECORD_UPDATE);
                 connection.commit();
             } catch (SQLException | RuntimeException failure) {
                 rollback(connection, failure);

@@ -4,10 +4,10 @@ import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.dieuhuong.Module;
+import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -82,15 +82,15 @@ public final class RoleOverviewSelfTest {
     public static void main(String[] args) throws Exception {
         check(FeatureBootstrap.createRegistry().contains(Module.ROLES), "Roles panel registered");
         check(VaiTroHeThong.values().length == 6, "Six canonical roles");
-        check(Permission.values().length == 26, "26 declared permissions");
+        check(Quyen.values().length == 26, "26 declared permissions");
         RolePermissionPolicy policy = new RolePermissionPolicy();
         for (VaiTroHeThong role : VaiTroHeThong.values()) {
             check(!policy.permissionsFor(role).isEmpty(), "Policy grants for " + role);
         }
-        check(policy.permissionsFor(VaiTroHeThong.SYSTEM_ADMIN).size() == Permission.values().length,
+        check(policy.permissionsFor(VaiTroHeThong.SYSTEM_ADMIN).size() == Quyen.values().length,
                 "System admin has all permissions");
-        check(!policy.isAllowed(VaiTroHeThong.DOCTOR, Permission.ROLE_MANAGE), "Doctor cannot read role console");
-        check(policy.isAllowed(VaiTroHeThong.CLINIC_MANAGER, Permission.ROLE_MANAGE), "Manager can read role console");
+        check(!policy.isAllowed(VaiTroHeThong.DOCTOR, Quyen.ROLE_MANAGE), "Doctor cannot read role console");
+        check(policy.isAllowed(VaiTroHeThong.CLINIC_MANAGER, Quyen.ROLE_MANAGE), "Manager can read role console");
         AtomicInteger attempts = new AtomicInteger();
         var unreachable = (com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService.ConnectionProvider) () -> {
             attempts.incrementAndGet();

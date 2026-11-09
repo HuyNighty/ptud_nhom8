@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.baocao;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
 import com.quanlynhakhoa.model.baocao.BaoCaoDoanhThu;
 import com.quanlynhakhoa.hethong.phanquyen.*;
@@ -24,7 +25,7 @@ public final class RevenueReportService {
         if (from == null || to == null || from.isAfter(to) || from.getYear() < 1900 || to.getYear() > 9998)
             throw new IllegalArgumentException("Chọn khoảng ngày hợp lệ; từ ngày không được sau đến ngày.");
     }
-    private void require() { authorization.require(session, Permission.REVENUE_REPORT_READ); }
+    private void require() { authorization.require(session, Quyen.REVENUE_REPORT_READ); }
     public BaoCaoDoanhThu load(LocalDate from, LocalDate to, boolean monthly) throws SQLException {
         require(); validate(from, to);
         // Bound generated display rows without restricting the date interval itself.

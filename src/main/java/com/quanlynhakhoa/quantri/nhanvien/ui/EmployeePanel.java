@@ -13,7 +13,7 @@ import com.quanlynhakhoa.quantri.nhanvien.EmployeeCreateService;
 import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
 import com.quanlynhakhoa.quantri.nhanvien.JobTitleLabels;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -218,12 +218,12 @@ public final class EmployeePanel extends JPanel implements RefreshableFeature {
         btnRefresh.setEnabled(ready);
         txtKeyword.setEnabled(ready);
         cmbStatus.setEnabled(ready);
-        btnCreate.setEnabled(ready && authorization.can(session, Permission.WORKFORCE_MANAGE));
+        btnCreate.setEnabled(ready && authorization.can(session, Quyen.WORKFORCE_MANAGE));
     }
 
     private void createEmployee() {
         if (!session.isActive() || loading || creating ||
-                !authorization.can(session, Permission.WORKFORCE_MANAGE)) return;
+                !authorization.can(session, Quyen.WORKFORCE_MANAGE)) return;
 
         JTextField txtId = new JTextField(16);
         JTextField txtName = new JTextField(24);

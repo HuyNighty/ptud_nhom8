@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.taikhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -33,7 +33,7 @@ public final class AccountCreateService {
 
     public String create(String employeeId, String username, String displayName,
                          VaiTroHeThong role, char[] chosenPassword) throws SQLException {
-        authorization.require(session, Permission.ACCOUNT_MANAGE);
+        authorization.require(session, Quyen.ACCOUNT_MANAGE);
         Objects.requireNonNull(chosenPassword, "chosenPassword");
         Objects.requireNonNull(role, "role");
         String staff = Objects.requireNonNull(employeeId, "employeeId").trim().toUpperCase(java.util.Locale.ROOT);
@@ -59,19 +59,19 @@ public final class AccountCreateService {
         // BCrypt accepts String; the caller must clear its mutable char[] after invocation.
         String passwordHash = BCrypt.hashpw(new String(chosenPassword), BCrypt.gensalt(12));
         String newId = newId();
-        authorization.require(session, Permission.ACCOUNT_MANAGE);
+        authorization.require(session, Quyen.ACCOUNT_MANAGE);
         try (Connection connection = connections.open()) {
             if (!connection.getAutoCommit()) throw new SQLException("Expected a fresh JDBC connection");
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             connection.setAutoCommit(false);
             try {
-                authorization.require(session, Permission.ACCOUNT_MANAGE);
+                authorization.require(session, Quyen.ACCOUNT_MANAGE);
                 dao.requireEligibleEmployee(connection, staff, role);
-                authorization.require(session, Permission.ACCOUNT_MANAGE);
+                authorization.require(session, Quyen.ACCOUNT_MANAGE);
                 dao.insertAccount(connection, newId, staff, login, display, passwordHash, role);
-                authorization.require(session, Permission.ACCOUNT_MANAGE);
+                authorization.require(session, Quyen.ACCOUNT_MANAGE);
                 dao.auditCreated(connection, session.accountId(), newId);
-                authorization.require(session, Permission.ACCOUNT_MANAGE);
+                authorization.require(session, Quyen.ACCOUNT_MANAGE);
                 connection.commit();
                 return newId;
             } catch (SQLException | RuntimeException error) {

@@ -1,7 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
-
-
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
@@ -26,7 +25,7 @@ public final class InvoiceCreationService {
         this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);
         this.source=Objects.requireNonNull(source);this.ids=Objects.requireNonNull(ids);this.dao=Objects.requireNonNull(dao);
     }
-    private void require(){authorization.require(session,Permission.BILLING_MANAGE);}
+    private void require(){authorization.require(session,Quyen.BILLING_MANAGE);}
     public List<LuaChonLapHoaDon> patients(String text) throws SQLException {
         require();String keyword=text==null?"":text.trim();if(keyword.length()>100)throw new IllegalArgumentException("Từ khóa tối đa 100 ký tự.");
         try(Connection c=connections.open()){require();List<LuaChonLapHoaDon> result=dao.patients(c,keyword);require();return result;}
@@ -39,7 +38,7 @@ public final class InvoiceCreationService {
         try(Connection c=connections.open()) {
             begin(c);
             try {require();dao.validateVisit(c,patient,visit);dao.employee(c,session.accountId());
-                BanNhapHoaDon draft=source.load(c,patient,visit,true);validate(draft,patient,visit);checkServices(c,draft);authorization.requireCurrent(session,Permission.BILLING_MANAGE,c);require();c.commit();return draft;
+                BanNhapHoaDon draft=source.load(c,patient,visit,true);validate(draft,patient,visit);checkServices(c,draft);authorization.requireCurrent(session,Quyen.BILLING_MANAGE,c);require();c.commit();return draft;
             } catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }
     }
@@ -61,7 +60,7 @@ public final class InvoiceCreationService {
                 try(PreparedStatement status=c.prepareStatement("UPDATE dbo.HoaDon SET trangThai=? WHERE maHoaDon=?")){
                     status.setQueryTimeout(15);status.setString(1,trusted.total().signum()==0?"DA_THANH_TOAN":"CHUA_THANH_TOAN");status.setString(2,id);if(status.executeUpdate()!=1)throw new SQLException("Missing created invoice");
                 }
-                dao.audit(c,session.accountId(),id);authorization.requireCurrent(session,Permission.BILLING_MANAGE,c);require();c.commit();committed=true;
+                dao.audit(c,session.accountId(),id);authorization.requireCurrent(session,Quyen.BILLING_MANAGE,c);require();c.commit();committed=true;
             } catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         } catch(SQLException e) {
             if(committed)throw new CommittedInvoiceException(id,e);

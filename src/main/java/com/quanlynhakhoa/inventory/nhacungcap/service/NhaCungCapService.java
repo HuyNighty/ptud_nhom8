@@ -5,7 +5,7 @@ import com.quanlynhakhoa.inventory.nhacungcap.dao.NhaCungCapDao;
 import com.quanlynhakhoa.entity.NhaCungCap;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -29,10 +29,10 @@ public class NhaCungCapService {
         this.dao = dao;
     }
 
-    public boolean coQuyen(Permission quyen) { return phanQuyen.can(phien, quyen); }
+    public boolean coQuyen(Quyen quyen) { return phanQuyen.can(phien, quyen); }
 
     public List<NhaCungCap> timKiem(String tuKhoa, String trangThai) throws SQLException {
-        phanQuyen.require(phien, Permission.INVENTORY_READ);
+        phanQuyen.require(phien, Quyen.INVENTORY_READ);
         String keyword = tuKhoa == null ? "" : tuKhoa.trim();
         if (keyword.length() > 100) throw new IllegalArgumentException("Từ khóa tìm kiếm tối đa 100 ký tự.");
         String state = trangThai == null ? "" : trangThai.trim();
@@ -44,7 +44,7 @@ public class NhaCungCapService {
     }
 
     public void them(NhaCungCap ncc) throws SQLException {
-        phanQuyen.require(phien, Permission.INVENTORY_MANAGE);
+        phanQuyen.require(phien, Quyen.INVENTORY_MANAGE);
         kiemTraVaChuanHoa(ncc);
         try (Connection con = TeamDevConnection.open()) {
             con.setAutoCommit(false);
@@ -66,7 +66,7 @@ public class NhaCungCapService {
     }
 
     public void capNhatThongTin(NhaCungCap ncc) throws SQLException {
-        phanQuyen.require(phien, Permission.INVENTORY_MANAGE);
+        phanQuyen.require(phien, Quyen.INVENTORY_MANAGE);
         kiemTraVaChuanHoa(ncc);
         try (Connection con = TeamDevConnection.open()) {
             con.setAutoCommit(false);
@@ -85,7 +85,7 @@ public class NhaCungCapService {
 
     /** Ngừng/khôi phục hợp tác bằng trạng thái, giữ lịch sử lô hàng và chứng từ tham chiếu. */
     public void capNhatTrangThai(String maNhaCungCap, String trangThaiMoi) throws SQLException {
-        phanQuyen.require(phien, Permission.INVENTORY_MANAGE);
+        phanQuyen.require(phien, Quyen.INVENTORY_MANAGE);
         String ma = maNhaCungCap == null ? "" : maNhaCungCap.trim().toUpperCase(Locale.ROOT);
         if (ma.isEmpty() || ma.length() > 10 || !ma.matches("[A-Z0-9_-]+")) {
             throw new IllegalArgumentException("Mã nhà cung cấp không hợp lệ.");

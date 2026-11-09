@@ -4,7 +4,7 @@ import com.quanlynhakhoa.model.nhatky.KetQuaNhatKy;
 import com.quanlynhakhoa.model.nhatky.BoLocNhatKy;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -34,12 +34,12 @@ public final class AuditService {
     }
 
     public KetQuaNhatKy search(BoLocNhatKy filter) throws SQLException {
-        authorization.require(session, Permission.AUDIT_READ);
+        authorization.require(session, Quyen.AUDIT_READ);
         Objects.requireNonNull(filter, "filter");
         try (Connection connection = connections.open()) {
-            authorization.require(session, Permission.AUDIT_READ);
+            authorization.require(session, Quyen.AUDIT_READ);
             KetQuaNhatKy result = dao.search(connection, filter);
-            authorization.require(session, Permission.AUDIT_READ);
+            authorization.require(session, Quyen.AUDIT_READ);
             return result;
         }
     }

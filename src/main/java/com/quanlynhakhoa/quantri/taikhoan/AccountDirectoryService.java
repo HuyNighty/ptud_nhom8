@@ -5,7 +5,7 @@ import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -30,15 +30,15 @@ public final class AccountDirectoryService {
 
     public KetQuaDanhSachTaiKhoan search(String keyword, VaiTroHeThong role,
                                              TrangThaiTaiKhoan status) throws SQLException {
-        authorization.require(session, Permission.ACCOUNT_MANAGE);
+        authorization.require(session, Quyen.ACCOUNT_MANAGE);
         String normalized = Objects.requireNonNull(keyword, "keyword").trim();
         if (normalized.length() > 80) {
             throw new IllegalArgumentException("Search keyword must have at most 80 characters");
         }
         try (Connection connection = connections.open()) {
-            authorization.require(session, Permission.ACCOUNT_MANAGE);
+            authorization.require(session, Quyen.ACCOUNT_MANAGE);
             KetQuaDanhSachTaiKhoan result = dao.search(connection, normalized, role, status);
-            authorization.require(session, Permission.ACCOUNT_MANAGE);
+            authorization.require(session, Quyen.ACCOUNT_MANAGE);
             return result;
         }
     }

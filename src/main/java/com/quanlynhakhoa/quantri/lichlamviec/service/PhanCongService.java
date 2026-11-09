@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.lichlamviec.service;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.lichlamviec.ThongTinPhanCong;
 import com.quanlynhakhoa.model.lichlamviec.DuLieuPhanCong;
 import com.quanlynhakhoa.entity.CaLamViec;
@@ -18,27 +19,27 @@ public final class PhanCongService {
     private final PhanCongDao dao=new PhanCongDao();
     private final AuthorizationService auth=new AuthorizationService(new RolePermissionPolicy());
     public PhanCongService(DesktopSession session,Connections connections){this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);}
-    public boolean canManage(){return auth.can(session,Permission.WORKFORCE_MANAGE);}
+    public boolean canManage(){return auth.can(session,Quyen.WORKFORCE_MANAGE);}
     public boolean isActive(){return session.isActive();}
     public DuLieuPhanCong management(LocalDate from,LocalDate to,String keyword,String employee) throws SQLException {
-        auth.require(session,Permission.WORKFORCE_READ);range(from,to);
+        auth.require(session,Quyen.WORKFORCE_READ);range(from,to);
         try(var c=connections.open()){
             var data=new DuLieuPhanCong(dao.schedule(c,from,to,employee),dao.employees(c,keyword==null?"":keyword.trim()),dao.shifts(c),"");
-            auth.require(session,Permission.WORKFORCE_READ);return data;
+            auth.require(session,Quyen.WORKFORCE_READ);return data;
         }
     }
     /** No caller-supplied employee ID: resolve only the trusted account association. */
     public DuLieuPhanCong mine(LocalDate from,LocalDate to) throws SQLException {
-        auth.require(session,Permission.SCHEDULE_SELF_READ);range(from,to);
+        auth.require(session,Quyen.SCHEDULE_SELF_READ);range(from,to);
         try(var c=connections.open()){
             String employee=dao.employeeForAccount(c,session.accountId());
             var rows=employee==null?List.<ThongTinPhanCong>of():dao.schedule(c,from,to,employee);
-            auth.require(session,Permission.SCHEDULE_SELF_READ);
+            auth.require(session,Quyen.SCHEDULE_SELF_READ);
             return new DuLieuPhanCong(rows,List.of(),List.of(),employee==null?"Tài khoản chưa liên kết với hồ sơ nhân viên.":"");
         }
     }
     public String create(String employee,String shift,LocalDate day,String task) throws SQLException {
-        auth.require(session,Permission.WORKFORCE_MANAGE);
+        auth.require(session,Quyen.WORKFORCE_MANAGE);
         String nv=required(employee,10,"Chọn nhân viên."),ca=required(shift,10,"Chọn ca làm việc.");
         range(day,day);String work=required(task,200,"Nhiệm vụ phải có 1–200 ký tự.");
         return write(c->{
@@ -52,7 +53,7 @@ public final class PhanCongService {
     /** A new shift and its assignment commit together or are both rolled back. */
     public String createWithNewShift(String employee, String shiftName, java.time.LocalTime start,
                                      java.time.LocalTime end, LocalDate day, String task) throws SQLException {
-        auth.require(session, Permission.WORKFORCE_MANAGE);
+        auth.require(session, Quyen.WORKFORCE_MANAGE);
         String nv = required(employee, 10, "Chọn nhân viên.");
         String name = required(shiftName, 50, "Tên ca phải có 1–50 ký tự.");
         range(day, day);
@@ -80,21 +81,21 @@ public final class PhanCongService {
     /** PO APPROVED 01/11/2026: UI hint; DAO conditional UPDATE remains authoritative. */
     public static boolean canCancelStatus(String status) { return "CHO_HIEU_LUC".equals(status); }
     public void cancel(String id,String reason) throws SQLException {
-        auth.require(session,Permission.WORKFORCE_MANAGE);
+        auth.require(session,Quyen.WORKFORCE_MANAGE);
         String key=required(id,10,"Chọn phân công."),why=required(reason,300,"Lý do hủy phải có 1–300 ký tự.");
         write(c->{String nv=dao.assignmentEmployee(c,key);dao.lockEmployee(c,nv,null,false);dao.cancel(c,key,why);dao.audit(c,session.accountId(),key,"Hủy phân công");return key;});
     }
     private interface Work {String run(Connection c) throws SQLException;}
     private String write(Work work) throws SQLException {
-        auth.require(session,Permission.WORKFORCE_MANAGE);
+        auth.require(session,Quyen.WORKFORCE_MANAGE);
         try(var c=connections.open()){
             if(!c.getAutoCommit())throw new SQLException("Cần kết nối JDBC mới.");
             dao.requireDevDatabase(c); // Guard BEFORE any write or transaction.
             c.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);c.setAutoCommit(false);
             boolean committing=false;
             try {
-                auth.require(session,Permission.WORKFORCE_MANAGE);String result=work.run(c);
-                auth.require(session,Permission.WORKFORCE_MANAGE);committing=true;c.commit();return result;
+                auth.require(session,Quyen.WORKFORCE_MANAGE);String result=work.run(c);
+                auth.require(session,Quyen.WORKFORCE_MANAGE);committing=true;c.commit();return result;
             } catch(SQLException|RuntimeException e){
                 try{c.rollback();}catch(SQLException rollback){e.addSuppressed(rollback);}
                 if(committing)throw new SQLException("Chưa xác định kết quả lưu. Hãy tải lại trước khi thử lại.",e);

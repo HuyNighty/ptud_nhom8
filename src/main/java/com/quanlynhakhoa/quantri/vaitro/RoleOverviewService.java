@@ -5,7 +5,7 @@ import com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -45,6 +45,6 @@ public final class RoleOverviewService {
 
     private void requireRead() {
         // Role-management permission controls access to the security policy overview.
-        authorization.require(session, Permission.ROLE_MANAGE);
+        authorization.require(session, Quyen.ROLE_MANAGE);
     }
 }

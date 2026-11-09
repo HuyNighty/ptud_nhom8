@@ -3,7 +3,7 @@ package com.quanlynhakhoa.nghiepvu.dieutri.service;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.SQLException;
@@ -21,12 +21,12 @@ public final class TreatmentPlanService {
     }
 
     public List<Object[]> danhSach() throws SQLException {
-        requireLocalPermission(Permission.MEDICAL_RECORD_READ);
+        requireLocalPermission(Quyen.MEDICAL_RECORD_READ);
         throw unavailable();
     }
 
     public List<Object[]> chiTiet(String planId) throws SQLException {
-        requireLocalPermission(Permission.MEDICAL_RECORD_READ);
+        requireLocalPermission(Quyen.MEDICAL_RECORD_READ);
         throw unavailable();
     }
 
@@ -61,7 +61,7 @@ public final class TreatmentPlanService {
     }
 
     private void requireDoctorCandidate() {
-        requireLocalPermission(Permission.MEDICAL_RECORD_UPDATE);
+        requireLocalPermission(Quyen.MEDICAL_RECORD_UPDATE);
         if (session.role() != VaiTroHeThong.DOCTOR) throw new AccessDeniedException();
         // DOCTOR is a prerequisite, NOT proof of linked active doctor identity.
         // All operations still fail closed: never wire DAO writes behind this check alone.
@@ -70,7 +70,7 @@ public final class TreatmentPlanService {
     /** Disabled operations reject locally before the PR118 verifier can open JDBC.
      * Shared verifier/session binding remains intact for other reviewed services.
      */
-    private void requireLocalPermission(Permission permission) {
+    private void requireLocalPermission(Quyen permission) {
         if (!authorization.can(session, permission)) throw new AccessDeniedException();
     }
 

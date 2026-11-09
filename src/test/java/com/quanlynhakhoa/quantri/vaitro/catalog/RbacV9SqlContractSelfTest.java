@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.vaitro.catalog;
 
 import com.quanlynhakhoa.entity.VaiTro;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.nio.file.Files;
@@ -34,7 +34,7 @@ public final class RbacV9SqlContractSelfTest {
     }
     private static Set<String> expectedGrants() {
         Set<String> pairs=new TreeSet<>();RolePermissionPolicy policy=new RolePermissionPolicy();
-        for(VaiTroHeThong role:VaiTroHeThong.values())for(Permission permission:policy.permissionsFor(role))
+        for(VaiTroHeThong role:VaiTroHeThong.values())for(Quyen permission:policy.permissionsFor(role))
             pairs.add(role.name()+":"+permission.name());
         return pairs;
     }
@@ -53,7 +53,7 @@ public final class RbacV9SqlContractSelfTest {
         List<List<String>> roles=rows(sql,"SEED ROLES","\\('([A-Z_]+)',N'([^']*)',N'([^']*)',([01]),([01]),([01])\\)",6);
         List<List<String>> permissions=rows(sql,"SEED PERMISSIONS","\\('([A-Z_]+)',N'([^']*)',([01])\\)",3);
         List<List<String>> grants=rows(sql,"SEED GRANTS","\\('([A-Z_]+)','([A-Z_]+)'\\)",2);
-        check(VaiTroHeThong.values().length==6&&Permission.values().length==26,"Baseline enum contract changed");
+        check(VaiTroHeThong.values().length==6&&Quyen.values().length==26,"Baseline enum contract changed");
         check(roles.size()==6,"Exactly six role seed rows");
         Set<String> actualRoles=new HashSet<>();
         for(List<String> row:roles) {
@@ -69,15 +69,15 @@ public final class RbacV9SqlContractSelfTest {
         Set<String> actualPermissions=new HashSet<>();
         for(List<String> row:permissions) {
             check(actualPermissions.add(row.get(0)),"Duplicate permission seed");
-            Permission.valueOf(row.get(0));check(!row.get(1).isBlank()&&row.get(2).equals("1"),"Enabled/named permission");
+            Quyen.valueOf(row.get(0));check(!row.get(1).isBlank()&&row.get(2).equals("1"),"Enabled/named permission");
         }
-        check(actualPermissions.equals(Arrays.stream(Permission.values()).map(Enum::name).collect(Collectors.toSet())),"Exact permission set");
+        check(actualPermissions.equals(Arrays.stream(Quyen.values()).map(Enum::name).collect(Collectors.toSet())),"Exact permission set");
         Set<String> actualGrants=pairs(grants),expected=expectedGrants();
         check(expected.size()==63,"Baseline grant count drift");
         check(grants.size()==63&&actualGrants.size()==grants.size(),"63 unique grants");
         check(actualGrants.equals(expected),"Exact role/permission policy parity (both directions)");
         RolePermissionPolicy policy=new RolePermissionPolicy();
-        for(VaiTroHeThong role:VaiTroHeThong.values())for(Permission permission:Permission.values())
+        for(VaiTroHeThong role:VaiTroHeThong.values())for(Quyen permission:Quyen.values())
             check(actualGrants.contains(role+":"+permission)==policy.isAllowed(role,permission),"Per-permission parity "+role+":"+permission);
         List<List<String>> missing=new ArrayList<>(grants);missing.removeFirst();
         check(!pairs(missing).equals(expected),"Parity detects deleted grant");

@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.CheDoXemHoaDon;
@@ -78,12 +79,12 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
     }
     private InvoicePanel(DesktopSession session, ConnectionProvider connections, ClinicalBillingSource source, InvoiceIdGenerator ids, CheDoXemHoaDon mode) {
         this.session=session;this.connections=connections;this.mode=mode;
-        new AuthorizationService(new RolePermissionPolicy()).require(session, Permission.BILLING_READ);
-        canPay = new AuthorizationService(new RolePermissionPolicy()).can(session, Permission.BILLING_MANAGE);
-        canRequestCancellation=new AuthorizationService(new RolePermissionPolicy()).can(session,Permission.INVOICE_CANCEL_REQUEST);
+        new AuthorizationService(new RolePermissionPolicy()).require(session, Quyen.BILLING_READ);
+        canPay = new AuthorizationService(new RolePermissionPolicy()).can(session, Quyen.BILLING_MANAGE);
+        canRequestCancellation=new AuthorizationService(new RolePermissionPolicy()).can(session,Quyen.INVOICE_CANCEL_REQUEST);
         btnYeuCauHuy.setVisible(mode==CheDoXemHoaDon.INVOICES&&canRequestCancellation);
         btnYeuCauHuy.setEnabled(canRequestCancellation);
-        canCreate = new AuthorizationService(new RolePermissionPolicy()).can(session, Permission.BILLING_MANAGE)
+        canCreate = new AuthorizationService(new RolePermissionPolicy()).can(session, Quyen.BILLING_MANAGE)
                 && source != null && ids != null;
         btnTaoHoaDon.setEnabled(canCreate);
         btnTaoHoaDon.setVisible(mode==CheDoXemHoaDon.INVOICES);
@@ -127,7 +128,7 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
         pnlBottom.add(lblTrangThai,BorderLayout.SOUTH); add(pnlBottom, BorderLayout.SOUTH);
         controller = new InvoiceController(this, session, source == null || ids == null
                 ? new InvoiceService(session, connections) : new InvoiceService(session, connections, source, ids));
-        boolean manager=new AuthorizationService(new RolePermissionPolicy()).can(session,Permission.INVOICE_CANCEL_APPROVE);
+        boolean manager=new AuthorizationService(new RolePermissionPolicy()).can(session,Quyen.INVOICE_CANCEL_APPROVE);
         btnDieuChinh.setVisible(manager);
         new com.quanlynhakhoa.nghiepvu.hoadon.controller.InvoiceAdjustmentController(this,session,connections);
         BillingUi.style(this);
@@ -173,7 +174,7 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
     public void onPay(ActionListener listener) { btnThanhToan.addActionListener(listener); }
     public void onRequestCancellation(ActionListener listener){btnYeuCauHuy.addActionListener(listener);}
     public void requestCancellation(){
-        if(!new AuthorizationService(new RolePermissionPolicy()).can(session,Permission.INVOICE_CANCEL_REQUEST)){status("Không có quyền gửi yêu cầu hủy.");return;}
+        if(!new AuthorizationService(new RolePermissionPolicy()).can(session,Quyen.INVOICE_CANCEL_REQUEST)){status("Không có quyền gửi yêu cầu hủy.");return;}
         String id=selectedId();if(id==null){status("Chọn một hóa đơn để gửi yêu cầu hủy.");return;}
         CancellationRequestDialog winRequest=new CancellationRequestDialog(SwingUtilities.getWindowAncestor(this));
         new com.quanlynhakhoa.nghiepvu.hoadon.controller.CancellationRequestController(winRequest,session,new com.quanlynhakhoa.nghiepvu.hoadon.service.CancellationService(session,connections),id,new Runnable(){public void run(){status("Yêu cầu đã gửi; hóa đơn chưa bị hủy, chờ xét duyệt.");controller.load();}});
@@ -183,11 +184,11 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
     public void setPaymentNavigation(PaymentNavigation navigation){paymentNavigation=navigation;}
     public void paySelected(){
         String id=selectedId();if(id==null){status("Chọn một hóa đơn để thanh toán.");return;}
-        if(!new AuthorizationService(new RolePermissionPolicy()).can(session,Permission.BILLING_MANAGE)){status("Không có quyền thu tiền.");return;}
+        if(!new AuthorizationService(new RolePermissionPolicy()).can(session,Quyen.BILLING_MANAGE)){status("Không có quyền thu tiền.");return;}
         if(paymentNavigation!=null&&mode!=CheDoXemHoaDon.PAYMENTS)paymentNavigation.open(id);else payInvoice(id);
     }
     public void payInvoice(String id){
-        if(!new AuthorizationService(new RolePermissionPolicy()).can(session,Permission.BILLING_MANAGE)){status("Không có quyền thu tiền.");return;}
+        if(!new AuthorizationService(new RolePermissionPolicy()).can(session,Quyen.BILLING_MANAGE)){status("Không có quyền thu tiền.");return;}
         if(mode==CheDoXemHoaDon.PAYMENTS)controller.focusInvoice(id);
         PaymentDialog winPayment=new PaymentDialog(SwingUtilities.getWindowAncestor(this));
         new com.quanlynhakhoa.nghiepvu.hoadon.controller.PaymentController(winPayment,session,connections,id,new Runnable(){public void run(){controller.paymentSaved();}});

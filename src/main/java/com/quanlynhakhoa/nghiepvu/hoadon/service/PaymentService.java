@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
@@ -58,7 +59,7 @@ public final class PaymentService {
                 }
                 if(existing>0){
                     if(existing!=request.parts().size())throw new IllegalArgumentException("Kết quả lần thu không đầy đủ, cần đối soát.");
-                    attempts.complete(c,request,session.accountId());authorization.requireCurrent(session,Permission.BILLING_MANAGE,c);require();c.commit();committed=true;
+                    attempts.complete(c,request,session.accountId());authorization.requireCurrent(session,Quyen.BILLING_MANAGE,c);require();c.commit();committed=true;
                 } else {
                     ThongTinHoaDon invoice=invoices.getForPayment(c,request.invoiceId());
                     if(invoice==null||invoice.trangThai()==TrangThaiHoaDon.DA_HUY)throw new IllegalArgumentException("Không được thu trên hóa đơn đã hủy/không tồn tại.");
@@ -71,7 +72,7 @@ public final class PaymentService {
                     }
                     TrangThaiHoaDon status=request.amount().compareTo(invoice.conNo())==0?TrangThaiHoaDon.DA_THANH_TOAN:TrangThaiHoaDon.THANH_TOAN_MOT_PHAN;
                     dao.updateStatus(c,request.invoiceId(),status);dao.audit(c,session.accountId(),request.invoiceId());
-                    attempts.complete(c,request,session.accountId());authorization.requireCurrent(session,Permission.BILLING_MANAGE,c);require();c.commit();committed=true;
+                    attempts.complete(c,request,session.accountId());authorization.requireCurrent(session,Quyen.BILLING_MANAGE,c);require();c.commit();committed=true;
                 }
             }catch(SQLException|RuntimeException e){try{c.rollback();}catch(SQLException rollback){e.addSuppressed(rollback);}throw e;}
         }catch(SQLException e){if(committed)throw new CommittedPaymentException(e);throw e;}
@@ -83,7 +84,7 @@ public final class PaymentService {
     public static final class CommittedPaymentException extends SQLException {
         public CommittedPaymentException(SQLException e){super("Đã thu thành công; lỗi đóng kết nối.",e);}
     }
-    private void require(){authorization.require(session,Permission.BILLING_MANAGE);}
+    private void require(){authorization.require(session,Quyen.BILLING_MANAGE);}
     private static boolean equalMoney(BigDecimal a,BigDecimal b){return a==null?b==null:b!=null&&a.compareTo(b)==0;}
     static boolean matches(ThongTinThanhToan prior,String invoice,String employee,PhanThanhToan part) {
         return invoice.equals(prior.maHoaDon())&&employee.equals(prior.maNhanVien())&&prior.trangThai()==TrangThaiThanhToan.THANH_CONG

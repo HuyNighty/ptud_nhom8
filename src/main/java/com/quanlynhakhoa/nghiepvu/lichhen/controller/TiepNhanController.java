@@ -8,7 +8,7 @@ import com.quanlynhakhoa.nghiepvu.lichhen.service.LichHenService;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.TiepNhanDialog;
 import com.quanlynhakhoa.nghiepvu.lichhen.view.TiepNhanPanel;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -40,7 +40,7 @@ public class TiepNhanController implements ActionListener, MouseListener {
         view.getBtnCheckIn().addActionListener(this);
         view.getTblLichHen().addMouseListener(this);
 
-        view.datQuyen(lichHenService.coQuyen(Permission.PATIENT_CHECK_IN));
+        view.datQuyen(lichHenService.coQuyen(Quyen.PATIENT_CHECK_IN));
 
         taiDanhSach(null);
     }

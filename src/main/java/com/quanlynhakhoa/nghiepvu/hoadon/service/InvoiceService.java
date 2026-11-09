@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
@@ -27,7 +28,7 @@ public final class InvoiceService {
     }
     public boolean creationConfigured() { return creation != null; }
     private InvoiceCreationService creation() {
-        authorization.require(session, Permission.BILLING_MANAGE);
+        authorization.require(session, Quyen.BILLING_MANAGE);
         if (creation == null) throw new IllegalStateException("Chờ hợp đồng dữ liệu khám và bộ sinh mã được duyệt.");
         return creation;
     }
@@ -88,7 +89,7 @@ public final class InvoiceService {
             } catch (SQLException | RuntimeException failure) { rollback(connection, failure); throw failure; }
         }
     }
-    private void require() { authorization.require(session, Permission.BILLING_READ); }
+    private void require() { authorization.require(session, Quyen.BILLING_READ); }
     private static void beginRead(Connection connection) throws SQLException {
         if (!connection.getAutoCommit()) throw new SQLException("Expected fresh auto-commit connection");
         connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);

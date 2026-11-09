@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.xacthuc.*;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
@@ -68,8 +69,8 @@ public final class ServiceBillingLauncher {
         final JFrame winFeature = new JFrame("Khang · Service & Billing M1 · " + session.role());
         AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
         JTabbedPane tabFeatures = new JTabbedPane();
-        if (authorization.can(session, Permission.SERVICE_CATALOG_MANAGE)) tabFeatures.addTab("Bảng giá dịch vụ", new ServiceCatalogPanel(session, TeamDevConnection::open));
-        if (authorization.can(session, Permission.BILLING_READ)) tabFeatures.addTab("Hóa đơn & công nợ", new InvoicePanel(session, TeamDevConnection::open));
+        if (authorization.can(session, Quyen.SERVICE_CATALOG_MANAGE)) tabFeatures.addTab("Bảng giá dịch vụ", new ServiceCatalogPanel(session, TeamDevConnection::open));
+        if (authorization.can(session, Quyen.BILLING_READ)) tabFeatures.addTab("Hóa đơn & công nợ", new InvoicePanel(session, TeamDevConnection::open));
         if (tabFeatures.getTabCount() == 0) tabFeatures.addTab("Quyền truy cập", new JLabelPanel());
         JPanel pnlRoot = new JPanel(new BorderLayout()); pnlRoot.add(tabFeatures, BorderLayout.CENTER);
         JButton btnLogout = new JButton("Đăng xuất");

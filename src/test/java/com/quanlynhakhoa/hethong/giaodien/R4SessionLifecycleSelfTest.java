@@ -2,12 +2,12 @@ package com.quanlynhakhoa.hethong.giaodien;
 
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.dieuhuong.Module;
+import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.lang.reflect.Constructor;
 import java.time.Instant;
@@ -46,7 +46,7 @@ public final class R4SessionLifecycleSelfTest {
         check(!navigation.canOpen(null, Module.HOME), "no principal cannot open HOME");
         check(!navigation.canOpen(null, Module.PATIENTS), "no principal cannot open PATIENTS");
         check(navigation.visibleModules(null).isEmpty(), "no principal has no visible modules");
-        for (Permission permission : Permission.values()) {
+        for (Quyen permission : Quyen.values()) {
             check(!authorization.can(null, permission), "null principal deny " + permission);
             denied(() -> authorization.require(null, permission), "null principal require " + permission);
         }
@@ -91,7 +91,7 @@ public final class R4SessionLifecycleSelfTest {
                 denied(() -> navigation.requireOpen(session, module), "navigation require denied after logout " + role + ":" + module);
                 denied(() -> model.select(module), "model cannot select after logout " + role + ":" + module);
             }
-            for (Permission permission : Permission.values()) {
+            for (Quyen permission : Quyen.values()) {
                 check(!authorization.can(session, permission), "cannot authorize after logout " + role + ":" + permission);
                 denied(() -> authorization.require(session, permission), "auth require denied after logout " + role + ":" + permission);
             }

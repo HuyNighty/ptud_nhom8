@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.baocao;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
 import com.quanlynhakhoa.model.baocao.BaoCaoDoanhThu;
 import com.quanlynhakhoa.hethong.phanquyen.*;
@@ -39,7 +40,7 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
 
     public RevenueReportPanel(DesktopSession session) { this(session, new RevenueReportService(session), true); }
     public RevenueReportPanel(DesktopSession session, RevenueReportService service, boolean autoLoad) {
-        new AuthorizationService(new RolePermissionPolicy()).require(session, Permission.REVENUE_REPORT_READ);
+        new AuthorizationService(new RolePermissionPolicy()).require(session, Quyen.REVENUE_REPORT_READ);
         this.session = session; this.service = service;
         setLayout(new BorderLayout(0,16)); setBackground(BG); setBorder(new EmptyBorder(24,26,24,26));
         JPanel top = transparent(new BorderLayout(0,16));

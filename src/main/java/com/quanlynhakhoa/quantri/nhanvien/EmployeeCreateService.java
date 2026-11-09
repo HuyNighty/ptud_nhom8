@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.nhanvien;
 import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -33,9 +33,9 @@ public final class EmployeeCreateService {
     }
 
     public String create(YeuCauTaoNhanVien draft) throws SQLException {
-        authorization.require(session, Permission.WORKFORCE_MANAGE);
+        authorization.require(session, Quyen.WORKFORCE_MANAGE);
         YeuCauTaoNhanVien request = validate(draft);
-        authorization.require(session, Permission.WORKFORCE_MANAGE);
+        authorization.require(session, Quyen.WORKFORCE_MANAGE);
         try (Connection connection = connections.open()) {
             if (!connection.getAutoCommit()) {
                 throw new SQLException("Expected a fresh JDBC connection");
@@ -43,13 +43,13 @@ public final class EmployeeCreateService {
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             connection.setAutoCommit(false);
             try {
-                authorization.require(session, Permission.WORKFORCE_MANAGE);
+                authorization.require(session, Quyen.WORKFORCE_MANAGE);
                 dao.requireUnique(connection, request);
-                authorization.require(session, Permission.WORKFORCE_MANAGE);
+                authorization.require(session, Quyen.WORKFORCE_MANAGE);
                 dao.insert(connection, request);
-                authorization.require(session, Permission.WORKFORCE_MANAGE);
+                authorization.require(session, Quyen.WORKFORCE_MANAGE);
                 dao.auditCreated(connection, session.accountId(), request.employeeId());
-                authorization.require(session, Permission.WORKFORCE_MANAGE);
+                authorization.require(session, Quyen.WORKFORCE_MANAGE);
                 connection.commit();
                 return request.employeeId();
             } catch (SQLException | RuntimeException failure) {

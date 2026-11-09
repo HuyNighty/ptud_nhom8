@@ -6,7 +6,7 @@ import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
 import com.quanlynhakhoa.quantri.vaitro.RoleOverviewService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -116,7 +116,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
 
         JPanel bottom = new JPanel(new BorderLayout(0, 7));
         bottom.setOpaque(false);
-        JLabel matrixHeading = new JLabel("Ma trận quyền thực tế (" + Permission.values().length + " quyền × " + VaiTroHeThong.values().length + " vai trò)");
+        JLabel matrixHeading = new JLabel("Ma trận quyền thực tế (" + Quyen.values().length + " quyền × " + VaiTroHeThong.values().length + " vai trò)");
         matrixHeading.setForeground(NAVY);
         matrixHeading.setFont(new Font("SansSerif", Font.BOLD, 15));
         bottom.add(matrixHeading, BorderLayout.NORTH);
@@ -244,9 +244,9 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
         roleHeading.setText(roleText(overview.role()));
         roleDescription.setText(roleDescription(overview.role()));
         roleStats.setText(overview.accountCount() + " tài khoản · "
-                + overview.permissions().size() + " / " + Permission.values().length + " quyền");
+                + overview.permissions().size() + " / " + Quyen.values().length + " quyền");
         StringBuilder granted = new StringBuilder("Các quyền đang được cấp:\n");
-        for (Permission permission : Permission.values()) {
+        for (Quyen permission : Quyen.values()) {
             if (overview.permissions().contains(permission)) {
                 granted.append("• ").append(permissionText(permission)).append('\n');
             }
@@ -282,7 +282,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
         };
     }
 
-    private static String permissionText(Permission permission) {
+    private static String permissionText(Quyen permission) {
         return switch (permission) {
             case PATIENT_READ -> "Xem bệnh nhân";
             case PATIENT_CREATE -> "Tạo bệnh nhân";
@@ -321,14 +321,14 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
             fireTableDataChanged();
         }
         @Override public int getRowCount() {
-            return rows.isEmpty() ? 0 : Permission.values().length;
+            return rows.isEmpty() ? 0 : Quyen.values().length;
         }
         @Override public int getColumnCount() { return ROLES.length + 1; }
         @Override public String getColumnName(int index) {
             return index == 0 ? "Quyền nghiệp vụ" : roleText(ROLES[index - 1]);
         }
         @Override public Object getValueAt(int row, int column) {
-            Permission permission = Permission.values()[row];
+            Quyen permission = Quyen.values()[row];
             if (column == 0) return permissionText(permission);
             VaiTroHeThong role = ROLES[column - 1];
             return rows.stream().filter(item -> item.role() == role).findFirst()

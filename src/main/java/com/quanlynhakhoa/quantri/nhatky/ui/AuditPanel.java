@@ -9,7 +9,7 @@ import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -62,7 +62,7 @@ public final class AuditPanel extends JPanel implements RefreshableFeature {
 
     public AuditPanel(DesktopSession session, AuditService service, boolean autoLoad) {
         this.session = java.util.Objects.requireNonNull(session, "session");
-        new AuthorizationService(new RolePermissionPolicy()).require(session, Permission.AUDIT_READ);
+        new AuthorizationService(new RolePermissionPolicy()).require(session, Quyen.AUDIT_READ);
         this.service = java.util.Objects.requireNonNull(service, "service");
         setLayout(new BorderLayout(0, 14));
         setBackground(new Color(245, 248, 252));

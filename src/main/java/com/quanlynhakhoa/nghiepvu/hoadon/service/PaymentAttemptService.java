@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
@@ -21,7 +22,7 @@ public final class PaymentAttemptService {
     public PaymentAttemptService(DesktopSession session,ConnectionProvider connections){this.session=session;this.connections=connections;}
     private static PreparedStatement statement(Connection c,String sql)throws SQLException{PreparedStatement s=c.prepareStatement(sql);s.setQueryTimeout(15);return s;}
     public ThanhToanDangCho pending(String invoice)throws SQLException {
-        auth.require(session,Permission.BILLING_READ);
+        auth.require(session,Quyen.BILLING_READ);
         try(Connection c=connections.open()){return pending(c,invoice);}
     }
     static ThanhToanDangCho pending(Connection c,String invoice)throws SQLException {
@@ -35,7 +36,7 @@ public final class PaymentAttemptService {
         }
     }
     public void reserve(YeuCauThanhToan request)throws SQLException {
-        auth.require(session,Permission.BILLING_MANAGE);PaymentService.validate(request);
+        auth.require(session,Quyen.BILLING_MANAGE);PaymentService.validate(request);
         try(Connection c=connections.open()){
             c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);c.setAutoCommit(false);
             try{
@@ -45,7 +46,7 @@ public final class PaymentAttemptService {
                         if(r.next()){
                             if(!request.invoiceId().equals(r.getString(1))||!session.accountId().equals(r.getString(2))||part.amount().compareTo(r.getBigDecimal(3))!=0||!part.method().name().equals(r.getString(4))||!Objects.equals(part.reference(),r.getString(5))||!equal(part.customerTender(),r.getBigDecimal(6))||"DA_HUY".equals(r.getString(7)))
                                 throw new IllegalArgumentException("Lần thu thuộc tài khoản khác, đã được giải quyết hoặc có dữ liệu khác. Kiểm tra kết quả trước khi thu tiếp.");
-                            auth.requireCurrent(session,Permission.BILLING_MANAGE,c);c.commit();return;
+                            auth.requireCurrent(session,Quyen.BILLING_MANAGE,c);c.commit();return;
                         }
                     }
                 }
@@ -61,7 +62,7 @@ public final class PaymentAttemptService {
                 try(PreparedStatement s=statement(c,"INSERT INTO dbo.LanThuHoaDon(maLanThu,maHoaDon,maTaiKhoan,soTien,phuongThuc,maGiaoDich,tienKhachDua,trangThai) VALUES(?,?,?,?,?,?,?,?)")){
                     s.setString(1,part.id());s.setString(2,request.invoiceId());s.setString(3,session.accountId());s.setBigDecimal(4,part.amount());s.setString(5,part.method().name());s.setString(6,part.reference());s.setBigDecimal(7,part.customerTender());s.setString(8,recorded?"THANH_CONG":"CHO_XU_LY");s.executeUpdate();
                 }
-                auth.requireCurrent(session,Permission.BILLING_MANAGE,c);c.commit();
+                auth.requireCurrent(session,Quyen.BILLING_MANAGE,c);c.commit();
             }catch(SQLException|RuntimeException e){try{c.rollback();}catch(SQLException rollback){e.addSuppressed(rollback);}throw e;}
         }
     }
@@ -73,7 +74,7 @@ public final class PaymentAttemptService {
         }
     }
     public void acknowledge(YeuCauThanhToan request)throws SQLException {
-        auth.require(session,Permission.BILLING_MANAGE);
+        auth.require(session,Quyen.BILLING_MANAGE);
         try(Connection c=connections.open()){
             c.setAutoCommit(false);
             try{
@@ -83,12 +84,12 @@ public final class PaymentAttemptService {
                     s.setString(1,request.parts().getFirst().id());s.setString(2,request.invoiceId());s.setString(3,session.accountId());
                     if(s.executeUpdate()!=1)throw new IllegalArgumentException("Lần thu không thuộc tài khoản này hoặc đã giải quyết.");
                 }
-                auth.requireCurrent(session,Permission.BILLING_MANAGE,c);c.commit();
+                auth.requireCurrent(session,Quyen.BILLING_MANAGE,c);c.commit();
             }catch(SQLException|RuntimeException e){try{c.rollback();}catch(SQLException rollback){e.addSuppressed(rollback);}throw e;}
         }
     }
     public void release(String invoice,String attempt,String reason)throws SQLException {
-        auth.require(session,Permission.INVOICE_CANCEL_APPROVE);
+        auth.require(session,Quyen.INVOICE_CANCEL_APPROVE);
         if(reason==null||reason.trim().isEmpty()||reason.length()>300)throw new IllegalArgumentException("Nhập lý do đối soát tối đa 300 ký tự.");
         try(Connection c=connections.open()){
             c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);c.setAutoCommit(false);
@@ -108,7 +109,7 @@ public final class PaymentAttemptService {
                 try(PreparedStatement s=statement(c,"INSERT INTO dbo.NhatKyThaoTac(loaiTacNhan,maTaiKhoan,chucNang,hanhDong,ketQua,doiTuong,maDoiTuong) VALUES('ACCOUNT',?,N'Thanh toán',N'Đối soát lần thu','SUCCESS','LanThuHoaDon',?)")){
                     s.setString(1,session.accountId());s.setString(2,attempt);s.executeUpdate();
                 }
-                auth.requireCurrent(session,Permission.INVOICE_CANCEL_APPROVE,c);c.commit();
+                auth.requireCurrent(session,Quyen.INVOICE_CANCEL_APPROVE,c);c.commit();
             }catch(SQLException|RuntimeException e){try{c.rollback();}catch(SQLException rollback){e.addSuppressed(rollback);}throw e;}
         }
     }

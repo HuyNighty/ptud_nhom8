@@ -5,7 +5,7 @@ import com.quanlynhakhoa.inventory.nhacungcap.service.NhaCungCapService;
 import com.quanlynhakhoa.inventory.nhacungcap.view.NhaCungCapDialog;
 import com.quanlynhakhoa.inventory.nhacungcap.view.NhaCungCapPanel;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import java.awt.Color;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -34,9 +34,9 @@ public final class NhaCungCapController implements ActionListener {
         view.getBtnSua().addActionListener(this);
         view.getBtnDoiTrangThai().addActionListener(this);
         view.getTblNhaCungCap().getSelectionModel().addListSelectionListener(event -> {
-            if (!event.getValueIsAdjusting()) view.datQuyen(service.coQuyen(Permission.INVENTORY_MANAGE));
+            if (!event.getValueIsAdjusting()) view.datQuyen(service.coQuyen(Quyen.INVENTORY_MANAGE));
         });
-        view.datQuyen(service.coQuyen(Permission.INVENTORY_MANAGE));
+        view.datQuyen(service.coQuyen(Quyen.INVENTORY_MANAGE));
         taiDanhSach();
     }
 
@@ -75,7 +75,7 @@ public final class NhaCungCapController implements ActionListener {
                 view.datDangTai(false);
                 try {
                     view.hienDanhSach(get());
-                    view.datQuyen(service.coQuyen(Permission.INVENTORY_MANAGE));
+                    view.datQuyen(service.coQuyen(Quyen.INVENTORY_MANAGE));
                 } catch (Exception error) {
                     view.hienLoi(thongBaoLoi(error));
                 }

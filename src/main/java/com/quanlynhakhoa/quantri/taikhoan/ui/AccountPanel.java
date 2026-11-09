@@ -12,7 +12,7 @@ import com.quanlynhakhoa.quantri.taikhoan.EligibleEmployeeService;
 import com.quanlynhakhoa.quantri.taikhoan.AccountStateService;
 import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
@@ -284,7 +284,7 @@ public final class AccountPanel extends JPanel {
 
     private void createAccount() {
         if (!configured || loading || creating || changingState ||
-                !authorization.can(session, Permission.ACCOUNT_MANAGE)) return;
+                !authorization.can(session, Quyen.ACCOUNT_MANAGE)) return;
         creating = true;
         updateControls();
         lblStatus.setText("Đang tìm nhân viên chưa có tài khoản...");
@@ -330,7 +330,7 @@ public final class AccountPanel extends JPanel {
     }
 
     private void showCreateAccountDialog(List<NhanVienDuDieuKien> employees) {
-        if (!authorization.can(session, Permission.ACCOUNT_MANAGE)) return;
+        if (!authorization.can(session, Quyen.ACCOUNT_MANAGE)) return;
         JComboBox<NhanVienDuDieuKien> cmbEmployee =
                 new JComboBox<>(employees.toArray(new NhanVienDuDieuKien[0]));
         cmbEmployee.setRenderer(new DefaultListCellRenderer() {
@@ -452,7 +452,7 @@ public final class AccountPanel extends JPanel {
 
     private void updateControls() {
         boolean ready = configured && !loading && !creating && !changingState
-                && authorization.can(session, Permission.ACCOUNT_MANAGE);
+                && authorization.can(session, Quyen.ACCOUNT_MANAGE);
         btnSearch.setEnabled(ready);
         btnRefresh.setEnabled(ready);
         btnCreate.setEnabled(ready);
@@ -493,7 +493,7 @@ public final class AccountPanel extends JPanel {
 
     private void applyStateChange(DongDanhSachTaiKhoan target, boolean locking, String reason) {
         if (loading || creating || changingState || !configured
-                || !authorization.can(session, Permission.ACCOUNT_MANAGE)) return;
+                || !authorization.can(session, Quyen.ACCOUNT_MANAGE)) return;
         changingState = true;
         stateMessage = "";
         tblAccounts.setEnabled(false);

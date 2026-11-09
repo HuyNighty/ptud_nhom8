@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.XemTruocHuyHoaDon;
@@ -25,50 +26,50 @@ public final class CancellationService {
     public CancellationService(DesktopSession session,ConnectionProvider connections,CancellationDao dao,InvoiceDao invoices,InvoiceIdGenerator ids) {
         this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);this.dao=Objects.requireNonNull(dao);this.invoices=Objects.requireNonNull(invoices);this.ids=Objects.requireNonNull(ids);
     }
-    private void require(Permission permission){authorization.require(session,permission);}
+    private void require(Quyen permission){authorization.require(session,permission);}
     public List<ThongTinYeuCauHuyHoaDon> find(String keyword,LocalDate from,LocalDate to,TrangThaiYeuCauHuyHoaDon status)throws SQLException {
-        require(Permission.INVOICE_CANCEL_APPROVE);String text=keyword==null?"":keyword.trim();
+        require(Quyen.INVOICE_CANCEL_APPROVE);String text=keyword==null?"":keyword.trim();
         if(text.length()>100)throw new IllegalArgumentException("Từ khóa tối đa 100 ký tự.");dates(from,to);
-        try(Connection c=connections.open()){require(Permission.INVOICE_CANCEL_APPROVE);begin(c);
-            try{List<ThongTinYeuCauHuyHoaDon> result=dao.find(c,text,from,to,status);require(Permission.INVOICE_CANCEL_APPROVE);c.commit();return result;}
+        try(Connection c=connections.open()){require(Quyen.INVOICE_CANCEL_APPROVE);begin(c);
+            try{List<ThongTinYeuCauHuyHoaDon> result=dao.find(c,text,from,to,status);require(Quyen.INVOICE_CANCEL_APPROVE);c.commit();return result;}
             catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }
     }
     public XemTruocHuyHoaDon preview(String invoiceId)throws SQLException {
-        require(Permission.INVOICE_CANCEL_REQUEST);key(invoiceId);
-        try(Connection c=connections.open()){require(Permission.INVOICE_CANCEL_REQUEST);begin(c);
-            try{DuLieuChiTietHoaDon detail=readInvoice(c,invoiceId);boolean pending=dao.pending(c,invoiceId);require(Permission.INVOICE_CANCEL_REQUEST);c.commit();return new XemTruocHuyHoaDon(detail,pending);}
+        require(Quyen.INVOICE_CANCEL_REQUEST);key(invoiceId);
+        try(Connection c=connections.open()){require(Quyen.INVOICE_CANCEL_REQUEST);begin(c);
+            try{DuLieuChiTietHoaDon detail=readInvoice(c,invoiceId);boolean pending=dao.pending(c,invoiceId);require(Quyen.INVOICE_CANCEL_REQUEST);c.commit();return new XemTruocHuyHoaDon(detail,pending);}
             catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }
     }
     public ChiTietYeuCauHuy detail(String requestId)throws SQLException {
-        require(Permission.INVOICE_CANCEL_APPROVE);key(requestId);
-        try(Connection c=connections.open()){require(Permission.INVOICE_CANCEL_APPROVE);begin(c);
+        require(Quyen.INVOICE_CANCEL_APPROVE);key(requestId);
+        try(Connection c=connections.open()){require(Quyen.INVOICE_CANCEL_APPROVE);begin(c);
             try{ThongTinYeuCauHuyHoaDon request=dao.get(c,requestId);if(request==null)throw new IllegalArgumentException("Yêu cầu không tồn tại.");
-                ChiTietYeuCauHuy result=new ChiTietYeuCauHuy(request,readInvoice(c,request.maHoaDon()));require(Permission.INVOICE_CANCEL_APPROVE);c.commit();return result;}
+                ChiTietYeuCauHuy result=new ChiTietYeuCauHuy(request,readInvoice(c,request.maHoaDon()));require(Quyen.INVOICE_CANCEL_APPROVE);c.commit();return result;}
             catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }
     }
     public String request(String invoiceId,String reason)throws SQLException {
-        require(Permission.INVOICE_CANCEL_REQUEST);key(invoiceId);String normalized=reason(reason);String id=null;boolean committed=false;
-        try(Connection c=connections.open()){require(Permission.INVOICE_CANCEL_REQUEST);begin(c);
+        require(Quyen.INVOICE_CANCEL_REQUEST);key(invoiceId);String normalized=reason(reason);String id=null;boolean committed=false;
+        try(Connection c=connections.open()){require(Quyen.INVOICE_CANCEL_REQUEST);begin(c);
             try{dao.lockInvoice(c,invoiceId);ThongTinHoaDon invoice=invoices.getForPayment(c,invoiceId);
                 if(invoice==null||invoice.trangThai()==TrangThaiHoaDon.DA_HUY)throw new IllegalArgumentException("Không gửi yêu cầu cho hóa đơn đã hủy/không tồn tại.");
                 if(invoice.daThu().signum()!=0)throw new IllegalArgumentException("Hóa đơn đã có khoản thu; chưa hỗ trợ hoàn tiền nên không thể gửi yêu cầu hủy.");
                 if(PaymentAttemptService.pending(c,invoiceId)!=null)throw new IllegalArgumentException("Hóa đơn còn lần thu chờ đối soát; giải quyết trước khi yêu cầu hủy.");
                 if(dao.pending(c,invoiceId))throw new IllegalArgumentException("Hóa đơn đã có yêu cầu đang chờ duyệt.");
                 id=ids.next(c);key(id);dao.insert(c,id,invoiceId,session.accountId(),normalized);dao.audit(c,session.accountId(),id,"Gửi yêu cầu hủy");
-                authorization.requireCurrent(session,Permission.INVOICE_CANCEL_REQUEST,c);require(Permission.INVOICE_CANCEL_REQUEST);c.commit();committed=true;
+                authorization.requireCurrent(session,Quyen.INVOICE_CANCEL_REQUEST,c);require(Quyen.INVOICE_CANCEL_REQUEST);c.commit();committed=true;
             }catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }catch(SQLException e){if(committed)throw new CommittedCancellationException(id,e);if(e.getErrorCode()==2601||e.getErrorCode()==2627)throw new IllegalArgumentException("Trùng mã hoặc đã có yêu cầu chờ duyệt; tải lại để kiểm tra.",e);throw e;}
         return id;
     }
     public void decide(String requestId,boolean approve,String decisionReason)throws SQLException {
-        require(Permission.INVOICE_CANCEL_APPROVE);key(requestId);
+        require(Quyen.INVOICE_CANCEL_APPROVE);key(requestId);
         String normalized=approve&&(decisionReason==null||decisionReason.isBlank())?"Đồng ý hủy hóa đơn":reason(decisionReason);
         boolean committed=false;
         try(Connection c=connections.open()) {
-            require(Permission.INVOICE_CANCEL_APPROVE);
+            require(Quyen.INVOICE_CANCEL_APPROVE);
             if(!c.getAutoCommit())throw new SQLException("Expected fresh connection");
             String invoiceId=dao.invoiceId(c,requestId);begin(c);
             try{dao.lockInvoice(c,invoiceId);dao.lockRequest(c,requestId);
@@ -84,7 +85,7 @@ public final class CancellationService {
                 }
                 // A rejection changes only the request: invoice/payment history remains untouched.
                 dao.decide(c,requestId,session.accountId(),normalized,approve);dao.audit(c,session.accountId(),requestId,approve?"Duyệt hủy hóa đơn":"Từ chối hủy hóa đơn");
-                authorization.requireCurrent(session,Permission.INVOICE_CANCEL_APPROVE,c);require(Permission.INVOICE_CANCEL_APPROVE);c.commit();committed=true;
+                authorization.requireCurrent(session,Quyen.INVOICE_CANCEL_APPROVE,c);require(Quyen.INVOICE_CANCEL_APPROVE);c.commit();committed=true;
             }catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }catch(SQLException e){if(committed)throw new CommittedCancellationException(requestId,e);throw e;}
     }

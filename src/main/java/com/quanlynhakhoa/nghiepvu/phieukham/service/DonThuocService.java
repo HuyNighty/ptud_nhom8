@@ -12,7 +12,7 @@ import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
 import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.security.SecureRandom;
 import java.sql.Connection;
@@ -62,7 +62,7 @@ public final class DonThuocService {
 
     public DuLieuDonThuoc taiDuLieu(String maPhieuKham, String maBacSiDuocChon)
             throws SQLException {
-        authorization.require(session, Permission.MEDICAL_RECORD_READ);
+        authorization.require(session, Quyen.MEDICAL_RECORD_READ);
         String visitId = validateId(maPhieuKham, "Mã phiếu khám");
         try (Connection connection = TeamDevConnection.open()) {
             ThongTinPhieuKham visit = loadAndVerifyVisit(connection, visitId, maBacSiDuocChon, false);
@@ -81,7 +81,7 @@ public final class DonThuocService {
     public void luuDonThuoc(String maPhieuKham, String maBacSiDuocChon,
                             List<DongChiTietDonThuoc> requestedItems, String loiDan,
                             boolean daXacNhanCanhBao) throws SQLException {
-        authorization.require(session, Permission.MEDICAL_RECORD_UPDATE);
+        authorization.require(session, Quyen.MEDICAL_RECORD_UPDATE);
         String visitId = validateId(maPhieuKham, "Mã phiếu khám");
         String instructions = normalize(loiDan);
         if (instructions.length() > MAX_LOI_DAN) {
@@ -136,7 +136,7 @@ public final class DonThuocService {
                 }
                 dao.ghiNhatKy(connection, session.accountId(), prescriptionId,
                         doctorId, auditNote);
-                authorization.require(session, Permission.MEDICAL_RECORD_UPDATE);
+                authorization.require(session, Quyen.MEDICAL_RECORD_UPDATE);
                 connection.commit();
             } catch (SQLException | RuntimeException failure) {
                 rollback(connection, failure);

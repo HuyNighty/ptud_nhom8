@@ -1,13 +1,11 @@
 package com.quanlynhakhoa.nghiepvu.kho.supplyrequest.service;
 
 import com.quanlynhakhoa.model.kho.PhanBoLo;
-
 import com.quanlynhakhoa.model.kho.DongYeuCauCungUng;
-
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import com.quanlynhakhoa.nghiepvu.kho.supplyrequest.dao.SupplyRequestDao;
 import java.sql.Connection;
@@ -29,31 +27,31 @@ public final class SupplyRequestService {
     }
 
     public boolean canRequest() {
-        return authorization.can(session, Permission.SUPPLY_REQUEST);
+        return authorization.can(session, Quyen.SUPPLY_REQUEST);
     }
 
     public boolean canManage() {
-        return authorization.can(session, Permission.INVENTORY_MANAGE);
+        return authorization.can(session, Quyen.INVENTORY_MANAGE);
     }
 
     public List<Object[]> danhSachCuaToi() throws SQLException {
-        authorization.require(session, Permission.SUPPLY_REQUEST);
+        authorization.require(session, Quyen.SUPPLY_REQUEST);
         return dao.danhSachCuaToi(session.accountId());
     }
 
     public List<Object[]> danhSachChoKho() throws SQLException {
-        authorization.require(session, Permission.INVENTORY_READ);
+        authorization.require(session, Quyen.INVENTORY_READ);
         return dao.danhSachChoKho();
     }
 
     public List<Object[]> chiTiet(String requestId) throws SQLException {
         if (canManage()) return dao.chiTiet(code(requestId, "Mã yêu cầu"), session.accountId(), true);
-        authorization.require(session, Permission.SUPPLY_REQUEST);
+        authorization.require(session, Quyen.SUPPLY_REQUEST);
         return dao.chiTiet(code(requestId, "Mã yêu cầu"), session.accountId(), false);
     }
 
     public void taoYeuCau(String requestId, String reason, List<DongYeuCauCungUng> lines) throws SQLException {
-        authorization.require(session, Permission.SUPPLY_REQUEST);
+        authorization.require(session, Quyen.SUPPLY_REQUEST);
         String id = code(requestId, "Mã yêu cầu");
         required(reason, 300, "Lý do");
         if (lines == null || lines.isEmpty() || lines.size() > 30) throw new IllegalArgumentException("Yêu cầu cần từ 1 đến 30 dòng hàng.");
@@ -68,20 +66,20 @@ public final class SupplyRequestService {
     }
 
     public void duyet(String requestId) throws SQLException {
-        authorization.require(session, Permission.INVENTORY_MANAGE);
+        authorization.require(session, Quyen.INVENTORY_MANAGE);
         String id = code(requestId, "Mã yêu cầu");
         transaction(con -> dao.duyet(con, session.accountId(), id));
     }
 
     public void tuChoi(String requestId, String reason) throws SQLException {
-        authorization.require(session, Permission.INVENTORY_MANAGE);
+        authorization.require(session, Quyen.INVENTORY_MANAGE);
         String id = code(requestId, "Mã yêu cầu");
         required(reason, 500, "Lý do từ chối");
         transaction(con -> dao.tuChoi(con, session.accountId(), id, reason.trim()));
     }
 
     public void capPhat(String requestId, String voucherId, String department, String receiver, String reason, List<PhanBoLo> allocations) throws SQLException {
-        authorization.require(session, Permission.INVENTORY_MANAGE);
+        authorization.require(session, Quyen.INVENTORY_MANAGE);
         String request = code(requestId, "Mã yêu cầu"), voucher = code(voucherId, "Mã phiếu xuất");
         required(department, 100, "Bộ phận nhận");
         optional(receiver, 100, "Người nhận");

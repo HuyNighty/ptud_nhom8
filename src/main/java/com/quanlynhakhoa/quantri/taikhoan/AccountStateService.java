@@ -6,7 +6,7 @@ import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -84,6 +84,6 @@ public final class AccountStateService {
     }
 
     private void requireAuthorized() {
-        authorization.require(session, Permission.ACCOUNT_MANAGE);
+        authorization.require(session, Quyen.ACCOUNT_MANAGE);
     }
 }

@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.lichlamviec.view;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.lichlamviec.ThongTinPhanCong;
 import com.quanlynhakhoa.model.lichlamviec.NhanVienChon;
 import com.quanlynhakhoa.model.lichlamviec.DuLieuPhanCong;
@@ -33,7 +34,7 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
     private String selectionAfterLoad;
     public LichLamViecPanel(DesktopSession session,boolean management){this(session,management,new PhanCongService(session,TeamDevConnection::open),true);}
     public LichLamViecPanel(DesktopSession session,boolean management,PhanCongService service,boolean autoLoad){
-        new AuthorizationService(new RolePermissionPolicy()).require(session,management?Permission.WORKFORCE_READ:Permission.SCHEDULE_SELF_READ);
+        new AuthorizationService(new RolePermissionPolicy()).require(session,management?Quyen.WORKFORCE_READ:Quyen.SCHEDULE_SELF_READ);
         this.management=management;this.service=service;
         setLayout(new BorderLayout(0,14));setBackground(new Color(245,248,252));setBorder(new EmptyBorder(24,26,24,26));
         JPanel heading=new JPanel(new BorderLayout(0,8));heading.setOpaque(false);

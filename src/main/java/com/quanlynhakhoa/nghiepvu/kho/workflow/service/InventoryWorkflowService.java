@@ -3,7 +3,7 @@ package com.quanlynhakhoa.nghiepvu.kho.workflow.service;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import com.quanlynhakhoa.nghiepvu.kho.workflow.dao.InventoryWorkflowDao;
 import java.sql.Connection;
@@ -24,23 +24,23 @@ public final class InventoryWorkflowService {
     }
 
     public List<Object[]> danhSachNhap() throws SQLException {
-        authorization.require(session, Permission.INVENTORY_READ);
+        authorization.require(session, Quyen.INVENTORY_READ);
         return dao.danhSachNhap();
     }
 
     public List<Object[]> danhSachXuat() throws SQLException {
-        authorization.require(session, Permission.INVENTORY_READ);
+        authorization.require(session, Quyen.INVENTORY_READ);
         return dao.danhSachXuat();
     }
 
     public List<Object[]> danhSachKiemKe() throws SQLException {
-        authorization.require(session, Permission.INVENTORY_READ);
+        authorization.require(session, Quyen.INVENTORY_READ);
         return dao.danhSachKiemKe();
     }
 
     public void taoPhieuNhap(String maPhieu, String maLo, String soLo, String maNcc, String loaiHang,
                              String maHang, LocalDate ngaySanXuat, LocalDate hanSuDung, int soLuong, long donGia, String ghiChu) throws SQLException {
-        authorization.require(session, Permission.INVENTORY_MANAGE);
+        authorization.require(session, Quyen.INVENTORY_MANAGE);
         checkCode(maPhieu, "Mã phiếu nhập");
         checkCode(maLo, "Mã lô");
         checkCode(maNcc, "Mã nhà cung cấp");
@@ -54,7 +54,7 @@ public final class InventoryWorkflowService {
     }
 
     public void taoPhieuXuat(String maPhieu, String maLo, String boPhanNhan, String nguoiNhan, String lyDo, int soLuong) throws SQLException {
-        authorization.require(session, Permission.INVENTORY_MANAGE);
+        authorization.require(session, Quyen.INVENTORY_MANAGE);
         checkCode(maPhieu, "Mã phiếu xuất");
         checkCode(maLo, "Mã lô");
         required(boPhanNhan, 100, "Bộ phận nhận");
@@ -65,7 +65,7 @@ public final class InventoryWorkflowService {
     }
 
     public void guiKiemKe(String maPhieu, String maLo, int soLuongThucTe, String lyDo) throws SQLException {
-        authorization.require(session, Permission.INVENTORY_MANAGE);
+        authorization.require(session, Quyen.INVENTORY_MANAGE);
         checkCode(maPhieu, "Mã phiếu kiểm kê");
         checkCode(maLo, "Mã lô");
         required(lyDo, 500, "Lý do");
@@ -74,13 +74,13 @@ public final class InventoryWorkflowService {
     }
 
     public void duyetKiemKe(String maPhieu) throws SQLException {
-        authorization.require(session, Permission.INVENTORY_MANAGE);
+        authorization.require(session, Quyen.INVENTORY_MANAGE);
         checkCode(maPhieu, "Mã phiếu kiểm kê");
         transaction(con -> dao.duyetKiemKe(con, session.accountId(), norm(maPhieu)));
     }
 
     public void tuChoiKiemKe(String maPhieu, String reason) throws SQLException {
-        authorization.require(session, Permission.INVENTORY_MANAGE);
+        authorization.require(session, Quyen.INVENTORY_MANAGE);
         checkCode(maPhieu, "Mã phiếu kiểm kê");
         required(reason, 500, "Lý do từ chối");
         transaction(con -> dao.tuChoiKiemKe(con, session.accountId(), norm(maPhieu), reason.trim()));

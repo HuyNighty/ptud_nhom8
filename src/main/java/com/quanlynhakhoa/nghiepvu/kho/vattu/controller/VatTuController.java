@@ -5,7 +5,7 @@ import com.quanlynhakhoa.nghiepvu.kho.vattu.service.VatTuService;
 import com.quanlynhakhoa.nghiepvu.kho.vattu.view.VatTuDialog;
 import com.quanlynhakhoa.nghiepvu.kho.vattu.view.VatTuPanel;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import java.awt.Window;
 import java.sql.SQLException;
 import java.util.List;
@@ -32,10 +32,10 @@ public final class VatTuController implements ActionListener {
         view.getBtnSua().addActionListener(this);
         view.getTblVatTu().getSelectionModel().addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting()) {
-                view.datQuyen(service.coQuyen(Permission.INVENTORY_MANAGE));
+                view.datQuyen(service.coQuyen(Quyen.INVENTORY_MANAGE));
             }
         });
-        view.datQuyen(service.coQuyen(Permission.INVENTORY_MANAGE));
+        view.datQuyen(service.coQuyen(Quyen.INVENTORY_MANAGE));
         taiDanhSach();
     }
 
@@ -73,7 +73,7 @@ public final class VatTuController implements ActionListener {
                 view.datDangTai(false);
                 try {
                     view.hienDanhSach(get());
-                    view.datQuyen(service.coQuyen(Permission.INVENTORY_MANAGE));
+                    view.datQuyen(service.coQuyen(Quyen.INVENTORY_MANAGE));
                 } catch (Exception error) {
                     view.hienLoi(thongBaoLoi(error));
                 }

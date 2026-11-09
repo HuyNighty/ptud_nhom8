@@ -4,7 +4,7 @@ import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -29,15 +29,15 @@ public final class EmployeeDirectoryService {
     }
 
     public KetQuaDanhSachNhanVien search(String keyword, TrangThaiNhanVien status) throws SQLException {
-        authorization.require(session, Permission.WORKFORCE_READ);
+        authorization.require(session, Quyen.WORKFORCE_READ);
         String normalized = Objects.requireNonNull(keyword, "keyword").trim();
         if (normalized.length() > 80) {
             throw new IllegalArgumentException("Từ khóa tìm kiếm tối đa 80 ký tự.");
         }
         try (Connection connection = connections.open()) {
-            authorization.require(session, Permission.WORKFORCE_READ);
+            authorization.require(session, Quyen.WORKFORCE_READ);
             KetQuaDanhSachNhanVien result = dao.search(connection, normalized, status);
-            authorization.require(session, Permission.WORKFORCE_READ);
+            authorization.require(session, Quyen.WORKFORCE_READ);
             return result;
         }
     }

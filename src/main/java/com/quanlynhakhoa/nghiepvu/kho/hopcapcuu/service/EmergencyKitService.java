@@ -1,11 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.kho.hopcapcuu.service;
 
 import com.quanlynhakhoa.model.kho.DongKiemTraCapCuu;
-
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import com.quanlynhakhoa.nghiepvu.kho.hopcapcuu.dao.EmergencyKitDao;
 import java.sql.Connection;
@@ -25,22 +24,22 @@ public final class EmergencyKitService {
     }
 
     public List<Object[]> danhMuc() throws SQLException {
-        authorization.require(session, Permission.EMERGENCY_KIT_CHECK);
+        authorization.require(session, Quyen.EMERGENCY_KIT_CHECK);
         return dao.danhMuc();
     }
 
     public List<Object[]> lichSu() throws SQLException {
-        authorization.require(session, Permission.EMERGENCY_KIT_CHECK);
+        authorization.require(session, Quyen.EMERGENCY_KIT_CHECK);
         return dao.lichSu();
     }
 
     public List<Object[]> chiTiet(String id) throws SQLException {
-        authorization.require(session, Permission.EMERGENCY_KIT_CHECK);
+        authorization.require(session, Quyen.EMERGENCY_KIT_CHECK);
         return dao.chiTiet(code(id));
     }
 
     public void ghiKiemTra(String id, String note, List<DongKiemTraCapCuu> lines) throws SQLException {
-        authorization.require(session, Permission.EMERGENCY_KIT_CHECK);
+        authorization.require(session, Quyen.EMERGENCY_KIT_CHECK);
         String checkId = code(id);
         if (note != null && note.trim().length() > 500) throw new IllegalArgumentException("Ghi chú tối đa 500 ký tự.");
         if (lines == null || lines.isEmpty()) throw new IllegalArgumentException("Không có danh mục nào để kiểm tra.");
