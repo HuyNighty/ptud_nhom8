@@ -1,8 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.ui;
 
+import com.quanlynhakhoa.model.phieukham.KetQuaHangChoKham;
+
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.phieukham.ExamQueueDao;
-import com.quanlynhakhoa.nghiepvu.phieukham.ExamQueueRow;
+import com.quanlynhakhoa.model.phieukham.DongHangChoKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.ExamQueueService;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -51,7 +53,7 @@ public final class ExamQueuePanel extends JPanel implements RefreshableFeature {
     private final JLabel lblDetails = new JLabel("Chọn phiếu khám để xem thông tin.");
     private final Model model = new Model();
     private final JTable table = new JTable(model);
-    private List<ExamQueueRow> source = List.of();
+    private List<DongHangChoKham> source = List.of();
     private boolean truncated;
     private boolean loading;
     private boolean reloadPending;
@@ -143,8 +145,8 @@ public final class ExamQueuePanel extends JPanel implements RefreshableFeature {
         btnRefresh.setEnabled(false);
         txtDay.setEnabled(false);
         lblStatus.setText("Đang tải hàng chờ...");
-        new SwingWorker<ExamQueueDao.Result, Void>() {
-            @Override protected ExamQueueDao.Result doInBackground() throws Exception {
+        new SwingWorker<KetQuaHangChoKham, Void>() {
+            @Override protected KetQuaHangChoKham doInBackground() throws Exception {
                 return service.load(day);
             }
             @Override protected void done() {
@@ -157,7 +159,7 @@ public final class ExamQueuePanel extends JPanel implements RefreshableFeature {
                     return;
                 }
                 try {
-                    ExamQueueDao.Result result = get();
+                    KetQuaHangChoKham result = get();
                     if (!reloadPending) {
                         source = result.rows();
                         truncated = result.truncated();
@@ -184,7 +186,7 @@ public final class ExamQueuePanel extends JPanel implements RefreshableFeature {
             return;
         }
         String keyword = txtKeyword.getText().trim().toLowerCase(Locale.ROOT);
-        List<ExamQueueRow> filtered = source.stream().filter(row -> keyword.isEmpty()
+        List<DongHangChoKham> filtered = source.stream().filter(row -> keyword.isEmpty()
                 || row.patientName().toLowerCase(Locale.ROOT).contains(keyword)
                 || row.patientId().toLowerCase(Locale.ROOT).contains(keyword)
                 || row.examinationId().toLowerCase(Locale.ROOT).contains(keyword)).toList();
@@ -210,7 +212,7 @@ public final class ExamQueuePanel extends JPanel implements RefreshableFeature {
     private void showSelection() {
         int selected = table.getSelectedRow();
         if (selected < 0 || !session.isActive()) return;
-        ExamQueueRow row = model.get(table.convertRowIndexToModel(selected));
+        DongHangChoKham row = model.get(table.convertRowIndexToModel(selected));
         lblDetails.setText("Phiếu " + row.examinationId() + " · Bác sĩ "
                 + Objects.toString(row.doctorName(), row.doctorId())
                 + " · Lịch hẹn " + Objects.toString(row.appointmentId(), "Không có"));
@@ -220,17 +222,17 @@ public final class ExamQueuePanel extends JPanel implements RefreshableFeature {
         private static final String[] COLUMNS = {
                 "Mã phiếu", "Mã bệnh nhân", "Bệnh nhân", "Bác sĩ", "Tiếp nhận lúc", "Trạng thái"
         };
-        private List<ExamQueueRow> rows = List.of();
-        void setRows(List<ExamQueueRow> value) {
+        private List<DongHangChoKham> rows = List.of();
+        void setRows(List<DongHangChoKham> value) {
             rows = List.copyOf(value);
             fireTableDataChanged();
         }
-        ExamQueueRow get(int index) { return rows.get(index); }
+        DongHangChoKham get(int index) { return rows.get(index); }
         @Override public int getRowCount() { return rows.size(); }
         @Override public int getColumnCount() { return COLUMNS.length; }
         @Override public String getColumnName(int index) { return COLUMNS[index]; }
         @Override public Object getValueAt(int row, int column) {
-            ExamQueueRow item = rows.get(row);
+            DongHangChoKham item = rows.get(row);
             return switch (column) {
                 case 0 -> item.examinationId();
                 case 1 -> item.patientId();

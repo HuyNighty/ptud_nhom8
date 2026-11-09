@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
+import com.quanlynhakhoa.model.phieukham.ThongTinDauDonThuoc;
+
 import com.quanlynhakhoa.model.phieukham.DongChiTietDonThuoc;
 import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import java.sql.Connection;
@@ -13,7 +15,7 @@ import java.util.Optional;
 
 public final class DonThuocDao {
 
-    public record DonThuocHeader(String maDonThuoc, String loiDan) { }
+
 
     public List<ThuocChonKeDon> danhSachThuoc(Connection connection) throws SQLException {
         String sql = """
@@ -39,7 +41,7 @@ public final class DonThuocDao {
         return List.copyOf(result);
     }
 
-    public Optional<DonThuocHeader> timDonThuocTheoPhieu(
+    public Optional<ThongTinDauDonThuoc> timDonThuocTheoPhieu(
             Connection connection, String maPhieuKham) throws SQLException {
         String sql = "SELECT maDonThuoc, loiDan FROM dbo.DonThuoc WHERE maPhieuKham = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -47,7 +49,7 @@ public final class DonThuocDao {
             statement.setQueryTimeout(10);
             try (ResultSet rows = statement.executeQuery()) {
                 if (!rows.next()) return Optional.empty();
-                return Optional.of(new DonThuocHeader(
+                return Optional.of(new ThongTinDauDonThuoc(
                         rows.getString("maDonThuoc"), rows.getNString("loiDan")));
             }
         }

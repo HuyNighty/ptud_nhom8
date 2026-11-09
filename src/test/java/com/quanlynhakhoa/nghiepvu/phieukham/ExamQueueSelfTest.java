@@ -1,5 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.phieukham;
 
+import com.quanlynhakhoa.model.phieukham.KetQuaHangChoKham;
+
+import com.quanlynhakhoa.model.phieukham.DongHangChoKham;
+
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
@@ -116,22 +120,22 @@ public final class ExamQueueSelfTest {
 
     public static void main(String[] args) throws Exception {
         check(ExamQueueDao.LIMIT == 200, "bounded query limit");
-        ExamQueueRow row = new ExamQueueRow("PK000001", "BN000001", "Name",
+        DongHangChoKham row = new DongHangChoKham("PK000001", "BN000001", "Name",
                 "TESTBS01", "Doctor", "LH000001", DAY.atStartOfDay(), "CHO_KHAM");
         check(row.statusText().equals("Chờ khám"), "waiting display");
-        ExamQueueRow active = new ExamQueueRow("PK000002", "BN000002", "Name",
+        DongHangChoKham active = new DongHangChoKham("PK000002", "BN000002", "Name",
                 "TESTBS01", "Doctor", null, DAY.atStartOfDay(), "DANG_KHAM");
         check(active.statusText().equals("Đang khám"), "in-progress display");
-        reject(IllegalArgumentException.class, () -> new ExamQueueRow("PK3", "BN3", "Name",
+        reject(IllegalArgumentException.class, () -> new DongHangChoKham("PK3", "BN3", "Name",
                 "BS", "Doctor", null, DAY.atStartOfDay(), "DA_KET_LUAN"));
-        reject(NullPointerException.class, () -> new ExamQueueRow("PK3", "BN3", "Name",
+        reject(NullPointerException.class, () -> new DongHangChoKham("PK3", "BN3", "Name",
                 "BS", "Doctor", null, null, "CHO_KHAM"));
 
         Jdbc doctor = new Jdbc();
         doctor.rows.add(row(1, "CHO_KHAM"));
         doctor.rows.add(row(2, "DANG_KHAM"));
         ExamQueueService doctorService = new ExamQueueService(session(Role.DOCTOR), doctor::connection);
-        ExamQueueDao.Result found = doctorService.load(DAY);
+        KetQuaHangChoKham found = doctorService.load(DAY);
         check(found.rows().size() == 2, "two open examinations returned");
         check(!found.truncated(), "small result not truncated");
         check(found.rows().get(1).status().equals("DANG_KHAM"), "status mapping");
@@ -149,7 +153,7 @@ public final class ExamQueueSelfTest {
 
         Jdbc admin = new Jdbc();
         admin.rows.add(row(7, "CHO_KHAM"));
-        ExamQueueDao.Result all = new ExamQueueService(session(Role.SYSTEM_ADMIN), admin::connection).load(DAY);
+        KetQuaHangChoKham all = new ExamQueueService(session(Role.SYSTEM_ADMIN), admin::connection).load(DAY);
         check(all.rows().size() == 1, "admin can read queue");
         check(admin.binds.get(3).equals(1), "admin SQL scope flag");
         check(admin.connectionClosed == 1, "admin connection closed");
@@ -182,7 +186,7 @@ public final class ExamQueueSelfTest {
 
         Jdbc big = new Jdbc();
         for (int i = 1; i <= 201; i++) big.rows.add(row(i, "CHO_KHAM"));
-        ExamQueueDao.Result limited = new ExamQueueService(session(Role.DOCTOR), big::connection).load(DAY);
+        KetQuaHangChoKham limited = new ExamQueueService(session(Role.DOCTOR), big::connection).load(DAY);
         check(limited.rows().size() == 200, "only 200 exposed");
         check(limited.truncated(), "truncation reported");
         check(big.connectionClosed == 1 && big.resultClosed == 1, "bounded result closes JDBC");

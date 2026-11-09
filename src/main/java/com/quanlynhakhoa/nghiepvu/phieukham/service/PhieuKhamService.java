@@ -1,10 +1,12 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.service;
 
+import com.quanlynhakhoa.model.phieukham.ThongTinKhoaKetLuanPhieuKham;
+
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
 import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
+import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
 import com.quanlynhakhoa.model.phieukham.DongDanhSachPhieuKham;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -47,10 +49,10 @@ public final class PhieuKhamService {
         }
     }
 
-    public PhieuKham chiTiet(String maPhieuKham) throws SQLException {
+    public ThongTinPhieuKham chiTiet(String maPhieuKham) throws SQLException {
         authorization.require(session, Permission.MEDICAL_RECORD_READ);
         try (Connection connection = TeamDevConnection.open()) {
-            PhieuKham phieu = dao.timTheoMa(connection, maPhieuKham)
+            ThongTinPhieuKham phieu = dao.timTheoMa(connection, maPhieuKham)
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu khám."));
             kiemTraPhuTrach(connection, phieu);
             return phieu;
@@ -85,7 +87,7 @@ public final class PhieuKhamService {
         try (Connection connection = TeamDevConnection.open()) {
             connection.setAutoCommit(false);
             try {
-                PhieuKham phieu = dao.timTheoMa(connection, maPhieuKham)
+                ThongTinPhieuKham phieu = dao.timTheoMa(connection, maPhieuKham)
                         .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu khám."));
                 if (!"CHO_KHAM".equals(phieu.trangThai())
                         && !"DANG_KHAM".equals(phieu.trangThai())) {
@@ -143,7 +145,7 @@ public final class PhieuKhamService {
             connection.setAutoCommit(false);
 
             try {
-                PhieuKhamDao.PhieuKhamKetLuanLock locked =
+                ThongTinKhoaKetLuanPhieuKham locked =
                         dao.khoaPhieuDeKetLuan(connection, maPhieuKham)
                                 .orElseThrow(() ->
                                         new IllegalArgumentException(
@@ -155,7 +157,7 @@ public final class PhieuKhamService {
                             "Phiếu khám không còn ở trạng thái có thể kết luận.");
                 }
 
-                PhieuKham visit = dao.timTheoMa(connection, maPhieuKham)
+                ThongTinPhieuKham visit = dao.timTheoMa(connection, maPhieuKham)
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
                                         "Không tìm thấy phiếu khám."));
@@ -200,7 +202,7 @@ public final class PhieuKhamService {
     }
 
 
-    private void kiemTraPhuTrach(Connection connection, PhieuKham phieu) throws SQLException {
+    private void kiemTraPhuTrach(Connection connection, ThongTinPhieuKham phieu) throws SQLException {
         if (session.role() == Role.DOCTOR) {
             String employeeId = layMaNhanVienDangNhap(connection);
             if (!employeeId.equals(phieu.maNhanVien())) {

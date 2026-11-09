@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
+import com.quanlynhakhoa.model.phieukham.ThongTinPhanCongKham;
+
 import com.quanlynhakhoa.model.phieukham.ThongTinChiDinhCanLamSang;
 import com.quanlynhakhoa.model.phieukham.DichVuCanLamSangChon;
 import java.sql.Connection;
@@ -13,7 +15,7 @@ import java.util.Optional;
 
 public final class CanLamSangDao {
 
-    public record PhieuKhamAssignment(String maNhanVien, String trangThai) { }
+
 
     public List<DichVuCanLamSangChon> danhSachDichVu(Connection connection) throws SQLException {
         String sql = """
@@ -76,17 +78,17 @@ public final class CanLamSangDao {
         return List.copyOf(result);
     }
 
-    public Optional<PhieuKhamAssignment> timPhieuKham(Connection connection, String maPhieuKham)
+    public Optional<ThongTinPhanCongKham> timPhieuKham(Connection connection, String maPhieuKham)
             throws SQLException {
         return readAssignment(connection, maPhieuKham, false);
     }
 
-    public Optional<PhieuKhamAssignment> khoaPhieuKham(Connection connection, String maPhieuKham)
+    public Optional<ThongTinPhanCongKham> khoaPhieuKham(Connection connection, String maPhieuKham)
             throws SQLException {
         return readAssignment(connection, maPhieuKham, true);
     }
 
-    private Optional<PhieuKhamAssignment> readAssignment(Connection connection, String maPhieuKham,
+    private Optional<ThongTinPhanCongKham> readAssignment(Connection connection, String maPhieuKham,
                                                           boolean lock) throws SQLException {
         String sql = lock
                 ? "SELECT maNhanVien, trangThai FROM dbo.PhieuKham WITH (UPDLOCK, HOLDLOCK) WHERE maPhieuKham = ?"
@@ -96,7 +98,7 @@ public final class CanLamSangDao {
             statement.setQueryTimeout(10);
             try (ResultSet rows = statement.executeQuery()) {
                 if (!rows.next()) return Optional.empty();
-                return Optional.of(new PhieuKhamAssignment(
+                return Optional.of(new ThongTinPhanCongKham(
                         rows.getString("maNhanVien"), rows.getString("trangThai")));
             }
         }

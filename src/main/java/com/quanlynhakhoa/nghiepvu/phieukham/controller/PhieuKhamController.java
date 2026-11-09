@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.controller;
 
 import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
+import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
 import com.quanlynhakhoa.model.phieukham.DongDanhSachPhieuKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.service.PhieuKhamService;
 import com.quanlynhakhoa.nghiepvu.phieukham.view.PhieuKhamPanel;
@@ -103,9 +103,9 @@ public final class PhieuKhamController {
             return;
         }
         view.setDangTaiChiTiet(true);
-        new SwingWorker<PhieuKham, Void>() {
+        new SwingWorker<ThongTinPhieuKham, Void>() {
             @Override
-            protected PhieuKham doInBackground() throws Exception {
+            protected ThongTinPhieuKham doInBackground() throws Exception {
                 return service.chiTiet(code);
             }
 
