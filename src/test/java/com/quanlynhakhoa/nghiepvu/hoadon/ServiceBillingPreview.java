@@ -1,9 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
@@ -32,21 +31,21 @@ public final class ServiceBillingPreview {
                     pnlCatalog.status("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · chưa kiểm thử SQL thật");
                     render(pnlCatalog, "target/service-catalog-preview.png");
                     InvoicePanel pnlBilling = new InvoicePanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST), jdbc);
-                    Invoice invoice = new Invoice("TSTHD001", "TSTNV", "TSTBN", "Bệnh nhân tổng hợp", "TSTPK",
+                    ThongTinHoaDon invoice = new ThongTinHoaDon("TSTHD001", "TSTNV", "TSTBN", "Bệnh nhân tổng hợp", "TSTPK",
                             LocalDateTime.of(2026, 10, 30, 9, 0), InvoiceStatus.THANH_TOAN_MOT_PHAN,
                             new BigDecimal("300000"), new BigDecimal("100000"), new BigDecimal("200000"));
                     pnlBilling.showRows(List.of(invoice));
-                    pnlBilling.showDetail(new InvoiceDetails(invoice, List.of(new DongChiTietHoaDon(1, "TSTHD001", "TST001", null, null, 2, new BigDecimal("150000"))), List.of()));
+                    pnlBilling.showDetail(new DuLieuChiTietHoaDon(invoice, List.of(new DongChiTietHoaDon(1, "TSTHD001", "TST001", null, null, 2, new BigDecimal("150000"))), List.of()));
                     pnlBilling.status("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · chưa kiểm thử SQL thật");
                     render(pnlBilling, "target/billing-preview.png");
                     com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel pnlDebt=new com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc);
                     pnlDebt.showPatients(com.quanlynhakhoa.nghiepvu.hoadon.service.DebtService.byPatient(List.of(invoice)));
-                    pnlDebt.tblBenhNhan.setRowSelectionInterval(0,0);pnlDebt.showDetail(new InvoiceDetails(invoice,List.of(),List.of()));render(pnlDebt,"target/latest-debt-preview.png");
+                    pnlDebt.tblBenhNhan.setRowSelectionInterval(0,0);pnlDebt.showDetail(new DuLieuChiTietHoaDon(invoice,List.of(),List.of()));render(pnlDebt,"target/latest-debt-preview.png");
                     com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel pnlPayment=new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc);
-                    com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentForm pnlForm=new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentForm();pnlForm.showInvoice(new InvoiceDetails(invoice,List.of(),List.of()));pnlForm.busy(false,true,false);pnlForm.txtSoTien.setText("200000");pnlForm.txtTienMat.setText("100000");pnlForm.txtChuyenKhoan.setText("100000");pnlForm.txtKhachDua.setText("100000");pnlPayment.showForm(pnlForm);render(pnlPayment,"target/latest-payment-preview.png");
+                    com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentForm pnlForm=new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentForm();pnlForm.showInvoice(new DuLieuChiTietHoaDon(invoice,List.of(),List.of()));pnlForm.busy(false,true,false);pnlForm.txtSoTien.setText("200000");pnlForm.txtTienMat.setText("100000");pnlForm.txtChuyenKhoan.setText("100000");pnlForm.txtKhachDua.setText("100000");pnlPayment.showForm(pnlForm);render(pnlPayment,"target/latest-payment-preview.png");
                     for(InvoicePanel.ViewMode mode:InvoicePanel.ViewMode.values()) {
                         InvoicePanel pnlMode=new InvoicePanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc,mode);
-                        pnlMode.showRows(List.of(invoice));pnlMode.showDetail(new InvoiceDetails(invoice,List.of(),List.of()));
+                        pnlMode.showRows(List.of(invoice));pnlMode.showDetail(new DuLieuChiTietHoaDon(invoice,List.of(),List.of()));
                         pnlMode.status("XEM BỐ CỤC · dữ liệu tổng hợp · không SQL");render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
                     }
                     for(ServiceCatalogPanel.EditorMode mode:List.of(ServiceCatalogPanel.EditorMode.SERVICES,ServiceCatalogPanel.EditorMode.PRICES)) {
@@ -54,9 +53,9 @@ public final class ServiceBillingPreview {
                         pnlMode.showRows(List.of(value));pnlMode.showForm(value);render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
                     }
                     com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel pnlCancellation=new com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel(ServiceBillingSelfTest.session(Role.CLINIC_MANAGER),jdbc);
-                    InvoiceCancellationRequest request=new InvoiceCancellationRequest("TSTYC001",invoice.maHoaDon(),invoice.maBenhNhan(),invoice.tenBenhNhan(),invoice.tongTien(),invoice.daThu(),"TST_ACC",LocalDateTime.of(2026,10,30,10,0),"[KIỂM THỬ] Đề nghị kiểm tra chứng từ",InvoiceCancellationRequest.TrangThai.CHO_DUYET,null,null,null);
+                    ThongTinYeuCauHuyHoaDon request=new ThongTinYeuCauHuyHoaDon("TSTYC001",invoice.maHoaDon(),invoice.maBenhNhan(),invoice.tenBenhNhan(),invoice.tongTien(),invoice.daThu(),"TST_ACC",LocalDateTime.of(2026,10,30,10,0),"[KIỂM THỬ] Đề nghị kiểm tra chứng từ",ThongTinYeuCauHuyHoaDon.TrangThai.CHO_DUYET,null,null,null);
                     pnlCancellation.showRows(List.of(request));
-                    pnlCancellation.showDetail(new com.quanlynhakhoa.nghiepvu.hoadon.service.CancellationService.Detail(request,new InvoiceDetails(invoice,List.of(),List.of())));
+                    pnlCancellation.showDetail(new com.quanlynhakhoa.nghiepvu.hoadon.service.CancellationService.Detail(request,new DuLieuChiTietHoaDon(invoice,List.of(),List.of())));
                     pnlCancellation.lblTrangThai.setText("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · hóa đơn có thu tiền nên chặn duyệt hủy");render(pnlCancellation,"target/cancellation-preview.png");
                     if (jdbc.opens != 0) throw new AssertionError("Preview must not open JDBC");
                 } catch (Exception failure) { throw new RuntimeException(failure); }

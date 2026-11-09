@@ -10,19 +10,19 @@ import java.util.*;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class DuLieuThanhToanDaTai {
-    private final InvoiceDetails invoice;
+    private final DuLieuChiTietHoaDon invoice;
     private final YeuCauThanhToan pending;
     private final boolean cancellation;
     private final String owner;
 
-    public DuLieuThanhToanDaTai(InvoiceDetails invoice, YeuCauThanhToan pending, boolean cancellation, String owner) {
+    public DuLieuThanhToanDaTai(DuLieuChiTietHoaDon invoice, YeuCauThanhToan pending, boolean cancellation, String owner) {
         this.invoice = invoice;
         this.pending = pending;
         this.cancellation = cancellation;
         this.owner = owner;
     }
 
-    public InvoiceDetails invoice() { return invoice; }
+    public DuLieuChiTietHoaDon invoice() { return invoice; }
     public YeuCauThanhToan pending() { return pending; }
     public boolean cancellation() { return cancellation; }
     public String owner() { return owner; }

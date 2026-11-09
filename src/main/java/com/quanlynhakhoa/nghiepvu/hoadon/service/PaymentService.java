@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
@@ -57,7 +58,7 @@ public final class PaymentService {
                     if(existing!=request.parts().size())throw new IllegalArgumentException("Kết quả lần thu không đầy đủ, cần đối soát.");
                     attempts.complete(c,request,session.accountId());authorization.requireCurrent(session,Permission.BILLING_MANAGE,c);require();c.commit();committed=true;
                 } else {
-                    Invoice invoice=invoices.getForPayment(c,request.invoiceId());
+                    ThongTinHoaDon invoice=invoices.getForPayment(c,request.invoiceId());
                     if(invoice==null||invoice.trangThai()==InvoiceStatus.DA_HUY)throw new IllegalArgumentException("Không được thu trên hóa đơn đã hủy/không tồn tại.");
                     if(invoice.conNo().signum()<=0||!invoice.canhBao().isEmpty())throw new IllegalArgumentException("Hóa đơn đã hết nợ hoặc dữ liệu cần đối soát.");
                     if(request.amount().compareTo(invoice.conNo())>0)throw new IllegalArgumentException("Số tiền thu vượt số còn nợ hiện tại.");

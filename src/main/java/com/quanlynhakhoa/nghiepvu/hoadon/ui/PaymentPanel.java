@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
-
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.PaymentScreenController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
@@ -38,9 +38,9 @@ public final class PaymentPanel extends JPanel implements RefreshableFeature {
     @Override public void addNotify(){super.addNotify();refreshData();}
     @Override public void refreshData(){controller.refresh();}
     public void openInvoice(String id){controller.openInvoice(id);}
-    public void showChoices(List<Invoice> invoices,String selected){
+    public void showChoices(List<ThongTinHoaDon> invoices,String selected){
         cmbHoaDon.removeAllItems();LuaChonLapHoaDon chosen=null;
-        for(Invoice h:invoices){LuaChonLapHoaDon item=new LuaChonLapHoaDon(h.maHoaDon(),h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Còn nợ "+BillingUi.vnd(h.conNo()));cmbHoaDon.addItem(item);if(h.maHoaDon().equals(selected))chosen=item;}
+        for(ThongTinHoaDon h:invoices){LuaChonLapHoaDon item=new LuaChonLapHoaDon(h.maHoaDon(),h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Còn nợ "+BillingUi.vnd(h.conNo()));cmbHoaDon.addItem(item);if(h.maHoaDon().equals(selected))chosen=item;}
         cmbHoaDon.setSelectedItem(chosen); // Preserve current form/history even when a fully paid invoice leaves the picker.
     }
     public void showForm(PaymentForm pnlForm){com.quanlynhakhoa.hethong.giaodien.AppTheme.applyButtons(pnlForm);pnlCollection.removeAll();pnlCollection.add(pnlForm,BorderLayout.CENTER);pnlCollection.revalidate();pnlCollection.repaint();}

@@ -1,11 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
@@ -43,9 +38,9 @@ public final class DebtController {
             protected void succeeded(List<PatientDebt> rows){busy=true;view.showPatients(rows);busy=false;view.lblTrangThai.setText(rows.isEmpty()?"Tổng hợp theo bộ lọc ngày lập hóa đơn hiện tại.":" ");next();}
         }.execute();
     }
-    private void detail(){final String id=view.selectedInvoice();if(id==null)return;busy=true;view.busy(true);new Task<InvoiceDetails>(){
-        protected InvoiceDetails doInBackground()throws Exception{return invoices.detail(id);}
-        protected void succeeded(InvoiceDetails value){if(id.equals(view.selectedInvoice()))view.showDetail(value);next();}
+    private void detail(){final String id=view.selectedInvoice();if(id==null)return;busy=true;view.busy(true);new Task<DuLieuChiTietHoaDon>(){
+        protected DuLieuChiTietHoaDon doInBackground()throws Exception{return invoices.detail(id);}
+        protected void succeeded(DuLieuChiTietHoaDon value){if(id.equals(view.selectedInvoice()))view.showDetail(value);next();}
     }.execute();}
     private static LocalDate date(String text){return BillingUi.parseDate(text);}
 }

@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -25,7 +26,7 @@ public final class PaymentReversalService {
                 if(PaymentAttemptService.pending(c,invoiceId)!=null)throw new IllegalArgumentException("Còn lần thu chưa đối soát. Giải quyết lần thu trước khi điều chỉnh.");
                 ThongTinThanhToan payment=new PaymentDao().existing(c,paymentId);
                 if(payment==null||!invoiceId.equals(payment.maHoaDon())||payment.trangThai()!=ThongTinThanhToan.TrangThai.THANH_CONG)throw new IllegalArgumentException("Khoản thu không thuộc hóa đơn hoặc đã được điều chỉnh. Tải lại để kiểm tra.");
-                Invoice invoice=new InvoiceDao().getForPayment(c,invoiceId);
+                ThongTinHoaDon invoice=new InvoiceDao().getForPayment(c,invoiceId);
                 if(invoice.trangThai()==InvoiceStatus.DA_HUY)throw new IllegalArgumentException("Hóa đơn đã hủy; cần đối soát.");
                 Timestamp when;
                 try(PreparedStatement s=statement(c,"SELECT CURRENT_TIMESTAMP");ResultSet rows=s.executeQuery()){rows.next();when=rows.getTimestamp(1);}

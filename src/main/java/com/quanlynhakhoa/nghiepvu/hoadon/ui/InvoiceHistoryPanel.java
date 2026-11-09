@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.awt.*;
 import javax.swing.*;
@@ -14,8 +14,8 @@ public final class InvoiceHistoryPanel extends JPanel {
     private final DefaultTableModel payments=BillingUi.model("Mã thu","Thời gian","Số tiền","Phương thức","Tham chiếu","Trạng thái");
     private final JTable tblLines=BillingUi.table(lines),tblPayments=BillingUi.table(payments);
     public InvoiceHistoryPanel(){setLayout(new BorderLayout(8,8));JPanel pnlHeader=new JPanel(new BorderLayout(0,8));pnlHeader.add(lblSummary,BorderLayout.NORTH);pnlHeader.add(BillingUi.row(BillingUi.card(lblTongTien),BillingUi.card(lblDaThu),BillingUi.card(lblConNo)),BorderLayout.CENTER);add(pnlHeader,BorderLayout.NORTH);BillingUi.columns(tblLines,100,110,230,90,160,160);BillingUi.columns(tblPayments,115,180,160,150,180,135);BillingUi.tableState(tblLines,"Chọn hóa đơn để xem chi tiết.");BillingUi.tableState(tblPayments,"Chọn hóa đơn để xem lịch sử thanh toán.");JTabbedPane tabDetails=new JTabbedPane();tabDetails.addTab("Chi tiết hóa đơn",BillingUi.scroll(tblLines));tabDetails.addTab("Lịch sử giao dịch",BillingUi.scroll(tblPayments));add(tabDetails,BorderLayout.CENTER);}
-    public void showInvoice(InvoiceDetails detail){
-        clear();Invoice h=detail.hoaDon();lblSummary.setText(h.maHoaDon()+" · "+h.maBenhNhan()+" · "+h.tenBenhNhan());
+    public void showInvoice(DuLieuChiTietHoaDon detail){
+        clear();ThongTinHoaDon h=detail.hoaDon();lblSummary.setText(h.maHoaDon()+" · "+h.maBenhNhan()+" · "+h.tenBenhNhan());
         lblTongTien.setText("Tổng: "+BillingUi.vnd(h.tongTien()));lblDaThu.setText("Đã thu: "+BillingUi.vnd(h.daThu()));lblConNo.setText("Còn nợ: "+BillingUi.vnd(h.conNo()));
         for(var line:detail.chiTiet())lines.addRow(new Object[]{line.loaiHang(),line.maHang(),line.tenHienThi(),line.soLuong(),line.donGiaApDung(),line.thanhTien()});
         for(var payment:detail.thanhToan())payments.addRow(new Object[]{payment.maThanhToan(),payment.thoiGian(),payment.soTien(),payment.phuongThuc(),payment.maGiaoDich(),payment.trangThai()});

@@ -1,10 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -53,15 +49,15 @@ public final class PaymentScreenController {
     private void search(){
         if(searching){searchPending=true;return;}if(!session.isActive()){view.expired();return;}
         searching=true;if(form!=null)form.setCollectionContextAllowed(false);updatePicker();view.lblTrangThai.setText("Đang tìm hóa đơn còn nợ…");final String keyword=view.txtTimHoaDon.getText();
-        new SessionWorker<List<Invoice>>(session){
-            protected List<Invoice> doInBackground()throws Exception{return invoices.outstandingChoices(keyword);}
+        new SessionWorker<List<ThongTinHoaDon>>(session){
+            protected List<ThongTinHoaDon> doInBackground()throws Exception{return invoices.outstandingChoices(keyword);}
             protected void finished(){searching=false;updatePicker();}
             protected void expired(){view.expired();}
-            protected void succeeded(List<Invoice> found){
+            protected void succeeded(List<ThongTinHoaDon> found){
                 if(searchPending||!keyword.equals(view.txtTimHoaDon.getText())){searchPending=false;search();return;}
                 boolean limited=found.size()>100;if(limited)found=found.subList(0,100);
                 updating=true;view.showChoices(found,invoiceId);updating=false;
-                boolean matches=false;for(Invoice invoice:found)if(invoice.maHoaDon().equals(invoiceId))matches=true;
+                boolean matches=false;for(ThongTinHoaDon invoice:found)if(invoice.maHoaDon().equals(invoiceId))matches=true;
                 if(form!=null)form.setCollectionContextAllowed(matches);
                 String message=found.isEmpty()?(keyword.isBlank()?"Chưa có hóa đơn còn phải thu.":"Không tìm thấy hóa đơn còn nợ phù hợp."):"";
                 if(invoiceId!=null)message=matches?"Đang xem hóa đơn "+invoiceId+".":"Tra cứu hóa đơn "+invoiceId+" · không thuộc kết quả còn nợ hiện tại.";

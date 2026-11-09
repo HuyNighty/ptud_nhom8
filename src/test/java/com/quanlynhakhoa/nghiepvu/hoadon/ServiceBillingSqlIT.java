@@ -5,7 +5,7 @@ package com.quanlynhakhoa.nghiepvu.hoadon;
 
 
 import com.quanlynhakhoa.hethong.xacthuc.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.Invoice;
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
@@ -47,7 +47,7 @@ public final class ServiceBillingSqlIT {
                 catalog.changeActive(args[1], true);
             }
             verify(catalog, args[1], "123456", true);
-            List<Invoice> invoices = new InvoiceService(session, TeamDevConnection::open).find("", null, null, null);
+            List<ThongTinHoaDon> invoices = new InvoiceService(session, TeamDevConnection::open).find("", null, null, null);
             System.out.println("PASS: real service read " + args[1] + "; billing read " + invoices.size() + " invoices (no patient details printed).");
             System.out.println("Run --read with this ID in a NEW process to verify restart persistence; UI still requires manual acceptance.");
         } finally { session.logout(); }

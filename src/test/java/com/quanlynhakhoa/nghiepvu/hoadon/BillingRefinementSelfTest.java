@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
@@ -63,8 +65,8 @@ public final class BillingRefinementSelfTest {
     private static void run()throws Exception{
         edt(new Runnable(){public void run(){
             PaymentForm view=new PaymentForm();
-            Invoice h=new Invoice("H1","NV1","BN1","Fixture",null,LocalDateTime.now(),InvoiceStatus.CHUA_THANH_TOAN,new BigDecimal("1000000"),BigDecimal.ZERO,BigDecimal.ZERO);
-            view.showInvoice(new InvoiceDetails(h,List.of(),List.of()));view.busy(false,true,false);
+            ThongTinHoaDon h=new ThongTinHoaDon("H1","NV1","BN1","Fixture",null,LocalDateTime.now(),InvoiceStatus.CHUA_THANH_TOAN,new BigDecimal("1000000"),BigDecimal.ZERO,BigDecimal.ZERO);
+            view.showInvoice(new DuLieuChiTietHoaDon(h,List.of(),List.of()));view.busy(false,true,false);
             view.txtSoTien.setText("600.000");view.txtKhachDua.setText("1.000.000");
             check(view.cashAmount().intValueExact()==600000&&view.bankAmount().signum()==0,"Cash auto allocation");
             check(!view.txtTienMat.isEditable()&&!view.chkDaNhanChuyenKhoan.isVisible(),"Single method is locked and no bank confirmation");

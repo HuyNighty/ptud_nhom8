@@ -1,19 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
@@ -41,7 +30,7 @@ import javax.swing.event.ListSelectionListener;
 
 /** Read actual permitted dev data before rendering. No invented business rows or authenticated GUI session. */
 public final class BillingActualUiPreview {
-    private record Data(List<DentalService> services,List<Invoice> invoices,List<InvoiceCancellationRequest> requests,List<LuaChonLapHoaDon> patients,List<LuaChonLapHoaDon> visits,Map<String,InvoiceDetails> details){}
+    private record Data(List<DentalService> services,List<ThongTinHoaDon> invoices,List<ThongTinYeuCauHuyHoaDon> requests,List<LuaChonLapHoaDon> patients,List<LuaChonLapHoaDon> visits,Map<String,DuLieuChiTietHoaDon> details){}
     private static Data read()throws Exception{
         if(!TeamDevConnection.hasLocalConfig())throw new IllegalStateException("Approved local dev configuration required");
         try(Connection c=TeamDevConnection.open()){
@@ -49,8 +38,8 @@ public final class BillingActualUiPreview {
             try{
                 var services=new ServiceCatalogDao().find(c,"",null);var invoiceDao=new InvoiceDao();var invoices=invoiceDao.find(c,"",null,null,null);var requests=new CancellationDao().find(c,"",null,null,null);
                 var patients=new InvoiceCreateDao().patients(c,"");var visits=patients.isEmpty()?List.<LuaChonLapHoaDon>of():new InvoiceCreateDao().visits(c,patients.getFirst().id());
-                Map<String,InvoiceDetails> details=new HashMap<>();
-                for(Invoice h:invoices)details.put(h.maHoaDon(),new InvoiceDetails(h,invoiceDao.lines(c,h.maHoaDon()),invoiceDao.payments(c,h.maHoaDon())));
+                Map<String,DuLieuChiTietHoaDon> details=new HashMap<>();
+                for(ThongTinHoaDon h:invoices)details.put(h.maHoaDon(),new DuLieuChiTietHoaDon(h,invoiceDao.lines(c,h.maHoaDon()),invoiceDao.payments(c,h.maHoaDon())));
                 c.commit();System.out.println("Actual SQL snapshot: services="+services.size()+", invoices="+invoices.size()+", cancellation requests="+requests.size()+", patients="+patients.size()+", candidate visits for first patient="+visits.size());
                 return new Data(services,invoices,requests,patients,visits,details);
             }catch(Exception e){c.rollback();throw e;}

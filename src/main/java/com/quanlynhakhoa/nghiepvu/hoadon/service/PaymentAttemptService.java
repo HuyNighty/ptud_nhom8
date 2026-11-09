@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThanhToanDangCho;
@@ -51,7 +52,7 @@ public final class PaymentAttemptService {
                 if(recorded&&!PaymentService.matches(prior,request.invoiceId(),new InvoiceCreateDao().employee(c,session.accountId()),request.parts().getFirst()))
                     throw new IllegalArgumentException("Mã lần thu đã có giao dịch khác hoặc đã điều chỉnh.");
                 if(!recorded&&pending(c,request.invoiceId())!=null)throw new IllegalArgumentException("Hóa đơn đang có lần thu chờ đối soát trên máy khác. Bấm Kiểm tra để tải lần thu đó.");
-                Invoice invoice=new InvoiceDao().getForPayment(c,request.invoiceId());
+                ThongTinHoaDon invoice=new InvoiceDao().getForPayment(c,request.invoiceId());
                 if(!recorded&&(invoice==null||invoice.trangThai()==InvoiceStatus.DA_HUY||!invoice.canhBao().isEmpty()||request.amount().compareTo(invoice.conNo())>0))throw new IllegalArgumentException("Hóa đơn không còn đủ số nợ cho lần thu này.");
                 if(!recorded)new PaymentDao().requireNoPendingCancellation(c,request.invoiceId());
                 var part=request.parts().getFirst();

@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
@@ -17,11 +18,11 @@ import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;
 /** Protocol/transaction tests with a JDBC double. Real SQL concurrency still requires approved grants. */
 public final class PaymentSelfTest {
     private static BigDecimal m(String n){return new BigDecimal(n);}
-    private static Invoice invoice(String total,String paid,InvoiceStatus status){return new Invoice("H1","NV1","BN1","Synthetic",null,LocalDateTime.now(),status,m(total),m(paid),BigDecimal.ZERO);}
+    private static ThongTinHoaDon invoice(String total,String paid,InvoiceStatus status){return new ThongTinHoaDon("H1","NV1","BN1","Synthetic",null,LocalDateTime.now(),status,m(total),m(paid),BigDecimal.ZERO);}
     private static YeuCauThanhToan cash(String id,String amount){return new YeuCauThanhToan("H1",m(amount),List.of(new PhanThanhToan(id,m(amount),ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,m(amount))),false);}
     private static class Invoices extends InvoiceDao {
-        Invoice current=invoice("300","0",InvoiceStatus.CHUA_THANH_TOAN);
-        @Override public Invoice getForPayment(Connection c,String id){return current;}
+        ThongTinHoaDon current=invoice("300","0",InvoiceStatus.CHUA_THANH_TOAN);
+        @Override public ThongTinHoaDon getForPayment(Connection c,String id){return current;}
     }
     private static class Accounts extends InvoiceCreateDao {
         @Override public String employee(Connection c,String account){check("TST_ACC".equals(account),"authenticated account used");return "NV1";}
