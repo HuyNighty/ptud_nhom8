@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.hopcapcuu.service;
 
+import com.quanlynhakhoa.model.kho.DongKiemTraCapCuu;
+
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -37,14 +39,14 @@ public final class EmergencyKitService {
         return dao.chiTiet(code(id));
     }
 
-    public void ghiKiemTra(String id, String note, List<CheckLine> lines) throws SQLException {
+    public void ghiKiemTra(String id, String note, List<DongKiemTraCapCuu> lines) throws SQLException {
         authorization.require(session, Permission.EMERGENCY_KIT_CHECK);
         String checkId = code(id);
         if (note != null && note.trim().length() > 500) throw new IllegalArgumentException("Ghi chú tối đa 500 ký tự.");
         if (lines == null || lines.isEmpty()) throw new IllegalArgumentException("Không có danh mục nào để kiểm tra.");
         java.util.HashSet<String> seen = new java.util.HashSet<>();
 
-        for (CheckLine line : lines) {
+        for (DongKiemTraCapCuu line : lines) {
             if (line == null || line.actualQuantity() < 0 || !seen.add(code(line.itemId()))) {
                 throw new IllegalArgumentException("Chi tiết kiểm tra không hợp lệ hoặc bị lặp.");
             }
@@ -72,5 +74,5 @@ public final class EmergencyKitService {
         return s;
     }
 
-    public record CheckLine(String itemId, int actualQuantity, LocalDate expiry) {}
+
 }

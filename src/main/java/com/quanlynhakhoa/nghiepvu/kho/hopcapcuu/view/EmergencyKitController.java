@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.hopcapcuu.view;
 
 import com.quanlynhakhoa.nghiepvu.kho.hopcapcuu.service.EmergencyKitService;
-import com.quanlynhakhoa.nghiepvu.kho.hopcapcuu.service.EmergencyKitService.CheckLine;
+import com.quanlynhakhoa.model.kho.DongKiemTraCapCuu;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +53,7 @@ final class EmergencyKitController {
     private void save() {
         try {
             if (view.catalogModel.getRowCount() == 0) throw new IllegalArgumentException("Danh mục kiểm tra đang trống.");
-            List<CheckLine> lines = new ArrayList<>();
+            List<DongKiemTraCapCuu> lines = new ArrayList<>();
             for (int i = 0; i < view.catalogModel.getRowCount(); i++) {
                 String code = String.valueOf(view.catalogModel.getValueAt(i, 0));
                 Object qtyValue = view.catalogModel.getValueAt(i, 6);
@@ -62,7 +62,7 @@ final class EmergencyKitController {
                 Object dateValue = view.catalogModel.getValueAt(i, 7);
                 String text = dateValue == null ? "" : dateValue.toString().trim();
                 LocalDate expiry = text.isEmpty() ? null : LocalDate.parse(text);
-                lines.add(new CheckLine(code, qty, expiry));
+                lines.add(new DongKiemTraCapCuu(code, qty, expiry));
             }
             String id = view.checkId.getText(), note = view.note.getText();
             async(() -> {
