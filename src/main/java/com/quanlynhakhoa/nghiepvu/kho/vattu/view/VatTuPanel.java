@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.vattu.view;
 
 import com.quanlynhakhoa.nghiepvu.kho.vattu.controller.VatTuController;
-import com.quanlynhakhoa.nghiepvu.kho.vattu.entity.VatTu;
+import com.quanlynhakhoa.entity.VatTu;
 import com.quanlynhakhoa.nghiepvu.kho.vattu.service.VatTuService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;

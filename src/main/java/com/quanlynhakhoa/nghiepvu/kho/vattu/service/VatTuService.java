@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.kho.vattu.service;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.kho.vattu.dao.VatTuDao;
-import com.quanlynhakhoa.nghiepvu.kho.vattu.entity.VatTu;
+import com.quanlynhakhoa.entity.VatTu;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
