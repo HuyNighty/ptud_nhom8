@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.inventory.nhacungcap.entity;
+package com.quanlynhakhoa.entity;
 
 /** Model ánh xạ một nhà cung cấp trong dbo.NhaCungCap. */
 public class NhaCungCap {
