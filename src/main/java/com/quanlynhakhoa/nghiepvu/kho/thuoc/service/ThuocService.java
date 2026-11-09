@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.kho.thuoc.service;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.kho.thuoc.dao.ThuocDao;
-import com.quanlynhakhoa.nghiepvu.kho.thuoc.entity.Thuoc;
+import com.quanlynhakhoa.entity.Thuoc;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
