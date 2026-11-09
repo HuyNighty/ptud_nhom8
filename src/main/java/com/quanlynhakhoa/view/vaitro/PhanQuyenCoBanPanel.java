@@ -1,11 +1,11 @@
-package com.quanlynhakhoa.quantri.vaitro.ui;
+package com.quanlynhakhoa.view.vaitro;
 
 import com.quanlynhakhoa.model.vaitro.DongVaiTro;
 import com.quanlynhakhoa.model.vaitro.DongQuyen;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.quantri.vaitro.catalog.BasicRbacService;
+import com.quanlynhakhoa.service.vaitro.PhanQuyenCoBanService;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -28,8 +27,8 @@ import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
 /** Basic RBAC editor tab; keeps the legacy read-only permission matrix untouched. */
-public final class BasicRbacPanel extends JPanel {
-    private final BasicRbacService service;
+public final class PhanQuyenCoBanPanel extends JPanel {
+    private final PhanQuyenCoBanService service;
     private final DesktopSession session;
     private final JTextField roleCode = new JTextField(18);
     private final JTextField roleName = new JTextField(22);
@@ -53,9 +52,9 @@ public final class BasicRbacPanel extends JPanel {
     };
     private boolean working;
 
-    public BasicRbacPanel(DesktopSession session) {
+    public PhanQuyenCoBanPanel(DesktopSession session) {
         this.session = session;
-        this.service = new BasicRbacService(session, TeamDevConnection::open);
+        this.service = new PhanQuyenCoBanService(session, TeamDevConnection::open);
         setLayout(new BorderLayout(0, 8));
         setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
         boolean admin = session.isActive() && session.role() == VaiTroHeThong.SYSTEM_ADMIN;

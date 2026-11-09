@@ -1,5 +1,6 @@
-package com.quanlynhakhoa.quantri.nhatky;
+package com.quanlynhakhoa.service.nhatky;
 
+import com.quanlynhakhoa.dao.nhatky.NhatKyDao;
 import com.quanlynhakhoa.model.nhatky.KetQuaNhatKy;
 import com.quanlynhakhoa.model.nhatky.BoLocNhatKy;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
@@ -11,7 +12,7 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 /** Enforce AUDIT_READ before opening JDBC and after reading it (including logout races). */
-public final class AuditService {
+public final class NhatKyService {
     @FunctionalInterface
     public interface ConnectionProvider {
         Connection open() throws SQLException;
@@ -19,15 +20,15 @@ public final class AuditService {
 
     private final DesktopSession session;
     private final ConnectionProvider connections;
-    private final AuditDao dao;
+    private final NhatKyDao dao;
     private final AuthorizationService authorization =
             new AuthorizationService(new RolePermissionPolicy());
 
-    public AuditService(DesktopSession session, ConnectionProvider connections) {
-        this(session, connections, new AuditDao());
+    public NhatKyService(DesktopSession session, ConnectionProvider connections) {
+        this(session, connections, new NhatKyDao());
     }
 
-    AuditService(DesktopSession session, ConnectionProvider connections, AuditDao dao) {
+    NhatKyService(DesktopSession session, ConnectionProvider connections, NhatKyDao dao) {
         this.session = Objects.requireNonNull(session, "session");
         this.connections = Objects.requireNonNull(connections, "connections");
         this.dao = Objects.requireNonNull(dao, "dao");

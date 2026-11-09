@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.quantri.vaitro.catalog;
+package com.quanlynhakhoa.dao.vaitro;
 
 import com.quanlynhakhoa.entity.VaiTro;
 import java.lang.reflect.Proxy;
@@ -114,7 +114,7 @@ public final class RoleCatalogSelfTest {
         rejects(IllegalArgumentException.class, () -> role("CUSTOM", "Admin", "", true, true, false, new byte[8]));
         rejects(IllegalArgumentException.class, () -> role("CUSTOM", "Admin", "", true, false, true, new byte[8]));
 
-        RoleRepository repository = new JdbcRoleRepository();
+        VaiTroRepository repository = new JdbcVaiTroRepository();
         FakeJdbc found = new FakeJdbc(List.of(row("CUSTOM", true)));
         check(repository.findByCode(found.connection(), "CUSTOM").orElseThrow().code().equals("CUSTOM"), "Custom mapping");
         check(found.bound.equals("CUSTOM") && found.sql.contains("WHERE roleCode = ?"), "Bind code, no interpolation");

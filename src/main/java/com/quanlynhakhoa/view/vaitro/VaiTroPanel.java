@@ -1,10 +1,10 @@
-package com.quanlynhakhoa.quantri.vaitro.ui;
+package com.quanlynhakhoa.view.vaitro;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
-import com.quanlynhakhoa.quantri.vaitro.RoleOverviewService;
+import com.quanlynhakhoa.service.vaitro.TongQuanVaiTroService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
 import java.awt.BorderLayout;
@@ -35,12 +35,12 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
 /** Read-only role catalog and permission matrix. No role editing or SQL writes. */
-public final class RolePanel extends JPanel implements RefreshableFeature {
+public final class VaiTroPanel extends JPanel implements RefreshableFeature {
     private static final Color NAVY = new Color(29, 61, 102);
     private static final Color MUTED = new Color(99, 115, 134);
     private static final Color BORDER = new Color(220, 231, 242);
     private final DesktopSession session;
-    private final RoleOverviewService service;
+    private final TongQuanVaiTroService service;
     private final JComboBox<VaiTroHeThong> rolePicker = new JComboBox<>(VaiTroHeThong.values());
     private final JButton refresh = new JButton("Làm mới");
     private final JLabel status = new JLabel("Chưa tải dữ liệu");
@@ -54,11 +54,11 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
     private boolean loading;
     private boolean reloadPending;
 
-    public RolePanel(DesktopSession session) {
-        this(session, new RoleOverviewService(session, TeamDevConnection::open), true);
+    public VaiTroPanel(DesktopSession session) {
+        this(session, new TongQuanVaiTroService(session, TeamDevConnection::open), true);
     }
 
-    RolePanel(DesktopSession session, RoleOverviewService service, boolean autoLoad) {
+    VaiTroPanel(DesktopSession session, TongQuanVaiTroService service, boolean autoLoad) {
         this.session = Objects.requireNonNull(session, "session");
         this.service = Objects.requireNonNull(service, "service");
         setLayout(new BorderLayout(0, 16));
@@ -147,7 +147,7 @@ public final class RolePanel extends JPanel implements RefreshableFeature {
         body.add(bottom, BorderLayout.SOUTH);
         javax.swing.JTabbedPane roleTabs = new javax.swing.JTabbedPane();
         roleTabs.addTab("Ma trận quyền hiện tại", body);
-        roleTabs.addTab("Quản lý quyền (MVP)", new BasicRbacPanel(session));
+        roleTabs.addTab("Quản lý quyền (MVP)", new PhanQuyenCoBanPanel(session));
         add(roleTabs, BorderLayout.CENTER);
 
         rolePicker.addActionListener(e -> showRole());

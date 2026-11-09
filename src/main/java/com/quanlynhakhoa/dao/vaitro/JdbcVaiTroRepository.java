@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.quantri.vaitro.catalog;
+package com.quanlynhakhoa.dao.vaitro;
 
 import com.quanlynhakhoa.entity.VaiTro;
 import java.awt.EventQueue;
@@ -16,7 +16,7 @@ import java.util.Optional;
  * Unwired, SELECT-only JDBC catalog reader for a separately verified V8 database.
  * Never opens a connection, migrates, authorizes, loads grants or commits.
  */
-public final class JdbcRoleRepository implements RoleRepository {
+public final class JdbcVaiTroRepository implements VaiTroRepository {
     private static final String COLUMNS =
             "roleCode, roleName, description, enabled, isSystem, isProtected, revision";
     private static final String FIND = "SELECT " + COLUMNS + " FROM dbo.VaiTro WHERE roleCode = ?";

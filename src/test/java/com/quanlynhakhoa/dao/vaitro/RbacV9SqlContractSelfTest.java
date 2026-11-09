@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.quantri.vaitro.catalog;
+package com.quanlynhakhoa.dao.vaitro;
 
 import com.quanlynhakhoa.entity.VaiTro;
 import com.quanlynhakhoa.enums.Quyen;

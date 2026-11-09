@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.quantri.baocao;
+package com.quanlynhakhoa.service.baocao;
 
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
@@ -12,13 +12,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /** UC029: invoice-date revenue, receipt-date collections and receivables at period end. */
-public final class RevenueReportService {
+public final class BaoCaoDoanhThuService {
     public interface Connections { Connection open() throws SQLException; }
     private final DesktopSession session;
     private final Connections connections;
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
-    public RevenueReportService(DesktopSession session) { this(session, TeamDevConnection::open); }
-    public RevenueReportService(DesktopSession session, Connections connections) {
+    public BaoCaoDoanhThuService(DesktopSession session) { this(session, TeamDevConnection::open); }
+    public BaoCaoDoanhThuService(DesktopSession session, Connections connections) {
         this.session = Objects.requireNonNull(session); this.connections = Objects.requireNonNull(connections);
     }
     public static void validate(LocalDate from, LocalDate to) {

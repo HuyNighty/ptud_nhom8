@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.quantri.vaitro.catalog;
+package com.quanlynhakhoa.service.vaitro;
 
 import com.quanlynhakhoa.model.vaitro.DongVaiTro;
 import com.quanlynhakhoa.model.vaitro.DongQuyen;
@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * Writes require a live, server-bound SYSTEM_ADMIN and use an isolated caller-owned SQL transaction.
  * V9 schema/triggers and least-privilege grants must have been independently verified first.
  */
-public final class BasicRbacService {
+public final class PhanQuyenCoBanService {
     @FunctionalInterface public interface Connections { Connection open() throws SQLException; }
 
 
@@ -33,7 +33,7 @@ public final class BasicRbacService {
     private final DesktopSession session;
     private final Connections connections;
 
-    public BasicRbacService(DesktopSession session, Connections connections) {
+    public PhanQuyenCoBanService(DesktopSession session, Connections connections) {
         this.session = Objects.requireNonNull(session, "session");
         this.connections = Objects.requireNonNull(connections, "connections");
     }

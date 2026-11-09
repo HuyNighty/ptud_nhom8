@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.quantri.vaitro;
+package com.quanlynhakhoa.dao.vaitro;
 
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /** Role counts only. Never reads credentials, changes role assignments, or writes SQL. */
-public final class RoleOverviewDao {
+public final class TongQuanVaiTroDao {
     static final String COUNT_SQL = """
             SELECT vaiTro, COUNT(*) AS soLuong
             FROM dbo.TaiKhoan

@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.quantri.vaitro;
+package com.quanlynhakhoa.service.vaitro;
 
 import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
@@ -99,9 +99,9 @@ public final class RoleOverviewSelfTest {
         DesktopSession receptionist = session(VaiTroHeThong.RECEPTIONIST);
         DesktopSession doctor = session(VaiTroHeThong.DOCTOR);
         reject(AccessDeniedException.class,
-                () -> new RoleOverviewService(receptionist, unreachable).load());
+                () -> new TongQuanVaiTroService(receptionist, unreachable).load());
         reject(AccessDeniedException.class,
-                () -> new RoleOverviewService(doctor, unreachable).load());
+                () -> new TongQuanVaiTroService(doctor, unreachable).load());
         check(attempts.get() == 0, "Denied roles cannot open JDBC connections");
 
         AtomicInteger closes = new AtomicInteger();
@@ -114,7 +114,7 @@ public final class RoleOverviewSelfTest {
             return fakeConnection(closes, queries, counts);
         };
         DesktopSession manager = session(VaiTroHeThong.CLINIC_MANAGER);
-        List<TongQuanVaiTro> overviews = new RoleOverviewService(manager, provider).load();
+        List<TongQuanVaiTro> overviews = new TongQuanVaiTroService(manager, provider).load();
         check(overviews.size() == VaiTroHeThong.values().length, "Six summary rows");
         check(overviews.get(0).role() == VaiTroHeThong.RECEPTIONIST, "Order matches canonical Role enum");
         check(overviews.get(0).accountCount() == 1, "Receptionist count");
@@ -131,17 +131,17 @@ public final class RoleOverviewSelfTest {
                 () -> new TongQuanVaiTro(VaiTroHeThong.DOCTOR, policy.permissionsFor(VaiTroHeThong.DOCTOR), -1));
 
         manager.logout();
-        reject(AccessDeniedException.class, () -> new RoleOverviewService(manager, provider).load());
+        reject(AccessDeniedException.class, () -> new TongQuanVaiTroService(manager, provider).load());
         check(attempts.get() == 1, "Logged-out session does not open SQL");
         DesktopSession admin = session(VaiTroHeThong.SYSTEM_ADMIN);
-        check(new RoleOverviewService(admin, provider).load().size() == 6,
+        check(new TongQuanVaiTroService(admin, provider).load().size() == 6,
                 "System admin permitted");
         check(closes.get() == 2, "Connection closed after administrator read");
 
         DesktopSession bad = session(VaiTroHeThong.CLINIC_MANAGER);
         var badProvider = (com.quanlynhakhoa.service.taikhoan.DanhSachTaiKhoanService.ConnectionProvider)
                 () -> fakeConnection(closes, queries, new String[][]{{"INVENTED_ROLE", "1"}});
-        reject(SQLException.class, () -> new RoleOverviewService(bad, badProvider).load());
+        reject(SQLException.class, () -> new TongQuanVaiTroService(bad, badProvider).load());
         check(closes.get() == 3, "Connection closed after malformed SQL result");
 
         System.out.println("PASS: CORE-W2 roles overview (" + checks

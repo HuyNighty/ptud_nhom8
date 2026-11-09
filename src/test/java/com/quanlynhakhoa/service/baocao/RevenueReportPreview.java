@@ -1,5 +1,6 @@
-package com.quanlynhakhoa.quantri.baocao;
+package com.quanlynhakhoa.service.baocao;
 
+import com.quanlynhakhoa.view.baocao.BaoCaoDoanhThuPanel;
 import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
 import com.quanlynhakhoa.model.baocao.BaoCaoDoanhThu;
 import java.awt.*;
@@ -17,7 +18,7 @@ public final class RevenueReportPreview {
     public static void main(String[] args)throws Exception{
         SwingUtilities.invokeAndWait(()->{try{
             var session=RevenueReportSelfTest.session(VaiTroHeThong.CLINIC_MANAGER);
-            var panel=new RevenueReportPanel(session,new RevenueReportService(session,()->{throw new AssertionError("preview cannot access database");}),false);
+            var panel=new BaoCaoDoanhThuPanel(session,new BaoCaoDoanhThuService(session,()->{throw new AssertionError("preview cannot access database");}),false);
             LocalDate from=LocalDate.of(2026,11,1),to=LocalDate.of(2026,11,6);
             long[] revenue={2400000,3850000,1750000,4200000,3100000,2900000},paid={1900000,3100000,2100000,3450000,2700000,3350000};
             var rows=new ArrayList<DongBaoCaoDoanhThu>();BigDecimal total=BigDecimal.ZERO,collected=BigDecimal.ZERO;int invoices=0;

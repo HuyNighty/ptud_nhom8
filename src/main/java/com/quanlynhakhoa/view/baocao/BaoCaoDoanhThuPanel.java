@@ -1,5 +1,6 @@
-package com.quanlynhakhoa.quantri.baocao;
+package com.quanlynhakhoa.view.baocao;
 
+import com.quanlynhakhoa.service.baocao.BaoCaoDoanhThuService;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
 import com.quanlynhakhoa.model.baocao.BaoCaoDoanhThu;
@@ -11,7 +12,6 @@ import com.quanlynhakhoa.view.benhnhan.ChonNgayDialog;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -20,12 +20,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 /** Native Swing report screen following UC029 and the existing six-menu shell. */
-public final class RevenueReportPanel extends JPanel implements RefreshableFeature {
+public final class BaoCaoDoanhThuPanel extends JPanel implements RefreshableFeature {
     private static final Color NAVY = new Color(29,61,102), TEAL = new Color(26,132,126);
     private static final Color BG = new Color(245,248,252), MUTED = new Color(102,116,136), LINE = new Color(220,230,240);
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/uuuu");
     private final DesktopSession session;
-    private final RevenueReportService service;
+    private final BaoCaoDoanhThuService service;
     private final JTextField from = new JTextField(10), to = new JTextField(10);
     private final JComboBox<String> period = new JComboBox<>(new String[]{"Tháng này", "Hôm nay", "7 ngày gần nhất", "Tháng trước", "Tùy chọn"});
     private final JComboBox<String> grouping = new JComboBox<>(new String[]{"Theo ngày", "Theo tháng"});
@@ -38,8 +38,8 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
     private final Chart chart = new Chart();
     private boolean busy, updatingPeriod;
 
-    public RevenueReportPanel(DesktopSession session) { this(session, new RevenueReportService(session), true); }
-    public RevenueReportPanel(DesktopSession session, RevenueReportService service, boolean autoLoad) {
+    public BaoCaoDoanhThuPanel(DesktopSession session) { this(session, new BaoCaoDoanhThuService(session), true); }
+    public BaoCaoDoanhThuPanel(DesktopSession session, BaoCaoDoanhThuService service, boolean autoLoad) {
         new AuthorizationService(new RolePermissionPolicy()).require(session, Quyen.REVENUE_REPORT_READ);
         this.session = session; this.service = service;
         setLayout(new BorderLayout(0,16)); setBackground(BG); setBorder(new EmptyBorder(24,26,24,26));
@@ -112,7 +112,7 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
     @Override public void refreshData(){
         if(busy)return;if(!session.isActive()){clear();setBusy(false);status.setText("Phiên đăng nhập đã kết thúc.");return;}
         final LocalDate start,end;
-        try{start=LocalDate.parse(from.getText(),DATE);end=LocalDate.parse(to.getText(),DATE);RevenueReportService.validate(start,end);}
+        try{start=LocalDate.parse(from.getText(),DATE);end=LocalDate.parse(to.getText(),DATE);BaoCaoDoanhThuService.validate(start,end);}
         catch(IllegalArgumentException|java.time.DateTimeException error){status.setText("Từ ngày phải trước hoặc bằng đến ngày.");return;}
         final boolean monthly=grouping.getSelectedIndex()==1;clear();setBusy(true);status.setText("Đang tổng hợp số liệu…");
         new SessionWorker<BaoCaoDoanhThu>(session){

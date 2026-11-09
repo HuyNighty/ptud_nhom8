@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.quantri.nhatky;
+package com.quanlynhakhoa.dao.nhatky;
 
 import com.quanlynhakhoa.model.nhatky.KetQuaNhatKy;
 import com.quanlynhakhoa.model.nhatky.BoLocNhatKy;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Objects;
 
 /** One bounded SELECT; never reads noiDung, passwords or session secrets. */
-public final class AuditDao {
+public final class NhatKyDao {
     public static final int PAGE_LIMIT = 200;
     private static final ZoneId VIETNAM = ZoneId.of("Asia/Ho_Chi_Minh");
     static final String SEARCH_SQL = """

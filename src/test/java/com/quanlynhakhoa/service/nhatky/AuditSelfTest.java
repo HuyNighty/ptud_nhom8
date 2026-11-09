@@ -1,5 +1,6 @@
-package com.quanlynhakhoa.quantri.nhatky;
+package com.quanlynhakhoa.service.nhatky;
 
+import com.quanlynhakhoa.dao.nhatky.NhatKyDao;
 import com.quanlynhakhoa.model.nhatky.KetQuaNhatKy;
 import com.quanlynhakhoa.model.nhatky.BoLocNhatKy;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
@@ -125,7 +126,7 @@ public final class AuditSelfTest {
         BoLocNhatKy filter = new BoLocNhatKy(LocalDate.of(2026, 10, 31),
                 LocalDate.of(2026, 10, 31), "TK01", "SUCCESS");
         FakeDb fake = new FakeDb(3);
-        AuditService service = new AuditService(session(VaiTroHeThong.SYSTEM_ADMIN), fake::open);
+        NhatKyService service = new NhatKyService(session(VaiTroHeThong.SYSTEM_ADMIN), fake::open);
         KetQuaNhatKy result = service.search(filter);
         check(fake.opens.get() == 1, "one connection");
         check(fake.closed, "connection closed");
@@ -143,24 +144,24 @@ public final class AuditSelfTest {
         check(fake.binds.get(1).equals(Timestamp.valueOf("2026-10-30 17:00:00")), "Vietnam day UTC start");
         check(fake.binds.get(3).equals(Timestamp.valueOf("2026-10-31 17:00:00")), "exclusive UTC end");
         FakeDb hundred = new FakeDb(201);
-        KetQuaNhatKy bounded = new AuditDao().search(hundred.open(), new BoLocNhatKy(null,null,"",null));
-        check(bounded.rows().size() == AuditDao.PAGE_LIMIT, "bounded to 200");
+        KetQuaNhatKy bounded = new NhatKyDao().search(hundred.open(), new BoLocNhatKy(null,null,"",null));
+        check(bounded.rows().size() == NhatKyDao.PAGE_LIMIT, "bounded to 200");
         check(bounded.truncated(), "indicates further data");
         check(hundred.selectedRows == 201, "only 201 rows examined");
 
         FakeDb forbidden = new FakeDb(1);
-        AuditService denied = new AuditService(session(VaiTroHeThong.DOCTOR), forbidden::open);
+        NhatKyService denied = new NhatKyService(session(VaiTroHeThong.DOCTOR), forbidden::open);
         reject(AccessDeniedException.class, () -> {
             try { denied.search(filter); } catch (java.sql.SQLException error) { throw new RuntimeException(error); }
         });
         check(forbidden.opens.get() == 0, "doctor cannot even open JDBC");
         FakeDb allowed = new FakeDb(1);
-        AuditService manager = new AuditService(session(VaiTroHeThong.CLINIC_MANAGER), allowed::open);
+        NhatKyService manager = new NhatKyService(session(VaiTroHeThong.CLINIC_MANAGER), allowed::open);
         check(manager.search(filter).rows().size() == 1, "clinic manager allowed");
         DesktopSession loggedOut = session(VaiTroHeThong.SYSTEM_ADMIN);
         loggedOut.logout();
         FakeDb afterLogout = new FakeDb(1);
-        AuditService logoutService = new AuditService(loggedOut, afterLogout::open);
+        NhatKyService logoutService = new NhatKyService(loggedOut, afterLogout::open);
         reject(AccessDeniedException.class, () -> {
             try { logoutService.search(filter); } catch (java.sql.SQLException error) { throw new RuntimeException(error); }
         });

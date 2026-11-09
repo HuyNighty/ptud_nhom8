@@ -1,10 +1,9 @@
-package com.quanlynhakhoa.quantri.nhatky.ui;
+package com.quanlynhakhoa.view.nhatky;
 
 import com.quanlynhakhoa.model.nhatky.KetQuaNhatKy;
-import com.quanlynhakhoa.quantri.nhatky.AuditDao;
 import com.quanlynhakhoa.model.nhatky.BanGhiNhatKy;
 import com.quanlynhakhoa.model.nhatky.BoLocNhatKy;
-import com.quanlynhakhoa.quantri.nhatky.AuditService;
+import com.quanlynhakhoa.service.nhatky.NhatKyService;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
@@ -36,13 +35,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 
 /** Read-only Audit screen. Never edits, deletes, exports or copies raw journal content. */
-public final class AuditPanel extends JPanel implements RefreshableFeature {
+public final class NhatKyPanel extends JPanel implements RefreshableFeature {
     private static final Color NAVY = new Color(29, 61, 102);
     private static final ZoneId VIETNAM = ZoneId.of("Asia/Ho_Chi_Minh");
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     private final DesktopSession session;
-    private final AuditService service;
+    private final NhatKyService service;
     private final JTextField from = new JTextField(10);
     private final JTextField to = new JTextField(10);
     private final JTextField keyword = new JTextField(20);
@@ -56,11 +55,11 @@ public final class AuditPanel extends JPanel implements RefreshableFeature {
     private boolean loading;
     private boolean reloadPending;
 
-    public AuditPanel(DesktopSession session) {
-        this(session, new AuditService(session, TeamDevConnection::open), true);
+    public NhatKyPanel(DesktopSession session) {
+        this(session, new NhatKyService(session, TeamDevConnection::open), true);
     }
 
-    public AuditPanel(DesktopSession session, AuditService service, boolean autoLoad) {
+    public NhatKyPanel(DesktopSession session, NhatKyService service, boolean autoLoad) {
         this.session = java.util.Objects.requireNonNull(session, "session");
         new AuthorizationService(new RolePermissionPolicy()).require(session, Quyen.AUDIT_READ);
         this.service = java.util.Objects.requireNonNull(service, "service");

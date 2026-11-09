@@ -100,9 +100,9 @@ public final class BillingHardeningSqlIT {
         start.countDown();int won=0;for(var result:results)if(result.get(20,TimeUnit.SECONDS))won++;pool.shutdownNow();check(won==1,"concurrent workstations: exactly one reservation");
         for(int i=0;i<105;i++)header("PAGE"+i,null,100);
         check(invoiceService.findPage("PAGE",null,null,null,0).size()==101,"first page bounded plus sentinel");check(invoiceService.findPage("PAGE",null,null,null,1).size()==5,"second page returns remainder");
-        var report=new com.quanlynhakhoa.quantri.baocao.RevenueReportService(manager,connections::open).load(LocalDate.now().minusDays(1),LocalDate.now(),false);
+        var report=new com.quanlynhakhoa.service.baocao.BaoCaoDoanhThuService(manager,connections::open).load(LocalDate.now().minusDays(1),LocalDate.now(),false);
         check(report.collected().intValueExact()==100,"report net collections include reversals and one reconciled receipt");
-        var todayReport=new com.quanlynhakhoa.quantri.baocao.RevenueReportService(manager,connections::open).load(LocalDate.now(),LocalDate.now(),false);
+        var todayReport=new com.quanlynhakhoa.service.baocao.BaoCaoDoanhThuService(manager,connections::open).load(LocalDate.now(),LocalDate.now(),false);
         check(todayReport.collected().signum()==0,"later-day refund is deducted on refund date");
         sql("UPDATE dbo.TaiKhoan SET trangThai='BI_KHOA',nguonKhoa='ADMIN_ACTION',khoaLuc=SYSUTCDATETIME(),lyDoKhoa=N'test' WHERE maTaiKhoan='A1'");
         denied(()->invoiceService.find("",null,null,null),"account lock invalidates existing session");check(!cashier.isActive(),"locked cached session invalidated");

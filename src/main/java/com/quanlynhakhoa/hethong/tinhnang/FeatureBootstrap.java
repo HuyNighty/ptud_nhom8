@@ -2,14 +2,14 @@ package com.quanlynhakhoa.hethong.tinhnang;
 
 import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
 import com.quanlynhakhoa.view.taikhoan.TaiKhoanPanel;
-import com.quanlynhakhoa.quantri.nhatky.ui.AuditPanel;
+import com.quanlynhakhoa.view.nhatky.NhatKyPanel;
 import com.quanlynhakhoa.view.benhnhan.BenhNhanPanel;
 import com.quanlynhakhoa.view.benhnhan.HoSoBenhAnPanel;
 import com.quanlynhakhoa.view.lichhen.LichHenPanel;
 import com.quanlynhakhoa.view.lichhen.TiepNhanPanel;
 import com.quanlynhakhoa.view.kho.KhoPanel;
 import com.quanlynhakhoa.view.nhanvien.NhanVienPanel;
-import com.quanlynhakhoa.quantri.vaitro.ui.RolePanel;
+import com.quanlynhakhoa.view.vaitro.VaiTroPanel;
 import com.quanlynhakhoa.view.phieukham.PhieuKhamPanel;
 import com.quanlynhakhoa.view.dieutri.KeHoachDieuTriPanel;
 import com.quanlynhakhoa.enums.Module;
@@ -29,9 +29,9 @@ public final class FeatureBootstrap {
                 .register(Module.WORKFORCE, NhanVienPanel::new)
                 .register(Module.SHIFT_ASSIGNMENTS, session -> new LichLamViecPanel(session, true))
                 .register(Module.MY_SCHEDULE, session -> new LichLamViecPanel(session, false))
-                .register(Module.ROLES, RolePanel::new)
-                .register(Module.AUDIT, AuditPanel::new)
-                .register(Module.REVENUE_REPORTS, com.quanlynhakhoa.quantri.baocao.RevenueReportPanel::new)
+                .register(Module.ROLES, VaiTroPanel::new)
+                .register(Module.AUDIT, NhatKyPanel::new)
+                .register(Module.REVENUE_REPORTS, com.quanlynhakhoa.view.baocao.BaoCaoDoanhThuPanel::new)
                 .register(Module.EXAMINATIONS, PhieuKhamPanel::new)
                 .register(Module.TREATMENT_PLANS, KeHoachDieuTriPanel::new)
                 .register(Module.PATIENTS, BenhNhanPanel::new)
