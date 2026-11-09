@@ -8,7 +8,7 @@ import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.DonThuocData;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.Thuoc;
+import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -65,7 +65,7 @@ public final class DonThuocService {
         String visitId = validateId(maPhieuKham, "Mã phiếu khám");
         try (Connection connection = TeamDevConnection.open()) {
             PhieuKham visit = loadAndVerifyVisit(connection, visitId, maBacSiDuocChon, false);
-            List<Thuoc> medicines = dao.danhSachThuoc(connection);
+            List<ThuocChonKeDon> medicines = dao.danhSachThuoc(connection);
             Optional<DonThuocDao.DonThuocHeader> header =
                     dao.timDonThuocTheoPhieu(connection, visitId);
             if (header.isEmpty()) {
@@ -96,14 +96,14 @@ public final class DonThuocService {
                     throw new IllegalStateException("Phiếu khám này đã có đơn thuốc. Không thể tạo đơn thứ hai.");
                 }
 
-                Map<String, Thuoc> catalog = new HashMap<>();
-                for (Thuoc medicine : dao.danhSachThuoc(connection)) {
+                Map<String, ThuocChonKeDon> catalog = new HashMap<>();
+                for (ThuocChonKeDon medicine : dao.danhSachThuoc(connection)) {
                     catalog.put(medicine.maThuoc(), medicine);
                 }
 
                 List<ChiTietDonThuoc> canonicalItems = new ArrayList<>();
                 for (ChiTietDonThuoc item : items) {
-                    Thuoc medicine = catalog.get(item.maThuoc());
+                    ThuocChonKeDon medicine = catalog.get(item.maThuoc());
                     if (medicine == null) {
                         throw new IllegalArgumentException("Không tìm thấy thuốc " + item.maThuoc() + ".");
                     }

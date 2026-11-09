@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.controller;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.BacSi;
+import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKhamListItem;
 import com.quanlynhakhoa.nghiepvu.phieukham.service.PhieuKhamService;
@@ -40,9 +40,9 @@ public final class PhieuKhamController {
 
     private void taiBacSiVaDanhSach() {
         view.setDangTai(true, "Đang tải danh sách bác sĩ...");
-        new SwingWorker<List<BacSi>, Void>() {
+        new SwingWorker<List<BacSiChonKham>, Void>() {
             @Override
-            protected List<BacSi> doInBackground() throws Exception {
+            protected List<BacSiChonKham> doInBackground() throws Exception {
                 return service.danhSachBacSi();
             }
 

@@ -5,7 +5,7 @@ import com.quanlynhakhoa.nghiepvu.phieukham.controller.DonThuocController;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.DonThuocData;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.Thuoc;
+import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -39,7 +39,7 @@ public final class DonThuocPanel extends JPanel {
     private static final Color BACKGROUND = new Color(245, 248, 252);
 
     private final DesktopSession session;
-    private final JComboBox<Thuoc> cmbThuoc = new JComboBox<>();
+    private final JComboBox<ThuocChonKeDon> cmbThuoc = new JComboBox<>();
     private final JSpinner spnSoLuong = new JSpinner(new SpinnerNumberModel(1, 1, 10000, 1));
     private final JTextField txtLieuDung = new JTextField(18);
     private final JTextField txtCachDung = new JTextField(22);
@@ -227,7 +227,7 @@ public final class DonThuocPanel extends JPanel {
 
     public void hienDuLieu(DonThuocData data) {
         cmbThuoc.removeAllItems();
-        for (Thuoc medicine : data.danhSachThuoc()) cmbThuoc.addItem(medicine);
+        for (ThuocChonKeDon medicine : data.danhSachThuoc()) cmbThuoc.addItem(medicine);
         cart.clear();
         cart.addAll(data.chiTiet());
         tableModel.setRowCount(0);
@@ -250,7 +250,7 @@ public final class DonThuocPanel extends JPanel {
     }
 
     public ChiTietDonThuoc taoChiTietDangNhap() {
-        Thuoc medicine = (Thuoc) cmbThuoc.getSelectedItem();
+        ThuocChonKeDon medicine = (ThuocChonKeDon) cmbThuoc.getSelectedItem();
         if (medicine == null) throw new IllegalArgumentException("Chọn thuốc cần kê.");
         String dosage = txtLieuDung.getText() == null ? "" : txtLieuDung.getText().trim();
         String usage = txtCachDung.getText() == null ? "" : txtCachDung.getText().trim();

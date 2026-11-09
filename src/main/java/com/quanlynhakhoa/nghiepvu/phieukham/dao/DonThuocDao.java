@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.Thuoc;
+import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -15,18 +15,18 @@ public final class DonThuocDao {
 
     public record DonThuocHeader(String maDonThuoc, String loiDan) { }
 
-    public List<Thuoc> danhSachThuoc(Connection connection) throws SQLException {
+    public List<ThuocChonKeDon> danhSachThuoc(Connection connection) throws SQLException {
         String sql = """
                 SELECT maThuoc, tenThuoc, donViTinh, kiemSoatDacBiet, hamLuong, hoatChat
                 FROM dbo.Thuoc
                 ORDER BY tenThuoc, maThuoc
                 """;
-        List<Thuoc> result = new ArrayList<>();
+        List<ThuocChonKeDon> result = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setQueryTimeout(10);
             try (ResultSet rows = statement.executeQuery()) {
                 while (rows.next()) {
-                    result.add(new Thuoc(
+                    result.add(new ThuocChonKeDon(
                             rows.getString("maThuoc"),
                             rows.getNString("tenThuoc"),
                             rows.getNString("donViTinh"),

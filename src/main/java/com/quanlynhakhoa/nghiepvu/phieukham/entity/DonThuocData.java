@@ -1,9 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.entity;
 
+import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import java.util.List;
 
 public record DonThuocData(
-        List<Thuoc> danhSachThuoc,
+        List<ThuocChonKeDon> danhSachThuoc,
         List<ChiTietDonThuoc> chiTiet,
         String loiDan,
         boolean daKeDon) {

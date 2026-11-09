@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.BacSi;
+import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKhamListItem;
 import java.sql.Connection;
@@ -209,19 +209,19 @@ public final class PhieuKhamDao {
         }
     }
 
-    public List<BacSi> danhSachBacSiDangLamViec(Connection connection) throws SQLException {
+    public List<BacSiChonKham> danhSachBacSiDangLamViec(Connection connection) throws SQLException {
         String sql = """
                 SELECT maNhanVien, hoTen
                 FROM dbo.NhanVien
                 WHERE chucDanh = 'BS' AND trangThai = 'DANG_LAM_VIEC'
                 ORDER BY hoTen, maNhanVien
                 """;
-        List<BacSi> result = new ArrayList<>();
+        List<BacSiChonKham> result = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setQueryTimeout(10);
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
-                    result.add(new BacSi(rs.getString("maNhanVien"), rs.getNString("hoTen")));
+                    result.add(new BacSiChonKham(rs.getString("maNhanVien"), rs.getNString("hoTen")));
                 }
             }
         }
