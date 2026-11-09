@@ -1,6 +1,8 @@
 package com.quanlynhakhoa.dao.hoadon;
 
 import com.quanlynhakhoa.model.hoadon.BangChungTinhPhi;
+import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 
@@ -68,5 +70,26 @@ public class PhiLamSangDao {
     }
     private static BangChungTinhPhi map(ResultSet r,String kind,String id)throws SQLException {
         return new BangChungTinhPhi(kind,id,r.getString("maDichVu"),r.getNString("tenDichVu"),r.getBigDecimal("donGia"),r.getBoolean("dangApDung"),r.getBoolean("laCanLamSang"));
+    }
+
+    public List<ThuocKeTinhTien> thuocKeTinhPhi(Connection c, String patient, String visit) throws SQLException {
+        List<ThuocKeTinhTien> result = new ArrayList<>();
+        try (PreparedStatement s = c.prepareStatement("""
+                SELECT t.maThuoc,t.tenThuoc,t.donGiaBan,x.soLuong
+                FROM dbo.DonThuoc d WITH (HOLDLOCK)
+                JOIN dbo.ChiTietDonThuoc x WITH (HOLDLOCK) ON x.maDonThuoc=d.maDonThuoc
+                JOIN dbo.Thuoc t WITH (HOLDLOCK) ON t.maThuoc=x.maThuoc
+                WHERE d.maPhieuKham=? AND d.maBenhNhan=? ORDER BY t.maThuoc
+                """)) {
+            s.setQueryTimeout(15); s.setString(1,visit); s.setString(2,patient);
+            try (ResultSet r = s.executeQuery()) {
+                while (r.next()) {
+                    String id=r.getString("maThuoc"),name=r.getNString("tenThuoc");
+                    BigDecimal price=r.getBigDecimal("donGiaBan"); int quantity=r.getInt("soLuong");
+                    result.add(new ThuocKeTinhTien(id,name,null,quantity,price));
+                }
+            }
+        }
+        return List.copyOf(result);
     }
 }

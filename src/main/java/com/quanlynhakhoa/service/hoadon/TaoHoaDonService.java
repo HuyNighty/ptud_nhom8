@@ -60,9 +60,7 @@ public final class TaoHoaDonService {
                 id=ids.next(c);key(id);
                 dao.insertHeader(c,id,trusted.patientId(),trusted.visitId(),employee);
                 for(DongBanNhapHoaDon line:trusted.lines())dao.insertLine(c,id,line);
-                try(PreparedStatement status=c.prepareStatement("UPDATE dbo.HoaDon SET trangThai=? WHERE maHoaDon=?")){
-                    status.setQueryTimeout(15);status.setString(1,trusted.total().signum()==0?"DA_THANH_TOAN":"CHUA_THANH_TOAN");status.setString(2,id);if(status.executeUpdate()!=1)throw new SQLException("Missing created invoice");
-                }
+                dao.capNhatTrangThaiMoi(c,id,trusted.total().signum()==0?"DA_THANH_TOAN":"CHUA_THANH_TOAN");
                 dao.audit(c,session.accountId(),id);authorization.requireCurrent(session,Quyen.BILLING_MANAGE,c);require();c.commit();committed=true;
             } catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         } catch(SQLException e) {
