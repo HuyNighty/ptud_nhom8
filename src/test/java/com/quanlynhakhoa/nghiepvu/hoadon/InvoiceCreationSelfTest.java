@@ -1,5 +1,12 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
+import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
@@ -18,19 +25,19 @@ public final class InvoiceCreationSelfTest {
         @Override public void requireWritePermissions(Connection c)throws SQLException{if(noPermission)throw new SQLException("missing INSERT","42000",229);}
         @Override public void validateVisit(Connection c,String patient,String visit){if(invalidVisit||!patient.equals("BN1")||!visit.equals("PK1"))throw new IllegalArgumentException("invalid visit");if(duplicate)throw new IllegalArgumentException("duplicate visit");}
         @Override public String employee(Connection c,String account){if(noEmployee)throw new IllegalArgumentException("missing employee");check(account.equals("TST_ACC"),"session account supplied");return "NV1";}
-        @Override public void insertLine(Connection c,String id,InvoiceDraft.Line line)throws SQLException{if(failLine && ++lines==2)throw new SQLException("line failure");super.insertLine(c,id,line);}
+        @Override public void insertLine(Connection c,String id,DongBanNhapHoaDon line)throws SQLException{if(failLine && ++lines==2)throw new SQLException("line failure");super.insertLine(c,id,line);}
     }
     private static class Source implements ClinicalBillingSource {
-        InvoiceDraft value=draft("100");int loads;
-        public InvoiceDraft load(Connection c,String patient,String visit,boolean lock){check(lock,"source rows locked in transaction");loads++;return value;}
-        public void validateServiceState(Connection c,InvoiceDraft draft,String id,boolean active){check(active,"catalogue state checked");}
+        BanNhapHoaDon value=draft("100");int loads;
+        public BanNhapHoaDon load(Connection c,String patient,String visit,boolean lock){check(lock,"source rows locked in transaction");loads++;return value;}
+        public void validateServiceState(Connection c,BanNhapHoaDon draft,String id,boolean active){check(active,"catalogue state checked");}
     }
-    private static InvoiceDraft draft(String price){return new InvoiceDraft("BN1","PK1","revision1",List.of(new InvoiceDraft.Line("DV1","Synthetic 1",2,new BigDecimal(price)),new InvoiceDraft.Line("DV2","Synthetic 2",1,BigDecimal.ZERO)));}
+    private static BanNhapHoaDon draft(String price){return new BanNhapHoaDon("BN1","PK1","revision1",List.of(new DongBanNhapHoaDon("DV1","Synthetic 1",2,new BigDecimal(price)),new DongBanNhapHoaDon("DV2","Synthetic 2",1,BigDecimal.ZERO)));}
     public static void main(String[] args)throws Exception {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final Dao dao=new Dao();final Source source=new Source();
         final DesktopSession session=session(Role.RECEPTIONIST);
         final InvoiceCreationService service=new InvoiceCreationService(session,jdbc,source,new InvoiceIdGenerator(){public String next(Connection c){return "HDTEST1";}},dao);
-        final InvoiceDraft reviewed=service.preview("BN1","PK1");
+        final BanNhapHoaDon reviewed=service.preview("BN1","PK1");
         check(service.create(reviewed).equals("HDTEST1"),"created id");
         check(jdbc.persisted.size()==4 && jdbc.audits.size()==1 && jdbc.commits==2,"header, all lines, final payment status and audit committed");
         boolean employeeBound=false;
@@ -55,7 +62,7 @@ public final class InvoiceCreationSelfTest {
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{service.preview("BN2","PK1");}});
         dao.noEmployee=true;expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{service.create(reviewed);}});dao.noEmployee=false;
         dao.noPermission=true;expect(SQLException.class,new Action(){public void run()throws Exception{service.create(reviewed);}});dao.noPermission=false;
-        for(final InvoiceDraft invalid:List.of(new InvoiceDraft("BN1","PK1","r",List.of()),new InvoiceDraft("BN1","PK1","r",List.of(new InvoiceDraft.Line("DV1","X",0,BigDecimal.ONE))),draft("-1"),draft("1.5"),draft("1000000000000000000"))) {
+        for(final BanNhapHoaDon invalid:List.of(new BanNhapHoaDon("BN1","PK1","r",List.of()),new BanNhapHoaDon("BN1","PK1","r",List.of(new DongBanNhapHoaDon("DV1","X",0,BigDecimal.ONE))),draft("-1"),draft("1.5"),draft("1000000000000000000"))) {
             source.value=invalid;expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{service.preview("BN1","PK1");}});
         }
         final InvoiceService defaultService=new InvoiceService(session,jdbc);

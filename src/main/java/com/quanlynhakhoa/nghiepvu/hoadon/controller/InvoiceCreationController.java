@@ -1,5 +1,11 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
+import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
@@ -14,7 +20,7 @@ public final class InvoiceCreationController {
     private final DesktopSession session;
     private final InvoiceService service;
     private final Saved saved;
-    private InvoiceDraft draft;
+    private BanNhapHoaDon draft;
     private boolean busy,updating;
     public InvoiceCreationController(InvoiceCreationDialog view,DesktopSession session,InvoiceService service,Saved saved){
         this.view=view;this.session=session;this.service=service;this.saved=saved;
@@ -36,39 +42,39 @@ public final class InvoiceCreationController {
     private void patients(){
         if(!start())return;clear();final String text=view.txtBenhNhan.getText();
         updating=true;view.cmbBenhNhan.removeAllItems();view.cmbPhieuKham.removeAllItems();updating=false;view.guide("Đang tìm bệnh nhân…");
-        new Task<List<BillingChoice>>(){
-            protected List<BillingChoice> doInBackground()throws Exception{return service.patientsForInvoice(text);}
-            protected void succeeded(List<BillingChoice> result){
-                updating=true;for(BillingChoice item:result)view.cmbBenhNhan.addItem(item);view.cmbBenhNhan.setSelectedIndex(-1);updating=false;
+        new Task<List<LuaChonLapHoaDon>>(){
+            protected List<LuaChonLapHoaDon> doInBackground()throws Exception{return service.patientsForInvoice(text);}
+            protected void succeeded(List<LuaChonLapHoaDon> result){
+                updating=true;for(LuaChonLapHoaDon item:result)view.cmbBenhNhan.addItem(item);view.cmbBenhNhan.setSelectedIndex(-1);updating=false;
                 view.busy(false,false);view.guide(result.isEmpty()?"Không tìm thấy bệnh nhân. Hãy đổi mã, tên hoặc số điện thoại.":"Chọn bệnh nhân");
             }
         }.execute();
     }
     private void visits(){
-        clear();final BillingChoice patient=(BillingChoice)view.cmbBenhNhan.getSelectedItem();
+        clear();final LuaChonLapHoaDon patient=(LuaChonLapHoaDon)view.cmbBenhNhan.getSelectedItem();
         updating=true;view.cmbPhieuKham.removeAllItems();updating=false;
         if(patient==null){view.busy(false,false);view.guide("Chọn bệnh nhân");return;}
         if(!start())return;view.guide("Đang tải lượt khám của bệnh nhân đã chọn…");
-        new Task<List<BillingChoice>>(){
-            protected List<BillingChoice> doInBackground()throws Exception{return service.visitsForInvoice(patient.id());}
-            protected void succeeded(List<BillingChoice> result){
-                updating=true;for(BillingChoice item:result)view.cmbPhieuKham.addItem(item);view.cmbPhieuKham.setSelectedIndex(-1);updating=false;
+        new Task<List<LuaChonLapHoaDon>>(){
+            protected List<LuaChonLapHoaDon> doInBackground()throws Exception{return service.visitsForInvoice(patient.id());}
+            protected void succeeded(List<LuaChonLapHoaDon> result){
+                updating=true;for(LuaChonLapHoaDon item:result)view.cmbPhieuKham.addItem(item);view.cmbPhieuKham.setSelectedIndex(-1);updating=false;
                 view.busy(false,false);view.guide(result.isEmpty()?"Bệnh nhân chưa có lượt khám phù hợp để lập hóa đơn.":"Chọn lượt khám");
             }
         }.execute();
     }
     private void preview(){
-        final BillingChoice patient=(BillingChoice)view.cmbBenhNhan.getSelectedItem(),visit=(BillingChoice)view.cmbPhieuKham.getSelectedItem();
+        final LuaChonLapHoaDon patient=(LuaChonLapHoaDon)view.cmbBenhNhan.getSelectedItem(),visit=(LuaChonLapHoaDon)view.cmbPhieuKham.getSelectedItem();
         if(patient==null||visit==null||!start())return;clear();view.guide("Đang kiểm tra dịch vụ được phép tính phí…");
-        new Task<InvoiceDraft>(){
-            protected InvoiceDraft doInBackground()throws Exception{return service.previewInvoice(patient.id(),visit.id());}
-            protected void succeeded(InvoiceDraft result){draft=result;view.showDraft(result);view.busy(false,true);view.guide("Kiểm tra dịch vụ, số lượng và tổng tiền trước khi lưu.");}
+        new Task<BanNhapHoaDon>(){
+            protected BanNhapHoaDon doInBackground()throws Exception{return service.previewInvoice(patient.id(),visit.id());}
+            protected void succeeded(BanNhapHoaDon result){draft=result;view.showDraft(result);view.busy(false,true);view.guide("Kiểm tra dịch vụ, số lượng và tổng tiền trước khi lưu.");}
         }.execute();
     }
     private void save(){
         if(busy||draft==null)return;
         if(JOptionPane.showConfirmDialog(view,"Lưu hóa đơn với tổng "+BillingUi.vnd(draft.total())+"?","Xác nhận",JOptionPane.YES_NO_OPTION)!=JOptionPane.YES_OPTION)return;
-        if(!start())return;final InvoiceDraft reviewed=draft;view.guide("Đang lưu hóa đơn…");
+        if(!start())return;final BanNhapHoaDon reviewed=draft;view.guide("Đang lưu hóa đơn…");
         new Task<String>(){
             protected String doInBackground()throws Exception{return service.createInvoice(reviewed);}
             protected void succeeded(String id){BillingUi.result(view,"Đã lập hóa đơn "+id+" thành công.");view.dispose();saved.accept(id);BillingChangeBus.forSession(session).publish();}

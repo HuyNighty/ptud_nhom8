@@ -1,14 +1,16 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.entity;
 
+import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
+import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import java.util.List;
 
-public record InvoiceDetails(Invoice hoaDon, List<InvoiceLine> chiTiet, List<Payment> thanhToan,
+public record InvoiceDetails(Invoice hoaDon, List<DongChiTietHoaDon> chiTiet, List<Payment> thanhToan,
                              List<InvoiceCancellationRequest> cancellationHistory,
-                             List<PrescribedMedicine> prescribedMedicines) {
-    public InvoiceDetails(Invoice hoaDon, List<InvoiceLine> chiTiet, List<Payment> thanhToan) {
+                             List<ThuocKeTinhTien> prescribedMedicines) {
+    public InvoiceDetails(Invoice hoaDon, List<DongChiTietHoaDon> chiTiet, List<Payment> thanhToan) {
         this(hoaDon, chiTiet, thanhToan, List.of());
     }
-    public InvoiceDetails(Invoice hoaDon, List<InvoiceLine> chiTiet, List<Payment> thanhToan,
+    public InvoiceDetails(Invoice hoaDon, List<DongChiTietHoaDon> chiTiet, List<Payment> thanhToan,
                           List<InvoiceCancellationRequest> cancellationHistory) {
         this(hoaDon, chiTiet, thanhToan, cancellationHistory, List.of());
     }

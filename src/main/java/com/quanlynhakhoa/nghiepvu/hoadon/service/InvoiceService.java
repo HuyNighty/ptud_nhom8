@@ -1,5 +1,15 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+
+
+
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
+import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
+import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.hethong.phanquyen.*;
@@ -25,10 +35,10 @@ public final class InvoiceService {
         if (creation == null) throw new IllegalStateException("Chờ hợp đồng dữ liệu khám và bộ sinh mã được duyệt.");
         return creation;
     }
-    public List<BillingChoice> patientsForInvoice(String text) throws SQLException { return creation().patients(text); }
-    public List<BillingChoice> visitsForInvoice(String patient) throws SQLException { return creation().visits(patient); }
-    public InvoiceDraft previewInvoice(String patient, String visit) throws SQLException { return creation().preview(patient, visit); }
-    public String createInvoice(InvoiceDraft draft) throws SQLException { return creation().create(draft); }
+    public List<LuaChonLapHoaDon> patientsForInvoice(String text) throws SQLException { return creation().patients(text); }
+    public List<LuaChonLapHoaDon> visitsForInvoice(String patient) throws SQLException { return creation().visits(patient); }
+    public BanNhapHoaDon previewInvoice(String patient, String visit) throws SQLException { return creation().preview(patient, visit); }
+    public String createInvoice(BanNhapHoaDon draft) throws SQLException { return creation().create(draft); }
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
     public InvoiceService(DesktopSession session, ConnectionProvider connections) { this(session, connections, new InvoiceDao()); }
     public InvoiceService(DesktopSession session, ConnectionProvider connections, InvoiceDao dao) {
@@ -69,7 +79,7 @@ public final class InvoiceService {
             try {
                 Invoice invoice = dao.get(connection, id.trim());
                 if (invoice == null) throw new IllegalArgumentException("Hóa đơn không tồn tại.");
-                List<InvoiceLine> lines = dao.lines(connection, id.trim());
+                List<DongChiTietHoaDon> lines = dao.lines(connection, id.trim());
                 List<Payment> payments = dao.payments(connection, id.trim());
                 var cancellationHistory = new CancellationDao().findForInvoice(connection, id.trim());
                 var prescriptions = dao.prescribedMedicines(connection, id.trim());

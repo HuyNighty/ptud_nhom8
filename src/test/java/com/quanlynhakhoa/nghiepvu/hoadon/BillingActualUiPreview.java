@@ -1,5 +1,20 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -26,14 +41,14 @@ import javax.swing.event.ListSelectionListener;
 
 /** Read actual permitted dev data before rendering. No invented business rows or authenticated GUI session. */
 public final class BillingActualUiPreview {
-    private record Data(List<DentalService> services,List<Invoice> invoices,List<InvoiceCancellationRequest> requests,List<BillingChoice> patients,List<BillingChoice> visits,Map<String,InvoiceDetails> details){}
+    private record Data(List<DentalService> services,List<Invoice> invoices,List<InvoiceCancellationRequest> requests,List<LuaChonLapHoaDon> patients,List<LuaChonLapHoaDon> visits,Map<String,InvoiceDetails> details){}
     private static Data read()throws Exception{
         if(!TeamDevConnection.hasLocalConfig())throw new IllegalStateException("Approved local dev configuration required");
         try(Connection c=TeamDevConnection.open()){
             c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);c.setAutoCommit(false);
             try{
                 var services=new ServiceCatalogDao().find(c,"",null);var invoiceDao=new InvoiceDao();var invoices=invoiceDao.find(c,"",null,null,null);var requests=new CancellationDao().find(c,"",null,null,null);
-                var patients=new InvoiceCreateDao().patients(c,"");var visits=patients.isEmpty()?List.<BillingChoice>of():new InvoiceCreateDao().visits(c,patients.getFirst().id());
+                var patients=new InvoiceCreateDao().patients(c,"");var visits=patients.isEmpty()?List.<LuaChonLapHoaDon>of():new InvoiceCreateDao().visits(c,patients.getFirst().id());
                 Map<String,InvoiceDetails> details=new HashMap<>();
                 for(Invoice h:invoices)details.put(h.maHoaDon(),new InvoiceDetails(h,invoiceDao.lines(c,h.maHoaDon()),invoiceDao.payments(c,h.maHoaDon())));
                 c.commit();System.out.println("Actual SQL snapshot: services="+services.size()+", invoices="+invoices.size()+", cancellation requests="+requests.size()+", patients="+patients.size()+", candidate visits for first patient="+visits.size());
@@ -71,7 +86,7 @@ public final class BillingActualUiPreview {
                 try{
                     JComponent root=(JComponent)frame.getContentPane();root.setSize(size.width,size.height-32);var navigate=MainFrame.class.getDeclaredMethod("navigate",Module.class);navigate.setAccessible(true);
                     for(Module module:List.of(Module.SERVICE_CATALOG,Module.BILLING,Module.PAYMENTS,Module.INVOICE_CANCELLATIONS,Module.DEBTS)){navigate.invoke(frame,module);bind(module,pages.get(module),data);screenshot(root,folder.resolve(module.name().toLowerCase()+"-"+size.width+"x"+size.height+".png"));}
-                    InvoiceCreationDialog dialog=new InvoiceCreationDialog(frame);try{JComponent content=(JComponent)dialog.getContentPane();content.setSize(956,560);for(BillingChoice patient:data.patients())dialog.cmbBenhNhan.addItem(patient);dialog.cmbBenhNhan.setSelectedIndex(-1);dialog.busy(false,false);dialog.guide(data.patients().isEmpty()?"Tìm bệnh nhân để bắt đầu":"Chọn bệnh nhân");screenshot(content,folder.resolve("create-"+size.width+"x"+size.height+".png"));}finally{dialog.dispose();}
+                    InvoiceCreationDialog dialog=new InvoiceCreationDialog(frame);try{JComponent content=(JComponent)dialog.getContentPane();content.setSize(956,560);for(LuaChonLapHoaDon patient:data.patients())dialog.cmbBenhNhan.addItem(patient);dialog.cmbBenhNhan.setSelectedIndex(-1);dialog.busy(false,false);dialog.guide(data.patients().isEmpty()?"Tìm bệnh nhân để bắt đầu":"Chọn bệnh nhân");screenshot(content,folder.resolve("create-"+size.width+"x"+size.height+".png"));}finally{dialog.dispose();}
                 }catch(Exception failure){throw new RuntimeException(failure);}finally{display.logout();frame.dispose();}
             }
         }});}finally{System.setProperty("user.dir",previous);}

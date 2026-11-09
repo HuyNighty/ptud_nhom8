@@ -1,14 +1,17 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+
+
+import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.math.BigDecimal;
 import java.util.List;
 
 public final class BillingCalculator {
     private BillingCalculator() { }
-    public static BigDecimal total(List<InvoiceLine> lines) {
+    public static BigDecimal total(List<DongChiTietHoaDon> lines) {
         BigDecimal total = BigDecimal.ZERO;
-        for (InvoiceLine line : lines) total = total.add(line.thanhTien());
+        for (DongChiTietHoaDon line : lines) total = total.add(line.thanhTien());
         return total;
     }
     public static BigDecimal collected(List<Payment> payments) {
