@@ -35,7 +35,7 @@ public final class KhoPanel extends JPanel {
         else if("supply".equals(section)||"stocktake".equals(section)){
             if(tabbedPane.getTabCount()<5)return;
             tabbedPane.setSelectedIndex(4);
-            if(tabbedPane.getComponentAt(4) instanceof com.quanlynhakhoa.nghiepvu.kho.workflow.view.InventoryWorkflowPanel workflow)
+            if(tabbedPane.getComponentAt(4) instanceof com.quanlynhakhoa.view.kho.quytrinh.QuyTrinhKhoPanel workflow)
                 workflow.tabs().setSelectedIndex("supply".equals(section)?3:2);
         } else if("low-supply".equals(section))tabbedPane.setSelectedIndex(1);
         else if("low".equals(section))tabbedPane.setSelectedIndex(0);
@@ -49,7 +49,7 @@ public final class KhoPanel extends JPanel {
             case 1 -> new VatTuPanel(phienDangNhap);
             case 2 -> new NhaCungCapPanel(phienDangNhap);
             case 3 -> new LoHangPanel(phienDangNhap);
-            case 4 -> new com.quanlynhakhoa.nghiepvu.kho.workflow.view.InventoryWorkflowPanel(phienDangNhap);
+            case 4 -> new com.quanlynhakhoa.view.kho.quytrinh.QuyTrinhKhoPanel(phienDangNhap);
             default -> throw new IllegalArgumentException("Tab inventory không hợp lệ: " + chiSo);
         };
         com.quanlynhakhoa.hethong.giaodien.AppTheme.apply(panel);
