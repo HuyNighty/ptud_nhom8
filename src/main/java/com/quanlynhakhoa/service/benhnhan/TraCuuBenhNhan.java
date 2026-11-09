@@ -1,5 +1,6 @@
-package com.quanlynhakhoa.nghiepvu.benhnhan.hopdong;
+package com.quanlynhakhoa.service.benhnhan;
 
+import com.quanlynhakhoa.model.benhnhan.BenhNhanTomTat;
 import java.sql.SQLException;
 import java.util.ArrayList;
 

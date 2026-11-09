@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
 import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.CheDoXemHoaDon;
@@ -50,7 +51,7 @@ public final class ServiceBillingPreview {
                         pnlMode.showRows(List.of(invoice));pnlMode.showDetail(new DuLieuChiTietHoaDon(invoice,List.of(),List.of()));
                         pnlMode.status("XEM BỐ CỤC · dữ liệu tổng hợp · không SQL");render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
                     }
-                    for(ServiceCatalogPanel.EditorMode mode:List.of(ServiceCatalogPanel.EditorMode.SERVICES,ServiceCatalogPanel.EditorMode.PRICES)) {
+                    for(CheDoSuaDanhMucDichVu mode:List.of(CheDoSuaDanhMucDichVu.SERVICES,CheDoSuaDanhMucDichVu.PRICES)) {
                         ServiceCatalogPanel pnlMode=new ServiceCatalogPanel(ServiceBillingSelfTest.session(VaiTroHeThong.CLINIC_MANAGER),jdbc,mode);
                         pnlMode.showRows(List.of(value));pnlMode.showForm(value);render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
                     }

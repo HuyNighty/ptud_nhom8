@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.hethong.tinhnang;
 
+import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
 import com.quanlynhakhoa.quantri.taikhoan.ui.AccountPanel;
 import com.quanlynhakhoa.quantri.nhatky.ui.AuditPanel;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.BenhNhanPanel;
@@ -41,7 +42,7 @@ public final class FeatureBootstrap {
                 .register(Module.MEDICAL_RECORDS, HoSoBenhAnPanel::new)
                 .register(Module.SERVICE_CATALOG, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session) {
-                        return new ServiceCatalogPanel(session, TeamDevConnection::open, ServiceCatalogPanel.EditorMode.COMBINED);
+                        return new ServiceCatalogPanel(session, TeamDevConnection::open, CheDoSuaDanhMucDichVu.COMBINED);
                     }
                 })
                 .register(Module.BILLING, new FeaturePanelFactory() {
@@ -56,7 +57,7 @@ public final class FeatureBootstrap {
                     @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel(session,TeamDevConnection::open);}
                 })
                 .register(Module.SERVICES, new FeaturePanelFactory() {
-                    @Override public JPanel create(DesktopSession session){return new ServiceCatalogPanel(session,TeamDevConnection::open,ServiceCatalogPanel.EditorMode.COMBINED);}
+                    @Override public JPanel create(DesktopSession session){return new ServiceCatalogPanel(session,TeamDevConnection::open,CheDoSuaDanhMucDichVu.COMBINED);}
                 })
                 .register(Module.INVOICE_CANCELLATIONS,new FeaturePanelFactory(){
                     @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel(session,TeamDevConnection::open);}

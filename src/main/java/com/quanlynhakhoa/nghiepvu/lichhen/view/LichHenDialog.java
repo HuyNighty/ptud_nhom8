@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.lichhen.view;
 
-import com.quanlynhakhoa.nghiepvu.benhnhan.hopdong.BenhNhanTomTat;
+import com.quanlynhakhoa.model.benhnhan.BenhNhanTomTat;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.BieuTuong;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.ChonNgayDialog;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.MauNut;

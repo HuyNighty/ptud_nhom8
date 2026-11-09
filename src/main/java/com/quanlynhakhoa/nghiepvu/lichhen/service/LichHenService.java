@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.lichhen.service;
 
-import com.quanlynhakhoa.nghiepvu.benhnhan.hopdong.BenhNhanTomTat;
-import com.quanlynhakhoa.nghiepvu.benhnhan.hopdong.TraCuuBenhNhan;
-import com.quanlynhakhoa.nghiepvu.benhnhan.hopdong.TraCuuBenhNhanService;
+import com.quanlynhakhoa.model.benhnhan.BenhNhanTomTat;
+import com.quanlynhakhoa.service.benhnhan.TraCuuBenhNhan;
+import com.quanlynhakhoa.service.benhnhan.TraCuuBenhNhanService;
 import com.quanlynhakhoa.nghiepvu.benhnhan.dao.BenhNhanDao;
 import com.quanlynhakhoa.nghiepvu.benhnhan.dao.HoSoBenhAnDao;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.DuLieuDaThayDoiException;

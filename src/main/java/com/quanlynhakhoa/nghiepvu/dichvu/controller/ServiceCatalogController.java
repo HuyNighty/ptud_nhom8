@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.dichvu.controller;
 
+import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.SessionWorker;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
@@ -87,8 +88,8 @@ public final class ServiceCatalogController {
         new SessionWorker<Void>(session) {
             protected Void doInBackground() throws Exception {
                 if (activeOnly == null) {
-                    if(view.editorMode()==ServiceCatalogPanel.EditorMode.SERVICES)service.saveInformation(value,creating);
-                    else if(view.editorMode()==ServiceCatalogPanel.EditorMode.PRICES)service.savePrice(value);
+                    if(view.editorMode()==CheDoSuaDanhMucDichVu.SERVICES)service.saveInformation(value,creating);
+                    else if(view.editorMode()==CheDoSuaDanhMucDichVu.PRICES)service.savePrice(value);
                     else service.save(value, creating);
                 }
                 else service.changeActive(value.maDichVu(), activeOnly);

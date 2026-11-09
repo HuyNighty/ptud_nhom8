@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.lichhen.controller;
 
-import com.quanlynhakhoa.nghiepvu.benhnhan.hopdong.BenhNhanTomTat;
+import com.quanlynhakhoa.model.benhnhan.BenhNhanTomTat;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.DuLieuDaThayDoiException;
 import com.quanlynhakhoa.model.lichhen.BacSiChonLichHen;
 import com.quanlynhakhoa.entity.LichHen;

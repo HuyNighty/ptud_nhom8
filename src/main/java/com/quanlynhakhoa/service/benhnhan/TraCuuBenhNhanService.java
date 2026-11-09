@@ -1,5 +1,6 @@
-package com.quanlynhakhoa.nghiepvu.benhnhan.hopdong;
+package com.quanlynhakhoa.service.benhnhan;
 
+import com.quanlynhakhoa.model.benhnhan.BenhNhanTomTat;
 import com.quanlynhakhoa.entity.BenhNhan;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.BenhNhanService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;

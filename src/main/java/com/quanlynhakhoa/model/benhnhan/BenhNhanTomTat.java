@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.nghiepvu.benhnhan.hopdong;
+package com.quanlynhakhoa.model.benhnhan;
 
 import java.time.LocalDate;
 
