@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.XemTruocHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
@@ -8,7 +10,6 @@ import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.sql.*;
 import java.time.LocalDate;
@@ -25,7 +26,7 @@ public final class CancellationService {
         this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);this.dao=Objects.requireNonNull(dao);this.invoices=Objects.requireNonNull(invoices);this.ids=Objects.requireNonNull(ids);
     }
     private void require(Permission permission){authorization.require(session,permission);}
-    public List<ThongTinYeuCauHuyHoaDon> find(String keyword,LocalDate from,LocalDate to,ThongTinYeuCauHuyHoaDon.TrangThai status)throws SQLException {
+    public List<ThongTinYeuCauHuyHoaDon> find(String keyword,LocalDate from,LocalDate to,TrangThaiYeuCauHuyHoaDon status)throws SQLException {
         require(Permission.INVOICE_CANCEL_APPROVE);String text=keyword==null?"":keyword.trim();
         if(text.length()>100)throw new IllegalArgumentException("Từ khóa tối đa 100 ký tự.");dates(from,to);
         try(Connection c=connections.open()){require(Permission.INVOICE_CANCEL_APPROVE);begin(c);
@@ -52,7 +53,7 @@ public final class CancellationService {
         require(Permission.INVOICE_CANCEL_REQUEST);key(invoiceId);String normalized=reason(reason);String id=null;boolean committed=false;
         try(Connection c=connections.open()){require(Permission.INVOICE_CANCEL_REQUEST);begin(c);
             try{dao.lockInvoice(c,invoiceId);ThongTinHoaDon invoice=invoices.getForPayment(c,invoiceId);
-                if(invoice==null||invoice.trangThai()==InvoiceStatus.DA_HUY)throw new IllegalArgumentException("Không gửi yêu cầu cho hóa đơn đã hủy/không tồn tại.");
+                if(invoice==null||invoice.trangThai()==TrangThaiHoaDon.DA_HUY)throw new IllegalArgumentException("Không gửi yêu cầu cho hóa đơn đã hủy/không tồn tại.");
                 if(invoice.daThu().signum()!=0)throw new IllegalArgumentException("Hóa đơn đã có khoản thu; chưa hỗ trợ hoàn tiền nên không thể gửi yêu cầu hủy.");
                 if(PaymentAttemptService.pending(c,invoiceId)!=null)throw new IllegalArgumentException("Hóa đơn còn lần thu chờ đối soát; giải quyết trước khi yêu cầu hủy.");
                 if(dao.pending(c,invoiceId))throw new IllegalArgumentException("Hóa đơn đã có yêu cầu đang chờ duyệt.");
@@ -72,10 +73,10 @@ public final class CancellationService {
             String invoiceId=dao.invoiceId(c,requestId);begin(c);
             try{dao.lockInvoice(c,invoiceId);dao.lockRequest(c,requestId);
                 ThongTinYeuCauHuyHoaDon request=dao.get(c,requestId);
-                if(request==null||!invoiceId.equals(request.maHoaDon())||request.trangThai()!=ThongTinYeuCauHuyHoaDon.TrangThai.CHO_DUYET)throw new IllegalArgumentException("Yêu cầu đã được xử lý hoặc không tồn tại.");
+                if(request==null||!invoiceId.equals(request.maHoaDon())||request.trangThai()!=TrangThaiYeuCauHuyHoaDon.CHO_DUYET)throw new IllegalArgumentException("Yêu cầu đã được xử lý hoặc không tồn tại.");
                 if(session.accountId().equals(request.maTaiKhoanTao()))throw new IllegalArgumentException("Người gửi không được tự duyệt hoặc từ chối yêu cầu của mình.");
                 ThongTinHoaDon invoice=invoices.getForPayment(c,invoiceId);
-                if(invoice==null||invoice.trangThai()==InvoiceStatus.DA_HUY)throw new IllegalArgumentException("Hóa đơn đã hủy/không tồn tại; cần đối soát.");
+                if(invoice==null||invoice.trangThai()==TrangThaiHoaDon.DA_HUY)throw new IllegalArgumentException("Hóa đơn đã hủy/không tồn tại; cần đối soát.");
                 if(approve){
                     if(PaymentAttemptService.pending(c,invoiceId)!=null)throw new IllegalArgumentException("Còn lần thu chưa đối soát; chưa thể hủy hóa đơn.");
                     if(invoice.daThu().signum()!=0)throw new IllegalArgumentException("Hóa đơn có khoản thu hợp lệ. Chưa có quy trình hoàn tiền nên chưa thể duyệt hủy.");

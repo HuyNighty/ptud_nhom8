@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.model.hoadon;
 
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -9,16 +11,16 @@ public final class ThongTinThanhToan {
     private final String maHoaDon;
     private final LocalDateTime thoiGian;
     private final BigDecimal soTien;
-    private final PhuongThuc phuongThuc;
+    private final PhuongThucThanhToan phuongThuc;
     private final String maGiaoDich;
     private final BigDecimal tienKhachDua;
-    private final TrangThai trangThai;
+    private final TrangThaiThanhToan trangThai;
     private final String maNhanVien;
     private final String maTaiKhoanHuy;
     private final LocalDateTime thoiGianHuy;
     private final String lyDoHuy;
 
-    public ThongTinThanhToan(String maThanhToan, String maHoaDon, LocalDateTime thoiGian, BigDecimal soTien, PhuongThuc phuongThuc, String maGiaoDich, BigDecimal tienKhachDua, TrangThai trangThai, String maNhanVien, String maTaiKhoanHuy, LocalDateTime thoiGianHuy, String lyDoHuy) {
+    public ThongTinThanhToan(String maThanhToan, String maHoaDon, LocalDateTime thoiGian, BigDecimal soTien, PhuongThucThanhToan phuongThuc, String maGiaoDich, BigDecimal tienKhachDua, TrangThaiThanhToan trangThai, String maNhanVien, String maTaiKhoanHuy, LocalDateTime thoiGianHuy, String lyDoHuy) {
         if (soTien == null || soTien.signum() <= 0 || soTien.stripTrailingZeros().scale() > 0
         || trangThai == null || phuongThuc == null) throw new IllegalArgumentException("Lần thu bất nhất.");
         this.maThanhToan = maThanhToan;
@@ -39,25 +41,17 @@ public final class ThongTinThanhToan {
     public String maHoaDon() { return maHoaDon; }
     public LocalDateTime thoiGian() { return thoiGian; }
     public BigDecimal soTien() { return soTien; }
-    public PhuongThuc phuongThuc() { return phuongThuc; }
+    public PhuongThucThanhToan phuongThuc() { return phuongThuc; }
     public String maGiaoDich() { return maGiaoDich; }
     public BigDecimal tienKhachDua() { return tienKhachDua; }
-    public TrangThai trangThai() { return trangThai; }
+    public TrangThaiThanhToan trangThai() { return trangThai; }
     public String maNhanVien() { return maNhanVien; }
     public String maTaiKhoanHuy() { return maTaiKhoanHuy; }
     public LocalDateTime thoiGianHuy() { return thoiGianHuy; }
     public String lyDoHuy() { return lyDoHuy; }
 
-    public enum TrangThai {
-        THANH_CONG, DA_HUY, DA_HOAN_TIEN;
-        @Override public String toString() { return switch(this){case THANH_CONG -> "Thành công";case DA_HUY -> "Hủy ghi nhận";case DA_HOAN_TIEN -> "Đã hoàn tiền";}; }
-    }
-    public enum PhuongThuc {
-        TIEN_MAT, CHUYEN_KHOAN, THE_POS;
-        @Override public String toString() {
-            return switch (this) { case TIEN_MAT -> "Tiền mặt"; case CHUYEN_KHOAN -> "Chuyển khoản"; case THE_POS -> "Thẻ POS"; };
-        }
-    }
+
+
 
 
     @Override

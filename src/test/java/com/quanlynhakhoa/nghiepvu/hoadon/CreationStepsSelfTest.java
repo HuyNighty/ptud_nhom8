@@ -9,7 +9,6 @@ import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.InvoiceCreationController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.InvoiceCreateDao;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoiceCreationDialog;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;

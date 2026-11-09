@@ -3,7 +3,6 @@ package com.quanlynhakhoa.model.hoadon;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.sql.*;
 import java.util.*;

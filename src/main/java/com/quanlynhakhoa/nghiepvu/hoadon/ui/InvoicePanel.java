@@ -1,5 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.CheDoXemHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
@@ -9,7 +12,6 @@ import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.InvoiceController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.ClinicalBillingSource;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceIdGenerator;
@@ -23,9 +25,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
-    public enum ViewMode { INVOICES, DEBTS, PAYMENTS }
+
     public interface PaymentNavigation { void open(String invoiceId); }
-    private final ViewMode mode;
+    private final CheDoXemHoaDon mode;
     private final DesktopSession session;
     private final ConnectionProvider connections;
     private PaymentNavigation paymentNavigation;
@@ -65,34 +67,34 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
 
     public InvoicePanel(DesktopSession session) { this(session, TeamDevConnection::open); }
     public InvoicePanel(DesktopSession session, ConnectionProvider connections) {
-        this(session, connections, ViewMode.INVOICES);
+        this(session, connections, CheDoXemHoaDon.INVOICES);
     }
-    public InvoicePanel(DesktopSession session, ConnectionProvider connections, ViewMode mode) {
+    public InvoicePanel(DesktopSession session, ConnectionProvider connections, CheDoXemHoaDon mode) {
         this(session, connections, new com.quanlynhakhoa.nghiepvu.hoadon.service.JdbcClinicalBillingSource(),
                 new com.quanlynhakhoa.nghiepvu.hoadon.service.RandomInvoiceIdGenerator(), mode);
     }
     public InvoicePanel(DesktopSession session, ConnectionProvider connections, ClinicalBillingSource source, InvoiceIdGenerator ids) {
-        this(session,connections,source,ids,ViewMode.INVOICES);
+        this(session,connections,source,ids,CheDoXemHoaDon.INVOICES);
     }
-    private InvoicePanel(DesktopSession session, ConnectionProvider connections, ClinicalBillingSource source, InvoiceIdGenerator ids, ViewMode mode) {
+    private InvoicePanel(DesktopSession session, ConnectionProvider connections, ClinicalBillingSource source, InvoiceIdGenerator ids, CheDoXemHoaDon mode) {
         this.session=session;this.connections=connections;this.mode=mode;
         new AuthorizationService(new RolePermissionPolicy()).require(session, Permission.BILLING_READ);
         canPay = new AuthorizationService(new RolePermissionPolicy()).can(session, Permission.BILLING_MANAGE);
         canRequestCancellation=new AuthorizationService(new RolePermissionPolicy()).can(session,Permission.INVOICE_CANCEL_REQUEST);
-        btnYeuCauHuy.setVisible(mode==ViewMode.INVOICES&&canRequestCancellation);
+        btnYeuCauHuy.setVisible(mode==CheDoXemHoaDon.INVOICES&&canRequestCancellation);
         btnYeuCauHuy.setEnabled(canRequestCancellation);
         canCreate = new AuthorizationService(new RolePermissionPolicy()).can(session, Permission.BILLING_MANAGE)
                 && source != null && ids != null;
         btnTaoHoaDon.setEnabled(canCreate);
-        btnTaoHoaDon.setVisible(mode==ViewMode.INVOICES);
-        btnThanhToan.setText(mode==ViewMode.DEBTS?"Thu nợ":"Thanh toán");btnThanhToan.setEnabled(canPay);
+        btnTaoHoaDon.setVisible(mode==CheDoXemHoaDon.INVOICES);
+        btnThanhToan.setText(mode==CheDoXemHoaDon.DEBTS?"Thu nợ":"Thanh toán");btnThanhToan.setEnabled(canPay);
         btnTaoHoaDon.setToolTipText(canCreate ? "Lập từ dịch vụ khám được phép tính phí" : "Chờ quyền BILLING_MANAGE, hợp đồng tính phí và bộ sinh mã được duyệt");
         setLayout(new BorderLayout(10, 10)); setBorder(BorderFactory.createEmptyBorder(24, 26, 24, 26));
         JPanel pnlTop = new JPanel(new BorderLayout(0, 8));
         JLabel lblTitle = new JLabel(switch(mode){case INVOICES -> "Hóa đơn";case DEBTS -> "Công nợ";case PAYMENTS -> "Thanh toán";});
         lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 22f)); pnlTop.add(lblTitle, BorderLayout.NORTH);
         cmbTrangThai.addItem("Tất cả");
-        for (InvoiceStatus value : InvoiceStatus.values()) cmbTrangThai.addItem(value);
+        for (TrangThaiHoaDon value : TrangThaiHoaDon.values()) cmbTrangThai.addItem(value);
         tblThanhToan.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         for (int column = 0; column < tblThanhToan.getColumnCount(); column++) {
             tblThanhToan.getColumnModel().getColumn(column).setPreferredWidth(column == 10 ? 260 : 150);
@@ -119,7 +121,7 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
         JPanel pnlBottom = new JPanel(new BorderLayout(0,6));
         JPanel pnlTotals = new JPanel(new GridLayout(1, 2, 12, 0));
         pnlTotals.add(BillingUi.card("Đã thu",lblDaThu)); pnlTotals.add(BillingUi.card("Còn phải thu",lblConNo));
-        if(mode==ViewMode.DEBTS)pnlTotals.add(lblTongCongNo);
+        if(mode==CheDoXemHoaDon.DEBTS)pnlTotals.add(lblTongCongNo);
         pnlBottom.add(pnlTotals,BorderLayout.NORTH);pnlBottom.add(lblCanhBao,BorderLayout.CENTER);
         JPanel paging=new JPanel(new FlowLayout(FlowLayout.RIGHT,8,0));paging.add(btnTrangTruoc);paging.add(lblTrang);paging.add(btnTrangSau);pnlBottom.add(paging,BorderLayout.EAST);
         pnlBottom.add(lblTrangThai,BorderLayout.SOUTH); add(pnlBottom, BorderLayout.SOUTH);
@@ -148,7 +150,7 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
         }
         java.util.List<LuaChonLapHoaDon> choices=new java.util.ArrayList<>();
         for(int row=0;row<paymentModel.getRowCount();row++){
-            if(paymentModel.getValueAt(row,6)==ThongTinThanhToan.TrangThai.THANH_CONG){
+            if(paymentModel.getValueAt(row,6)==TrangThaiThanhToan.THANH_CONG){
                 String id=String.valueOf(paymentModel.getValueAt(row,0));
                 choices.add(new LuaChonLapHoaDon(id,BillingUi.vnd((java.math.BigDecimal)paymentModel.getValueAt(row,2))+" · "+paymentModel.getValueAt(row,3)));
             }
@@ -177,16 +179,16 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
         new com.quanlynhakhoa.nghiepvu.hoadon.controller.CancellationRequestController(winRequest,session,new com.quanlynhakhoa.nghiepvu.hoadon.service.CancellationService(session,connections),id,new Runnable(){public void run(){status("Yêu cầu đã gửi; hóa đơn chưa bị hủy, chờ xét duyệt.");controller.load();}});
         winRequest.setVisible(true);
     }
-    public boolean outstandingOnly(){return mode!=ViewMode.INVOICES;}
+    public boolean outstandingOnly(){return mode!=CheDoXemHoaDon.INVOICES;}
     public void setPaymentNavigation(PaymentNavigation navigation){paymentNavigation=navigation;}
     public void paySelected(){
         String id=selectedId();if(id==null){status("Chọn một hóa đơn để thanh toán.");return;}
         if(!new AuthorizationService(new RolePermissionPolicy()).can(session,Permission.BILLING_MANAGE)){status("Không có quyền thu tiền.");return;}
-        if(paymentNavigation!=null&&mode!=ViewMode.PAYMENTS)paymentNavigation.open(id);else payInvoice(id);
+        if(paymentNavigation!=null&&mode!=CheDoXemHoaDon.PAYMENTS)paymentNavigation.open(id);else payInvoice(id);
     }
     public void payInvoice(String id){
         if(!new AuthorizationService(new RolePermissionPolicy()).can(session,Permission.BILLING_MANAGE)){status("Không có quyền thu tiền.");return;}
-        if(mode==ViewMode.PAYMENTS)controller.focusInvoice(id);
+        if(mode==CheDoXemHoaDon.PAYMENTS)controller.focusInvoice(id);
         PaymentDialog winPayment=new PaymentDialog(SwingUtilities.getWindowAncestor(this));
         new com.quanlynhakhoa.nghiepvu.hoadon.controller.PaymentController(winPayment,session,connections,id,new Runnable(){public void run(){controller.paymentSaved();}});
         winPayment.setVisible(true);
@@ -202,7 +204,7 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
     public String keyword() { return txtTuKhoa.getText(); }
     public String fromText() { return txtTuNgay.getText(); }
     public String toText() { return txtDenNgay.getText(); }
-    public InvoiceStatus statusFilter() { return cmbTrangThai.getSelectedItem() instanceof InvoiceStatus status ? status : null; }
+    public TrangThaiHoaDon statusFilter() { return cmbTrangThai.getSelectedItem() instanceof TrangThaiHoaDon status ? status : null; }
     public String selectedId() {
         int index = tblHoaDon.getSelectedRow();
         if (index < 0) return null;
@@ -259,7 +261,7 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
         btnTaoHoaDon.setEnabled(!busy && canCreate);
         updateActions();
     }
-    private void updateActions(){boolean valid=selectedDetail!=null&&selectedDetail.maHoaDon().equals(selectedId())&&selectedDetail.trangThai()!=InvoiceStatus.DA_HUY;btnThanhToan.setEnabled(!working&&valid&&canPay&&selectedDetail.conNo().signum()>0&&selectedDetail.canhBao().isEmpty());btnYeuCauHuy.setEnabled(!working&&valid&&canRequestCancellation&&selectedDetail.daThu().signum()==0&&!selectedDetail.cancellationPending());}
+    private void updateActions(){boolean valid=selectedDetail!=null&&selectedDetail.maHoaDon().equals(selectedId())&&selectedDetail.trangThai()!=TrangThaiHoaDon.DA_HUY;btnThanhToan.setEnabled(!working&&valid&&canPay&&selectedDetail.conNo().signum()>0&&selectedDetail.canhBao().isEmpty());btnYeuCauHuy.setEnabled(!working&&valid&&canRequestCancellation&&selectedDetail.daThu().signum()==0&&!selectedDetail.cancellationPending());}
     public void status(String text) { lblTrangThai.setVisible(!text.isBlank());lblTrangThai.setText(text);lblTrangThai.setToolTipText(text);BillingUi.tableState(tblHoaDon,text);if(invoiceModel.getRowCount()==0&&(text.startsWith("Chưa có hóa đơn")||text.startsWith("Không tìm thấy")))lblTrangThai.setText("Tìm kiếm hoặc tạo hóa đơn để tiếp tục."); }
     public void expired() { showRows(List.of()); setBusy(true); status("Phiên đã đăng xuất."); }
 }

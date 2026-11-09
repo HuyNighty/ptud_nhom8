@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import java.sql.*;
 import java.time.*;
@@ -16,7 +17,7 @@ public class CancellationDao {
             FROM dbo.YeuCauHuyHoaDon y
             JOIN dbo.HoaDon h ON h.maHoaDon=y.maHoaDon JOIN dbo.BenhNhan b ON b.maBenhNhan=h.maBenhNhan
             """;
-    public List<ThongTinYeuCauHuyHoaDon> find(Connection c,String text,LocalDate from,LocalDate to,ThongTinYeuCauHuyHoaDon.TrangThai status)throws SQLException {
+    public List<ThongTinYeuCauHuyHoaDon> find(Connection c,String text,LocalDate from,LocalDate to,TrangThaiYeuCauHuyHoaDon status)throws SQLException {
         try(PreparedStatement s=c.prepareStatement(QUERY+"""
                 WHERE (? = N'' OR CHARINDEX(?,y.maYeuCau)>0 OR CHARINDEX(?,y.maHoaDon)>0
                    OR CHARINDEX(?,h.maBenhNhan)>0 OR CHARINDEX(?,b.hoTen)>0 OR CHARINDEX(?,y.maTaiKhoanTao)>0)
@@ -90,7 +91,7 @@ public class CancellationDao {
     private static ThongTinYeuCauHuyHoaDon map(ResultSet r)throws SQLException {
         return new ThongTinYeuCauHuyHoaDon(r.getString("maYeuCau"),r.getString("maHoaDon"),r.getString("maBenhNhan"),r.getNString("hoTen"),
                 r.getBigDecimal("tongTien"),r.getBigDecimal("daThu"),r.getString("maTaiKhoanTao"),date(r,"thoiGianTao"),r.getNString("lyDo"),
-                ThongTinYeuCauHuyHoaDon.TrangThai.valueOf(r.getString("trangThai")),r.getString("maTaiKhoanDuyet"),date(r,"thoiGianDuyet"),r.getNString("lyDoDuyet"));
+                TrangThaiYeuCauHuyHoaDon.valueOf(r.getString("trangThai")),r.getString("maTaiKhoanDuyet"),date(r,"thoiGianDuyet"),r.getNString("lyDoDuyet"));
     }
     private static LocalDateTime date(ResultSet r,String column)throws SQLException{Timestamp value=r.getTimestamp(column);return value==null?null:value.toLocalDateTime();}
     private static void time(PreparedStatement s,int i,LocalDateTime value)throws SQLException{if(value==null)s.setNull(i,Types.TIMESTAMP);else s.setTimestamp(i,Timestamp.valueOf(value));}

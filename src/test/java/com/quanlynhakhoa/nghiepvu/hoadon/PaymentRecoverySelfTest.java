@@ -1,10 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.PaymentController;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.PendingPaymentStore;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentForm;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
@@ -20,7 +20,7 @@ import javax.swing.SwingUtilities;
 public final class PaymentRecoverySelfTest {
     private static void check(boolean value,String message){if(!value)throw new AssertionError(message);}
     private static YeuCauThanhToan request(String id){return new YeuCauThanhToan("H1",new BigDecimal("100"),List.of(
-            new PhanThanhToan(id,new BigDecimal("100"),ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,new BigDecimal("200"))),false);}
+            new PhanThanhToan(id,new BigDecimal("100"),PhuongThucThanhToan.TIEN_MAT,null,new BigDecimal("200"))),false);}
     private static FeatureJdbcDouble fixture(String paymentId,int paid){
         FeatureJdbcDouble db=new FeatureJdbcDouble();Map<String,Object> header=new HashMap<>();
         header.put("maHoaDon","H1");header.put("maNhanVien","NV1");header.put("maBenhNhan","BN1");header.put("tenBenhNhan","Fixture");

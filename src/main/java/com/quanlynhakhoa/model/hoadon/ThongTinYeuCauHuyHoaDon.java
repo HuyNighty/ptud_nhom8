@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.model.hoadon;
 
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -14,12 +15,12 @@ public final class ThongTinYeuCauHuyHoaDon {
     private final String maTaiKhoanTao;
     private final LocalDateTime thoiGianTao;
     private final String lyDo;
-    private final TrangThai trangThai;
+    private final TrangThaiYeuCauHuyHoaDon trangThai;
     private final String maTaiKhoanDuyet;
     private final LocalDateTime thoiGianDuyet;
     private final String lyDoDuyet;
 
-    public ThongTinYeuCauHuyHoaDon(String maYeuCau, String maHoaDon, String maBenhNhan, String tenBenhNhan, BigDecimal tongTien, BigDecimal daThu, String maTaiKhoanTao, LocalDateTime thoiGianTao, String lyDo, TrangThai trangThai, String maTaiKhoanDuyet, LocalDateTime thoiGianDuyet, String lyDoDuyet) {
+    public ThongTinYeuCauHuyHoaDon(String maYeuCau, String maHoaDon, String maBenhNhan, String tenBenhNhan, BigDecimal tongTien, BigDecimal daThu, String maTaiKhoanTao, LocalDateTime thoiGianTao, String lyDo, TrangThaiYeuCauHuyHoaDon trangThai, String maTaiKhoanDuyet, LocalDateTime thoiGianDuyet, String lyDoDuyet) {
         this.maYeuCau = maYeuCau;
         this.maHoaDon = maHoaDon;
         this.maBenhNhan = maBenhNhan;
@@ -44,16 +45,12 @@ public final class ThongTinYeuCauHuyHoaDon {
     public String maTaiKhoanTao() { return maTaiKhoanTao; }
     public LocalDateTime thoiGianTao() { return thoiGianTao; }
     public String lyDo() { return lyDo; }
-    public TrangThai trangThai() { return trangThai; }
+    public TrangThaiYeuCauHuyHoaDon trangThai() { return trangThai; }
     public String maTaiKhoanDuyet() { return maTaiKhoanDuyet; }
     public LocalDateTime thoiGianDuyet() { return thoiGianDuyet; }
     public String lyDoDuyet() { return lyDoDuyet; }
 
-    public enum TrangThai {
-        CHO_DUYET("Chờ duyệt"),DA_DUYET("Đã duyệt"),TU_CHOI("Từ chối");
-        private final String label;TrangThai(String label){this.label=label;}
-        @Override public String toString(){return label;}
-    }
+
     public BigDecimal conNo(){return tongTien.subtract(daThu);}
 
     @Override

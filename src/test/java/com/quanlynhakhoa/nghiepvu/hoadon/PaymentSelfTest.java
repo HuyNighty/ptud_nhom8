@@ -1,11 +1,13 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.*;
@@ -18,17 +20,17 @@ import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;
 /** Protocol/transaction tests with a JDBC double. Real SQL concurrency still requires approved grants. */
 public final class PaymentSelfTest {
     private static BigDecimal m(String n){return new BigDecimal(n);}
-    private static ThongTinHoaDon invoice(String total,String paid,InvoiceStatus status){return new ThongTinHoaDon("H1","NV1","BN1","Synthetic",null,LocalDateTime.now(),status,m(total),m(paid),BigDecimal.ZERO);}
-    private static YeuCauThanhToan cash(String id,String amount){return new YeuCauThanhToan("H1",m(amount),List.of(new PhanThanhToan(id,m(amount),ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,m(amount))),false);}
+    private static ThongTinHoaDon invoice(String total,String paid,TrangThaiHoaDon status){return new ThongTinHoaDon("H1","NV1","BN1","Synthetic",null,LocalDateTime.now(),status,m(total),m(paid),BigDecimal.ZERO);}
+    private static YeuCauThanhToan cash(String id,String amount){return new YeuCauThanhToan("H1",m(amount),List.of(new PhanThanhToan(id,m(amount),PhuongThucThanhToan.TIEN_MAT,null,m(amount))),false);}
     private static class Invoices extends InvoiceDao {
-        ThongTinHoaDon current=invoice("300","0",InvoiceStatus.CHUA_THANH_TOAN);
+        ThongTinHoaDon current=invoice("300","0",TrangThaiHoaDon.CHUA_THANH_TOAN);
         @Override public ThongTinHoaDon getForPayment(Connection c,String id){return current;}
     }
     private static class Accounts extends InvoiceCreateDao {
         @Override public String employee(Connection c,String account){check("TST_ACC".equals(account),"authenticated account used");return "NV1";}
     }
     private static class Dao extends PaymentDao {
-        Map<String,ThongTinThanhToan> existing=new HashMap<>();boolean failInsert,duplicateReference,pendingCancellation;int inserts;InvoiceStatus nextStatus;
+        Map<String,ThongTinThanhToan> existing=new HashMap<>();boolean failInsert,duplicateReference,pendingCancellation;int inserts;TrangThaiHoaDon nextStatus;
         @Override public void requirePermissions(Connection c){ }
         @Override public void lockInvoice(Connection c,String id){check("H1".equals(id),"locks selected invoice");}
         @Override public ThongTinThanhToan existing(Connection c,String id){return existing.get(id);}
@@ -37,32 +39,32 @@ public final class PaymentSelfTest {
         @Override public void insert(Connection c,String invoice,String employee,PhanThanhToan part)throws SQLException {
             if(failInsert&&++inserts==1)throw new SQLException("second part failed");super.insert(c,invoice,employee,part);
         }
-        @Override public void updateStatus(Connection c,String id,InvoiceStatus status)throws SQLException{nextStatus=status;super.updateStatus(c,id,status);}
+        @Override public void updateStatus(Connection c,String id,TrangThaiHoaDon status)throws SQLException{nextStatus=status;super.updateStatus(c,id,status);}
     }
     public static void main(String[] args)throws Exception {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final Dao dao=new Dao();final Invoices invoices=new Invoices();final DesktopSession principal=session(Role.RECEPTIONIST);
         final PaymentService service=new PaymentService(principal,jdbc,dao,invoices,new Accounts(),new PaymentService.Attempts(){public void reserve(YeuCauThanhToan request){} public void complete(Connection c,YeuCauThanhToan request,String account){}});
         check(!service.pendingCancellation("H1"),"read-only pending cancellation check available to cashier");
-        final YeuCauThanhToan mixed=new YeuCauThanhToan("H1",m("100"),List.of(new PhanThanhToan("P2",m("100"),ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN,"BANK001",null)),true);
-        final YeuCauThanhToan combined=new YeuCauThanhToan("H1",m("100"),List.of(new PhanThanhToan("P1",m("40"),ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,m("50")),new PhanThanhToan("P2",m("60"),ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN,"BANK001",null)),true);
+        final YeuCauThanhToan mixed=new YeuCauThanhToan("H1",m("100"),List.of(new PhanThanhToan("P2",m("100"),PhuongThucThanhToan.CHUYEN_KHOAN,"BANK001",null)),true);
+        final YeuCauThanhToan combined=new YeuCauThanhToan("H1",m("100"),List.of(new PhanThanhToan("P1",m("40"),PhuongThucThanhToan.TIEN_MAT,null,m("50")),new PhanThanhToan("P2",m("60"),PhuongThucThanhToan.CHUYEN_KHOAN,"BANK001",null)),true);
         int initialOpens=jdbc.opens;
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{service.collect(combined);}});
         check(jdbc.opens==initialOpens,"combined method rejected before opening connection");
         service.collect(mixed);
         check(jdbc.persisted.size()==2&&jdbc.audits.size()==1&&jdbc.commits==1,"one method, invoice status, audit committed together");
-        check(dao.nextStatus==InvoiceStatus.THANH_TOAN_MOT_PHAN,"partial payment retains debt");
+        check(dao.nextStatus==TrangThaiHoaDon.THANH_TOAN_MOT_PHAN,"partial payment retains debt");
         check(jdbc.persisted.get(0).get(3).equals(m("100")),"single bank amount stored");
         check(jdbc.persisted.get(0).get(7).equals("NV1"),"cashier derived from account");
-        for(PhanThanhToan part:mixed.parts())dao.existing.put(part.id(),new ThongTinThanhToan(part.id(),"H1",LocalDateTime.now(),part.amount(),part.method(),part.reference(),part.customerTender(),ThongTinThanhToan.TrangThai.THANH_CONG,"NV1",null,null,null));
+        for(PhanThanhToan part:mixed.parts())dao.existing.put(part.id(),new ThongTinThanhToan(part.id(),"H1",LocalDateTime.now(),part.amount(),part.method(),part.reference(),part.customerTender(),TrangThaiThanhToan.THANH_CONG,"NV1",null,null,null));
         int written=jdbc.updates;service.collect(mixed);check(jdbc.updates==written,"same confirmed request is idempotent");dao.existing.clear();
-        invoices.current=invoice("300","100",InvoiceStatus.THANH_TOAN_MOT_PHAN);service.collect(cash("P3","200"));
-        check(dao.nextStatus==InvoiceStatus.DA_THANH_TOAN,"full collection marks invoice paid");
-        check(DebtService.outstanding(List.of(invoice("300","300",InvoiceStatus.DA_THANH_TOAN),invoice("300","0",InvoiceStatus.DA_HUY),invoice("300","100",InvoiceStatus.THANH_TOAN_MOT_PHAN))).size()==1,"debt projection excludes paid and cancelled invoices");
-        invoices.current=invoice("300","250",InvoiceStatus.THANH_TOAN_MOT_PHAN);
+        invoices.current=invoice("300","100",TrangThaiHoaDon.THANH_TOAN_MOT_PHAN);service.collect(cash("P3","200"));
+        check(dao.nextStatus==TrangThaiHoaDon.DA_THANH_TOAN,"full collection marks invoice paid");
+        check(DebtService.outstanding(List.of(invoice("300","300",TrangThaiHoaDon.DA_THANH_TOAN),invoice("300","0",TrangThaiHoaDon.DA_HUY),invoice("300","100",TrangThaiHoaDon.THANH_TOAN_MOT_PHAN))).size()==1,"debt projection excludes paid and cancelled invoices");
+        invoices.current=invoice("300","250",TrangThaiHoaDon.THANH_TOAN_MOT_PHAN);
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{service.collect(cash("OVER","100"));}});
-        invoices.current=invoice("300","0",InvoiceStatus.DA_HUY);
+        invoices.current=invoice("300","0",TrangThaiHoaDon.DA_HUY);
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{service.collect(cash("CANCEL","100"));}});
-        invoices.current=invoice("300","0",InvoiceStatus.CHUA_THANH_TOAN);
+        invoices.current=invoice("300","0",TrangThaiHoaDon.CHUA_THANH_TOAN);
         int persisted=jdbc.persisted.size();dao.failInsert=true;
         expect(SQLException.class,new Action(){public void run()throws Exception{service.collect(mixed);}});
         check(jdbc.persisted.size()==persisted,"failed payment insert rolls back transaction");dao.failInsert=false;

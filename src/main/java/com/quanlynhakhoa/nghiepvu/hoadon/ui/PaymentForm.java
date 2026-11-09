@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
+import com.quanlynhakhoa.enums.PhuongThucNhapThanhToan;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
@@ -11,14 +13,9 @@ import javax.swing.event.*;
 
 /** Shared collection form. UI previews never replace transaction validation in PaymentService. */
 public final class PaymentForm extends JPanel {
-    public enum Method {
-        CASH("Tiền mặt"), BANK("Chuyển khoản");
-        private final String label;
-        Method(String label){this.label=label;}
-        @Override public String toString(){return label;}
-    }
+
     public final JTextField txtSoTien=new JTextField(),txtTienMat=new JTextField("0"),txtChuyenKhoan=new JTextField("0"),txtKhachDua=new JTextField(),txtMaGiaoDich=new JTextField();
-    public final JComboBox<Method> cmbPhuongThuc=new JComboBox<>(Method.values());
+    public final JComboBox<PhuongThucNhapThanhToan> cmbPhuongThuc=new JComboBox<>(PhuongThucNhapThanhToan.values());
     public final JCheckBox chkDaNhanChuyenKhoan=new JCheckBox("<html>Đã kiểm tra và nhận đủ tiền chuyển khoản</html>");
     public final JButton btnThuTien=new JButton("Xác nhận thu tiền"),btnThuHet=new JButton("Thu hết còn nợ"),btnKiemTra=new JButton("Kiểm tra kết quả lần thu"),btnThuLai=new JButton("Xác nhận lại lần thu này");
     public final JLabel lblTrangThai=new JLabel("Tìm và chọn hóa đơn còn nợ để bắt đầu thu tiền.");
@@ -62,28 +59,28 @@ public final class PaymentForm extends JPanel {
         btnThuHet.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(outstanding!=null&&mayCollect)txtSoTien.setText(BillingUi.moneyText(outstanding));}});
         busy(false,false,false);BillingUi.style(this);updateControls();
     }
-    private Method method(){return (Method)cmbPhuongThuc.getSelectedItem();}
+    private PhuongThucNhapThanhToan method(){return (PhuongThucNhapThanhToan)cmbPhuongThuc.getSelectedItem();}
     private void amountChanged(){if(synchronizing)return;allocate();preview();}
     private void allocate(){
         if(synchronizing)return;
         synchronizing=true;
         try{
             String amount=txtSoTien.getText().isBlank()?"0":txtSoTien.getText();
-            if(method()==Method.CASH){txtTienMat.setText(amount);txtChuyenKhoan.setText("0");}
-            else if(method()==Method.BANK){txtTienMat.setText("0");txtChuyenKhoan.setText(amount);}
+            if(method()==PhuongThucNhapThanhToan.CASH){txtTienMat.setText(amount);txtChuyenKhoan.setText("0");}
+            else if(method()==PhuongThucNhapThanhToan.BANK){txtTienMat.setText("0");txtChuyenKhoan.setText(amount);}
         }finally{synchronizing=false;}
     }
     private BigDecimal moneyOrZero(JTextField input){return input.getText().isBlank()?BigDecimal.ZERO:BillingUi.moneyInput(input.getText());}
-    public BigDecimal cashAmount(){return method()==Method.BANK?BigDecimal.ZERO:BillingUi.moneyInput(txtTienMat.getText());}
-    public BigDecimal bankAmount(){return method()==Method.CASH?BigDecimal.ZERO:BillingUi.moneyInput(txtChuyenKhoan.getText());}
+    public BigDecimal cashAmount(){return method()==PhuongThucNhapThanhToan.BANK?BigDecimal.ZERO:BillingUi.moneyInput(txtTienMat.getText());}
+    public BigDecimal bankAmount(){return method()==PhuongThucNhapThanhToan.CASH?BigDecimal.ZERO:BillingUi.moneyInput(txtChuyenKhoan.getText());}
     private void preview(){
         if(synchronizing)return;
         try{
-            BigDecimal bank=method()==Method.CASH?BigDecimal.ZERO:moneyOrZero(txtChuyenKhoan);
+            BigDecimal bank=method()==PhuongThucNhapThanhToan.CASH?BigDecimal.ZERO:moneyOrZero(txtChuyenKhoan);
             if(lastBank==null||lastBank.compareTo(bank)!=0)chkDaNhanChuyenKhoan.setSelected(false);lastBank=bank;
-            chkDaNhanChuyenKhoan.setVisible(method()!=Method.CASH&&bank.signum()>0);
+            chkDaNhanChuyenKhoan.setVisible(method()!=PhuongThucNhapThanhToan.CASH&&bank.signum()>0);
             if(outstanding==null){lblPhanBo.setText("Tổng phân bổ: —");lblNoSauThu.setText("Còn nợ sau thu: —");lblTienThua.setText("Tiền thừa trả khách: —");return;}
-            BigDecimal amount=moneyOrZero(txtSoTien),cash=method()==Method.BANK?BigDecimal.ZERO:moneyOrZero(txtTienMat);
+            BigDecimal amount=moneyOrZero(txtSoTien),cash=method()==PhuongThucNhapThanhToan.BANK?BigDecimal.ZERO:moneyOrZero(txtTienMat);
             BigDecimal allocated=cash.add(bank);
             lblPhanBo.setText("Tổng phân bổ: "+BillingUi.vnd(allocated)+(allocated.compareTo(amount)==0?" · Khớp":" · Chưa khớp"));
             lblNoSauThu.setText(amount.compareTo(outstanding)>0?"Số tiền thu vượt khoản còn nợ.":"Còn nợ sau thu: "+BillingUi.vnd(outstanding.subtract(amount)));
@@ -95,17 +92,17 @@ public final class PaymentForm extends JPanel {
     private void updateControls(){
         boolean enabled=!busy&&!uncertain&&mayCollect&&collectionContextAllowed;
         for(Component control:new Component[]{txtSoTien,cmbPhuongThuc,txtTienMat,txtChuyenKhoan,txtKhachDua,txtMaGiaoDich,chkDaNhanChuyenKhoan,btnThuHet})control.setEnabled(enabled);
-        boolean cash=method()!=Method.BANK,bank=method()!=Method.CASH;
+        boolean cash=method()!=PhuongThucNhapThanhToan.BANK,bank=method()!=PhuongThucNhapThanhToan.CASH;
         pnlCash.setVisible(cash);pnlTender.setVisible(cash);pnlBank.setVisible(bank);pnlReference.setVisible(bank);lblTienThua.setVisible(cash);
         txtTienMat.setEditable(false);txtChuyenKhoan.setEditable(false);
         btnThuTien.setEnabled(enabled);btnKiemTra.setEnabled(!busy&&uncertain);btnThuLai.setVisible(retryAllowed);btnThuLai.setEnabled(!busy&&uncertain&&retryAllowed);((CardLayout)pnlActions.getLayout()).show(pnlActions,uncertain?"verify":"collect");
         if(!bank)chkDaNhanChuyenKhoan.setVisible(false);revalidate();repaint();
     }
     public void restoreRequest(YeuCauThanhToan request){
-        var part=request.parts().getFirst();boolean bank=part.method()==ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN;
+        var part=request.parts().getFirst();boolean bank=part.method()==PhuongThucThanhToan.CHUYEN_KHOAN;
         synchronizing=true;
         try{
-            cmbPhuongThuc.setSelectedItem(bank?Method.BANK:Method.CASH);
+            cmbPhuongThuc.setSelectedItem(bank?PhuongThucNhapThanhToan.BANK:PhuongThucNhapThanhToan.CASH);
             txtSoTien.setText(BillingUi.moneyText(request.amount()));
             txtTienMat.setText(bank?"0":BillingUi.moneyText(part.amount()));
             txtChuyenKhoan.setText(bank?BillingUi.moneyText(part.amount()):"0");

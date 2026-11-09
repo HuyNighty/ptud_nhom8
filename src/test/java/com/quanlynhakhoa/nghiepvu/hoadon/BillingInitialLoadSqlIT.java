@@ -1,12 +1,13 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.InvoiceDao;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.CancellationDao;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.DebtService;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
@@ -56,14 +57,14 @@ public final class BillingInitialLoadSqlIT {
                 for (var request : requests) {
                     if (!request.maHoaDon().equals(invoice.maHoaDon())) continue;
                     if (latest == null
-                            || (request.trangThai() == ThongTinYeuCauHuyHoaDon.TrangThai.CHO_DUYET
-                                && latest.trangThai() != ThongTinYeuCauHuyHoaDon.TrangThai.CHO_DUYET)
+                            || (request.trangThai() == TrangThaiYeuCauHuyHoaDon.CHO_DUYET
+                                && latest.trangThai() != TrangThaiYeuCauHuyHoaDon.CHO_DUYET)
                             || (request.trangThai() == latest.trangThai()
                                 && (request.thoiGianTao().isAfter(latest.thoiGianTao())
                                     || (request.thoiGianTao().equals(latest.thoiGianTao())
                                         && request.maYeuCau().compareTo(latest.maYeuCau()) > 0)))
-                            || (request.trangThai() != ThongTinYeuCauHuyHoaDon.TrangThai.CHO_DUYET
-                                && latest.trangThai() != ThongTinYeuCauHuyHoaDon.TrangThai.CHO_DUYET
+                            || (request.trangThai() != TrangThaiYeuCauHuyHoaDon.CHO_DUYET
+                                && latest.trangThai() != TrangThaiYeuCauHuyHoaDon.CHO_DUYET
                                 && request.thoiGianTao().isAfter(latest.thoiGianTao()))) latest = request;
                 }
                 check(invoice.cancellationStatus() == (latest == null ? null : latest.trangThai()),
@@ -72,7 +73,7 @@ public final class BillingInitialLoadSqlIT {
             try (ResultSet r = s.executeQuery("SELECT COUNT(*) FROM dbo.YeuCauHuyHoaDon")) {
                 r.next(); check(expectedRequests == r.getInt(1), "empty cancellation search returns all requests");
             }
-            for (ThongTinYeuCauHuyHoaDon.TrangThai status : ThongTinYeuCauHuyHoaDon.TrangThai.values()) {
+            for (TrangThaiYeuCauHuyHoaDon status : TrangThaiYeuCauHuyHoaDon.values()) {
                 int count = 0;
                 for (var request : requests) if (request.trangThai() == status) count++;
                 check(cancellations.find(c, "", null, null, status).size() == count, "cancellation status filter");
@@ -92,7 +93,7 @@ public final class BillingInitialLoadSqlIT {
             for (ThongTinHoaDon invoice : filtered) check(invoice.maHoaDon().contains(id)
                     || invoice.maBenhNhan().contains(id) || invoice.tenBenhNhan().contains(id), "search filters rows");
             check(dao.find(c, "NO_MATCH_TEST_123456789", null, null, null).isEmpty(), "unmatched search empty");
-            for (InvoiceStatus status : InvoiceStatus.values()) {
+            for (TrangThaiHoaDon status : TrangThaiHoaDon.values()) {
                 int expected = 0;
                 for (ThongTinHoaDon invoice : all) if (invoice.trangThai() == status) expected++;
                 check(dao.find(c, "", null, null, status).size() == expected, "status filter with empty keyword");
@@ -153,7 +154,7 @@ public final class BillingInitialLoadSqlIT {
                     }
                     invoices[0].clearDetail();
                     check(historyTable.getRowCount() == 0, "history clears when changing invoice");
-                    if (invoice.trangThai() == InvoiceStatus.DA_HUY)
+                    if (invoice.trangThai() == TrangThaiHoaDon.DA_HUY)
                         check(((java.math.BigDecimal) table.getModel().getValueAt(row, 7)).signum() == 0,
                                 "cancelled invoice displays zero receivable");
                 }

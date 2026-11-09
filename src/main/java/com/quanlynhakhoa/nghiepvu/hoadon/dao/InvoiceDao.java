@@ -1,11 +1,14 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,15 +41,15 @@ public class InvoiceDao {
             """;
 
     public List<ThongTinHoaDon> find(Connection connection, String keyword, LocalDate from, LocalDate to,
-                             InvoiceStatus status) throws SQLException {
+                             TrangThaiHoaDon status) throws SQLException {
         return findPage(connection,keyword,from,to,status,0,0);
     }
     public List<ThongTinHoaDon> findPage(Connection connection,String keyword,LocalDate from,LocalDate to,
-                                  InvoiceStatus status,int offset,int limit)throws SQLException {
+                                  TrangThaiHoaDon status,int offset,int limit)throws SQLException {
         return findPage(connection,keyword,from,to,status,offset,limit,false);
     }
     public List<ThongTinHoaDon> findPage(Connection connection,String keyword,LocalDate from,LocalDate to,
-                                  InvoiceStatus status,int offset,int limit,boolean outstandingOnly)throws SQLException {
+                                  TrangThaiHoaDon status,int offset,int limit,boolean outstandingOnly)throws SQLException {
         if(offset<0||limit<0||limit>201)throw new IllegalArgumentException("Invalid page");
         String sql = LEDGER + """
                 WHERE (? = N'' OR CHARINDEX(?,maHoaDon)>0 OR CHARINDEX(?,maBenhNhan)>0 OR CHARINDEX(?,tenBenhNhan + N' ' + soDienThoai)>0)
@@ -161,8 +164,8 @@ public class InvoiceDao {
             try (ResultSet rows = statement.executeQuery()) {
                 while (rows.next()) result.add(new ThongTinThanhToan(rows.getString("maThanhToan"), rows.getString("maHoaDon"),
                         time(rows, "thoiGian"), rows.getBigDecimal("soTien"),
-                        ThongTinThanhToan.PhuongThuc.valueOf(rows.getString("phuongThuc")), rows.getString("maGiaoDich"),
-                        rows.getBigDecimal("tienKhachDua"), ThongTinThanhToan.TrangThai.valueOf(rows.getString("trangThai")),
+                        PhuongThucThanhToan.valueOf(rows.getString("phuongThuc")), rows.getString("maGiaoDich"),
+                        rows.getBigDecimal("tienKhachDua"), TrangThaiThanhToan.valueOf(rows.getString("trangThai")),
                         rows.getString("maNhanVien"), rows.getString("maTaiKhoanHuy"), time(rows, "thoiGianHuy"),
                         rows.getNString("lyDoHuy")));
             }
@@ -173,10 +176,10 @@ public class InvoiceDao {
     private static ThongTinHoaDon map(ResultSet rows) throws SQLException {
         return new ThongTinHoaDon(rows.getString("maHoaDon"), rows.getString("maNhanVien"), rows.getString("maBenhNhan"),
                 rows.getNString("tenBenhNhan"), rows.getString("maPhieuKham"), time(rows, "ngayLap"),
-                InvoiceStatus.valueOf(rows.getString("trangThai")), rows.getBigDecimal("tongTien"),
+                TrangThaiHoaDon.valueOf(rows.getString("trangThai")), rows.getBigDecimal("tongTien"),
                 rows.getBigDecimal("daThu"), rows.getBigDecimal("congNoBenhNhan"),
                 rows.getString("cancellationStatus") == null ? null
-                        : ThongTinYeuCauHuyHoaDon.TrangThai.valueOf(rows.getString("cancellationStatus")));
+                        : TrangThaiYeuCauHuyHoaDon.valueOf(rows.getString("cancellationStatus")));
     }
     private static LocalDateTime time(ResultSet rows, String column) throws SQLException {
         Timestamp value = rows.getTimestamp(column);

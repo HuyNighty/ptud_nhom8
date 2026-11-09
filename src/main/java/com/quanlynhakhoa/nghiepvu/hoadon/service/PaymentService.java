@@ -1,11 +1,13 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -59,15 +61,15 @@ public final class PaymentService {
                     attempts.complete(c,request,session.accountId());authorization.requireCurrent(session,Permission.BILLING_MANAGE,c);require();c.commit();committed=true;
                 } else {
                     ThongTinHoaDon invoice=invoices.getForPayment(c,request.invoiceId());
-                    if(invoice==null||invoice.trangThai()==InvoiceStatus.DA_HUY)throw new IllegalArgumentException("Không được thu trên hóa đơn đã hủy/không tồn tại.");
+                    if(invoice==null||invoice.trangThai()==TrangThaiHoaDon.DA_HUY)throw new IllegalArgumentException("Không được thu trên hóa đơn đã hủy/không tồn tại.");
                     if(invoice.conNo().signum()<=0||!invoice.canhBao().isEmpty())throw new IllegalArgumentException("Hóa đơn đã hết nợ hoặc dữ liệu cần đối soát.");
                     if(request.amount().compareTo(invoice.conNo())>0)throw new IllegalArgumentException("Số tiền thu vượt số còn nợ hiện tại.");
                     dao.requireNoPendingCancellation(c,request.invoiceId());
                     for(PhanThanhToan part:request.parts()) {
-                        if(part.method()==ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN)dao.requireNewTransferReference(c,part.reference());
+                        if(part.method()==PhuongThucThanhToan.CHUYEN_KHOAN)dao.requireNewTransferReference(c,part.reference());
                         dao.insert(c,request.invoiceId(),employee,part);
                     }
-                    InvoiceStatus status=request.amount().compareTo(invoice.conNo())==0?InvoiceStatus.DA_THANH_TOAN:InvoiceStatus.THANH_TOAN_MOT_PHAN;
+                    TrangThaiHoaDon status=request.amount().compareTo(invoice.conNo())==0?TrangThaiHoaDon.DA_THANH_TOAN:TrangThaiHoaDon.THANH_TOAN_MOT_PHAN;
                     dao.updateStatus(c,request.invoiceId(),status);dao.audit(c,session.accountId(),request.invoiceId());
                     attempts.complete(c,request,session.accountId());authorization.requireCurrent(session,Permission.BILLING_MANAGE,c);require();c.commit();committed=true;
                 }
@@ -84,7 +86,7 @@ public final class PaymentService {
     private void require(){authorization.require(session,Permission.BILLING_MANAGE);}
     private static boolean equalMoney(BigDecimal a,BigDecimal b){return a==null?b==null:b!=null&&a.compareTo(b)==0;}
     static boolean matches(ThongTinThanhToan prior,String invoice,String employee,PhanThanhToan part) {
-        return invoice.equals(prior.maHoaDon())&&employee.equals(prior.maNhanVien())&&prior.trangThai()==ThongTinThanhToan.TrangThai.THANH_CONG
+        return invoice.equals(prior.maHoaDon())&&employee.equals(prior.maNhanVien())&&prior.trangThai()==TrangThaiThanhToan.THANH_CONG
                 &&prior.phuongThuc()==part.method()&&equalMoney(prior.soTien(),part.amount())
                 &&Objects.equals(prior.maGiaoDich(),part.reference())&&equalMoney(prior.tienKhachDua(),part.customerTender());
     }
@@ -92,14 +94,14 @@ public final class PaymentService {
         Objects.requireNonNull(request,"Khoản thu");key(request.invoiceId());
         if(request.amount()==null||request.amount().signum()<=0||request.amount().stripTrailingZeros().scale()>0)throw new IllegalArgumentException("Số tiền thu phải là VND nguyên lớn hơn 0.");
         if(request.parts().size()!=1)throw new IllegalArgumentException("Mỗi lần thu chỉ chọn tiền mặt hoặc chuyển khoản.");
-        BigDecimal total=BigDecimal.ZERO;Set<String> ids=new HashSet<>();Set<ThongTinThanhToan.PhuongThuc> methods=new HashSet<>();
+        BigDecimal total=BigDecimal.ZERO;Set<String> ids=new HashSet<>();Set<PhuongThucThanhToan> methods=new HashSet<>();
         for(PhanThanhToan part:request.parts()) {
             key(part.id());money(part.amount(),true);
             if(!ids.add(part.id())||!methods.add(part.method()))throw new IllegalArgumentException("Trùng mã lần thu hoặc phương thức.");
-            if(part.method()==ThongTinThanhToan.PhuongThuc.TIEN_MAT){
+            if(part.method()==PhuongThucThanhToan.TIEN_MAT){
                 money(part.customerTender(),false);if(part.customerTender().compareTo(part.amount())<0)throw new IllegalArgumentException("Tiền khách đưa chưa đủ phần tiền mặt.");
                 if(part.reference()!=null)throw new IllegalArgumentException("Tiền mặt không có mã chuyển khoản.");
-            }else if(part.method()==ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN){
+            }else if(part.method()==PhuongThucThanhToan.CHUYEN_KHOAN){
                 if(!request.transferConfirmed())throw new IllegalArgumentException("Cần xác nhận đã nhận chuyển khoản thực tế.");
                 String ref=part.reference();if(ref==null||ref.isBlank()||ref.length()>50||!ref.equals(ref.trim()))throw new IllegalArgumentException("Mã giao dịch chuyển khoản cần 1–50 ký tự.");
                 for(char ch:ref.toCharArray())if(ch<33||ch>126)throw new IllegalArgumentException("Mã giao dịch chỉ dùng ASCII không khoảng trắng.");
