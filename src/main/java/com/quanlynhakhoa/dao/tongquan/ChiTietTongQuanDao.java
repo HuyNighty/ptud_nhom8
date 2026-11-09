@@ -6,7 +6,6 @@ import java.sql.*;
 import java.time.*;
 import java.math.BigDecimal;
 import java.util.*;
-import com.quanlynhakhoa.service.tongquan.TongQuanService.*;
 
 /** Bounded, read-only queries for the overview. */
 public final class ChiTietTongQuanDao {

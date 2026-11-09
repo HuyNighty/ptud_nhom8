@@ -26,6 +26,16 @@ public final class LayeredArchitectureSelfTest {
                 boolean orchestration=path.contains("/service/")||path.contains("/controller/")||path.contains("/view/");
                 boolean dao=path.contains("/dao/")&&callerOwned.contains(Path.of(path).getFileName().toString());
                 new TreePathScanner<Void,Void>() {
+                    public Void visitImport(ImportTree node,Void unused) {
+                        if(path.contains("/dao/")) {
+                            String imported=node.getQualifiedIdentifier().toString();
+                            check(!imported.startsWith("com.quanlynhakhoa.service.")
+                                            && !imported.startsWith("com.quanlynhakhoa.controller.")
+                                            && !imported.startsWith("com.quanlynhakhoa.view."),
+                                    "DAO depends on an orchestration layer: "+path+" / "+imported);
+                        }
+                        return super.visitImport(node,unused);
+                    }
                     public Void visitMethodInvocation(MethodInvocationTree node,Void unused) {
                         String name=node.getMethodSelect() instanceof MemberSelectTree member
                                 ?member.getIdentifier().toString():node.getMethodSelect().toString();
