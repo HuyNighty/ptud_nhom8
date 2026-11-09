@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.nhanvien;
 
 import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -36,7 +36,7 @@ public final class EmployeeCreateSelfTest {
     }
 
     private static DesktopSession session(VaiTroHeThong role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
 
     private static YeuCauTaoNhanVien good() {

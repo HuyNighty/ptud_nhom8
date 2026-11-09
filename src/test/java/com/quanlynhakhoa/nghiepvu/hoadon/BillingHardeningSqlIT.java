@@ -13,7 +13,7 @@ import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.dieutri.dao.TreatmentPlanDao;
 import com.quanlynhakhoa.hethong.phanquyen.*;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.*;
 import java.nio.file.Files;
@@ -31,7 +31,7 @@ public final class BillingHardeningSqlIT {
     private static void denied(Action a,String label)throws Exception{boolean rejected=false;try{a.run();}catch(IllegalArgumentException|AccessDeniedException expected){rejected=true;}check(rejected,label);}
     private static void sql(String text)throws Exception{try(Connection c=connections.open();Statement s=c.createStatement()){s.executeUpdate(text);}}
     private static BigDecimal scalar(String text)throws Exception{try(Connection c=connections.open();Statement s=c.createStatement();ResultSet r=s.executeQuery(text)){r.next();return r.getBigDecimal(1);}}
-    private static DesktopSession session(String account,VaiTroHeThong role){var s=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,account,role,false));s.bindCurrentAccountCheck(new JdbcSessionVerifier(connections::open));return s;}
+    private static DesktopSession session(String account,VaiTroHeThong role){var s=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,account,role,false));s.bindCurrentAccountCheck(new JdbcSessionVerifier(connections::open));return s;}
     private static YeuCauThanhToan cash(String invoice,String id,int amount){var m=BigDecimal.valueOf(amount);return new YeuCauThanhToan(invoice,m,List.of(new PhanThanhToan(id,m,PhuongThucThanhToan.TIEN_MAT,null,m)),false);}
     private static void header(String id,String visit,int total)throws Exception{
         sql("INSERT dbo.HoaDon(maHoaDon,maNhanVien,maBenhNhan,maPhieuKham,ngayLap,trangThai) VALUES('"+id+"','N1','B1',"+(visit==null?"NULL":"'"+visit+"'")+",CURRENT_TIMESTAMP,'CHUA_THANH_TOAN')");

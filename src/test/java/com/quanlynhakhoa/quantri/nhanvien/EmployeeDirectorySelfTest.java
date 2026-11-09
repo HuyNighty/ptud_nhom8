@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.nhanvien;
 
 import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
@@ -21,7 +21,7 @@ public final class EmployeeDirectorySelfTest {
         if (!condition) throw new AssertionError("W1A check " + checks + ": " + message);
     }
     private static DesktopSession session(VaiTroHeThong role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
     private static void reject(Class<? extends Throwable> expected, ThrowingAction action) {
         try {

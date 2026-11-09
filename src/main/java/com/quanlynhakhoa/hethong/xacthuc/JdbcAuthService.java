@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
+import com.quanlynhakhoa.security.KetQuaDangNhap;
+import com.quanlynhakhoa.security.KeHoachDangNhap;
 import com.quanlynhakhoa.quantri.taikhoan.dao.AccountDao;
 import com.quanlynhakhoa.quantri.nhanvien.dao.EmployeeDao;
 import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
@@ -68,9 +70,9 @@ public final class JdbcAuthService {
         session.bindCurrentAccountCheck(new com.quanlynhakhoa.hethong.phanquyen.JdbcSessionVerifier(connectionSource));
     }
 
-    public AuthDecision authenticate(String username, String rawPassword) throws SQLException {
+    public KetQuaDangNhap authenticate(String username, String rawPassword) throws SQLException {
         if (username == null || username.isBlank() || rawPassword == null || rawPassword.isBlank()) {
-            return AuthDecision.rejected();
+            return KetQuaDangNhap.rejected();
         }
         try (Connection connection = connectionSource.open()) {
             // A connection from a pool with altered transaction state is out of scope for now.
@@ -82,7 +84,7 @@ public final class JdbcAuthService {
             try {
                 if (!lockExistingRow(connection, LOCK_ACCOUNT_SQL, username)) {
                     connection.commit();
-                    return AuthDecision.rejected();
+                    return KetQuaDangNhap.rejected();
                 }
                 Optional<ThongTinTaiKhoan> found = accounts.findByUsername(connection, username);
                 if (found.isEmpty()) {
@@ -96,7 +98,7 @@ public final class JdbcAuthService {
                     }
                 }
                 LocalDateTime nowUtc = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
-                LoginPlan plan = policy.evaluate(account, employee, rawPassword, nowUtc);
+                KeHoachDangNhap plan = policy.evaluate(account, employee, rawPassword, nowUtc);
                 if (plan.stateChanged()) {
                     try (PreparedStatement statement = connection.prepareStatement(UPDATE_ACCOUNT_SQL)) {
                         bindUpdate(statement, plan, account.id());
@@ -108,8 +110,8 @@ public final class JdbcAuthService {
                 }
                 connection.commit();
                 return plan.authenticated()
-                        ? new AuthDecision(true, account.id(), account.role(), plan.forcePasswordChange())
-                        : AuthDecision.rejected();
+                        ? new KetQuaDangNhap(true, account.id(), account.role(), plan.forcePasswordChange())
+                        : KetQuaDangNhap.rejected();
             } catch (SQLException | RuntimeException failure) {
                 try {
                     connection.rollback();
@@ -131,7 +133,7 @@ public final class JdbcAuthService {
         }
     }
 
-    static void bindUpdate(PreparedStatement statement, LoginPlan plan, String accountId)
+    static void bindUpdate(PreparedStatement statement, KeHoachDangNhap plan, String accountId)
             throws SQLException {
         statement.setString(1, plan.nextStatus().name());
         statement.setInt(2, plan.nextFailedAttempts());

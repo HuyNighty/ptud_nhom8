@@ -2,7 +2,7 @@ package com.quanlynhakhoa.quantri.taikhoan.ui;
 
 import com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService;
 import com.quanlynhakhoa.quantri.taikhoan.AccountStateService;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -44,7 +44,7 @@ public final class AccountStateSelfTest {
         if (!value) throw new AssertionError(message);
     }
     private static DesktopSession session(VaiTroHeThong role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "ACTOR", role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "ACTOR", role, false));
     }
     private static AccountStateService service(FakeJdbc jdbc, DesktopSession actor) {
         return new AccountStateService(actor, jdbc::open);

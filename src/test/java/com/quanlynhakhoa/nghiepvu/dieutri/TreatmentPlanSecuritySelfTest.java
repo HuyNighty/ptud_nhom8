@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.dieutri;
 
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.nghiepvu.dieutri.service.TreatmentPlanService;
 import java.time.LocalDate;
@@ -12,7 +12,7 @@ public final class TreatmentPlanSecuritySelfTest {
     private static int checks;
     @FunctionalInterface private interface Checked { void run() throws Exception; }
     private static DesktopSession as(VaiTroHeThong role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTH-TP", role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTH-TP", role, false));
     }
     private static void denied(Checked operation, String label) throws Exception {
         boolean rejected = false;

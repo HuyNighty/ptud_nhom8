@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.xacthuc.DesktopLoginGate;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.time.Instant;
@@ -29,7 +29,7 @@ public final class DesktopSession {
         this.startedAt = startedAt;
     }
 
-    public static DesktopSession fromSuccessfulLogin(AuthDecision decision) {
+    public static DesktopSession fromSuccessfulLogin(KetQuaDangNhap decision) {
         if (!DesktopLoginGate.mayOpenMain(decision)) throw new AccessDeniedException();
         return new DesktopSession(decision.accountId(), decision.role(), Instant.now());
     }

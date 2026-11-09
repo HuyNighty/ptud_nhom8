@@ -5,7 +5,7 @@ package com.quanlynhakhoa.hethong.tongquan;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.*;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.*;
 import java.math.BigDecimal;
@@ -20,7 +20,7 @@ public final class DashboardOverviewSqlIT {
             try(Connection c=TeamDevConnection.open();PreparedStatement s=c.prepareStatement("SELECT TOP (1) maTaiKhoan FROM dbo.TaiKhoan WHERE vaiTro=? AND trangThai='HOAT_DONG' ORDER BY maTaiKhoan")){
                 s.setString(1,role.name());try(ResultSet rows=s.executeQuery()){if(rows.next())account=rows.getString(1);}
             }
-            DesktopSession session=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,account,role,false));
+            DesktopSession session=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,account,role,false));
             DashboardService service=new DashboardService(session,TeamDevConnection::open);
             var overview=service.loadOverview();
             check(overview.warnings().isEmpty(),role+" incomplete sections: "+overview.warnings());

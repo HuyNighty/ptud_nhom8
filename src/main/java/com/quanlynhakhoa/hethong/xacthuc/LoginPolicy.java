@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
+import com.quanlynhakhoa.security.KeHoachDangNhap;
 import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
 import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
 import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
@@ -23,22 +24,22 @@ public final class LoginPolicy {
         this.verifier = Objects.requireNonNull(verifier, "verifier");
     }
 
-    public LoginPlan evaluate(ThongTinTaiKhoan account, ThongTinNhanVien employee,
+    public KeHoachDangNhap evaluate(ThongTinTaiKhoan account, ThongTinNhanVien employee,
                               String rawPassword, LocalDateTime utcNow) {
         Objects.requireNonNull(utcNow, "utcNow");
-        if (account == null) return LoginPlan.rejectedUnknown();
-        if (rawPassword == null || rawPassword.isBlank()) return LoginPlan.unchanged(account);
-        if (account.status() == TrangThaiTaiKhoan.VO_HIEU) return LoginPlan.unchanged(account);
+        if (account == null) return KeHoachDangNhap.rejectedUnknown();
+        if (rawPassword == null || rawPassword.isBlank()) return KeHoachDangNhap.unchanged(account);
+        if (account.status() == TrangThaiTaiKhoan.VO_HIEU) return KeHoachDangNhap.unchanged(account);
         if (account.status() == TrangThaiTaiKhoan.BI_KHOA) {
             if (account.lockSource() != NguonKhoaTaiKhoan.FAILED_LOGIN ||
                     account.lockedUntil() == null ||
                     utcNow.isBefore(account.lockedUntil())) {
-                return LoginPlan.unchanged(account);
+                return KeHoachDangNhap.unchanged(account);
             }
         } else if (account.status() != TrangThaiTaiKhoan.HOAT_DONG) {
-            return LoginPlan.unchanged(account);
+            return KeHoachDangNhap.unchanged(account);
         }
-        if (!employeeEligible(account, employee)) return LoginPlan.unchanged(account);
+        if (!employeeEligible(account, employee)) return KeHoachDangNhap.unchanged(account);
 
         // Expired automatic locks reset the attempt window before verifying credentials.
         boolean expiredAutoLock = account.status() == TrangThaiTaiKhoan.BI_KHOA;
@@ -46,7 +47,7 @@ public final class LoginPolicy {
         LocalDateTime oldFirst = expiredAutoLock ? null : account.firstFailureAt();
         boolean matched = verifier.matches(rawPassword, account.passwordHash());
         if (matched) {
-            return new LoginPlan(true, account.forcePasswordChange(), true,
+            return new KeHoachDangNhap(true, account.forcePasswordChange(), true,
                     TrangThaiTaiKhoan.HOAT_DONG, 0, null, null, null, null, null,
                     utcNow, utcNow);
         }
@@ -55,7 +56,7 @@ public final class LoginPolicy {
         int failures = newWindow ? 1 : oldCount + 1;
         LocalDateTime firstFailureAt = newWindow ? utcNow : oldFirst;
         boolean shouldLock = failures >= MAX_FAILURES;
-        return new LoginPlan(false, false, true,
+        return new KeHoachDangNhap(false, false, true,
                 shouldLock ? TrangThaiTaiKhoan.BI_KHOA : TrangThaiTaiKhoan.HOAT_DONG,
                 failures, firstFailureAt,
                 shouldLock ? utcNow : null,

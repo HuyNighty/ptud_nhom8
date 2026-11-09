@@ -7,7 +7,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
@@ -28,7 +28,7 @@ public final class ServiceBillingSelfTest {
         }
         throw new AssertionError("Expected " + type);
     }
-    public static DesktopSession session(VaiTroHeThong role) { return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "TST_ACC", role, false)); }
+    public static DesktopSession session(VaiTroHeThong role) { return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "TST_ACC", role, false)); }
     private static BigDecimal money(String value) { return new BigDecimal(value); }
     private static DichVuNhaKhoa value(String price) { return new DichVuNhaKhoa(" TST1 ", " Dịch vụ kiểm thử ", money(price), " ", false, true); }
     private static ThongTinThanhToan payment(String id, String amount, boolean cancelled) {

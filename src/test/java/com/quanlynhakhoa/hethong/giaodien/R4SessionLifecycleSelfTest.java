@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.giaodien;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
@@ -34,9 +34,9 @@ public final class R4SessionLifecycleSelfTest {
         check(rejected, label);
     }
     private static DesktopSession make(VaiTroHeThong role, String id) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, id, role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, id, role, false));
     }
-    private static void rejectSession(AuthDecision decision, String label) {
+    private static void rejectSession(KetQuaDangNhap decision, String label) {
         denied(() -> DesktopSession.fromSuccessfulLogin(decision), label);
     }
 
@@ -51,10 +51,10 @@ public final class R4SessionLifecycleSelfTest {
             denied(() -> authorization.require(null, permission), "null principal require " + permission);
         }
         rejectSession(null, "null auth result");
-        rejectSession(AuthDecision.rejected(), "rejected auth");
-        rejectSession(new AuthDecision(true, "SYNTH", VaiTroHeThong.SYSTEM_ADMIN, true), "forced password reset");
-        rejectSession(new AuthDecision(true, "SYNTH", null, false), "missing role");
-        rejectSession(new AuthDecision(true, " ", VaiTroHeThong.SYSTEM_ADMIN, false), "blank account id");
+        rejectSession(KetQuaDangNhap.rejected(), "rejected auth");
+        rejectSession(new KetQuaDangNhap(true, "SYNTH", VaiTroHeThong.SYSTEM_ADMIN, true), "forced password reset");
+        rejectSession(new KetQuaDangNhap(true, "SYNTH", null, false), "missing role");
+        rejectSession(new KetQuaDangNhap(true, " ", VaiTroHeThong.SYSTEM_ADMIN, false), "blank account id");
 
         for (VaiTroHeThong role : VaiTroHeThong.values()) {
             DesktopSession session = make(role, "SYNTH-" + role);

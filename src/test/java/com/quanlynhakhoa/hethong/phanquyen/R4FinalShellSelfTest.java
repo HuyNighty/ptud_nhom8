@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
@@ -26,7 +26,7 @@ public final class R4FinalShellSelfTest {
     }
     private static DesktopSession user(VaiTroHeThong role) {
         return DesktopSession.fromSuccessfulLogin(
-                new AuthDecision(true, "SYNTH-R4A4", role, false));
+                new KetQuaDangNhap(true, "SYNTH-R4A4", role, false));
     }
     private static boolean granted(VaiTroHeThong role, Permission p) {
         return switch (role) {

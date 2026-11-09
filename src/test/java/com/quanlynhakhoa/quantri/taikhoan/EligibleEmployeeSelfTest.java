@@ -2,7 +2,7 @@ package com.quanlynhakhoa.quantri.taikhoan;
 
 import com.quanlynhakhoa.model.taikhoan.NhanVienDuDieuKien;
 import com.quanlynhakhoa.model.taikhoan.KetQuaNhanVienDuDieuKien;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -34,7 +34,7 @@ public final class EligibleEmployeeSelfTest {
         }
     }
     private static DesktopSession user(VaiTroHeThong role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
 
     private static Connection fakeConnection(List<String[]> data, AtomicInteger closed,

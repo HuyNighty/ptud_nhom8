@@ -2,7 +2,7 @@ package com.quanlynhakhoa.quantri.nhatky;
 
 import com.quanlynhakhoa.model.nhatky.KetQuaNhatKy;
 import com.quanlynhakhoa.model.nhatky.BoLocNhatKy;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -110,7 +110,7 @@ public final class AuditSelfTest {
         }
     }
     private static DesktopSession session(VaiTroHeThong role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
     public static void main(String[] args) throws Exception {
         check(new BoLocNhatKy(null, null, null, null).keyword().isEmpty(), "null keyword normalized");

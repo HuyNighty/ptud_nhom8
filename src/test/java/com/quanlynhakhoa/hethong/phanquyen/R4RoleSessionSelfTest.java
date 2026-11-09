@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
@@ -23,7 +23,7 @@ public final class R4RoleSessionSelfTest {
     }
 
     private static DesktopSession session(VaiTroHeThong role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "synthetic-account", role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "synthetic-account", role, false));
     }
 
     public static void main(String[] args) {
@@ -81,10 +81,10 @@ public final class R4RoleSessionSelfTest {
             check(true, "Grant set immutable");
         }
 
-        denied(() -> DesktopSession.fromSuccessfulLogin(AuthDecision.rejected()));
-        denied(() -> DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "test", VaiTroHeThong.DOCTOR, true)));
-        denied(() -> DesktopSession.fromSuccessfulLogin(new AuthDecision(true, " ", VaiTroHeThong.DOCTOR, false)));
-        denied(() -> DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "test", null, false)));
+        denied(() -> DesktopSession.fromSuccessfulLogin(KetQuaDangNhap.rejected()));
+        denied(() -> DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "test", VaiTroHeThong.DOCTOR, true)));
+        denied(() -> DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, " ", VaiTroHeThong.DOCTOR, false)));
+        denied(() -> DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "test", null, false)));
 
         for (VaiTroHeThong role : VaiTroHeThong.values()) {
             DesktopSession session = session(role);

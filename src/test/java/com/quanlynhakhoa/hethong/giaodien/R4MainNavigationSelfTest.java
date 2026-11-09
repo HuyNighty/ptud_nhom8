@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.giaodien;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
@@ -20,7 +20,7 @@ public final class R4MainNavigationSelfTest {
         check(failedClosed);
     }
     private static DesktopSession session(VaiTroHeThong role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
     public static void main(String[] args) {
         MainNavigationModel admin = new MainNavigationModel(session(VaiTroHeThong.SYSTEM_ADMIN));

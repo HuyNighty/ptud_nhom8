@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.giaodien;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
@@ -23,7 +23,7 @@ public final class LatestMainShellSelfTest {
         final Path root=Path.of("").toAbsolutePath();Path empty=root.resolve("target/no-config-shell-test");Files.createDirectories(empty);
         String previous=System.getProperty("user.dir");System.setProperty("user.dir",empty.toString());
         try{SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-            DesktopSession session=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,"SYNTHETIC",VaiTroHeThong.SYSTEM_ADMIN,false));
+            DesktopSession session=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"SYNTHETIC",VaiTroHeThong.SYSTEM_ADMIN,false));
             check(!com.quanlynhakhoa.hatang.phattrien.TeamDevConnection.hasLocalConfig(),"never run synthetic shell test against a configured DB");
             MainFrame winMain=new MainFrame(session,new Runnable(){public void run(){}},FeatureBootstrap.createRegistry());
             try{

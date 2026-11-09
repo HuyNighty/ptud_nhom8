@@ -4,7 +4,7 @@ package com.quanlynhakhoa.hethong.tongquan;
 
 
 import com.quanlynhakhoa.hethong.phanquyen.*;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.lang.reflect.Proxy;
 import java.sql.*;
@@ -46,7 +46,7 @@ public final class DashboardOverviewSelfTest {
     public static void main(String[] args)throws Exception{
         System.setProperty("java.awt.headless","true");
         for(VaiTroHeThong role:VaiTroHeThong.values()){
-            var session=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,"TEST",role,false));
+            var session=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"TEST",role,false));
             List<String> queries=new ArrayList<>();DashboardService service=new DashboardService(session,()->connection(queries,false));
             var result=service.loadOverview();check(result.warnings().isEmpty(),"no synthetic failures");check(result.days().size()==7,"seven zero-filled days");
             for(var day:result.days()){
@@ -59,7 +59,7 @@ public final class DashboardOverviewSelfTest {
             if(role==VaiTroHeThong.DOCTOR)for(String sql:queries)if(sql.contains("dbo.PhieuKham"))check(sql.contains("maTaiKhoan=?"),"doctor aggregate scoped by account");
             int before=queries.size();session.logout();boolean denied=false;try{service.loadOverview();}catch(AccessDeniedException expected){denied=true;}check(denied&&before==queries.size(),"logout rejects before SQL");
         }
-        var admin=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,"TEST",VaiTroHeThong.SYSTEM_ADMIN,false));
+        var admin=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"TEST",VaiTroHeThong.SYSTEM_ADMIN,false));
         var partial=new DashboardService(admin,()->connection(new ArrayList<>(),true)).loadOverview();
         check(partial.warnings().contains("Chưa tải được cảnh báo kho"),"stock error reported");
         check(partial.work().size()==3&&partial.days().get(0).collected()!=null,"unrelated sections survive");

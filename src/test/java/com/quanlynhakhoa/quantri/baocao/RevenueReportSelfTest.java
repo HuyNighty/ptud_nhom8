@@ -7,7 +7,7 @@ import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.*;
 
 public final class RevenueReportSelfTest {
-    static DesktopSession session(VaiTroHeThong role) {return DesktopSession.fromSuccessfulLogin(new AuthDecision(true,"REPORT_TEST",role,false));}
+    static DesktopSession session(VaiTroHeThong role) {return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"REPORT_TEST",role,false));}
     static void check(boolean yes,String message){if(!yes)throw new AssertionError(message);}
     public static void main(String[] args) throws Exception {
         LocalDate day=LocalDate.of(2026,11,6);

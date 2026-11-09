@@ -5,7 +5,7 @@ package com.quanlynhakhoa.nghiepvu.dieutri;
 
 
 import com.quanlynhakhoa.hethong.phanquyen.*;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.nghiepvu.dieutri.service.*;
 import java.sql.*;
@@ -30,7 +30,7 @@ public final class TreatmentPlanFailClosedSelfTest {
         throw new AssertionError("False success");
     }
     private static DesktopSession session(VaiTroHeThong role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
     private static List<Call> mutations(TreatmentPlanService service) {
         return List.of(

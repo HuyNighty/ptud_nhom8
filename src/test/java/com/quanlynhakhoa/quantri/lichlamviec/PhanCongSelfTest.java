@@ -4,7 +4,7 @@ import com.quanlynhakhoa.model.lichlamviec.ThongTinPhanCong;
 import com.quanlynhakhoa.entity.CaLamViec;
 import com.quanlynhakhoa.quantri.lichlamviec.service.PhanCongService;
 import com.quanlynhakhoa.hethong.phanquyen.*;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
@@ -17,7 +17,7 @@ public final class PhanCongSelfTest {
     static void check(boolean yes,String why){checks++;if(!yes)throw new AssertionError(why);}
     interface Action{void run()throws Exception;}
     static void rejects(Class<? extends Throwable> type,Action a)throws Exception{try{a.run();}catch(Throwable e){check(type.isInstance(e),"Expected "+type+" got "+e);return;}throw new AssertionError("Expected rejection "+type);}
-    static DesktopSession session(VaiTroHeThong role){return DesktopSession.fromSuccessfulLogin(new AuthDecision(true,"ACCOUNT1",role,false));}
+    static DesktopSession session(VaiTroHeThong role){return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"ACCOUNT1",role,false));}
     public static void main(String[] args)throws Exception {
         LocalDate day=LocalDate.now();
         for(VaiTroHeThong role:VaiTroHeThong.values()){

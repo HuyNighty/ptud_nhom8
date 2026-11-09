@@ -5,7 +5,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
@@ -69,7 +69,7 @@ public final class BillingActualUiPreview {
         try{SwingUtilities.invokeAndWait(new Runnable(){public void run(){
             ConnectionProvider disabled=new ConnectionProvider(){public Connection open()throws SQLException{throw new SQLException("Read-only snapshot: interactive SQL disabled");}};
             for(Dimension size:List.of(new Dimension(1280,720),new Dimension(1366,768),new Dimension(1920,1080))){
-                DesktopSession display=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,"XEM-CHI-DOC",VaiTroHeThong.SYSTEM_ADMIN,false));Map<Module,JPanel> pages=new EnumMap<>(Module.class);FeatureRegistry.Builder registry=FeatureRegistry.builder();
+                DesktopSession display=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"XEM-CHI-DOC",VaiTroHeThong.SYSTEM_ADMIN,false));Map<Module,JPanel> pages=new EnumMap<>(Module.class);FeatureRegistry.Builder registry=FeatureRegistry.builder();
                 for(final Module module:List.of(Module.SERVICE_CATALOG,Module.BILLING,Module.PAYMENTS,Module.INVOICE_CANCELLATIONS,Module.DEBTS))registry.register(module,new FeaturePanelFactory(){public JPanel create(DesktopSession session){JPanel panel=switch(module){case SERVICE_CATALOG -> new ServiceCatalogPanel(session,disabled);case BILLING -> new InvoicePanel(session,disabled);case PAYMENTS -> new PaymentPanel(session,disabled);case INVOICE_CANCELLATIONS -> new CancellationPanel(session,disabled);case DEBTS -> new DebtPanel(session,disabled);default -> throw new AssertionError(module);};pages.put(module,panel);return panel;}});
                 MainFrame frame=new MainFrame(display,new Runnable(){public void run(){}},registry.build());
                 try{

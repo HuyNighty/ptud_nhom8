@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.phieukham;
 
 import com.quanlynhakhoa.model.phieukham.KetQuaHangChoKham;
 import com.quanlynhakhoa.model.phieukham.DongHangChoKham;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -39,7 +39,7 @@ public final class ExamQueueSelfTest {
     }
     @FunctionalInterface private interface Checked { void run() throws Exception; }
     private static DesktopSession session(VaiTroHeThong role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "TKTEST", role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "TKTEST", role, false));
     }
     private static final LocalDate DAY = LocalDate.of(2026, 10, 31);
 

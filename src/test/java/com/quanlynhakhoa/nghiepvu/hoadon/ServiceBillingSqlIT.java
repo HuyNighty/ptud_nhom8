@@ -1,9 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
-
-
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.xacthuc.*;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
@@ -29,7 +26,7 @@ public final class ServiceBillingSqlIT {
         if (console == null) throw new IllegalStateException("Run java in an interactive terminal for hidden password input.");
         String username = console.readLine("Swing username (CLINIC_MANAGER): ");
         char[] password = console.readPassword("Swing password: ");
-        AuthDecision decision;
+        KetQuaDangNhap decision;
         try {
             decision = new JdbcAuthService(TeamDevConnection::open, new LoginPolicy(new BCryptPasswordVerifier()), Clock.systemUTC())
                     .authenticate(username, new String(password));

@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.vaitro;
 
 import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
@@ -34,7 +34,7 @@ public final class RoleOverviewSelfTest {
         throw new AssertionError("Expected " + expected.getSimpleName());
     }
     private static DesktopSession session(VaiTroHeThong role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
     @SuppressWarnings("unchecked")
     private static <T> T proxy(Class<T> type, java.lang.reflect.InvocationHandler handler) {
