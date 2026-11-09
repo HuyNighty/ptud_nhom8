@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.nghiepvu.dichvu.dao;
+package com.quanlynhakhoa.dao.dichvu;
 
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import java.sql.*;
@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Caller owns connection and transaction. No physical delete is provided. */
-public class ServiceCatalogDao {
+public class DanhMucDichVuDao {
     public List<DichVuNhaKhoa> find(Connection connection, String keyword, Boolean active) throws SQLException {
         String sql = """
                 SELECT maDichVu, tenDichVu, donGia, moTa, laCanLamSang, dangApDung

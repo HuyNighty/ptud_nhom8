@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.service.hoadon;
 
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
+import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.lang.reflect.Field;
@@ -37,10 +37,10 @@ public final class ServiceSaveFailureSelfTest {
                 throw new SQLException("synthetic connection failure", "08001");
             }
         } : jdbc;
-        ServiceCatalogPanel[] panel = new ServiceCatalogPanel[1];
+        DanhMucDichVuPanel[] panel = new DanhMucDichVuPanel[1];
         SwingUtilities.invokeAndWait(() -> {
             try {
-                panel[0] = new ServiceCatalogPanel(session(VaiTroHeThong.SYSTEM_ADMIN), provider);
+                panel[0] = new DanhMucDichVuPanel(session(VaiTroHeThong.SYSTEM_ADMIN), provider);
                 if (scenario.equals("edit")) panel[0].showForm(new DichVuNhaKhoa(
                         "KEEP1", "Original", BigDecimal.TEN, "Original", false, true));
                 field(panel[0], "txtMaDichVu", JTextField.class).setText("KEEP1");

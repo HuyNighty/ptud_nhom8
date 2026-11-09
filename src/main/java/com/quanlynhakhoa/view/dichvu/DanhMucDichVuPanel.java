@@ -1,13 +1,13 @@
-package com.quanlynhakhoa.nghiepvu.dichvu.ui;
+package com.quanlynhakhoa.view.dichvu;
 
 import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
 import com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.dichvu.controller.ServiceCatalogController;
+import com.quanlynhakhoa.controller.dichvu.DanhMucDichVuController;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
-import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
+import com.quanlynhakhoa.service.dichvu.DanhMucDichVuService;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -16,7 +16,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
+public final class DanhMucDichVuPanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
 
     private final CheDoSuaDanhMucDichVu mode;
     private final JTextField txtTuKhoa = new JTextField(18);
@@ -31,16 +31,16 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
     private final JPanel pnlForm = new JPanel(new BorderLayout(8,8));
     private final DefaultTableModel tableModel = GiaoDienHoaDon.model("Mã dịch vụ", "Tên dịch vụ", "Giá hiện hành", "Cận lâm sàng", "Trạng thái");
     private final JTable tblDichVu = GiaoDienHoaDon.table(tableModel);
-    private final ServiceCatalogController controller;
+    private final DanhMucDichVuController controller;
     private List<DichVuNhaKhoa> rows = List.of();
     private DichVuNhaKhoa selected;
     private boolean loaded;
 
-    public ServiceCatalogPanel(DesktopSession session) { this(session, TeamDevConnection::open); }
-    public ServiceCatalogPanel(DesktopSession session, ConnectionProvider connections) {
+    public DanhMucDichVuPanel(DesktopSession session) { this(session, TeamDevConnection::open); }
+    public DanhMucDichVuPanel(DesktopSession session, ConnectionProvider connections) {
         this(session,connections,CheDoSuaDanhMucDichVu.COMBINED);
     }
-    public ServiceCatalogPanel(DesktopSession session, ConnectionProvider connections,CheDoSuaDanhMucDichVu mode) {
+    public DanhMucDichVuPanel(DesktopSession session, ConnectionProvider connections,CheDoSuaDanhMucDichVu mode) {
         this.mode=mode;
         new AuthorizationService(new RolePermissionPolicy()).require(session, Quyen.SERVICE_CATALOG_MANAGE);
         setLayout(new BorderLayout(12, 12));
@@ -80,7 +80,7 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
         JPanel pnlBottom = new JPanel(new GridLayout(0, 1, 0, 6));
         lblTrangThai.setToolTipText("Ngừng áp dụng để giữ lịch sử. Đổi giá hiện hành không đổi giá trên hóa đơn đã lập.");
         pnlBottom.add(lblTrangThai); add(pnlBottom, BorderLayout.SOUTH);
-        controller = new ServiceCatalogController(this, session, new ServiceCatalogService(session, connections));
+        controller = new DanhMucDichVuController(this, session, new DanhMucDichVuService(session, connections));
         clearForm();
         GiaoDienHoaDon.style(this);
         GiaoDienHoaDon.columns(tblDichVu,110,270,170,145,170);

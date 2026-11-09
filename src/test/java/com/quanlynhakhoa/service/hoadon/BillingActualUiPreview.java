@@ -16,9 +16,9 @@ import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.dichvu.dao.ServiceCatalogDao;
+import com.quanlynhakhoa.dao.dichvu.DanhMucDichVuDao;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
+import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.hethong.tinhnang.*;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
@@ -42,7 +42,7 @@ public final class BillingActualUiPreview {
         try(Connection c=TeamDevConnection.open()){
             c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);c.setAutoCommit(false);
             try{
-                var services=new ServiceCatalogDao().find(c,"",null);var invoiceDao=new HoaDonDao();var invoices=invoiceDao.find(c,"",null,null,null);var requests=new HuyHoaDonDao().find(c,"",null,null,null);
+                var services=new DanhMucDichVuDao().find(c,"",null);var invoiceDao=new HoaDonDao();var invoices=invoiceDao.find(c,"",null,null,null);var requests=new HuyHoaDonDao().find(c,"",null,null,null);
                 var patients=new TaoHoaDonDao().patients(c,"");var visits=patients.isEmpty()?List.<LuaChonLapHoaDon>of():new TaoHoaDonDao().visits(c,patients.getFirst().id());
                 Map<String,DuLieuChiTietHoaDon> details=new HashMap<>();
                 for(ThongTinHoaDon h:invoices)details.put(h.maHoaDon(),new DuLieuChiTietHoaDon(h,invoiceDao.lines(c,h.maHoaDon()),invoiceDao.payments(c,h.maHoaDon())));
@@ -60,7 +60,7 @@ public final class BillingActualUiPreview {
     }
     private static void bind(Module module,JPanel panel,Data data){
         switch(module){
-            case SERVICE_CATALOG -> {var view=(ServiceCatalogPanel)panel;view.showRows(data.services());if(!data.services().isEmpty())view.showForm(data.services().getFirst());view.status(data.services().isEmpty()?"Chưa có dịch vụ. Nhập thông tin và lưu.":data.services().size()+" dịch vụ từ SQL development.");}
+            case SERVICE_CATALOG -> {var view=(DanhMucDichVuPanel)panel;view.showRows(data.services());if(!data.services().isEmpty())view.showForm(data.services().getFirst());view.status(data.services().isEmpty()?"Chưa có dịch vụ. Nhập thông tin và lưu.":data.services().size()+" dịch vụ từ SQL development.");}
             case BILLING -> {var view=(HoaDonPanel)panel;view.showRows(data.invoices());if(!data.invoices().isEmpty()){select(firstTable(view));view.showDetail(data.details().get(data.invoices().getFirst().maHoaDon()));}view.setBusy(false);view.status(data.invoices().isEmpty()?"Chưa có hóa đơn.":"Dữ liệu chứng từ từ SQL development.");}
             case DEBTS -> {var view=(CongNoPanel)panel;view.showPatients(CongNoService.byPatient(data.invoices()));select(view.tblBenhNhan);view.selectPatient();select(view.tblHoaDon);if(view.selectedInvoice()!=null)view.showDetail(data.details().get(view.selectedInvoice()));view.busy(false);view.lblTrangThai.setText("Các số tổng hợp tính theo bộ lọc ngày lập hóa đơn.");}
             case PAYMENTS -> {var view=(ThanhToanPanel)panel;var found=CongNoService.outstanding(data.invoices());var listeners=view.cmbHoaDon.getActionListeners();for(var listener:listeners)view.cmbHoaDon.removeActionListener(listener);view.showChoices(found,null);for(var listener:listeners)view.cmbHoaDon.addActionListener(listener);view.lblTrangThai.setText(found.isEmpty()?"Chưa có hóa đơn còn phải thu.":"Chọn hóa đơn từ kết quả tìm kiếm.");}
@@ -76,7 +76,7 @@ public final class BillingActualUiPreview {
             ConnectionProvider disabled=new ConnectionProvider(){public Connection open()throws SQLException{throw new SQLException("Read-only snapshot: interactive SQL disabled");}};
             for(Dimension size:List.of(new Dimension(1280,720),new Dimension(1366,768),new Dimension(1920,1080))){
                 DesktopSession display=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"XEM-CHI-DOC",VaiTroHeThong.SYSTEM_ADMIN,false));Map<Module,JPanel> pages=new EnumMap<>(Module.class);FeatureRegistry.Builder registry=FeatureRegistry.builder();
-                for(final Module module:List.of(Module.SERVICE_CATALOG,Module.BILLING,Module.PAYMENTS,Module.INVOICE_CANCELLATIONS,Module.DEBTS))registry.register(module,new FeaturePanelFactory(){public JPanel create(DesktopSession session){JPanel panel=switch(module){case SERVICE_CATALOG -> new ServiceCatalogPanel(session,disabled);case BILLING -> new HoaDonPanel(session,disabled);case PAYMENTS -> new ThanhToanPanel(session,disabled);case INVOICE_CANCELLATIONS -> new HuyHoaDonPanel(session,disabled);case DEBTS -> new CongNoPanel(session,disabled);default -> throw new AssertionError(module);};pages.put(module,panel);return panel;}});
+                for(final Module module:List.of(Module.SERVICE_CATALOG,Module.BILLING,Module.PAYMENTS,Module.INVOICE_CANCELLATIONS,Module.DEBTS))registry.register(module,new FeaturePanelFactory(){public JPanel create(DesktopSession session){JPanel panel=switch(module){case SERVICE_CATALOG -> new DanhMucDichVuPanel(session,disabled);case BILLING -> new HoaDonPanel(session,disabled);case PAYMENTS -> new ThanhToanPanel(session,disabled);case INVOICE_CANCELLATIONS -> new HuyHoaDonPanel(session,disabled);case DEBTS -> new CongNoPanel(session,disabled);default -> throw new AssertionError(module);};pages.put(module,panel);return panel;}});
                 MainFrame frame=new MainFrame(display,new Runnable(){public void run(){}},registry.build());
                 try{
                     JComponent root=(JComponent)frame.getContentPane();root.setSize(size.width,size.height-32);var navigate=MainFrame.class.getDeclaredMethod("navigate",Module.class);navigate.setAccessible(true);

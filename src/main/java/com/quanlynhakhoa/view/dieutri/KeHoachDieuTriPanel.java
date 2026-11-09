@@ -1,8 +1,9 @@
-package com.quanlynhakhoa.nghiepvu.dieutri.view;
+package com.quanlynhakhoa.view.dieutri;
 
+import com.quanlynhakhoa.controller.dieutri.KeHoachDieuTriController;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.nghiepvu.dieutri.service.TreatmentPlanService;
+import com.quanlynhakhoa.service.dieutri.KeHoachDieuTriService;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-public final class TreatmentPlanPanel extends JPanel {
+public final class KeHoachDieuTriPanel extends JPanel {
     final JTextField planId=new JTextField(), chartId=new JTextField(), visitId=new JTextField(), planDate=new JTextField(LocalDate.now().toString()), goal=new JTextField();
     final JTextField serviceId=new JTextField(), tooth=new JTextField(), dueDate=new JTextField(LocalDate.now().toString()), stepNote=new JTextField();
     final JButton createPlan=new JButton("Tạo kế hoạch"), addStep=new JButton("Thêm bước điều trị"), completeStep=new JButton("Hoàn thành bước"), cancelStep=new JButton("Hủy bước"), completePlan=new JButton("Hoàn tất kế hoạch"), cancelPlan=new JButton("Hủy kế hoạch"), refresh=new JButton("Làm mới");
@@ -23,7 +24,7 @@ public final class TreatmentPlanPanel extends JPanel {
     final DefaultTableModel detailModel=readonly("Mã CT","Mã DV","Dịch vụ","Vị trí răng","Ngày dự kiến","Ngày thực hiện","Kết quả","Trạng thái","Nhân viên","Ghi chú");
     final JTable plans=new JTable(planModel), details=new JTable(detailModel);
 
-    public TreatmentPlanPanel(DesktopSession session){
+    public KeHoachDieuTriPanel(DesktopSession session){
         setLayout(new BorderLayout(8,8)); JPanel create=new JPanel(new GridLayout(0,4,7,7));
         JLabel title = new JLabel("Kế hoạch điều trị");
         title.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 23));
@@ -62,7 +63,7 @@ public final class TreatmentPlanPanel extends JPanel {
             completePlan.setEnabled(false);
             cancelPlan.setEnabled(false);
         }
-        new TreatmentPlanController(this,new TreatmentPlanService(session));
+        new KeHoachDieuTriController(this,new KeHoachDieuTriService(session));
     }
 
     private static void field(JPanel panel,String label,java.awt.Component input){
@@ -77,13 +78,34 @@ public final class TreatmentPlanPanel extends JPanel {
             }
         };
     }
-    String selectedPlan(){
+    public String selectedPlan(){
         int r=plans.getSelectedRow();
         return r<0?null:String.valueOf(plans.getValueAt(plans.convertRowIndexToModel(r),0));
     }
-    Integer selectedDetail(){
+    public Integer selectedDetail(){
         int r=details.getSelectedRow();
         if(r<0)return null;
         return Integer.valueOf(String.valueOf(details.getValueAt(details.convertRowIndexToModel(r),0)));
     }
+
+    // Controller bindings; widgets remain owned by this view.
+    public JButton addStep() { return addStep; }
+    public JButton cancelPlan() { return cancelPlan; }
+    public JButton cancelStep() { return cancelStep; }
+    public JTextField chartId() { return chartId; }
+    public JButton completePlan() { return completePlan; }
+    public JButton completeStep() { return completeStep; }
+    public JButton createPlan() { return createPlan; }
+    public DefaultTableModel detailModel() { return detailModel; }
+    public JTextField dueDate() { return dueDate; }
+    public JTextField goal() { return goal; }
+    public JTextField planDate() { return planDate; }
+    public JTextField planId() { return planId; }
+    public DefaultTableModel planModel() { return planModel; }
+    public JTable plans() { return plans; }
+    public JButton refresh() { return refresh; }
+    public JTextField serviceId() { return serviceId; }
+    public JTextField stepNote() { return stepNote; }
+    public JTextField tooth() { return tooth; }
+    public JTextField visitId() { return visitId; }
 }

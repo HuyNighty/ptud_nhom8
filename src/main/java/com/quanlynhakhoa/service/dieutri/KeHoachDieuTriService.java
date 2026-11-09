@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.nghiepvu.dieutri.service;
+package com.quanlynhakhoa.service.dieutri;
 
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
@@ -11,11 +11,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 /** H2 fail-closed boundary: no DAO/connection until identity, ownership and writes are reviewed. */
-public final class TreatmentPlanService {
+public final class KeHoachDieuTriService {
     private final DesktopSession session;
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
 
-    public TreatmentPlanService(DesktopSession session) {
+    public KeHoachDieuTriService(DesktopSession session) {
         if (session == null) throw new IllegalArgumentException("Cần phiên đăng nhập.");
         this.session = session;
     }
@@ -74,7 +74,7 @@ public final class TreatmentPlanService {
         if (!authorization.can(session, permission)) throw new AccessDeniedException();
     }
 
-    private static TreatmentPlanUnavailableException unavailable() {
-        return new TreatmentPlanUnavailableException();
+    private static KeHoachDieuTriKhongKhaDungException unavailable() {
+        return new KeHoachDieuTriKhongKhaDungException();
     }
 }

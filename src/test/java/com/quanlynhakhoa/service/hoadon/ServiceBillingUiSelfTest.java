@@ -2,7 +2,7 @@ package com.quanlynhakhoa.service.hoadon;
 
 import com.quanlynhakhoa.view.hoadon.HoaDonPanel;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
+import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.Field;
@@ -37,10 +37,10 @@ public final class ServiceBillingUiSelfTest {
         System.setProperty("java.awt.headless", "true");
         final FeatureJdbcDouble jdbc = new FeatureJdbcDouble();
         final DesktopSession session = session(VaiTroHeThong.CLINIC_MANAGER);
-        final ServiceCatalogPanel[] panel = new ServiceCatalogPanel[1];
+        final DanhMucDichVuPanel[] panel = new DanhMucDichVuPanel[1];
         final HoaDonPanel[] billing = new HoaDonPanel[1];
         edt(new Action() { public void run() {
-            panel[0] = new ServiceCatalogPanel(session, jdbc); billing[0] = new HoaDonPanel(session, jdbc);
+            panel[0] = new DanhMucDichVuPanel(session, jdbc); billing[0] = new HoaDonPanel(session, jdbc);
         } });
         check(jdbc.opens == 0, "constructors must not open JDBC");
         edt(new Action() { public void run() throws Exception {
@@ -71,9 +71,9 @@ public final class ServiceBillingUiSelfTest {
         check(jdbc.persisted.size() == 1 && jdbc.audits.size() == 1, "double click saved once; cached views may commit read transactions");
         check(new BigDecimal("1500000").equals(jdbc.persisted.getFirst().get(2)),"Vietnamese grouped input persists the exact price");
         final FeatureJdbcDouble savedJdbc = new FeatureJdbcDouble();
-        final ServiceCatalogPanel[] savedPanel = new ServiceCatalogPanel[1];
+        final DanhMucDichVuPanel[] savedPanel = new DanhMucDichVuPanel[1];
         edt(new Action() { public void run() throws Exception {
-            savedPanel[0] = new ServiceCatalogPanel(session, new com.quanlynhakhoa.dao.hoadon.ConnectionProvider() {
+            savedPanel[0] = new DanhMucDichVuPanel(session, new com.quanlynhakhoa.dao.hoadon.ConnectionProvider() {
                 int calls;
                 public java.sql.Connection open() throws java.sql.SQLException {
                     if (++calls > 1) throw new java.sql.SQLException("reload", "08001", 0);
@@ -90,9 +90,9 @@ public final class ServiceBillingUiSelfTest {
             check(savedJdbc.commits == 1 && !savedPanel[0].creating(), "save success survives reload failure without duplicate insert mode");
         } });
         // Force a load/connection failure and verify honest UI, without a modal blocking the test.
-        final ServiceCatalogPanel[] errorPanel = new ServiceCatalogPanel[1];
+        final DanhMucDichVuPanel[] errorPanel = new DanhMucDichVuPanel[1];
         edt(new Action() { public void run() throws Exception {
-            errorPanel[0] = new ServiceCatalogPanel(session, new com.quanlynhakhoa.dao.hoadon.ConnectionProvider() {
+            errorPanel[0] = new DanhMucDichVuPanel(session, new com.quanlynhakhoa.dao.hoadon.ConnectionProvider() {
                 public java.sql.Connection open() throws java.sql.SQLException { throw new java.sql.SQLException("synthetic", "08001", 0); }
             });
             field(errorPanel[0], "btnTaiLai", JButton.class).doClick();
@@ -109,9 +109,9 @@ public final class ServiceBillingUiSelfTest {
         waitFor(cancellation[0].lblTrangThai,"quyền");check(retries.get()==2,"Explicit retry performs one additional read");
         final FeatureJdbcDouble delayed = new FeatureJdbcDouble(); delayed.release = new CountDownLatch(1);
         final DesktopSession expiredSession = session(VaiTroHeThong.CLINIC_MANAGER);
-        final ServiceCatalogPanel[] expiredPanel = new ServiceCatalogPanel[1];
+        final DanhMucDichVuPanel[] expiredPanel = new DanhMucDichVuPanel[1];
         edt(new Action() { public void run() throws Exception {
-            expiredPanel[0] = new ServiceCatalogPanel(expiredSession, delayed);
+            expiredPanel[0] = new DanhMucDichVuPanel(expiredSession, delayed);
             expiredPanel[0].showForm(new DichVuNhaKhoa("TST1", "Synthetic", BigDecimal.ONE, null, false, true));
             field(expiredPanel[0], "btnTaiLai", JButton.class).doClick();
         } });

@@ -6,7 +6,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.service.hoadon.HoaDonService;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
-import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
+import com.quanlynhakhoa.service.dichvu.DanhMucDichVuService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.io.Console;
 import java.math.BigDecimal;
@@ -33,7 +33,7 @@ public final class ServiceBillingSqlIT {
         } finally { Arrays.fill(password, '\0'); }
         DesktopSession session = DesktopSession.fromSuccessfulLogin(decision);
         try {
-            ServiceCatalogService catalog = new ServiceCatalogService(session, TeamDevConnection::open);
+            DanhMucDichVuService catalog = new DanhMucDichVuService(session, TeamDevConnection::open);
             if (args[0].equals("--write")) {
                 if (!catalog.find(args[1], null).isEmpty()) throw new IllegalArgumentException("Test ID exists; choose a fresh ID. No automatic overwrite/retry.");
                 catalog.save(new DichVuNhaKhoa(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", BigDecimal.ZERO, "Dữ liệu kiểm thử giữ lại, không xóa.", false, true), true);
@@ -49,7 +49,7 @@ public final class ServiceBillingSqlIT {
             System.out.println("Run --read with this ID in a NEW process to verify restart persistence; UI still requires manual acceptance.");
         } finally { session.logout(); }
     }
-    private static void verify(ServiceCatalogService service, String id, String price, boolean active) throws Exception {
+    private static void verify(DanhMucDichVuService service, String id, String price, boolean active) throws Exception {
         for (DichVuNhaKhoa value : service.find(id, null)) {
             if (value.maDichVu().equals(id) && value.donGia().compareTo(new BigDecimal(price)) == 0 && value.dangApDung() == active) return;
         }

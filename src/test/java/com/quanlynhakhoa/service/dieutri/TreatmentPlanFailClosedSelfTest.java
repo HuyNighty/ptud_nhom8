@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.nghiepvu.dieutri;
+package com.quanlynhakhoa.service.dieutri;
 
 
 
@@ -7,7 +7,6 @@ package com.quanlynhakhoa.nghiepvu.dieutri;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.nghiepvu.dieutri.service.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.*;
@@ -32,7 +31,7 @@ public final class TreatmentPlanFailClosedSelfTest {
     private static DesktopSession session(VaiTroHeThong role) {
         return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
-    private static List<Call> mutations(TreatmentPlanService service) {
+    private static List<Call> mutations(KeHoachDieuTriService service) {
         return List.of(
             () -> service.taoKeHoach("KH01", "HS01", "PK01", LocalDate.of(2026,11,8), "Thử nghiệm"),
             () -> service.themBuoc("KH01", "DV01", "16", LocalDate.of(2026,11,8), ""),
@@ -60,14 +59,14 @@ public final class TreatmentPlanFailClosedSelfTest {
         try {
             for (Driver installed : Collections.list(DriverManager.getDrivers()))
                 check(installed == driver, "Refusing real SQL drivers");
-            rejects(IllegalArgumentException.class, () -> new TreatmentPlanService(null));
+            rejects(IllegalArgumentException.class, () -> new KeHoachDieuTriService(null));
             for (VaiTroHeThong role : VaiTroHeThong.values()) {
                 DesktopSession actor = session(role);
-                TreatmentPlanService service = new TreatmentPlanService(actor);
+                KeHoachDieuTriService service = new KeHoachDieuTriService(actor);
                 for (Call mutation : mutations(service))
-                    rejects(role == VaiTroHeThong.DOCTOR ? TreatmentPlanUnavailableException.class : AccessDeniedException.class, mutation);
+                    rejects(role == VaiTroHeThong.DOCTOR ? KeHoachDieuTriKhongKhaDungException.class : AccessDeniedException.class, mutation);
                 Class<? extends Throwable> readFailure = role == VaiTroHeThong.DOCTOR || role == VaiTroHeThong.SYSTEM_ADMIN
-                        ? TreatmentPlanUnavailableException.class : AccessDeniedException.class;
+                        ? KeHoachDieuTriKhongKhaDungException.class : AccessDeniedException.class;
                 rejects(readFailure, service::danhSach);
                 rejects(readFailure, () -> service.chiTiet("KH01"));
 
@@ -83,16 +82,16 @@ public final class TreatmentPlanFailClosedSelfTest {
                 actor.bindCurrentAccountCheck(ignored -> {
                     throw new AssertionError("Disabled operation invoked JDBC-backed verifier");
                 });
-                TreatmentPlanService service = new TreatmentPlanService(actor);
+                KeHoachDieuTriService service = new KeHoachDieuTriService(actor);
                 for (Call mutation : mutations(service))
-                    rejects(role == VaiTroHeThong.DOCTOR ? TreatmentPlanUnavailableException.class : AccessDeniedException.class, mutation);
+                    rejects(role == VaiTroHeThong.DOCTOR ? KeHoachDieuTriKhongKhaDungException.class : AccessDeniedException.class, mutation);
                 Class<? extends Throwable> readFailure = role == VaiTroHeThong.DOCTOR || role == VaiTroHeThong.SYSTEM_ADMIN
-                        ? TreatmentPlanUnavailableException.class : AccessDeniedException.class;
+                        ? KeHoachDieuTriKhongKhaDungException.class : AccessDeniedException.class;
                 rejects(readFailure, service::danhSach);
                 rejects(readFailure, () -> service.chiTiet("KH01"));
             }
             // No argument validation can turn an unauthorized request into apparent success.
-            TreatmentPlanService admin = new TreatmentPlanService(session(VaiTroHeThong.SYSTEM_ADMIN));
+            KeHoachDieuTriService admin = new KeHoachDieuTriService(session(VaiTroHeThong.SYSTEM_ADMIN));
             rejects(AccessDeniedException.class, () -> admin.taoKeHoach(null,null,null,null,null));
             rejects(AccessDeniedException.class, () -> admin.themBuoc(null,null,null,null,null));
             rejects(AccessDeniedException.class, () -> admin.hoanThanhBuoc(0,null,null));
@@ -100,7 +99,7 @@ public final class TreatmentPlanFailClosedSelfTest {
             rejects(AccessDeniedException.class, () -> admin.hoanThanhKeHoach(null));
             rejects(AccessDeniedException.class, () -> admin.huyKeHoach(null,null));
             check(driver.attempts == 0, "Zero JDBC attempts across denials and unavailable operations");
-            check(new TreatmentPlanUnavailableException().getCause() == null, "No SQL cause in unavailable error");
+            check(new KeHoachDieuTriKhongKhaDungException().getCause() == null, "No SQL cause in unavailable error");
             System.out.println("PASS: H2 fail-closed boundary (" + checks + " checks; no JDBC/database).");
         } finally {
             DriverManager.deregisterDriver(driver);

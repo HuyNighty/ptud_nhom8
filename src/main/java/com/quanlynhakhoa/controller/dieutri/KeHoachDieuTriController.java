@@ -1,7 +1,8 @@
-package com.quanlynhakhoa.nghiepvu.dieutri.view;
+package com.quanlynhakhoa.controller.dieutri;
 
-import com.quanlynhakhoa.nghiepvu.dieutri.service.TreatmentPlanService;
-import com.quanlynhakhoa.nghiepvu.dieutri.service.TreatmentPlanUnavailableException;
+import com.quanlynhakhoa.view.dieutri.KeHoachDieuTriPanel;
+import com.quanlynhakhoa.service.dieutri.KeHoachDieuTriService;
+import com.quanlynhakhoa.service.dieutri.KeHoachDieuTriKhongKhaDungException;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import java.time.LocalDate;
 import java.util.List;
@@ -11,44 +12,44 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
-final class TreatmentPlanController {
-    private final TreatmentPlanPanel view;
-    private final TreatmentPlanService service;
-    TreatmentPlanController(TreatmentPlanPanel view,TreatmentPlanService service){
+public final class KeHoachDieuTriController {
+    private final KeHoachDieuTriPanel view;
+    private final KeHoachDieuTriService service;
+    public KeHoachDieuTriController(KeHoachDieuTriPanel view,KeHoachDieuTriService service){
         this.view=view;
         this.service=service;
-        view.refresh.addActionListener(e->loadPlans());
-        view.createPlan.addActionListener(e->createPlan());
-        view.addStep.addActionListener(e->addStep());
-        view.completeStep.addActionListener(e->completeStep());
-        view.cancelStep.addActionListener(e->cancelStep());
-        view.completePlan.addActionListener(e->completePlan());
-        view.cancelPlan.addActionListener(e->cancelPlan());
-        view.plans.getSelectionModel().addListSelectionListener(e->{
+        view.refresh().addActionListener(e->loadPlans());
+        view.createPlan().addActionListener(e->createPlan());
+        view.addStep().addActionListener(e->addStep());
+        view.completeStep().addActionListener(e->completeStep());
+        view.cancelStep().addActionListener(e->cancelStep());
+        view.completePlan().addActionListener(e->completePlan());
+        view.cancelPlan().addActionListener(e->cancelPlan());
+        view.plans().getSelectionModel().addListSelectionListener(e->{
             if(!e.getValueIsAdjusting())loadDetails();
         });
         loadPlans();
     }
     private void loadPlans(){
-        async(service::danhSach,rows->fill(view.planModel,rows));
+        async(service::danhSach,rows->fill(view.planModel(),rows));
     }
 
     private void loadDetails(){
         String id=view.selectedPlan();
-        if(id==null){view.detailModel.setRowCount(0);
+        if(id==null){view.detailModel().setRowCount(0);
             return;
         }
-        async(()->service.chiTiet(id),rows->fill(view.detailModel,rows));
+        async(()->service.chiTiet(id),rows->fill(view.detailModel(),rows));
     }
 
     private void createPlan(){
         try{
-            String id=view.planId.getText(),chart=view.chartId.getText(),visit=view.visitId.getText(),goal=view.goal.getText();
-            LocalDate date=LocalDate.parse(view.planDate.getText().trim());
+            String id=view.planId().getText(),chart=view.chartId().getText(),visit=view.visitId().getText(),goal=view.goal().getText();
+            LocalDate date=LocalDate.parse(view.planDate().getText().trim());
             async(()->{service.taoKeHoach(id,chart,visit,date,goal);
                 return null;
-                },x->{view.planId.setText("");
-                view.goal.setText("");
+                },x->{view.planId().setText("");
+                view.goal().setText("");
                 loadPlans();
                 JOptionPane.showMessageDialog(view,"Đã tạo kế hoạch điều trị.");
             });
@@ -61,11 +62,11 @@ final class TreatmentPlanController {
         try{
             String id=view.selectedPlan();
             if(id==null)throw new IllegalArgumentException("Chọn kế hoạch trước.");
-            String serviceId=view.serviceId.getText(),tooth=view.tooth.getText(),note=view.stepNote.getText();
-            LocalDate planned=LocalDate.parse(view.dueDate.getText().trim());
+            String serviceId=view.serviceId().getText(),tooth=view.tooth().getText(),note=view.stepNote().getText();
+            LocalDate planned=LocalDate.parse(view.dueDate().getText().trim());
             async(()->{service.themBuoc(id,serviceId,tooth,planned,note);
                 return null;
-                },x->{view.stepNote.setText("");
+                },x->{view.stepNote().setText("");
                 loadDetails();
                 JOptionPane.showMessageDialog(view,"Đã thêm bước điều trị.");
             });
@@ -136,7 +137,7 @@ final class TreatmentPlanController {
         async(()->{service.huyKeHoach(id,reason);
             return null;
             },x->{loadPlans();
-            view.detailModel.setRowCount(0);
+            view.detailModel().setRowCount(0);
             JOptionPane.showMessageDialog(view,"Đã hủy kế hoạch điều trị.");
         });
     }
@@ -154,8 +155,8 @@ final class TreatmentPlanController {
     static String messageFor(Throwable failure){
         Throwable error = failure instanceof java.util.concurrent.ExecutionException
                 && failure.getCause() != null ? failure.getCause() : failure;
-        if(error instanceof TreatmentPlanUnavailableException)
-            return new TreatmentPlanUnavailableException().getMessage();
+        if(error instanceof KeHoachDieuTriKhongKhaDungException)
+            return new KeHoachDieuTriKhongKhaDungException().getMessage();
         if(error instanceof AccessDeniedException)
             return "Bạn không có quyền thực hiện thao tác này hoặc phiên đăng nhập đã kết thúc.";
         if(error instanceof IllegalArgumentException)

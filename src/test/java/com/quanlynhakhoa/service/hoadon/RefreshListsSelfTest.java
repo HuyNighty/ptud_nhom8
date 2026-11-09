@@ -3,7 +3,7 @@ package com.quanlynhakhoa.service.hoadon;
 import com.quanlynhakhoa.view.hoadon.HuyHoaDonPanel;
 import com.quanlynhakhoa.view.hoadon.HoaDonPanel;
 import com.quanlynhakhoa.view.hoadon.CongNoPanel;
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
+import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.lang.reflect.Field;
 import javax.swing.*;
@@ -32,7 +32,7 @@ public final class RefreshListsSelfTest {
             cancellation.txtTuKhoa.setText("old");cancellation.txtTuNgay.setText("invalid");cancellation.txtDenNgay.setText("invalid");
             cancellation.btnTaiLai.doClick();
             check(cancellation.txtTuKhoa.getText().isEmpty()&&cancellation.txtTuNgay.getText().isEmpty()&&cancellation.txtDenNgay.getText().isEmpty()&&cancellation.cmbTrangThai.getSelectedIndex()==0,"cancellation refresh clears filters");
-            var services=new ServiceCatalogPanel(session,jdbc);
+            var services=new DanhMucDichVuPanel(session,jdbc);
             ((JTextField)field(services,"txtTuKhoa")).setText("old");
             ((JButton)field(services,"btnTaiLai")).doClick();
             check(services.keyword().isEmpty()&&services.activeFilter()==null,"catalog refresh clears filters");

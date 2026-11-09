@@ -9,7 +9,7 @@ import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
-import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
+import com.quanlynhakhoa.service.dichvu.DanhMucDichVuService;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
@@ -70,7 +70,7 @@ public final class ServiceBillingSelfTest {
     private static void permissions() throws Exception {
         for (VaiTroHeThong role : VaiTroHeThong.values()) {
             final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final DesktopSession session = session(role);
-            final ServiceCatalogService catalog = new ServiceCatalogService(session, jdbc); final HoaDonService billing = new HoaDonService(session, jdbc);
+            final DanhMucDichVuService catalog = new DanhMucDichVuService(session, jdbc); final HoaDonService billing = new HoaDonService(session, jdbc);
             if (role != VaiTroHeThong.CLINIC_MANAGER && role != VaiTroHeThong.SYSTEM_ADMIN) {
                 expect(AccessDeniedException.class, new Action() { public void run() throws Exception { catalog.find("", null); } });
                 expect(AccessDeniedException.class, new Action() { public void run() throws Exception { catalog.save(value("0"), true); } });
@@ -93,13 +93,13 @@ public final class ServiceBillingSelfTest {
     }
     private static void validation() throws Exception {
         for (final String price : new String[]{"", "-1", "1.2", "1,000", "1.000", "abc", "1e3", "+2", "１２", "1000000000000000000"}) {
-            expect(IllegalArgumentException.class, new Action() { public void run() { ServiceCatalogService.parsePrice(price); } });
+            expect(IllegalArgumentException.class, new Action() { public void run() { DanhMucDichVuService.parsePrice(price); } });
         }
-        check(ServiceCatalogService.parsePrice(" 0 ").signum() == 0, "zero allowed");
-        check(ServiceCatalogService.parsePrice("999999999999999999").precision() == 18, "max precision");
-        DichVuNhaKhoa normalized = ServiceCatalogService.validate(value("0"));
+        check(DanhMucDichVuService.parsePrice(" 0 ").signum() == 0, "zero allowed");
+        check(DanhMucDichVuService.parsePrice("999999999999999999").precision() == 18, "max precision");
+        DichVuNhaKhoa normalized = DanhMucDichVuService.validate(value("0"));
         check(normalized.maDichVu().equals("TST1") && normalized.moTa() == null && normalized.tenDichVu().equals("Dịch vụ kiểm thử"), "trim/null");
-        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final ServiceCatalogService service = new ServiceCatalogService(session(VaiTroHeThong.CLINIC_MANAGER), jdbc);
+        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final DanhMucDichVuService service = new DanhMucDichVuService(session(VaiTroHeThong.CLINIC_MANAGER), jdbc);
         for (final DichVuNhaKhoa invalid : List.of(new DichVuNhaKhoa("X".repeat(11), "Name", money("1"), null, false, true),
                 new DichVuNhaKhoa("ĐV1", "Name", money("1"), null, false, true), new DichVuNhaKhoa("D V", "Name", money("1"), null, false, true),
                 new DichVuNhaKhoa("D1", " ", money("1"), null, false, true), new DichVuNhaKhoa("D1", "X".repeat(101), money("1"), null, false, true),
@@ -109,7 +109,7 @@ public final class ServiceBillingSelfTest {
         check(jdbc.opens == 0, "invalid data before connection");
     }
     private static void writes() throws Exception {
-        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final ServiceCatalogService service = new ServiceCatalogService(session(VaiTroHeThong.CLINIC_MANAGER), jdbc);
+        final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final DanhMucDichVuService service = new DanhMucDichVuService(session(VaiTroHeThong.CLINIC_MANAGER), jdbc);
         service.save(value("0"), true); service.save(value("100"), false); service.changeActive("TST1", false); service.changeActive("TST1", true);
         check(jdbc.commits == 4 && jdbc.audits.size() == 4 && jdbc.persisted.size() == 4, "writes and audit committed together");
         check(jdbc.audits.getFirst().get(1).equals("TST_ACC"), "audit uses authenticated account");
@@ -127,7 +127,7 @@ public final class ServiceBillingSelfTest {
         root = expect(SQLException.class, new Action() { public void run() throws Exception { service.changeActive("TST1", false); } });
         check(root.getErrorCode() == 229 && root.getSuppressed().length == 2, "original failure preserved with rollback/close failures");
         jdbc.auditFailure = false; jdbc.rollbackFailure = false;
-        expect(ServiceCatalogService.CommittedWriteException.class, new Action() { public void run() throws Exception { service.save(value("1"), false); } });
+        expect(DanhMucDichVuService.CommittedWriteException.class, new Action() { public void run() throws Exception { service.save(value("1"), false); } });
         jdbc.closeFailure = false; jdbc.affected = 0;
         expect(SQLException.class, new Action() { public void run() throws Exception { service.changeActive("missing", true); } });
     }

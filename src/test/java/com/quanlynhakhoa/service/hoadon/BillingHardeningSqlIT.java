@@ -9,7 +9,7 @@ import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
-import com.quanlynhakhoa.nghiepvu.dieutri.dao.TreatmentPlanDao;
+import com.quanlynhakhoa.dao.dieutri.KeHoachDieuTriDao;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
@@ -49,7 +49,7 @@ public final class BillingHardeningSqlIT {
         header("H1","V1",300);header("H2",null,300);header("HC",null,300);
         try(Connection c=connections.open()){
             c.setAutoCommit(false);
-            denied(()->new TreatmentPlanDao().taoKeHoach(c,"AD","KNEW","C1","V1",LocalDate.now(),"Extra care"),"reject treatment after invoice");c.rollback();
+            denied(()->new KeHoachDieuTriDao().taoKeHoach(c,"AD","KNEW","C1","V1",LocalDate.now(),"Extra care"),"reject treatment after invoice");c.rollback();
         }
         boolean databaseSeal=false;
         try{sql("INSERT dbo.KeHoachDieuTri(maKeHoach,maHoSo,maPhieuKham,ngayLap,mucTieu,maNhanVien) VALUES('KSQL','C1','V1',CURRENT_TIMESTAMP,N'Late treatment','ND')");}catch(SQLException expected){databaseSeal=expected.getErrorCode()==51182;}

@@ -11,10 +11,10 @@ import com.quanlynhakhoa.nghiepvu.kho.InventoryPanel;
 import com.quanlynhakhoa.quantri.nhanvien.ui.EmployeePanel;
 import com.quanlynhakhoa.quantri.vaitro.ui.RolePanel;
 import com.quanlynhakhoa.view.phieukham.PhieuKhamPanel;
-import com.quanlynhakhoa.nghiepvu.dieutri.view.TreatmentPlanPanel;
+import com.quanlynhakhoa.view.dieutri.KeHoachDieuTriPanel;
 import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.view.hoadon.HoaDonPanel;
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
+import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.quantri.lichlamviec.view.LichLamViecPanel;
@@ -33,7 +33,7 @@ public final class FeatureBootstrap {
                 .register(Module.AUDIT, AuditPanel::new)
                 .register(Module.REVENUE_REPORTS, com.quanlynhakhoa.quantri.baocao.RevenueReportPanel::new)
                 .register(Module.EXAMINATIONS, PhieuKhamPanel::new)
-                .register(Module.TREATMENT_PLANS, TreatmentPlanPanel::new)
+                .register(Module.TREATMENT_PLANS, KeHoachDieuTriPanel::new)
                 .register(Module.PATIENTS, BenhNhanPanel::new)
                 .register(Module.APPOINTMENTS, LichHenPanel::new)
                 .register(Module.RECEPTION, TiepNhanPanel::new)
@@ -42,7 +42,7 @@ public final class FeatureBootstrap {
                 .register(Module.MEDICAL_RECORDS, HoSoBenhAnPanel::new)
                 .register(Module.SERVICE_CATALOG, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session) {
-                        return new ServiceCatalogPanel(session, TeamDevConnection::open, CheDoSuaDanhMucDichVu.COMBINED);
+                        return new DanhMucDichVuPanel(session, TeamDevConnection::open, CheDoSuaDanhMucDichVu.COMBINED);
                     }
                 })
                 .register(Module.BILLING, new FeaturePanelFactory() {
@@ -57,7 +57,7 @@ public final class FeatureBootstrap {
                     @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.view.hoadon.ThanhToanPanel(session,TeamDevConnection::open);}
                 })
                 .register(Module.SERVICES, new FeaturePanelFactory() {
-                    @Override public JPanel create(DesktopSession session){return new ServiceCatalogPanel(session,TeamDevConnection::open,CheDoSuaDanhMucDichVu.COMBINED);}
+                    @Override public JPanel create(DesktopSession session){return new DanhMucDichVuPanel(session,TeamDevConnection::open,CheDoSuaDanhMucDichVu.COMBINED);}
                 })
                 .register(Module.INVOICE_CANCELLATIONS,new FeaturePanelFactory(){
                     @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.view.hoadon.HuyHoaDonPanel(session,TeamDevConnection::open);}

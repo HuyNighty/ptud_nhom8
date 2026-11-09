@@ -10,7 +10,7 @@ import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.view.hoadon.HoaDonPanel;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
+import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -28,7 +28,7 @@ public final class ServiceBillingPreview {
             public void run() {
                 try {
                     FeatureJdbcDouble jdbc = new FeatureJdbcDouble();
-                    ServiceCatalogPanel pnlCatalog = new ServiceCatalogPanel(ServiceBillingSelfTest.session(VaiTroHeThong.CLINIC_MANAGER), jdbc);
+                    DanhMucDichVuPanel pnlCatalog = new DanhMucDichVuPanel(ServiceBillingSelfTest.session(VaiTroHeThong.CLINIC_MANAGER), jdbc);
                     DichVuNhaKhoa value = new DichVuNhaKhoa("TST001", "[KIỂM THỬ] Dịch vụ tổng hợp", new BigDecimal("123456"), "Dữ liệu tổng hợp chỉ dùng xem bố cục.", true, true);
                     pnlCatalog.showRows(List.of(value)); pnlCatalog.showForm(value);
                     pnlCatalog.status("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · chưa kiểm thử SQL thật");
@@ -52,7 +52,7 @@ public final class ServiceBillingPreview {
                         pnlMode.status("XEM BỐ CỤC · dữ liệu tổng hợp · không SQL");render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
                     }
                     for(CheDoSuaDanhMucDichVu mode:List.of(CheDoSuaDanhMucDichVu.SERVICES,CheDoSuaDanhMucDichVu.PRICES)) {
-                        ServiceCatalogPanel pnlMode=new ServiceCatalogPanel(ServiceBillingSelfTest.session(VaiTroHeThong.CLINIC_MANAGER),jdbc,mode);
+                        DanhMucDichVuPanel pnlMode=new DanhMucDichVuPanel(ServiceBillingSelfTest.session(VaiTroHeThong.CLINIC_MANAGER),jdbc,mode);
                         pnlMode.showRows(List.of(value));pnlMode.showForm(value);render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
                     }
                     com.quanlynhakhoa.view.hoadon.HuyHoaDonPanel pnlCancellation=new com.quanlynhakhoa.view.hoadon.HuyHoaDonPanel(ServiceBillingSelfTest.session(VaiTroHeThong.CLINIC_MANAGER),jdbc);

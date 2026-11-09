@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.nghiepvu.dieutri.dao;
+package com.quanlynhakhoa.dao.dieutri;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,8 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /** Local treatment-plan SQL helpers. Does not depend on inventory modules. */
-public final class TreatmentPlanSqlSupport {
-    private TreatmentPlanSqlSupport() { }
+public final class HoTroSqlKeHoachDieuTri {
+    private HoTroSqlKeHoachDieuTri() { }
 
     public static String layMaNhanVien(Connection connection, String accountId) throws SQLException {
         String sql = "SELECT nv.maNhanVien FROM dbo.TaiKhoan tk "

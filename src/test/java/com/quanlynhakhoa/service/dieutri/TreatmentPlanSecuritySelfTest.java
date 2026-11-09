@@ -1,10 +1,10 @@
-package com.quanlynhakhoa.nghiepvu.dieutri;
+package com.quanlynhakhoa.service.dieutri;
 
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.nghiepvu.dieutri.service.TreatmentPlanService;
+import com.quanlynhakhoa.service.dieutri.KeHoachDieuTriService;
 import java.time.LocalDate;
 
 /** Pure denial tests: no JDBC connection or GUI is opened. */
@@ -22,9 +22,9 @@ public final class TreatmentPlanSecuritySelfTest {
         checks++;
     }
     public static void main(String[] args) throws Exception {
-        TreatmentPlanService admin = new TreatmentPlanService(as(VaiTroHeThong.SYSTEM_ADMIN));
-        TreatmentPlanService receptionist = new TreatmentPlanService(as(VaiTroHeThong.RECEPTIONIST));
-        TreatmentPlanService manager = new TreatmentPlanService(as(VaiTroHeThong.CLINIC_MANAGER));
+        KeHoachDieuTriService admin = new KeHoachDieuTriService(as(VaiTroHeThong.SYSTEM_ADMIN));
+        KeHoachDieuTriService receptionist = new KeHoachDieuTriService(as(VaiTroHeThong.RECEPTIONIST));
+        KeHoachDieuTriService manager = new KeHoachDieuTriService(as(VaiTroHeThong.CLINIC_MANAGER));
         denied(() -> admin.taoKeHoach("KHDEMO01", "HSDEMO01", "PKDEMO01", LocalDate.now(), "Demo"), "Admin may not create plans without doctor identity");
         denied(() -> admin.themBuoc("KHDEMO01", "DVDEMO01", "16", LocalDate.now(), ""), "Admin may not add steps");
         denied(() -> admin.hoanThanhBuoc(1, LocalDate.now(), "Demo"), "Admin may not complete steps");

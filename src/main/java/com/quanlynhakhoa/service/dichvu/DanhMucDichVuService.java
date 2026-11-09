@@ -1,8 +1,8 @@
-package com.quanlynhakhoa.nghiepvu.dichvu.service;
+package com.quanlynhakhoa.service.dichvu;
 
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
-import com.quanlynhakhoa.nghiepvu.dichvu.dao.ServiceCatalogDao;
+import com.quanlynhakhoa.dao.dichvu.DanhMucDichVuDao;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
@@ -11,17 +11,17 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 
-public final class ServiceCatalogService {
+public final class DanhMucDichVuService {
     private final DesktopSession session;
     private final ConnectionProvider connections;
-    private final ServiceCatalogDao dao;
+    private final DanhMucDichVuDao dao;
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
 
-    public ServiceCatalogService(DesktopSession session, ConnectionProvider connections) {
-        this(session, connections, new ServiceCatalogDao());
+    public DanhMucDichVuService(DesktopSession session, ConnectionProvider connections) {
+        this(session, connections, new DanhMucDichVuDao());
     }
 
-    public ServiceCatalogService(DesktopSession session, ConnectionProvider connections, ServiceCatalogDao dao) {
+    public DanhMucDichVuService(DesktopSession session, ConnectionProvider connections, DanhMucDichVuDao dao) {
         this.session = Objects.requireNonNull(session);
         this.connections = Objects.requireNonNull(connections);
         this.dao = Objects.requireNonNull(dao);

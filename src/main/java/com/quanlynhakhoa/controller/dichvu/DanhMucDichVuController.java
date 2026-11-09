@@ -1,23 +1,23 @@
-package com.quanlynhakhoa.nghiepvu.dichvu.controller;
+package com.quanlynhakhoa.controller.dichvu;
 
 import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
 import com.quanlynhakhoa.controller.hoadon.SessionWorker;
 import com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
-import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
+import com.quanlynhakhoa.service.dichvu.DanhMucDichVuService;
+import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.event.*;
 import java.util.List;
 import javax.swing.event.*;
 
-public final class ServiceCatalogController {
-    private final ServiceCatalogPanel view;
+public final class DanhMucDichVuController {
+    private final DanhMucDichVuPanel view;
     private final DesktopSession session;
-    private final ServiceCatalogService service;
+    private final DanhMucDichVuService service;
     private boolean busy;
     private boolean reloadPending;
-    public ServiceCatalogController(ServiceCatalogPanel view, DesktopSession session, ServiceCatalogService service) {
+    public DanhMucDichVuController(DanhMucDichVuPanel view, DesktopSession session, DanhMucDichVuService service) {
         this.view = view; this.session = session; this.service = service;
         view.onSearch(new ActionListener() { public void actionPerformed(ActionEvent event) { load(false); } });
         view.onReload(new ActionListener() { public void actionPerformed(ActionEvent event) { if(busy)return; busy=true; view.clearFilters(); busy=false; reloadPending=false; load(false); } });
@@ -82,7 +82,7 @@ public final class ServiceCatalogController {
             if (activeOnly != null) {
                 if (view.selected() == null) return;
                 value = view.selected();
-            } else value = ServiceCatalogService.validate(view.input());
+            } else value = DanhMucDichVuService.validate(view.input());
         } catch (RuntimeException failure) { showSaveFailure(failure); return; }
         busy = true; view.setBusy(true); view.status("Đang lưu dịch vụ và nhật ký...");
         new SessionWorker<Void>(session) {
@@ -105,7 +105,7 @@ public final class ServiceCatalogController {
                 com.quanlynhakhoa.controller.hoadon.ThongBaoThayDoiHoaDon.forSession(session).publish();
             }
             protected void failed(Throwable failure) {
-                if (failure instanceof ServiceCatalogService.CommittedWriteException) { saved(); return; }
+                if (failure instanceof DanhMucDichVuService.CommittedWriteException) { saved(); return; }
                 reloadPending = false;
                 showSaveFailure(failure);
             }

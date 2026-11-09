@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.nghiepvu.dieutri.dao;
+package com.quanlynhakhoa.dao.dieutri;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** SQL-side restrictions for doctor-owned treatment plans. No inventory dependencies. */
-public final class TreatmentPlanSecurityDao {
+public final class BaoMatKeHoachDieuTriDao {
     public List<Object[]> danhSachCuaBacSi(Connection con, String doctorId) throws SQLException {
         String sql = "SELECT TOP (300) k.maKeHoach,k.maHoSo,b.maBenhNhan,b.hoTen,"
                 + "k.maPhieuKham,k.ngayLap,k.mucTieu,k.trangThai,nv.hoTen "

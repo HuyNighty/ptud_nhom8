@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.service.hoadon;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.dichvu.dao.ServiceCatalogDao;
+import com.quanlynhakhoa.dao.dichvu.DanhMucDichVuDao;
 import java.sql.Connection;
 
 /** Opt-in read-only check of empty-search behavior against the actual SQL Server. */
@@ -11,7 +11,7 @@ public final class ServiceCatalogReadSqlIT {
             throw new IllegalArgumentException("Requires --read-only and existing local dev config");
         }
         try (Connection c = TeamDevConnection.open()) {
-            ServiceCatalogDao dao = new ServiceCatalogDao();
+            DanhMucDichVuDao dao = new DanhMucDichVuDao();
             for (Boolean active : new Boolean[]{null, true, false}) {
                 String sql = "SELECT COUNT(*) FROM dbo.DichVu"
                         + (active == null ? "" : " WHERE dangApDung=" + (active ? "1" : "0"));

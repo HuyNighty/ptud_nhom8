@@ -4,7 +4,7 @@ import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.xacthuc.*;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
+import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -69,7 +69,7 @@ public final class MoLapHoaDonDichVu {
         final JFrame winFeature = new JFrame("Khang · Service & Billing M1 · " + session.role());
         AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
         JTabbedPane tabFeatures = new JTabbedPane();
-        if (authorization.can(session, Quyen.SERVICE_CATALOG_MANAGE)) tabFeatures.addTab("Bảng giá dịch vụ", new ServiceCatalogPanel(session, TeamDevConnection::open));
+        if (authorization.can(session, Quyen.SERVICE_CATALOG_MANAGE)) tabFeatures.addTab("Bảng giá dịch vụ", new DanhMucDichVuPanel(session, TeamDevConnection::open));
         if (authorization.can(session, Quyen.BILLING_READ)) tabFeatures.addTab("Hóa đơn & công nợ", new HoaDonPanel(session, TeamDevConnection::open));
         if (tabFeatures.getTabCount() == 0) tabFeatures.addTab("Quyền truy cập", new JLabelPanel());
         JPanel pnlRoot = new JPanel(new BorderLayout()); pnlRoot.add(tabFeatures, BorderLayout.CENTER);
