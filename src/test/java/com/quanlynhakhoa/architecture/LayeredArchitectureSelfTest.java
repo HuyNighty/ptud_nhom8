@@ -33,6 +33,12 @@ public final class LayeredArchitectureSelfTest {
                         if(dao)check(!transactions.contains(name),"DAO must preserve caller-owned transaction: "+path+" / "+name);
                         return super.visitMethodInvocation(node,unused);
                     }
+                    public Void visitLiteral(LiteralTree node,Void unused) {
+                        if(orchestration && node.getValue() instanceof String text)
+                            check(!text.stripLeading().matches("(?is)(SELECT|WITH|INSERT|UPDATE|DELETE|ALTER|CREATE|DROP|EXEC|GRANT|REVOKE)\\s+.*"),
+                                    "SQL literal outside DAO: "+path);
+                        return super.visitLiteral(node,unused);
+                    }
                     public Void visitVariable(VariableTree node,Void unused) {
                         if(getCurrentPath().getParentPath().getLeaf() instanceof ClassTree)
                             check(!businessFields.contains(node.getName().toString()),"Untranslated business identity field: "+path+" / "+node.getName());

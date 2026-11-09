@@ -13,7 +13,22 @@ public final class ChiTietTongQuanDao {
     private PreparedStatement prepare(Connection c, String sql) throws SQLException {
         PreparedStatement s=c.prepareStatement(sql);s.setQueryTimeout(10);return s;
     }
-    public long count(Connection c, String sql, String account) throws SQLException {
+    public long demPhieuKhamDangXuLyCuaBacSi(Connection c, String maTaiKhoan) throws SQLException {
+        return count(c, "SELECT COUNT_BIG(*) FROM dbo.PhieuKham p JOIN dbo.TaiKhoan a ON a.maNhanVien=p.maNhanVien JOIN dbo.NhanVien n ON n.maNhanVien=a.maNhanVien WHERE p.trangThai='DANG_KHAM' AND a.maTaiKhoan=? AND a.vaiTro='DOCTOR' AND a.trangThai='HOAT_DONG' AND n.chucDanh='BS' AND n.trangThai='DANG_LAM_VIEC'", maTaiKhoan);
+    }
+    public long demYeuCauHuyCanDuyet(Connection c, String maTaiKhoan) throws SQLException {
+        return count(c, "SELECT COUNT_BIG(*) FROM dbo.YeuCauHuyHoaDon WHERE trangThai='CHO_DUYET' AND maTaiKhoanTao<>?", maTaiKhoan);
+    }
+    public long demYeuCauCapPhatChoDuyet(Connection c) throws SQLException {
+        return count(c, "SELECT COUNT_BIG(*) FROM dbo.YeuCauCapPhat WHERE trangThai='CHO_DUYET'", null);
+    }
+    public long demKiemKeCanDuyet(Connection c, String maTaiKhoan) throws SQLException {
+        return count(c, "SELECT COUNT_BIG(*) FROM dbo.PhieuDieuChinhKho WHERE loai='KIEM_KE' AND trangThai='CHO_DUYET' AND maTaiKhoanTao<>?", maTaiKhoan);
+    }
+    public long demYeuCauCapPhatCuaTaiKhoan(Connection c, String maTaiKhoan) throws SQLException {
+        return count(c, "SELECT COUNT_BIG(*) FROM dbo.YeuCauCapPhat y JOIN dbo.TaiKhoan a ON a.maNhanVien=y.maNhanVienYeuCau WHERE a.maTaiKhoan=? AND y.trangThai IN ('CHO_DUYET','DA_DUYET')", maTaiKhoan);
+    }
+    private long count(Connection c, String sql, String account) throws SQLException {
         try(PreparedStatement s=prepare(c,sql)) {
             if(account!=null)s.setString(1,account);
             try(ResultSet rows=s.executeQuery()){if(!rows.next())throw new SQLException("Missing count");return rows.getLong(1);}
