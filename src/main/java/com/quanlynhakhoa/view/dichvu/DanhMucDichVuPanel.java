@@ -5,7 +5,7 @@ import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon;
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.controller.dichvu.DanhMucDichVuController;

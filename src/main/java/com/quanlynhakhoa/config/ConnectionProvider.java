@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.dao.hoadon;
+package com.quanlynhakhoa.config;
 
 import java.sql.Connection;
 import java.sql.SQLException;

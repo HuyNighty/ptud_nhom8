@@ -5,7 +5,7 @@ import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.dao.hoadon.HuyHoaDonDao;
 import com.quanlynhakhoa.dao.hoadon.HoaDonDao;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
@@ -26,7 +26,7 @@ public final class HoaDonService {
     private final HoaDonDao dao;
     private TaoHoaDonService creation;
     public HoaDonService(DesktopSession session, ConnectionProvider connections,
-                         NguonTinhPhiLamSang source, InvoiceIdGenerator ids) {
+                         NguonTinhPhiLamSang source, TaoMaHoaDon ids) {
         this(session, connections);
         creation = new TaoHoaDonService(session, connections, source, ids);
     }

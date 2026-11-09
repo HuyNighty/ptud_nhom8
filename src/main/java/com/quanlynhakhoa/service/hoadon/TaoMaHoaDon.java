@@ -4,6 +4,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /** Only wire an approved generator. No MAX+1, unapproved counter writes or retries. */
-public interface InvoiceIdGenerator {
+public interface TaoMaHoaDon {
     String next(Connection connection) throws SQLException;
 }

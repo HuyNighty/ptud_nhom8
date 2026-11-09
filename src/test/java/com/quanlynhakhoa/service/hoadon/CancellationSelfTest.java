@@ -38,7 +38,7 @@ public final class CancellationSelfTest {
     }
     public static void main(String[] args)throws Exception {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final Dao dao=new Dao();final Invoices invoices=new Invoices();
-        InvoiceIdGenerator ids=new InvoiceIdGenerator(){public String next(Connection c){return "Y1";}};
+        TaoMaHoaDon ids=new TaoMaHoaDon(){public String next(Connection c){return "Y1";}};
         final DesktopSession receptionist=session(VaiTroHeThong.RECEPTIONIST);
         final DesktopSession manager=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"REVIEWER",VaiTroHeThong.CLINIC_MANAGER,false));
         final HuyHoaDonService requests=new HuyHoaDonService(receptionist,jdbc,dao,invoices,ids);

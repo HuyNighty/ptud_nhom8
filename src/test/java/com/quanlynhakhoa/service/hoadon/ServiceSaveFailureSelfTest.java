@@ -2,7 +2,7 @@ package com.quanlynhakhoa.service.hoadon;
 
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;

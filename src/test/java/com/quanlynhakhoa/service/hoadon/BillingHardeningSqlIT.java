@@ -3,7 +3,7 @@ package com.quanlynhakhoa.service.hoadon;
 import com.quanlynhakhoa.security.JdbcSessionVerifier;
 import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.security.AccessDeniedException;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;

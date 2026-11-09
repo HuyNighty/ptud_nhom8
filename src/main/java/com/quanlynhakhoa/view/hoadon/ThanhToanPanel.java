@@ -7,7 +7,7 @@ import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.controller.hoadon.ManHinhThanhToanController;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
 import java.awt.*;
 import java.util.List;

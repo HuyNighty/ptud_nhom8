@@ -36,7 +36,7 @@ public final class CreationStepsSelfTest {
             public BanNhapHoaDon load(Connection c,String patient,String visit,boolean lock){if(noCharges)throw new IllegalArgumentException("Lượt khám không có dịch vụ đã thực hiện được phép tính phí.");return new BanNhapHoaDon(patient,visit,"logic",List.of(new DongBanNhapHoaDon("DV1","Logic fixture",1,new BigDecimal("100000"))));}
             public void validateServiceState(Connection c,BanNhapHoaDon draft,String id,boolean active){}
         };
-        HoaDonService service=new HoaDonService(session,jdbc);var field=HoaDonService.class.getDeclaredField("creation");field.setAccessible(true);field.set(service,new TaoHoaDonService(session,jdbc,source,new RandomInvoiceIdGenerator(),dao));
+        HoaDonService service=new HoaDonService(session,jdbc);var field=HoaDonService.class.getDeclaredField("creation");field.setAccessible(true);field.set(service,new TaoHoaDonService(session,jdbc,source,new TaoMaHoaDonNgauNhien(),dao));
         TaoHoaDonDialog[] view={null};
         try{
             edt(new Runnable(){public void run(){view[0]=new TaoHoaDonDialog(null);new TaoHoaDonController(view[0],session,service,new TaoHoaDonController.Saved(){public void accept(String id){throw new AssertionError("Must not save in a step test");}});check(view[0].lblTrangThai.getText().equals("Tìm bệnh nhân để bắt đầu"),"Initial step");view[0].btnTimBenhNhan.doClick();}});

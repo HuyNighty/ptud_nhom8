@@ -10,7 +10,7 @@ import com.quanlynhakhoa.view.hoadon.CongNoPanel;
 import com.quanlynhakhoa.dao.hoadon.TaoHoaDonDao;
 import com.quanlynhakhoa.dao.hoadon.HuyHoaDonDao;
 import com.quanlynhakhoa.dao.hoadon.HoaDonDao;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;

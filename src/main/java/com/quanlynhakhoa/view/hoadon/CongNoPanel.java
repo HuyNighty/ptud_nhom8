@@ -9,7 +9,7 @@ import com.quanlynhakhoa.model.hoadon.TongHopCongNoBenhNhan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.controller.hoadon.CongNoController;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
 import java.awt.*;
 import java.math.BigDecimal;

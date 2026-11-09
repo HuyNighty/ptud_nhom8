@@ -4,7 +4,7 @@ import com.quanlynhakhoa.security.RolePermissionPolicy;
 import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.dao.dichvu.DanhMucDichVuDao;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import java.math.BigDecimal;

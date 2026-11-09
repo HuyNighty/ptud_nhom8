@@ -6,7 +6,7 @@ import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.dao.hoadon.ThanhToanDao;
 import com.quanlynhakhoa.dao.hoadon.TaoHoaDonDao;
 import com.quanlynhakhoa.dao.hoadon.HoaDonDao;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;

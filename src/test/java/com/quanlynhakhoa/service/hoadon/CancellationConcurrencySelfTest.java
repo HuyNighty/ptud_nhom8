@@ -2,7 +2,7 @@ package com.quanlynhakhoa.service.hoadon;
 
 import com.quanlynhakhoa.dao.hoadon.HuyHoaDonDao;
 import com.quanlynhakhoa.dao.hoadon.HoaDonDao;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
@@ -55,7 +55,7 @@ public final class CancellationConcurrencySelfTest {
         };
         final HoaDonDao invoices=new HoaDonDao(){public ThongTinHoaDon getForPayment(Connection c,String id){return new ThongTinHoaDon("H1","NV1","BN1","Synthetic",null,LocalDateTime.now(),cancelled?TrangThaiHoaDon.DA_HUY:TrangThaiHoaDon.CHUA_THANH_TOAN,BigDecimal.TEN,BigDecimal.ZERO,BigDecimal.ZERO);}};
         ThongTinYeuCauHuyHoaDon record(String id,String account,String reason,TrangThaiYeuCauHuyHoaDon status,String reviewer,String decision){return new ThongTinYeuCauHuyHoaDon(id,"H1","BN1","Synthetic",BigDecimal.TEN,BigDecimal.ZERO,account,LocalDateTime.now(),reason,status,reviewer,reviewer==null?null:LocalDateTime.now(),decision);}
-        HuyHoaDonService service(String account,VaiTroHeThong role){DesktopSession session=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,account,role,false));return new HuyHoaDonService(session,this,dao,invoices,new InvoiceIdGenerator(){public String next(Connection c){return "Y"+ids.incrementAndGet();}});}
+        HuyHoaDonService service(String account,VaiTroHeThong role){DesktopSession session=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,account,role,false));return new HuyHoaDonService(session,this,dao,invoices,new TaoMaHoaDon(){public String next(Connection c){return "Y"+ids.incrementAndGet();}});}
     }
     private static void race(final Action first,final Action second)throws Exception {
         final CountDownLatch ready=new CountDownLatch(2),go=new CountDownLatch(1);final AtomicInteger successes=new AtomicInteger(),rejected=new AtomicInteger();final List<Throwable> failures=Collections.synchronizedList(new ArrayList<>());

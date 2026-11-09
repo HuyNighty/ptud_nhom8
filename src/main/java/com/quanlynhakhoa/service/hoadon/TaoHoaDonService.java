@@ -4,7 +4,7 @@ import com.quanlynhakhoa.security.RolePermissionPolicy;
 import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.dao.hoadon.TaoHoaDonDao;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
@@ -18,13 +18,13 @@ public final class TaoHoaDonService {
     private final DesktopSession session;
     private final ConnectionProvider connections;
     private final NguonTinhPhiLamSang source;
-    private final InvoiceIdGenerator ids;
+    private final TaoMaHoaDon ids;
     private final TaoHoaDonDao dao;
     private final AuthorizationService authorization=new AuthorizationService(new RolePermissionPolicy());
-    public TaoHoaDonService(DesktopSession session,ConnectionProvider connections,NguonTinhPhiLamSang source,InvoiceIdGenerator ids) {
+    public TaoHoaDonService(DesktopSession session,ConnectionProvider connections,NguonTinhPhiLamSang source,TaoMaHoaDon ids) {
         this(session,connections,source,ids,new TaoHoaDonDao());
     }
-    public TaoHoaDonService(DesktopSession session,ConnectionProvider connections,NguonTinhPhiLamSang source,InvoiceIdGenerator ids,TaoHoaDonDao dao) {
+    public TaoHoaDonService(DesktopSession session,ConnectionProvider connections,NguonTinhPhiLamSang source,TaoMaHoaDon ids,TaoHoaDonDao dao) {
         this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);
         this.source=Objects.requireNonNull(source);this.ids=Objects.requireNonNull(ids);this.dao=Objects.requireNonNull(dao);
     }
