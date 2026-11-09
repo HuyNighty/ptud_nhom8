@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.service;
 
+import com.quanlynhakhoa.model.phieukham.ThongTinPhanCongKham;
+
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.CanLamSangDao;
@@ -118,7 +120,7 @@ public final class CanLamSangService {
     private String verifyAssignment(Connection connection, String visitId,
                                     String maBacSiDuocChon, boolean mustBeOpen)
             throws SQLException {
-        CanLamSangDao.PhieuKhamAssignment assignment = (mustBeOpen
+        ThongTinPhanCongKham assignment = (mustBeOpen
                 ? dao.khoaPhieuKham(connection, visitId)
                 : dao.timPhieuKham(connection, visitId))
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu khám."));

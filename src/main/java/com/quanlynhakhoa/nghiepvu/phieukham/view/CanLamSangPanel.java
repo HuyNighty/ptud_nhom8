@@ -5,7 +5,7 @@ import com.quanlynhakhoa.nghiepvu.phieukham.controller.CanLamSangController;
 import com.quanlynhakhoa.model.phieukham.ThongTinChiDinhCanLamSang;
 import com.quanlynhakhoa.model.phieukham.DichVuCanLamSangChon;
 import com.quanlynhakhoa.model.phieukham.DuLieuCanLamSang;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
+import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.service.CanLamSangService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
@@ -55,7 +55,7 @@ public final class CanLamSangPanel extends JPanel {
     private final JTable tblChiDinh = new JTable(tableModel);
     private final List<ThongTinChiDinhCanLamSang> rows = new ArrayList<>();
     private final CanLamSangController controller;
-    private PhieuKham current;
+    private ThongTinPhieuKham current;
     private String selectedDoctorId = "";
     private boolean loading;
 
@@ -190,7 +190,7 @@ public final class CanLamSangPanel extends JPanel {
         btnLuuKetQua.setEnabled(pending && canEdit() && isOpenVisit() && !loading);
     }
 
-    public void setContext(PhieuKham phieu, String maBacSiPhuTrach) {
+    public void setContext(ThongTinPhieuKham phieu, String maBacSiPhuTrach) {
         current = phieu;
         selectedDoctorId = maBacSiPhuTrach == null ? "" : maBacSiPhuTrach.trim();
         if (phieu == null) {

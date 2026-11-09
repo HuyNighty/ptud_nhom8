@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham;
 
+import com.quanlynhakhoa.model.phieukham.KetQuaHangChoKham;
+
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
@@ -32,12 +34,12 @@ public final class ExamQueueService {
         this.dao = Objects.requireNonNull(dao, "dao");
     }
 
-    public ExamQueueDao.Result load(LocalDate day) throws SQLException {
+    public KetQuaHangChoKham load(LocalDate day) throws SQLException {
         Objects.requireNonNull(day, "day");
         requireQueueAccess();
         try (Connection connection = connections.open()) {
             requireQueueAccess();
-            ExamQueueDao.Result rows = dao.listForDay(connection, day, session.role(), session.accountId());
+            KetQuaHangChoKham rows = dao.listForDay(connection, day, session.role(), session.accountId());
             requireQueueAccess();
             return rows;
         }

@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.service;
 
+import com.quanlynhakhoa.model.phieukham.ThongTinDauDonThuoc;
+
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.CanLamSangDao;
@@ -7,7 +9,7 @@ import com.quanlynhakhoa.nghiepvu.phieukham.dao.DonThuocDao;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
 import com.quanlynhakhoa.model.phieukham.DongChiTietDonThuoc;
 import com.quanlynhakhoa.model.phieukham.DuLieuDonThuoc;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
+import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
 import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -64,9 +66,9 @@ public final class DonThuocService {
         authorization.require(session, Permission.MEDICAL_RECORD_READ);
         String visitId = validateId(maPhieuKham, "Mã phiếu khám");
         try (Connection connection = TeamDevConnection.open()) {
-            PhieuKham visit = loadAndVerifyVisit(connection, visitId, maBacSiDuocChon, false);
+            ThongTinPhieuKham visit = loadAndVerifyVisit(connection, visitId, maBacSiDuocChon, false);
             List<ThuocChonKeDon> medicines = dao.danhSachThuoc(connection);
-            Optional<DonThuocDao.DonThuocHeader> header =
+            Optional<ThongTinDauDonThuoc> header =
                     dao.timDonThuocTheoPhieu(connection, visitId);
             if (header.isEmpty()) {
                 return new DuLieuDonThuoc(medicines, List.of(), "", false);
@@ -91,7 +93,7 @@ public final class DonThuocService {
         try (Connection connection = TeamDevConnection.open()) {
             connection.setAutoCommit(false);
             try {
-                PhieuKham visit = loadAndVerifyVisit(connection, visitId, maBacSiDuocChon, true);
+                ThongTinPhieuKham visit = loadAndVerifyVisit(connection, visitId, maBacSiDuocChon, true);
                 if (dao.timDonThuocTheoPhieu(connection, visitId).isPresent()) {
                     throw new IllegalStateException("Phiếu khám này đã có đơn thuốc. Không thể tạo đơn thứ hai.");
                 }
@@ -144,7 +146,7 @@ public final class DonThuocService {
         }
     }
 
-    private PhieuKham loadAndVerifyVisit(Connection connection, String visitId,
+    private ThongTinPhieuKham loadAndVerifyVisit(Connection connection, String visitId,
                                          String selectedDoctorId, boolean mustBeOpen)
             throws SQLException {
         var assignment = (mustBeOpen
@@ -161,7 +163,7 @@ public final class DonThuocService {
             throw new IllegalStateException("Chỉ được kê đơn khi phiếu đang Chờ khám hoặc Đang khám.");
         }
 
-        PhieuKham visit = phieuKhamDao.timTheoMa(connection, visitId)
+        ThongTinPhieuKham visit = phieuKhamDao.timTheoMa(connection, visitId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu khám."));
         if (session.role() == Role.DOCTOR) {
             Optional<String> employeeId = phieuKhamDao.maNhanVienTheoTaiKhoan(

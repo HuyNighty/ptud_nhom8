@@ -3,7 +3,7 @@ package com.quanlynhakhoa.nghiepvu.phieukham.view;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.controller.PhieuKhamController;
 import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
+import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
 import com.quanlynhakhoa.model.phieukham.DongDanhSachPhieuKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.service.PhieuKhamService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -102,7 +102,7 @@ public final class PhieuKhamPanel extends JPanel {
 
     private final JLabel lblBacSiCaption = label("Bác sĩ chịu trách nhiệm:", 11, MUTED, true);
     private boolean loading;
-    private PhieuKham current;
+    private ThongTinPhieuKham current;
 
     public PhieuKhamPanel(DesktopSession session) {
         this.session = java.util.Objects.requireNonNull(session, "session");
@@ -770,7 +770,7 @@ public final class PhieuKhamPanel extends JPanel {
         if (!rows.isEmpty()) tblPhieuKham.setRowSelectionInterval(0, 0);
     }
 
-    public void hienChiTiet(PhieuKham value) {
+    public void hienChiTiet(ThongTinPhieuKham value) {
         current = value;
         if (value == null) {
             xoaChiTiet();

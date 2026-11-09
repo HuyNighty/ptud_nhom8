@@ -4,7 +4,7 @@ import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.controller.DonThuocController;
 import com.quanlynhakhoa.model.phieukham.DongChiTietDonThuoc;
 import com.quanlynhakhoa.model.phieukham.DuLieuDonThuoc;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
+import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
 import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
@@ -59,7 +59,7 @@ public final class DonThuocPanel extends JPanel {
     private final List<DongChiTietDonThuoc> cart = new ArrayList<>();
     private final DonThuocController controller;
 
-    private PhieuKham current;
+    private ThongTinPhieuKham current;
     private String selectedDoctorId = "";
     private boolean loading;
     private boolean alreadyPrescribed;
@@ -192,7 +192,7 @@ public final class DonThuocPanel extends JPanel {
         return panel;
     }
 
-    public void setContext(PhieuKham visit, String doctorId) {
+    public void setContext(ThongTinPhieuKham visit, String doctorId) {
         current = visit;
         selectedDoctorId = doctorId == null ? "" : doctorId.trim();
         if (visit == null) {
