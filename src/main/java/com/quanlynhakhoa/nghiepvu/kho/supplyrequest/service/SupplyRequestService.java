@@ -1,5 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.kho.supplyrequest.service;
 
+import com.quanlynhakhoa.model.kho.PhanBoLo;
+
+import com.quanlynhakhoa.model.kho.DongYeuCauCungUng;
+
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -48,13 +52,13 @@ public final class SupplyRequestService {
         return dao.chiTiet(code(requestId, "Mã yêu cầu"), session.accountId(), false);
     }
 
-    public void taoYeuCau(String requestId, String reason, List<RequestLine> lines) throws SQLException {
+    public void taoYeuCau(String requestId, String reason, List<DongYeuCauCungUng> lines) throws SQLException {
         authorization.require(session, Permission.SUPPLY_REQUEST);
         String id = code(requestId, "Mã yêu cầu");
         required(reason, 300, "Lý do");
         if (lines == null || lines.isEmpty() || lines.size() > 30) throw new IllegalArgumentException("Yêu cầu cần từ 1 đến 30 dòng hàng.");
 
-        for (RequestLine line : lines) {
+        for (DongYeuCauCungUng line : lines) {
             if (line == null || !("THUOC".equals(line.itemType()) || "VATTU".equals(line.itemType())) || line.quantity() <= 0) {
                 throw new IllegalArgumentException("Loại hàng và số lượng từng dòng không hợp lệ.");
             }
@@ -76,7 +80,7 @@ public final class SupplyRequestService {
         transaction(con -> dao.tuChoi(con, session.accountId(), id, reason.trim()));
     }
 
-    public void capPhat(String requestId, String voucherId, String department, String receiver, String reason, List<Allocation> allocations) throws SQLException {
+    public void capPhat(String requestId, String voucherId, String department, String receiver, String reason, List<PhanBoLo> allocations) throws SQLException {
         authorization.require(session, Permission.INVENTORY_MANAGE);
         String request = code(requestId, "Mã yêu cầu"), voucher = code(voucherId, "Mã phiếu xuất");
         required(department, 100, "Bộ phận nhận");
@@ -85,7 +89,7 @@ public final class SupplyRequestService {
         if (allocations == null || allocations.isEmpty()) throw new IllegalArgumentException("Chưa phân bổ lô cấp phát.");
 
         Set<Integer> lineNumbers = new HashSet<>();
-        for (Allocation a : allocations) {
+        for (PhanBoLo a : allocations) {
             if (a == null || a.lineNo() < 1 || !lineNumbers.add(a.lineNo())) throw new IllegalArgumentException("Số dòng phân bổ không hợp lệ hoặc bị trùng.");
             code(a.lotCode(), "Mã lô");
         }
@@ -132,6 +136,6 @@ public final class SupplyRequestService {
         void run(Connection con) throws SQLException;
     }
 
-    public record RequestLine(String itemType, String itemCode, int quantity) {}
-    public record Allocation(int lineNo, String lotCode) {}
+
+
 }

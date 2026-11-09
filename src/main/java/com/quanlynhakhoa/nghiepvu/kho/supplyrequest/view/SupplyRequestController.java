@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.kho.supplyrequest.view;
 
 import com.quanlynhakhoa.nghiepvu.kho.supplyrequest.service.SupplyRequestService;
-import com.quanlynhakhoa.nghiepvu.kho.supplyrequest.service.SupplyRequestService.Allocation;
-import com.quanlynhakhoa.nghiepvu.kho.supplyrequest.service.SupplyRequestService.RequestLine;
+import com.quanlynhakhoa.model.kho.PhanBoLo;
+import com.quanlynhakhoa.model.kho.DongYeuCauCungUng;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -58,9 +58,9 @@ final class SupplyRequestController {
     }
 
     private void create() {
-        List<RequestLine> lines = new ArrayList<>();
+        List<DongYeuCauCungUng> lines = new ArrayList<>();
         for (int i = 0; i < view.draftModel.getRowCount(); i++) {
-            lines.add(new RequestLine(String.valueOf(view.draftModel.getValueAt(i, 0)), String.valueOf(view.draftModel.getValueAt(i, 1)), Integer.parseInt(String.valueOf(view.draftModel.getValueAt(i, 2)))));
+            lines.add(new DongYeuCauCungUng(String.valueOf(view.draftModel.getValueAt(i, 0)), String.valueOf(view.draftModel.getValueAt(i, 1)), Integer.parseInt(String.valueOf(view.draftModel.getValueAt(i, 2)))));
         }
         String id = view.requestId.getText(), reason = view.reason.getText();
         async(() -> {
@@ -128,12 +128,12 @@ final class SupplyRequestController {
         try {
             String id = view.selectedManagerId();
             if (id == null) throw new IllegalArgumentException("Chọn yêu cầu cần cấp phát.");
-            List<Allocation> allocations = new ArrayList<>();
+            List<PhanBoLo> allocations = new ArrayList<>();
             for (int row = 0; row < view.detailModel.getRowCount(); row++) {
                 int line = Integer.parseInt(String.valueOf(view.detailModel.getValueAt(row, 0)));
                 Object lotValue = view.detailModel.getValueAt(row, 5);
                 String lot = lotValue == null ? "" : lotValue.toString().trim();
-                allocations.add(new Allocation(line, lot));
+                allocations.add(new PhanBoLo(line, lot));
             }
             String voucher = view.voucherId.getText(), dept = view.department.getText(), receiver = view.receiver.getText(), reason = view.issueReason.getText();
             async(() -> {

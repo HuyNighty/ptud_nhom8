@@ -2,8 +2,8 @@ package com.quanlynhakhoa.nghiepvu.kho.supplyrequest.dao;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.kho.workflow.dao.InventoryWorkflowDao;
-import com.quanlynhakhoa.nghiepvu.kho.supplyrequest.service.SupplyRequestService.Allocation;
-import com.quanlynhakhoa.nghiepvu.kho.supplyrequest.service.SupplyRequestService.RequestLine;
+import com.quanlynhakhoa.model.kho.PhanBoLo;
+import com.quanlynhakhoa.model.kho.DongYeuCauCungUng;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -65,7 +65,7 @@ public final class SupplyRequestDao {
         return rows;
     }
 
-    public void taoYeuCau(Connection con, String accountId, String requestId, String reason, List<RequestLine> lines) throws SQLException {
+    public void taoYeuCau(Connection con, String accountId, String requestId, String reason, List<DongYeuCauCungUng> lines) throws SQLException {
         String employeeId = InventoryWorkflowDao.layMaNhanVien(con, accountId);
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.YeuCauCapPhat "
                 + "(maYeuCau,thoiGianTao,maNhanVienYeuCau,maTaiKhoanTao,lyDo,trangThai) VALUES (?,SYSUTCDATETIME(),?,?,?,'CHO_DUYET')")) {
@@ -78,7 +78,7 @@ public final class SupplyRequestDao {
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.ChiTietYeuCauCapPhat "
                 + "(maYeuCau,soThuTu,maThuoc,maVatTu,soLuongYeuCau) VALUES (?,?,?,?,?)")) {
             short index = 1;
-            for (RequestLine line : lines) {
+            for (DongYeuCauCungUng line : lines) {
                 stmt.setString(1, requestId);
                 stmt.setShort(2, index++);
                 stmt.setString(3, "THUOC".equals(line.itemType()) ? line.itemCode() : null);
@@ -115,7 +115,7 @@ public final class SupplyRequestDao {
     }
 
     public void capPhat(Connection con, String accountId, String requestId, String voucherId,
-                        String department, String receiver, String reason, List<Allocation> allocations) throws SQLException {
+                        String department, String receiver, String reason, List<PhanBoLo> allocations) throws SQLException {
         String employeeId = InventoryWorkflowDao.layMaNhanVien(con, accountId);
         try (PreparedStatement lock = con.prepareStatement("SELECT trangThai,maTaiKhoanTao FROM dbo.YeuCauCapPhat WITH (UPDLOCK,HOLDLOCK) WHERE maYeuCau=?")) {
             lock.setString(1, requestId);
@@ -132,8 +132,8 @@ public final class SupplyRequestDao {
             }
         }
         if (lines.isEmpty() || allocations.size() != lines.size()) throw new IllegalArgumentException("Cần phân bổ đầy đủ tất cả các dòng yêu cầu.");
-        Map<Integer, Allocation> byLine = new LinkedHashMap<>();
-        for (Allocation a : allocations) {
+        Map<Integer, PhanBoLo> byLine = new LinkedHashMap<>();
+        for (PhanBoLo a : allocations) {
             if (byLine.put(a.lineNo(), a) != null) throw new IllegalArgumentException("Dòng phân bổ bị lặp.");
         }
         if (!byLine.keySet().equals(lines.keySet())) throw new IllegalArgumentException("Mỗi dòng yêu cầu phải có đúng một lô cấp phát.");
@@ -142,7 +142,7 @@ public final class SupplyRequestDao {
         for (Map.Entry<Integer, Object[]> entry : lines.entrySet()) {
             int lineNo = entry.getKey();
             Object[] line = entry.getValue();
-            Allocation allocation = byLine.get(lineNo);
+            PhanBoLo allocation = byLine.get(lineNo);
             String lotId = allocation.lotCode();
             String expectedThuoc = (String) line[0];
             String expectedVatTu = (String) line[1];
