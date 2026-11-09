@@ -3,7 +3,7 @@ package com.quanlynhakhoa.nghiepvu.phieukham.service;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.BacSi;
+import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKhamListItem;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
@@ -57,10 +57,10 @@ public final class PhieuKhamService {
         }
     }
 
-    public List<BacSi> danhSachBacSi() throws SQLException {
+    public List<BacSiChonKham> danhSachBacSi() throws SQLException {
         authorization.require(session, Permission.MEDICAL_RECORD_READ);
         try (Connection connection = TeamDevConnection.open()) {
-            List<BacSi> doctors = dao.danhSachBacSiDangLamViec(connection);
+            List<BacSiChonKham> doctors = dao.danhSachBacSiDangLamViec(connection);
             if (session.role() != Role.DOCTOR) return doctors;
 
             String myEmployeeId = layMaNhanVienDangNhap(connection);

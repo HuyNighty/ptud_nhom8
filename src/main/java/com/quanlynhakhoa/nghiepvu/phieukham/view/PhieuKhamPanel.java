@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.phieukham.view;
 
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.controller.PhieuKhamController;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.BacSi;
+import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKhamListItem;
 import com.quanlynhakhoa.nghiepvu.phieukham.service.PhieuKhamService;
@@ -66,11 +66,11 @@ public final class PhieuKhamPanel extends JPanel {
     private final List<PhieuKhamListItem> rows = new ArrayList<>();
 
     private final JTextField txtNgayKham = new JTextField(10);
-    private final JComboBox<BacSi> cmbBacSiLoc = new JComboBox<>();
+    private final JComboBox<BacSiChonKham> cmbBacSiLoc = new JComboBox<>();
     private final JComboBox<String> cmbTrangThai = new JComboBox<>(new String[]{
             "Tất cả trạng thái", "Chờ khám", "Đang khám", "Đã kết luận", "Đã hủy"});
     private final JTextField txtTimKiem = new JTextField(24);
-    private final JComboBox<BacSi> cmbBacSiPhuTrach = new JComboBox<>();
+    private final JComboBox<BacSiChonKham> cmbBacSiPhuTrach = new JComboBox<>();
 
     private final JButton btnChonNgay = new JButton("Lịch");
     private final JButton btnLoc = button("Lọc", true);
@@ -737,12 +737,12 @@ public final class PhieuKhamPanel extends JPanel {
         return txaNoiDung;
     }
 
-    public void datDanhSachBacSi(List<BacSi> doctors) {
+    public void datDanhSachBacSi(List<BacSiChonKham> doctors) {
         cmbBacSiLoc.removeAllItems();
-        cmbBacSiLoc.addItem(new BacSi("", "Tất cả bác sĩ"));
+        cmbBacSiLoc.addItem(new BacSiChonKham("", "Tất cả bác sĩ"));
         cmbBacSiPhuTrach.removeAllItems();
-        cmbBacSiPhuTrach.addItem(new BacSi("", "— Chọn bác sĩ —"));
-        for (BacSi doctor : doctors) {
+        cmbBacSiPhuTrach.addItem(new BacSiChonKham("", "— Chọn bác sĩ —"));
+        for (BacSiChonKham doctor : doctors) {
             cmbBacSiLoc.addItem(doctor);
             cmbBacSiPhuTrach.addItem(doctor);
         }
@@ -833,14 +833,14 @@ public final class PhieuKhamPanel extends JPanel {
 
     private void chonBacSiPhuTrach(String maBacSi) {
         for (int i = 0; i < cmbBacSiPhuTrach.getItemCount(); i++) {
-            BacSi doctor = cmbBacSiPhuTrach.getItemAt(i);
+            BacSiChonKham doctor = cmbBacSiPhuTrach.getItemAt(i);
             if (doctor != null && doctor.maNhanVien().equals(maBacSi)) {
                 cmbBacSiPhuTrach.setSelectedIndex(i);
                 return;
             }
         }
         if (maBacSi != null && !maBacSi.isBlank() && session.role() == Role.SYSTEM_ADMIN) {
-            cmbBacSiPhuTrach.addItem(new BacSi(maBacSi, "Bác sĩ đang phụ trách"));
+            cmbBacSiPhuTrach.addItem(new BacSiChonKham(maBacSi, "Bác sĩ đang phụ trách"));
             cmbBacSiPhuTrach.setSelectedIndex(cmbBacSiPhuTrach.getItemCount() - 1);
         }
     }
@@ -862,7 +862,7 @@ public final class PhieuKhamPanel extends JPanel {
     }
 
     public String layMaBacSiLoc() {
-        BacSi doctor = (BacSi) cmbBacSiLoc.getSelectedItem();
+        BacSiChonKham doctor = (BacSiChonKham) cmbBacSiLoc.getSelectedItem();
         return doctor == null ? "" : doctor.maNhanVien();
     }
 
@@ -886,7 +886,7 @@ public final class PhieuKhamPanel extends JPanel {
     }
 
     public String layMaBacSiPhuTrach() {
-        BacSi doctor = (BacSi) cmbBacSiPhuTrach.getSelectedItem();
+        BacSiChonKham doctor = (BacSiChonKham) cmbBacSiPhuTrach.getSelectedItem();
         return doctor == null ? "" : doctor.maNhanVien();
     }
 
