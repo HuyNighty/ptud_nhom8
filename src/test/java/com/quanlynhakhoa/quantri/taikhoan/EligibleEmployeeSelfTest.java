@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
+import com.quanlynhakhoa.model.taikhoan.NhanVienDuDieuKien;
+import com.quanlynhakhoa.model.taikhoan.KetQuaNhanVienDuDieuKien;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
@@ -84,27 +86,27 @@ public final class EligibleEmployeeSelfTest {
     }
 
     public static void main(String[] args) throws Exception {
-        check(EligibleEmployee.roleForJob("LT") == Role.RECEPTIONIST, "Receptionist mapping");
-        check(EligibleEmployee.roleForJob("BS") == Role.DOCTOR, "Doctor mapping");
-        check(EligibleEmployee.roleForJob("YT") == Role.NURSE, "Nurse mapping");
-        check(EligibleEmployee.roleForJob("QL") == Role.CLINIC_MANAGER, "Clinic manager mapping");
-        check(EligibleEmployee.roleForJob("KHO") == Role.INVENTORY_MANAGER, "Inventory mapping");
-        reject(IllegalArgumentException.class, () -> EligibleEmployee.roleForJob("AD"));
-        reject(IllegalArgumentException.class, () -> EligibleEmployee.roleForJob("??"));
-        reject(IllegalArgumentException.class, () -> EligibleEmployee.roleForJob(null));
+        check(NhanVienDuDieuKien.roleForJob("LT") == Role.RECEPTIONIST, "Receptionist mapping");
+        check(NhanVienDuDieuKien.roleForJob("BS") == Role.DOCTOR, "Doctor mapping");
+        check(NhanVienDuDieuKien.roleForJob("YT") == Role.NURSE, "Nurse mapping");
+        check(NhanVienDuDieuKien.roleForJob("QL") == Role.CLINIC_MANAGER, "Clinic manager mapping");
+        check(NhanVienDuDieuKien.roleForJob("KHO") == Role.INVENTORY_MANAGER, "Inventory mapping");
+        reject(IllegalArgumentException.class, () -> NhanVienDuDieuKien.roleForJob("AD"));
+        reject(IllegalArgumentException.class, () -> NhanVienDuDieuKien.roleForJob("??"));
+        reject(IllegalArgumentException.class, () -> NhanVienDuDieuKien.roleForJob(null));
         reject(IllegalArgumentException.class,
-                () -> new EligibleEmployee("NV01", "Doctor", "BS", Role.RECEPTIONIST));
+                () -> new NhanVienDuDieuKien("NV01", "Doctor", "BS", Role.RECEPTIONIST));
         reject(IllegalArgumentException.class,
-                () -> new EligibleEmployee("bad id", "Doctor", "BS", Role.DOCTOR));
+                () -> new NhanVienDuDieuKien("bad id", "Doctor", "BS", Role.DOCTOR));
         reject(IllegalArgumentException.class,
-                () -> new EligibleEmployee("NV01", " ", "BS", Role.DOCTOR));
-        EligibleEmployee doctor = new EligibleEmployee("NV01", "Bác sĩ thử nghiệm", "BS", Role.DOCTOR);
+                () -> new NhanVienDuDieuKien("NV01", " ", "BS", Role.DOCTOR));
+        NhanVienDuDieuKien doctor = new NhanVienDuDieuKien("NV01", "Bác sĩ thử nghiệm", "BS", Role.DOCTOR);
         check(doctor.displayLabel().contains("NV01"), "Display includes ID");
         check(doctor.displayLabel().contains("Bác sĩ"), "Display includes name");
 
-        var list = new ArrayList<EligibleEmployee>();
+        var list = new ArrayList<NhanVienDuDieuKien>();
         list.add(doctor);
-        EligibleEmployeeDao.Result snapshot = new EligibleEmployeeDao.Result(list, false);
+        KetQuaNhanVienDuDieuKien snapshot = new KetQuaNhanVienDuDieuKien(list, false);
         list.clear();
         check(snapshot.employees().size() == 1, "Defensive immutable copy");
         reject(UnsupportedOperationException.class, () -> snapshot.employees().clear());
@@ -137,7 +139,7 @@ public final class EligibleEmployeeSelfTest {
                 new String[]{"TESTBS09", "Bác sĩ kiểm thử", "BS"});
         EligibleEmployeeService service = new EligibleEmployeeService(user(Role.SYSTEM_ADMIN),
                 () -> fakeConnection(dbRows, closes, verified));
-        EligibleEmployeeDao.Result found = service.listEligible();
+        KetQuaNhanVienDuDieuKien found = service.listEligible();
         check(verified.get(), "SQL validated");
         check(closes.get() == 1, "Connection closed");
         check(found.employees().size() == 2, "Two eligible rows");
@@ -146,7 +148,7 @@ public final class EligibleEmployeeSelfTest {
         check(!found.truncated(), "Not truncated");
 
         AtomicInteger zeroClosed = new AtomicInteger();
-        EligibleEmployeeDao.Result zero = new EligibleEmployeeService(user(Role.SYSTEM_ADMIN),
+        KetQuaNhanVienDuDieuKien zero = new EligibleEmployeeService(user(Role.SYSTEM_ADMIN),
                 () -> fakeConnection(List.of(), zeroClosed, new AtomicBoolean())).listEligible();
         check(zero.employees().isEmpty(), "Empty eligible list");
         check(zeroClosed.get() == 1, "Empty connection closed");
@@ -155,7 +157,7 @@ public final class EligibleEmployeeSelfTest {
         for (int i = 0; i < 201; i++) {
             many.add(new String[]{"NV" + String.format("%08d", i), "Name " + i, "BS"});
         }
-        EligibleEmployeeDao.Result limited = new EligibleEmployeeService(user(Role.SYSTEM_ADMIN),
+        KetQuaNhanVienDuDieuKien limited = new EligibleEmployeeService(user(Role.SYSTEM_ADMIN),
                 () -> fakeConnection(many, new AtomicInteger(), new AtomicBoolean())).listEligible();
         check(limited.employees().size() == 200, "200 row limit");
         check(limited.truncated(), "Truncation signaled");

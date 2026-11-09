@@ -3,7 +3,7 @@ package com.quanlynhakhoa.quantri.nhanvien.ui;
 import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
 import com.quanlynhakhoa.model.nhanvien.DongDanhSachNhanVien;
 import com.quanlynhakhoa.quantri.nhanvien.*;
-import com.quanlynhakhoa.quantri.taikhoan.EligibleEmployee;
+import com.quanlynhakhoa.model.taikhoan.NhanVienDuDieuKien;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.List;
@@ -31,7 +31,7 @@ public final class JobTitleLabelsSelfTest {
                         null,null,null,LocalDate.of(2020,1,1),null));
                 require(code.equals(request.jobTitle()));
                 verifyJdbcBinding(request);
-                var employee=new EligibleEmployee("NVTEST","Kiểm thử",code,EligibleEmployee.roleForJob(code));
+                var employee=new NhanVienDuDieuKien("NVTEST","Kiểm thử",code,NhanVienDuDieuKien.roleForJob(code));
                 require(employee.displayLabel().endsWith("("+expected.get(code)+")"));
                 require(employee.jobTitle().equals(code));
             }

@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
-import com.quanlynhakhoa.quantri.taikhoan.entity.Account;
+import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
 import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
 import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
@@ -23,7 +23,7 @@ public final class LoginPolicy {
         this.verifier = Objects.requireNonNull(verifier, "verifier");
     }
 
-    public LoginPlan evaluate(Account account, ThongTinNhanVien employee,
+    public LoginPlan evaluate(ThongTinTaiKhoan account, ThongTinNhanVien employee,
                               String rawPassword, LocalDateTime utcNow) {
         Objects.requireNonNull(utcNow, "utcNow");
         if (account == null) return LoginPlan.rejectedUnknown();
@@ -65,7 +65,7 @@ public final class LoginPolicy {
                 account.lastLoginAt(), utcNow);
     }
 
-    private static boolean employeeEligible(Account account, ThongTinNhanVien employee) {
+    private static boolean employeeEligible(ThongTinTaiKhoan account, ThongTinNhanVien employee) {
         if (account.employeeId() == null) return account.role() == Role.SYSTEM_ADMIN;
         return employee != null && account.employeeId().equals(employee.id()) &&
                 employee.status() == EmployeeStatus.DANG_LAM_VIEC;

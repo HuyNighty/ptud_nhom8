@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
-import com.quanlynhakhoa.quantri.taikhoan.entity.Account;
+import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
 import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
 import java.time.LocalDateTime;
@@ -28,7 +28,7 @@ public record LoginPlan(
                 null, null, null, null, null, null, null);
     }
 
-    public static LoginPlan unchanged(Account account) {
+    public static LoginPlan unchanged(ThongTinTaiKhoan account) {
         return new LoginPlan(false, false, false,
                 account.status(), account.failedAttempts(), account.firstFailureAt(),
                 account.lockedAt(), account.lockedUntil(), account.lockSource(),

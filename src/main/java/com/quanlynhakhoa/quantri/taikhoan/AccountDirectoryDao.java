@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
+import com.quanlynhakhoa.model.taikhoan.KetQuaDanhSachTaiKhoan;
+import com.quanlynhakhoa.model.taikhoan.DongDanhSachTaiKhoan;
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
@@ -31,13 +33,9 @@ public final class AccountDirectoryDao {
             ORDER BY a.maTaiKhoan
             """;
 
-    public record Result(List<AccountDirectoryRow> rows, boolean truncated) {
-        public Result {
-            rows = List.copyOf(rows);
-        }
-    }
 
-    public Result search(Connection connection, String keyword, Role role,
+
+    public KetQuaDanhSachTaiKhoan search(Connection connection, String keyword, Role role,
                          AccountStatus status) throws SQLException {
         Objects.requireNonNull(connection, "connection");
         Objects.requireNonNull(keyword, "keyword");
@@ -48,7 +46,7 @@ public final class AccountDirectoryDao {
             statement.setString(7, role == null ? null : role.name());
             statement.setString(8, status == null ? null : status.name());
             statement.setString(9, status == null ? null : status.name());
-            List<AccountDirectoryRow> rows = new ArrayList<>();
+            List<DongDanhSachTaiKhoan> rows = new ArrayList<>();
             boolean truncated = false;
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
@@ -58,7 +56,7 @@ public final class AccountDirectoryDao {
                     }
                     Timestamp lastLogin = rs.getTimestamp("lanDangNhapCuoi");
                     String lockSource = rs.getString("nguonKhoa");
-                    rows.add(new AccountDirectoryRow(
+                    rows.add(new DongDanhSachTaiKhoan(
                             rs.getString("maTaiKhoan"),
                             rs.getString("tenDangNhap"),
                             rs.getString("tenHienThi"),
@@ -71,7 +69,7 @@ public final class AccountDirectoryDao {
                             lockSource == null ? null : LockSource.valueOf(lockSource)));
                 }
             }
-            return new Result(rows, truncated);
+            return new KetQuaDanhSachTaiKhoan(rows, truncated);
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
+import com.quanlynhakhoa.model.taikhoan.KetQuaDanhSachTaiKhoan;
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
@@ -27,7 +28,7 @@ public final class AccountDirectoryService {
         this.connections = Objects.requireNonNull(connections, "connections");
     }
 
-    public AccountDirectoryDao.Result search(String keyword, Role role,
+    public KetQuaDanhSachTaiKhoan search(String keyword, Role role,
                                              AccountStatus status) throws SQLException {
         authorization.require(session, Permission.ACCOUNT_MANAGE);
         String normalized = Objects.requireNonNull(keyword, "keyword").trim();
@@ -36,7 +37,7 @@ public final class AccountDirectoryService {
         }
         try (Connection connection = connections.open()) {
             authorization.require(session, Permission.ACCOUNT_MANAGE);
-            AccountDirectoryDao.Result result = dao.search(connection, normalized, role, status);
+            KetQuaDanhSachTaiKhoan result = dao.search(connection, normalized, role, status);
             authorization.require(session, Permission.ACCOUNT_MANAGE);
             return result;
         }

@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
+import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
 import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
 import com.quanlynhakhoa.quantri.taikhoan.entity.*;
 import com.quanlynhakhoa.quantri.nhanvien.entity.*;
@@ -14,10 +15,10 @@ public final class AuthPolicySelfTest {
         checks++;
         if (!ok) throw new AssertionError(reason);
     }
-    private static Account account(Role role, String employeeId, AccountStatus state,
+    private static ThongTinTaiKhoan account(Role role, String employeeId, AccountStatus state,
             int attempts, LocalDateTime first, LocalDateTime until, LockSource source,
             boolean forceChange) {
-        return new Account("TEST0001", employeeId, "synthetic-user", "Synthetic User",
+        return new ThongTinTaiKhoan("TEST0001", employeeId, "synthetic-user", "Synthetic User",
                 "synthetic-not-a-stored-hash", role, state, attempts, first,
                 until == null ? null : until.minusMinutes(15), until, source,
                 source == null ? null : "Synthetic reason", forceChange,
@@ -25,7 +26,7 @@ public final class AuthPolicySelfTest {
     }
     private static final LoginPolicy SYNTH = new LoginPolicy((raw, hash) -> "correct".equals(raw));
     public static void main(String[] args) {
-        Account admin = account(Role.SYSTEM_ADMIN, null, AccountStatus.HOAT_DONG,
+        ThongTinTaiKhoan admin = account(Role.SYSTEM_ADMIN, null, AccountStatus.HOAT_DONG,
                 0, null, null, null, true);
         LoginPlan good = SYNTH.evaluate(admin, null, "correct", NOW);
         check(good.authenticated() && good.forcePasswordChange(), "valid admin + force-change");
@@ -38,22 +39,22 @@ public final class AuthPolicySelfTest {
         LoginPlan wrong = SYNTH.evaluate(admin, null, "bad", NOW);
         check(!wrong.authenticated() && wrong.nextFailedAttempts() == 1 &&
                 wrong.nextFirstFailureAt().equals(NOW), "first failure");
-        Account four = account(Role.SYSTEM_ADMIN, null, AccountStatus.HOAT_DONG, 4,
+        ThongTinTaiKhoan four = account(Role.SYSTEM_ADMIN, null, AccountStatus.HOAT_DONG, 4,
                 NOW.minusMinutes(4), null, null, false);
         LoginPlan fifth = SYNTH.evaluate(four, null, "bad", NOW);
         check(fifth.nextStatus() == AccountStatus.BI_KHOA &&
                 fifth.nextFailedAttempts() == 5 &&
                 fifth.nextLockSource() == LockSource.FAILED_LOGIN &&
                 fifth.nextLockedUntil().equals(NOW.plusMinutes(15)), "fifth attempt locks");
-        Account oldWindow = account(Role.SYSTEM_ADMIN, null, AccountStatus.HOAT_DONG, 4,
+        ThongTinTaiKhoan oldWindow = account(Role.SYSTEM_ADMIN, null, AccountStatus.HOAT_DONG, 4,
                 NOW.minusMinutes(15), null, null, false);
         check(SYNTH.evaluate(oldWindow, null, "bad", NOW).nextFailedAttempts() == 1,
                 "boundary resets failure window");
-        Account autoLock = account(Role.SYSTEM_ADMIN, null, AccountStatus.BI_KHOA, 5,
+        ThongTinTaiKhoan autoLock = account(Role.SYSTEM_ADMIN, null, AccountStatus.BI_KHOA, 5,
                 NOW.minusMinutes(15), NOW.plusMinutes(1), LockSource.FAILED_LOGIN, false);
         check(!SYNTH.evaluate(autoLock, null, "correct", NOW).stateChanged(),
                 "locked before expiry");
-        Account expired = account(Role.SYSTEM_ADMIN, null, AccountStatus.BI_KHOA, 5,
+        ThongTinTaiKhoan expired = account(Role.SYSTEM_ADMIN, null, AccountStatus.BI_KHOA, 5,
                 NOW.minusMinutes(40), NOW, LockSource.FAILED_LOGIN, false);
         LoginPlan expiredGood = SYNTH.evaluate(expired, null, "correct", NOW);
         check(expiredGood.authenticated() && expiredGood.nextStatus() == AccountStatus.HOAT_DONG &&
@@ -61,15 +62,15 @@ public final class AuthPolicySelfTest {
         LoginPlan expiredBad = SYNTH.evaluate(expired, null, "bad", NOW);
         check(!expiredBad.authenticated() && expiredBad.nextStatus() == AccountStatus.HOAT_DONG &&
                 expiredBad.nextFailedAttempts() == 1, "expired reset + new failed login");
-        Account adminLock = account(Role.SYSTEM_ADMIN, null, AccountStatus.BI_KHOA, 0,
+        ThongTinTaiKhoan adminLock = account(Role.SYSTEM_ADMIN, null, AccountStatus.BI_KHOA, 0,
                 null, null, LockSource.ADMIN_ACTION, false);
         check(!SYNTH.evaluate(adminLock, null, "correct", NOW).stateChanged(),
                 "admin lock never auto unlocks");
-        Account disabled = account(Role.SYSTEM_ADMIN, null, AccountStatus.VO_HIEU, 0,
+        ThongTinTaiKhoan disabled = account(Role.SYSTEM_ADMIN, null, AccountStatus.VO_HIEU, 0,
                 null, null, null, false);
         check(!SYNTH.evaluate(disabled, null, "correct", NOW).authenticated(),
                 "disabled account");
-        Account worker = account(Role.RECEPTIONIST, "NV0001", AccountStatus.HOAT_DONG,
+        ThongTinTaiKhoan worker = account(Role.RECEPTIONIST, "NV0001", AccountStatus.HOAT_DONG,
                 0, null, null, null, false);
         check(!SYNTH.evaluate(worker, null, "correct", NOW).authenticated(),
                 "missing employee rejected");

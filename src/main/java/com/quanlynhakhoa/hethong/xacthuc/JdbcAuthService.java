@@ -2,7 +2,7 @@ package com.quanlynhakhoa.hethong.xacthuc;
 
 import com.quanlynhakhoa.quantri.taikhoan.dao.AccountDao;
 import com.quanlynhakhoa.quantri.nhanvien.dao.EmployeeDao;
-import com.quanlynhakhoa.quantri.taikhoan.entity.Account;
+import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
 import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -84,11 +84,11 @@ public final class JdbcAuthService {
                     connection.commit();
                     return AuthDecision.rejected();
                 }
-                Optional<Account> found = accounts.findByUsername(connection, username);
+                Optional<ThongTinTaiKhoan> found = accounts.findByUsername(connection, username);
                 if (found.isEmpty()) {
                     throw new SQLException("Locked account was not visible in the same transaction");
                 }
-                Account account = found.get();
+                ThongTinTaiKhoan account = found.get();
                 ThongTinNhanVien employee = null;
                 if (account.employeeId() != null) {
                     if (lockExistingRow(connection, LOCK_EMPLOYEE_SQL, account.employeeId())) {

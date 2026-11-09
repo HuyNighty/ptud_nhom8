@@ -1,10 +1,12 @@
 package com.quanlynhakhoa.quantri.taikhoan.ui;
 
+import com.quanlynhakhoa.model.taikhoan.KetQuaNhanVienDuDieuKien;
+import com.quanlynhakhoa.model.taikhoan.KetQuaDanhSachTaiKhoan;
 import com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryDao;
-import com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryRow;
+import com.quanlynhakhoa.model.taikhoan.DongDanhSachTaiKhoan;
 import com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService;
 import com.quanlynhakhoa.quantri.taikhoan.AccountCreateService;
-import com.quanlynhakhoa.quantri.taikhoan.EligibleEmployee;
+import com.quanlynhakhoa.model.taikhoan.NhanVienDuDieuKien;
 import com.quanlynhakhoa.quantri.taikhoan.EligibleEmployeeDao;
 import com.quanlynhakhoa.quantri.taikhoan.EligibleEmployeeService;
 import com.quanlynhakhoa.quantri.taikhoan.AccountStateService;
@@ -217,7 +219,7 @@ public final class AccountPanel extends JPanel {
         );
         return;
     }
-    
+
         if (loading || creating || changingState) {
             reloadPending = true; // newest filter selection wins after current operation
             return;
@@ -236,8 +238,8 @@ public final class AccountPanel extends JPanel {
         loading = true;
         updateControls();
         lblStatus.setText("Đang tải dữ liệu...");
-        new SwingWorker<AccountDirectoryDao.Result, Void>() {
-            @Override protected AccountDirectoryDao.Result doInBackground() throws Exception {
+        new SwingWorker<KetQuaDanhSachTaiKhoan, Void>() {
+            @Override protected KetQuaDanhSachTaiKhoan doInBackground() throws Exception {
                 return service.search(search, role, status);
             }
             @Override protected void done() {
@@ -250,7 +252,7 @@ public final class AccountPanel extends JPanel {
                     return;
                 }
                 try {
-                    AccountDirectoryDao.Result result = get();
+                    KetQuaDanhSachTaiKhoan result = get();
                     // A changed filter supersedes this result; never show obsolete rows.
                     if (!reloadPending) {
                         model.setRows(result.rows());
@@ -286,8 +288,8 @@ public final class AccountPanel extends JPanel {
         creating = true;
         updateControls();
         lblStatus.setText("Đang tìm nhân viên chưa có tài khoản...");
-        new SwingWorker<EligibleEmployeeDao.Result, Void>() {
-            @Override protected EligibleEmployeeDao.Result doInBackground() throws Exception {
+        new SwingWorker<KetQuaNhanVienDuDieuKien, Void>() {
+            @Override protected KetQuaNhanVienDuDieuKien doInBackground() throws Exception {
                 return eligibleEmployees.listEligible();
             }
             @Override protected void done() {
@@ -298,7 +300,7 @@ public final class AccountPanel extends JPanel {
                     return;
                 }
                 try {
-                    EligibleEmployeeDao.Result result = get();
+                    KetQuaNhanVienDuDieuKien result = get();
                     if (result.employees().isEmpty()) {
                         lblStatus.setText("Không có nhân viên đủ điều kiện cấp tài khoản.");
                         JOptionPane.showMessageDialog(AccountPanel.this,
@@ -327,16 +329,16 @@ public final class AccountPanel extends JPanel {
         }.execute();
     }
 
-    private void showCreateAccountDialog(List<EligibleEmployee> employees) {
+    private void showCreateAccountDialog(List<NhanVienDuDieuKien> employees) {
         if (!authorization.can(session, Permission.ACCOUNT_MANAGE)) return;
-        JComboBox<EligibleEmployee> cmbEmployee =
-                new JComboBox<>(employees.toArray(new EligibleEmployee[0]));
+        JComboBox<NhanVienDuDieuKien> cmbEmployee =
+                new JComboBox<>(employees.toArray(new NhanVienDuDieuKien[0]));
         cmbEmployee.setRenderer(new DefaultListCellRenderer() {
             @Override public java.awt.Component getListCellRendererComponent(
                     javax.swing.JList<?> list, Object value, int index,
                     boolean selected, boolean focused) {
                 super.getListCellRendererComponent(list, value, index, selected, focused);
-                setText(value instanceof EligibleEmployee employee
+                setText(value instanceof NhanVienDuDieuKien employee
                         ? employee.displayLabel() : "Chọn nhân viên");
                 return this;
             }
@@ -344,12 +346,12 @@ public final class AccountPanel extends JPanel {
         JTextField txtUsername = new JTextField(16);
         JTextField txtDisplayName = new JTextField(16);
         JLabel lblAssignedRole = new JLabel();
-        EligibleEmployee initial = (EligibleEmployee) cmbEmployee.getSelectedItem();
+        NhanVienDuDieuKien initial = (NhanVienDuDieuKien) cmbEmployee.getSelectedItem();
         if (initial == null) return;
         txtDisplayName.setText(initial.fullName());
         lblAssignedRole.setText(roleLabel(initial.role()));
         cmbEmployee.addActionListener(event -> {
-            EligibleEmployee employee = (EligibleEmployee) cmbEmployee.getSelectedItem();
+            NhanVienDuDieuKien employee = (NhanVienDuDieuKien) cmbEmployee.getSelectedItem();
             if (employee != null) {
                 txtDisplayName.setText(employee.fullName());
                 lblAssignedRole.setText(roleLabel(employee.role()));
@@ -382,7 +384,7 @@ public final class AccountPanel extends JPanel {
                         "Dữ liệu chưa hợp lệ", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            EligibleEmployee employee = (EligibleEmployee) cmbEmployee.getSelectedItem();
+            NhanVienDuDieuKien employee = (NhanVienDuDieuKien) cmbEmployee.getSelectedItem();
             if (employee == null) return;
             String staff = employee.employeeId();
             String login = txtUsername.getText().trim();
@@ -443,7 +445,7 @@ public final class AccountPanel extends JPanel {
         }
     }
 
-    private AccountDirectoryRow selectedAccount() {
+    private DongDanhSachTaiKhoan selectedAccount() {
         int selected = tblAccounts.getSelectedRow();
         return selected < 0 ? null : model.get(tblAccounts.convertRowIndexToModel(selected));
     }
@@ -454,7 +456,7 @@ public final class AccountPanel extends JPanel {
         btnSearch.setEnabled(ready);
         btnRefresh.setEnabled(ready);
         btnCreate.setEnabled(ready);
-        AccountDirectoryRow row = selectedAccount();
+        DongDanhSachTaiKhoan row = selectedAccount();
         boolean targetAllowed = ready && row != null && row.role() != Role.SYSTEM_ADMIN;
         btnLock.setEnabled(targetAllowed && row.status() == AccountStatus.HOAT_DONG
                 && !session.accountId().equalsIgnoreCase(row.accountId()));
@@ -464,7 +466,7 @@ public final class AccountPanel extends JPanel {
 
     private void requestStateChange(boolean locking) {
         if (!(locking ? btnLock : btnUnlock).isEnabled()) return;
-        AccountDirectoryRow target = selectedAccount();
+        DongDanhSachTaiKhoan target = selectedAccount();
         if (target == null) return;
         String reason = null;
         if (locking) {
@@ -489,7 +491,7 @@ public final class AccountPanel extends JPanel {
         applyStateChange(target, locking, reason);
     }
 
-    private void applyStateChange(AccountDirectoryRow target, boolean locking, String reason) {
+    private void applyStateChange(DongDanhSachTaiKhoan target, boolean locking, String reason) {
         if (loading || creating || changingState || !configured
                 || !authorization.can(session, Permission.ACCOUNT_MANAGE)) return;
         changingState = true;
@@ -541,7 +543,7 @@ public final class AccountPanel extends JPanel {
             lblDetail.setText("Chọn một tài khoản để xem thông tin.");
             return;
         }
-        AccountDirectoryRow row = model.get(tblAccounts.convertRowIndexToModel(selected));
+        DongDanhSachTaiKhoan row = model.get(tblAccounts.convertRowIndexToModel(selected));
         lblDetail.setText("Mã: " + row.accountId() + "  |  Nhân viên: "
                 + show(row.employeeId()) + "  |  Đổi mật khẩu bắt buộc: "
                 + (row.passwordChangeRequired() ? "Có" : "Không"));
@@ -575,19 +577,19 @@ public final class AccountPanel extends JPanel {
                 "Mã TK", "Tên đăng nhập", "Tên hiển thị", "Nhân viên",
                 "Vai trò", "Trạng thái", "Nguồn khóa", "Đăng nhập cuối"
         };
-        private List<AccountDirectoryRow> rows = new ArrayList<>();
+        private List<DongDanhSachTaiKhoan> rows = new ArrayList<>();
 
-        void setRows(List<AccountDirectoryRow> next) {
+        void setRows(List<DongDanhSachTaiKhoan> next) {
             rows = List.copyOf(next);
             fireTableDataChanged();
         }
-        AccountDirectoryRow get(int row) { return rows.get(row); }
+        DongDanhSachTaiKhoan get(int row) { return rows.get(row); }
         @Override public int getRowCount() { return rows.size(); }
         @Override public int getColumnCount() { return columns.length; }
         @Override public String getColumnName(int column) { return columns[column]; }
         @Override public boolean isCellEditable(int row, int column) { return false; }
         @Override public Object getValueAt(int index, int column) {
-            AccountDirectoryRow row = rows.get(index);
+            DongDanhSachTaiKhoan row = rows.get(index);
             return switch (column) {
                 case 0 -> row.accountId();
                 case 1 -> row.username();

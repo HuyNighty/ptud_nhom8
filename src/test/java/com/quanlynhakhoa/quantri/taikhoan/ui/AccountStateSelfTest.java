@@ -240,7 +240,7 @@ public final class AccountStateSelfTest {
             Method selected = AccountPanel.class.getDeclaredMethod("selectedAccount");
             selected.setAccessible(true);
             Method method = AccountPanel.class.getDeclaredMethod("applyStateChange",
-                    com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryRow.class, boolean.class, String.class);
+                    com.quanlynhakhoa.model.taikhoan.DongDanhSachTaiKhoan.class, boolean.class, String.class);
             method.setAccessible(true);
             method.invoke(panel, selected.invoke(panel), locking, "UI reason");
             return null;

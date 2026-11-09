@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.quantri.taikhoan.dao;
 
-import com.quanlynhakhoa.quantri.taikhoan.entity.Account;
+import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
 import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
 import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
@@ -29,7 +29,7 @@ public final class AccountDao {
      * The caller owns Connection; this DAO closes only statement and result set.
      * R3-A2 must add an explicit transaction and row lock before mutating login state.
      */
-    public Optional<Account> findByUsername(Connection connection, String username)
+    public Optional<ThongTinTaiKhoan> findByUsername(Connection connection, String username)
             throws SQLException {
         if (connection == null) throw new IllegalArgumentException("connection required");
         if (username == null || username.isBlank()) return Optional.empty();
@@ -42,9 +42,9 @@ public final class AccountDao {
         }
     }
 
-    private static Account map(ResultSet rs) throws SQLException {
+    private static ThongTinTaiKhoan map(ResultSet rs) throws SQLException {
         String lock = rs.getString("nguonKhoa");
-        return new Account(
+        return new ThongTinTaiKhoan(
                 rs.getString("maTaiKhoan"),
                 rs.getString("maNhanVien"),
                 rs.getString("tenDangNhap"),
