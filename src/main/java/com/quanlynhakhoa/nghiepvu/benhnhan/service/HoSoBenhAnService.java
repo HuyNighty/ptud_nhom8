@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.benhnhan.service;
 
 import com.quanlynhakhoa.nghiepvu.benhnhan.dao.BenhNhanDao;
 import com.quanlynhakhoa.nghiepvu.benhnhan.dao.HoSoBenhAnDao;
-import com.quanlynhakhoa.nghiepvu.benhnhan.entity.HoSoBenhAn;
+import com.quanlynhakhoa.entity.HoSoBenhAn;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
