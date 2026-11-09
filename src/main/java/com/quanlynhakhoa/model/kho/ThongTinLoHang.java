@@ -1,10 +1,10 @@
-package com.quanlynhakhoa.inventory.lohang.entity;
+package com.quanlynhakhoa.model.kho;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 /** Model chỉ đọc lô thuốc hoặc vật tư; số tồn chỉ thay đổi qua chứng từ kho. */
-public class LoHang {
+public class ThongTinLoHang {
     public static final String LOAI_TAT_CA = "ALL";
     public static final String LOAI_THUOC = "THUOC";
     public static final String LOAI_VAT_TU = "VATTU";
@@ -23,9 +23,9 @@ public class LoHang {
     private String tenNhaCungCap;
     private int soLuongTon;
 
-    public LoHang() { }
+    public ThongTinLoHang() { }
 
-    public LoHang(String maLo, String soLo, LocalDate ngaySanXuat, LocalDate hanSuDung,
+    public ThongTinLoHang(String maLo, String soLo, LocalDate ngaySanXuat, LocalDate hanSuDung,
                   String maThuoc, String maVatTu, String tenHang,
                   String maNhaCungCap, String tenNhaCungCap, int soLuongTon) {
         this.maLo = maLo;

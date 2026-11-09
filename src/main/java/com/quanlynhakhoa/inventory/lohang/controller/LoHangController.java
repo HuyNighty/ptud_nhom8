@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.inventory.lohang.controller;
 
-import com.quanlynhakhoa.inventory.lohang.entity.LoHang;
+import com.quanlynhakhoa.model.kho.ThongTinLoHang;
 import com.quanlynhakhoa.inventory.lohang.service.LoHangService;
 import com.quanlynhakhoa.inventory.lohang.view.LoHangPanel;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
@@ -37,8 +37,8 @@ public final class LoHangController implements ActionListener {
         String keyword = view.getTuKhoa();
         String kind = view.getLoaiLoc();
         String expiry = view.getHanLoc();
-        new SwingWorker<List<LoHang>, Void>() {
-            @Override protected List<LoHang> doInBackground() throws Exception {
+        new SwingWorker<List<ThongTinLoHang>, Void>() {
+            @Override protected List<ThongTinLoHang> doInBackground() throws Exception {
                 return service.timKiem(keyword, kind, expiry);
             }
             @Override protected void done() {

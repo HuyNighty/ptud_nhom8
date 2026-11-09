@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.lohang.dao;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.kho.lohang.entity.LoHang;
+import com.quanlynhakhoa.model.kho.ThongTinLoHang;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -32,15 +32,15 @@ public class LoHangDao {
                    OR (? = 'CON_HAN' AND (l.hanSuDung IS NULL OR l.hanSuDung >= CAST(GETDATE() AS DATE))))
             """;
 
-    public List<LoHang> timKiem(String tuKhoa, String loaiHang, String hanSuDung)
+    public List<ThongTinLoHang> timKiem(String tuKhoa, String loaiHang, String hanSuDung)
             throws SQLException {
         String sql = BASE_QUERY + " ORDER BY CASE WHEN l.hanSuDung IS NULL THEN 1 ELSE 0 END, "
                 + "l.hanSuDung, l.maLo";
         String keyword = tuKhoa == null ? "" : tuKhoa.trim();
         String like = "%" + keyword + "%";
-        String kind = loaiHang == null ? LoHang.LOAI_TAT_CA : loaiHang;
-        String expiry = hanSuDung == null ? LoHang.HAN_TAT_CA : hanSuDung;
-        List<LoHang> result = new ArrayList<>();
+        String kind = loaiHang == null ? ThongTinLoHang.LOAI_TAT_CA : loaiHang;
+        String expiry = hanSuDung == null ? ThongTinLoHang.HAN_TAT_CA : hanSuDung;
+        List<ThongTinLoHang> result = new ArrayList<>();
         try (Connection con = TeamDevConnection.open();
              PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, keyword);
@@ -61,10 +61,10 @@ public class LoHangDao {
         return result;
     }
 
-    private LoHang docMotDong(ResultSet rs) throws SQLException {
+    private ThongTinLoHang docMotDong(ResultSet rs) throws SQLException {
         Date ngaySanXuat = rs.getDate("ngaySanXuat");
         Date hanSuDung = rs.getDate("hanSuDung");
-        return new LoHang(
+        return new ThongTinLoHang(
                 rs.getString("maLo"),
                 rs.getString("soLo"),
                 ngaySanXuat == null ? null : ngaySanXuat.toLocalDate(),

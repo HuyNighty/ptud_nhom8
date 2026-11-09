@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.lohang.service;
 
 import com.quanlynhakhoa.nghiepvu.kho.lohang.dao.LoHangDao;
-import com.quanlynhakhoa.nghiepvu.kho.lohang.entity.LoHang;
+import com.quanlynhakhoa.model.kho.ThongTinLoHang;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -26,19 +26,19 @@ public class LoHangService {
 
     public boolean coQuyen(Permission quyen) { return phanQuyen.can(phien, quyen); }
 
-    public List<LoHang> timKiem(String tuKhoa, String loaiHang, String hanSuDung)
+    public List<ThongTinLoHang> timKiem(String tuKhoa, String loaiHang, String hanSuDung)
             throws SQLException {
         phanQuyen.require(phien, Permission.INVENTORY_READ);
         String keyword = tuKhoa == null ? "" : tuKhoa.trim();
         if (keyword.length() > 100) throw new IllegalArgumentException("Từ khóa tìm kiếm tối đa 100 ký tự.");
-        String kind = loaiHang == null || loaiHang.isBlank() ? LoHang.LOAI_TAT_CA : loaiHang.trim();
-        if (!LoHang.LOAI_TAT_CA.equals(kind) && !LoHang.LOAI_THUOC.equals(kind)
-                && !LoHang.LOAI_VAT_TU.equals(kind)) {
+        String kind = loaiHang == null || loaiHang.isBlank() ? ThongTinLoHang.LOAI_TAT_CA : loaiHang.trim();
+        if (!ThongTinLoHang.LOAI_TAT_CA.equals(kind) && !ThongTinLoHang.LOAI_THUOC.equals(kind)
+                && !ThongTinLoHang.LOAI_VAT_TU.equals(kind)) {
             throw new IllegalArgumentException("Bộ lọc loại mặt hàng không hợp lệ.");
         }
-        String expiry = hanSuDung == null || hanSuDung.isBlank() ? LoHang.HAN_TAT_CA : hanSuDung.trim();
-        if (!LoHang.HAN_TAT_CA.equals(expiry) && !LoHang.HAN_HET_HAN.equals(expiry)
-                && !LoHang.HAN_CON_HAN.equals(expiry)) {
+        String expiry = hanSuDung == null || hanSuDung.isBlank() ? ThongTinLoHang.HAN_TAT_CA : hanSuDung.trim();
+        if (!ThongTinLoHang.HAN_TAT_CA.equals(expiry) && !ThongTinLoHang.HAN_HET_HAN.equals(expiry)
+                && !ThongTinLoHang.HAN_CON_HAN.equals(expiry)) {
             throw new IllegalArgumentException("Bộ lọc hạn sử dụng không hợp lệ.");
         }
         return dao.timKiem(keyword, kind, expiry);
