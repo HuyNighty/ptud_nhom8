@@ -41,16 +41,16 @@ public final class VaiTroPanel extends JPanel implements RefreshableFeature {
     private static final Color BORDER = new Color(220, 231, 242);
     private final DesktopSession session;
     private final TongQuanVaiTroService service;
-    private final JComboBox<VaiTroHeThong> rolePicker = new JComboBox<>(VaiTroHeThong.values());
-    private final JButton refresh = new JButton("Làm mới");
-    private final JLabel status = new JLabel("Chưa tải dữ liệu");
-    private final JLabel roleHeading = new JLabel("Vai trò");
-    private final JLabel roleDescription = new JLabel("—");
-    private final JLabel roleStats = new JLabel("—");
-    private final JTextArea grantedList = new JTextArea(8, 20);
+    private final JComboBox<VaiTroHeThong> chonVaiTro = new JComboBox<>(VaiTroHeThong.values());
+    private final JButton btnLamMoi = new JButton("Làm mới");
+    private final JLabel trangThai = new JLabel("Chưa tải dữ liệu");
+    private final JLabel tieuDeVaiTro = new JLabel("Vai trò");
+    private final JLabel moTaVaiTro = new JLabel("—");
+    private final JLabel thongKeVaiTro = new JLabel("—");
+    private final JTextArea danhSachQuyenDaCap = new JTextArea(8, 20);
     private final PermissionMatrixModel matrix = new PermissionMatrixModel();
     private final JTable table = new JTable(matrix);
-    private List<TongQuanVaiTro> data = List.of();
+    private List<TongQuanVaiTro> duLieu = List.of();
     private boolean loading;
     private boolean reloadPending;
 
@@ -80,7 +80,7 @@ public final class VaiTroPanel extends JPanel implements RefreshableFeature {
         toolbar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER), new EmptyBorder(5, 9, 5, 9)));
         toolbar.add(new JLabel("Chọn vai trò:"));
-        rolePicker.setRenderer(new DefaultListCellRenderer() {
+        chonVaiTro.setRenderer(new DefaultListCellRenderer() {
             @Override public Component getListCellRendererComponent(JList<?> list, Object value,
                     int index, boolean selected, boolean focused) {
                 super.getListCellRendererComponent(list, value, index, selected, focused);
@@ -88,29 +88,29 @@ public final class VaiTroPanel extends JPanel implements RefreshableFeature {
                 return this;
             }
         });
-        toolbar.add(rolePicker);
-        toolbar.add(refresh);
+        toolbar.add(chonVaiTro);
+        toolbar.add(btnLamMoi);
         body.add(toolbar, BorderLayout.NORTH);
 
         JPanel details = new JPanel(new BorderLayout(0, 10));
         details.setBackground(Color.WHITE);
         details.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER), new EmptyBorder(16, 18, 15, 18)));
-        roleHeading.setFont(new Font("SansSerif", Font.BOLD, 18));
-        roleHeading.setForeground(NAVY);
-        roleDescription.setForeground(MUTED);
+        tieuDeVaiTro.setFont(new Font("SansSerif", Font.BOLD, 18));
+        tieuDeVaiTro.setForeground(NAVY);
+        moTaVaiTro.setForeground(MUTED);
         JPanel identity = new JPanel(new GridLayout(0, 1, 0, 7));
         identity.setOpaque(false);
-        identity.add(roleHeading);
-        identity.add(roleDescription);
-        identity.add(roleStats);
+        identity.add(tieuDeVaiTro);
+        identity.add(moTaVaiTro);
+        identity.add(thongKeVaiTro);
         details.add(identity, BorderLayout.NORTH);
-        grantedList.setEditable(false);
-        grantedList.setBackground(Color.WHITE);
-        grantedList.setLineWrap(true);
-        grantedList.setWrapStyleWord(true);
-        grantedList.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        details.add(new JScrollPane(grantedList), BorderLayout.CENTER);
+        danhSachQuyenDaCap.setEditable(false);
+        danhSachQuyenDaCap.setBackground(Color.WHITE);
+        danhSachQuyenDaCap.setLineWrap(true);
+        danhSachQuyenDaCap.setWrapStyleWord(true);
+        danhSachQuyenDaCap.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        details.add(new JScrollPane(danhSachQuyenDaCap), BorderLayout.CENTER);
         details.setPreferredSize(new java.awt.Dimension(100, 225));
         body.add(details, BorderLayout.CENTER);
 
@@ -142,16 +142,16 @@ public final class VaiTroPanel extends JPanel implements RefreshableFeature {
         scroller.setBorder(BorderFactory.createLineBorder(BORDER));
         scroller.setPreferredSize(new java.awt.Dimension(100, 258));
         bottom.add(scroller, BorderLayout.CENTER);
-        status.setForeground(MUTED);
-        bottom.add(status, BorderLayout.SOUTH);
+        trangThai.setForeground(MUTED);
+        bottom.add(trangThai, BorderLayout.SOUTH);
         body.add(bottom, BorderLayout.SOUTH);
         javax.swing.JTabbedPane roleTabs = new javax.swing.JTabbedPane();
         roleTabs.addTab("Ma trận quyền hiện tại", body);
         roleTabs.addTab("Quản lý quyền (MVP)", new PhanQuyenCoBanPanel(session));
         add(roleTabs, BorderLayout.CENTER);
 
-        rolePicker.addActionListener(e -> showRole());
-        refresh.addActionListener(e -> reload());
+        chonVaiTro.addActionListener(e -> showRole());
+        btnLamMoi.addActionListener(e -> reload());
         setControls();
         if (autoLoad) reload();
     }
@@ -163,10 +163,10 @@ public final class VaiTroPanel extends JPanel implements RefreshableFeature {
 
     private void reload() {
         if (!session.isActive()) {
-            data = List.of();
-            matrix.setRows(data);
+            duLieu = List.of();
+            matrix.setRows(duLieu);
             clearDetails();
-            status.setText("Phiên đăng nhập đã kết thúc.");
+            trangThai.setText("Phiên đăng nhập đã kết thúc.");
             setControls();
             return;
         }
@@ -176,7 +176,7 @@ public final class VaiTroPanel extends JPanel implements RefreshableFeature {
         }
         loading = true;
         setControls();
-        status.setText("Đang tải số tài khoản theo vai trò...");
+        trangThai.setText("Đang tải số tài khoản theo vai trò...");
         new SwingWorker<List<TongQuanVaiTro>, Void>() {
             @Override protected List<TongQuanVaiTro> doInBackground() throws Exception {
                 return service.load();
@@ -185,21 +185,21 @@ public final class VaiTroPanel extends JPanel implements RefreshableFeature {
                 loading = false;
                 if (!session.isActive()) {
                     reloadPending = false;
-                    data = List.of();
-                    matrix.setRows(data);
+                    duLieu = List.of();
+                    matrix.setRows(duLieu);
                     clearDetails();
-                    status.setText("Phiên đăng nhập đã kết thúc.");
+                    trangThai.setText("Phiên đăng nhập đã kết thúc.");
                     setControls();
                     return;
                 }
                 try {
                     List<TongQuanVaiTro> result = get();
                     if (!reloadPending) {
-                        data = result;
+                        duLieu = result;
                         matrix.setRows(result);
                         showRole();
                         int total = result.stream().mapToInt(TongQuanVaiTro::accountCount).sum();
-                        status.setText(result.size() + " vai trò · " + total
+                        trangThai.setText(result.size() + " vai trò · " + total
                                 + " tài khoản (mọi trạng thái)");
                     }
                 } catch (InterruptedException failure) {
@@ -220,30 +220,30 @@ public final class VaiTroPanel extends JPanel implements RefreshableFeature {
     }
 
     private void showLoadFailure() {
-        data = List.of();
-        matrix.setRows(data);
+        duLieu = List.of();
+        matrix.setRows(duLieu);
         clearDetails();
-        status.setText("Không thể tải vai trò. Kiểm tra kết nối SQL và quyền đọc tài khoản.");
+        trangThai.setText("Không thể tải vai trò. Kiểm tra kết nối SQL và quyền đọc tài khoản.");
     }
 
     private void clearDetails() {
-        roleHeading.setText("Vai trò");
-        roleDescription.setText("—");
-        roleStats.setText("—");
-        grantedList.setText("");
+        tieuDeVaiTro.setText("Vai trò");
+        moTaVaiTro.setText("—");
+        thongKeVaiTro.setText("—");
+        danhSachQuyenDaCap.setText("");
     }
 
     private void showRole() {
-        VaiTroHeThong selected = (VaiTroHeThong) rolePicker.getSelectedItem();
-        TongQuanVaiTro overview = data.stream()
+        VaiTroHeThong selected = (VaiTroHeThong) chonVaiTro.getSelectedItem();
+        TongQuanVaiTro overview = duLieu.stream()
                 .filter(row -> row.role() == selected).findFirst().orElse(null);
         if (overview == null) {
             clearDetails();
             return;
         }
-        roleHeading.setText(roleText(overview.role()));
-        roleDescription.setText(roleDescription(overview.role()));
-        roleStats.setText(overview.accountCount() + " tài khoản · "
+        tieuDeVaiTro.setText(roleText(overview.role()));
+        moTaVaiTro.setText(roleDescription(overview.role()));
+        thongKeVaiTro.setText(overview.accountCount() + " tài khoản · "
                 + overview.permissions().size() + " / " + Quyen.values().length + " quyền");
         StringBuilder granted = new StringBuilder("Các quyền đang được cấp:\n");
         for (Quyen permission : Quyen.values()) {
@@ -251,13 +251,13 @@ public final class VaiTroPanel extends JPanel implements RefreshableFeature {
                 granted.append("• ").append(permissionText(permission)).append('\n');
             }
         }
-        grantedList.setText(granted.toString());
-        grantedList.setCaretPosition(0);
+        danhSachQuyenDaCap.setText(granted.toString());
+        danhSachQuyenDaCap.setCaretPosition(0);
     }
 
     private void setControls() {
-        refresh.setEnabled(session.isActive() && !loading);
-        rolePicker.setEnabled(session.isActive() && !loading && !data.isEmpty());
+        btnLamMoi.setEnabled(session.isActive() && !loading);
+        chonVaiTro.setEnabled(session.isActive() && !loading && !duLieu.isEmpty());
     }
 
     private static String roleText(VaiTroHeThong role) {
@@ -315,13 +315,13 @@ public final class VaiTroPanel extends JPanel implements RefreshableFeature {
 
     private static final class PermissionMatrixModel extends AbstractTableModel {
         private static final VaiTroHeThong[] ROLES = VaiTroHeThong.values();
-        private List<TongQuanVaiTro> rows = List.of();
+        private List<TongQuanVaiTro> danhSach = List.of();
         void setRows(List<TongQuanVaiTro> values) {
-            rows = List.copyOf(values);
+            danhSach = List.copyOf(values);
             fireTableDataChanged();
         }
         @Override public int getRowCount() {
-            return rows.isEmpty() ? 0 : Quyen.values().length;
+            return danhSach.isEmpty() ? 0 : Quyen.values().length;
         }
         @Override public int getColumnCount() { return ROLES.length + 1; }
         @Override public String getColumnName(int index) {
@@ -331,7 +331,7 @@ public final class VaiTroPanel extends JPanel implements RefreshableFeature {
             Quyen permission = Quyen.values()[row];
             if (column == 0) return permissionText(permission);
             VaiTroHeThong role = ROLES[column - 1];
-            return rows.stream().filter(item -> item.role() == role).findFirst()
+            return danhSach.stream().filter(item -> item.role() == role).findFirst()
                     .map(item -> item.permissions().contains(permission)).orElse(false);
         }
         @Override public Class<?> getColumnClass(int column) {

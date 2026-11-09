@@ -49,8 +49,8 @@ public final class JdbcAuthService {
             """;
 
     private final ConnectionSource connectionSource;
-    private final TaiKhoanDao accounts;
-    private final NhanVienDao employees;
+    private final TaiKhoanDao taiKhoan;
+    private final NhanVienDao nhanVien;
     private final LoginPolicy policy;
     private final Clock clock;
 
@@ -58,8 +58,8 @@ public final class JdbcAuthService {
         this.connectionSource = Objects.requireNonNull(connectionSource, "connectionSource");
         this.policy = Objects.requireNonNull(policy, "policy");
         this.clock = Objects.requireNonNull(clock, "clock");
-        this.accounts = new TaiKhoanDao();
-        this.employees = new NhanVienDao();
+        this.taiKhoan = new TaiKhoanDao();
+        this.nhanVien = new NhanVienDao();
     }
 
     /**
@@ -86,7 +86,7 @@ public final class JdbcAuthService {
                     connection.commit();
                     return KetQuaDangNhap.rejected();
                 }
-                Optional<ThongTinTaiKhoan> found = accounts.findByUsername(connection, username);
+                Optional<ThongTinTaiKhoan> found = taiKhoan.findByUsername(connection, username);
                 if (found.isEmpty()) {
                     throw new SQLException("Locked account was not visible in the same transaction");
                 }
@@ -94,7 +94,7 @@ public final class JdbcAuthService {
                 ThongTinNhanVien employee = null;
                 if (account.employeeId() != null) {
                     if (lockExistingRow(connection, LOCK_EMPLOYEE_SQL, account.employeeId())) {
-                        employee = employees.findById(connection, account.employeeId()).orElse(null);
+                        employee = nhanVien.findById(connection, account.employeeId()).orElse(null);
                     }
                 }
                 LocalDateTime nowUtc = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);

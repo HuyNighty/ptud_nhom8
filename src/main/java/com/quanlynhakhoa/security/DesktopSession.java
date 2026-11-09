@@ -12,9 +12,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Never contains the password, BCrypt hash or SQL connection credentials.
  */
 public final class DesktopSession {
-    private final String accountId;
-    private final VaiTroHeThong role;
-    private final Instant startedAt;
+    private final String maTaiKhoan;
+    private final VaiTroHeThong vaiTro;
+    private final Instant thoiGianBatDau;
     @FunctionalInterface public interface CurrentAccountCheck { void check(DesktopSession session); }
     private CurrentAccountCheck currentAccountCheck;
     public void bindCurrentAccountCheck(CurrentAccountCheck check) { currentAccountCheck=Objects.requireNonNull(check); }
@@ -24,9 +24,9 @@ public final class DesktopSession {
     private final AtomicBoolean active = new AtomicBoolean(true);
 
     private DesktopSession(String accountId, VaiTroHeThong role, Instant startedAt) {
-        this.accountId = accountId;
-        this.role = role;
-        this.startedAt = startedAt;
+        this.maTaiKhoan = accountId;
+        this.vaiTro = role;
+        this.thoiGianBatDau = startedAt;
     }
 
     public static DesktopSession fromSuccessfulLogin(KetQuaDangNhap decision) {
@@ -34,15 +34,15 @@ public final class DesktopSession {
         return new DesktopSession(decision.accountId(), decision.role(), Instant.now());
     }
 
-    public String accountId() { return accountId; }
-    public VaiTroHeThong role() { return role; }
-    public Instant startedAt() { return startedAt; }
+    public String accountId() { return maTaiKhoan; }
+    public VaiTroHeThong role() { return vaiTro; }
+    public Instant startedAt() { return thoiGianBatDau; }
     public boolean isActive() { return active.get(); }
 
     /** Invalidate local authorization immediately; database-session revocation is not part of R4-A1. */
     public void logout() { active.set(false); }
 
     @Override public String toString() {
-        return "DesktopSession[role=" + Objects.toString(role) + ",active=" + isActive() + "]";
+        return "DesktopSession[role=" + Objects.toString(vaiTro) + ",active=" + isActive() + "]";
     }
 }

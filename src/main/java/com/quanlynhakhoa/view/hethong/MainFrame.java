@@ -45,9 +45,9 @@ public final class MainFrame extends JFrame {
     private final Runnable returnToLogin;
     private final CardLayout cards = new CardLayout();
     private final JPanel pnlContent = new JPanel(cards);
-    private final Set<Module> allowed;
+    private final Set<Module> phanHeDuocMo;
     private final Map<Module, JMenuItem> links = new EnumMap<>(Module.class);
-    private JButton btnOverview;
+    private JButton btnTongQuan;
 
     public MainFrame(DesktopSession session, Runnable returnToLogin) {
         this(session, returnToLogin, FeatureBootstrap.createRegistry());
@@ -60,7 +60,7 @@ public final class MainFrame extends JFrame {
         this.session = session;
         this.registry = Objects.requireNonNull(registry, "registry");
         this.returnToLogin = Objects.requireNonNull(returnToLogin, "returnToLogin");
-        this.allowed = new HashSet<>(model.availableModules());
+        this.phanHeDuocMo = new HashSet<>(model.availableModules());
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new Dimension(1050, 680));
         setSize(1310, 820);
@@ -131,16 +131,16 @@ public final class MainFrame extends JFrame {
         mnuBar.setOpaque(true);
         mnuBar.setBorder(new EmptyBorder(3, 16, 3, 16));
 
-        btnOverview = new JButton("Tổng quan");
-        btnOverview.setForeground(Color.WHITE);
-        btnOverview.setBackground(NAVY);
-        btnOverview.setFont(new Font("SansSerif", Font.BOLD, 13));
-        btnOverview.setBorder(new EmptyBorder(14, 13, 14, 13));
-        btnOverview.setFocusPainted(false);
-        btnOverview.addActionListener(event -> navigate(Module.HOME));
-        btnOverview.putClientProperty("theme.primary", true);
-        AppTheme.applyButtons(btnOverview);
-        mnuBar.add(btnOverview);
+        btnTongQuan = new JButton("Tổng quan");
+        btnTongQuan.setForeground(Color.WHITE);
+        btnTongQuan.setBackground(NAVY);
+        btnTongQuan.setFont(new Font("SansSerif", Font.BOLD, 13));
+        btnTongQuan.setBorder(new EmptyBorder(14, 13, 14, 13));
+        btnTongQuan.setFocusPainted(false);
+        btnTongQuan.addActionListener(event -> navigate(Module.HOME));
+        btnTongQuan.putClientProperty("theme.primary", true);
+        AppTheme.applyButtons(btnTongQuan);
+        mnuBar.add(btnTongQuan);
 
         // 1. Tổ chức: cơ cấu nhân sự, tài khoản và danh mục dịch vụ.
         JMenu mnuOrganization = menu("Tổ chức");
@@ -174,7 +174,7 @@ public final class MainFrame extends JFrame {
         item(mnuOperations, "Thanh toán", Module.PAYMENTS);
         item(mnuOperations, "Duyệt hủy hóa đơn", Module.INVOICE_CANCELLATIONS);
         item(mnuOperations, "Kế hoạch điều trị", Module.TREATMENT_PLANS);
-        if (allowed.contains(Module.INVENTORY)) {
+        if (phanHeDuocMo.contains(Module.INVENTORY)) {
             pending(mnuOperations, "Nhập / xuất kho");
         }
         addIfNotEmpty(mnuBar, mnuOperations);
@@ -197,7 +197,7 @@ public final class MainFrame extends JFrame {
     }
 
     private void item(JMenu mnuMenu, String text, Module module) {
-        if (!allowed.contains(module)) return;
+        if (!phanHeDuocMo.contains(module)) return;
         JMenuItem mniAction = new JMenuItem(text);
         mniAction.setFont(new Font("SansSerif", Font.PLAIN, 13));
         mniAction.setBorder(new EmptyBorder(11, 14, 11, 30));
@@ -292,8 +292,8 @@ public final class MainFrame extends JFrame {
         loadFeature(module);
         if(existing&&featurePages.get(module) instanceof com.quanlynhakhoa.config.tinhnang.RefreshableFeature page)page.refreshData();
         cards.show(pnlContent, module.name());
-        if (btnOverview != null) {
-            btnOverview.setBackground(module == Module.HOME ? new Color(43, 110, 190) : NAVY);
+        if (btnTongQuan != null) {
+            btnTongQuan.setBackground(module == Module.HOME ? new Color(43, 110, 190) : NAVY);
         }
         for (Map.Entry<Module, JMenuItem> entry : links.entrySet()) {
             entry.getValue().setForeground(entry.getKey() == module

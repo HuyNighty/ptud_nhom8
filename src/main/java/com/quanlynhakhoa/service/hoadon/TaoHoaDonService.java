@@ -17,8 +17,8 @@ import java.util.*;
 public final class TaoHoaDonService {
     private final DesktopSession session;
     private final ConnectionProvider connections;
-    private final NguonTinhPhiLamSang source;
-    private final TaoMaHoaDon ids;
+    private final NguonTinhPhiLamSang nguon;
+    private final TaoMaHoaDon boSinhMaHoaDon;
     private final TaoHoaDonDao dao;
     private final AuthorizationService authorization=new AuthorizationService(new RolePermissionPolicy());
     public TaoHoaDonService(DesktopSession session,ConnectionProvider connections,NguonTinhPhiLamSang source,TaoMaHoaDon ids) {
@@ -26,7 +26,7 @@ public final class TaoHoaDonService {
     }
     public TaoHoaDonService(DesktopSession session,ConnectionProvider connections,NguonTinhPhiLamSang source,TaoMaHoaDon ids,TaoHoaDonDao dao) {
         this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);
-        this.source=Objects.requireNonNull(source);this.ids=Objects.requireNonNull(ids);this.dao=Objects.requireNonNull(dao);
+        this.nguon=Objects.requireNonNull(source);this.boSinhMaHoaDon=Objects.requireNonNull(ids);this.dao=Objects.requireNonNull(dao);
     }
     private void require(){authorization.require(session,Quyen.BILLING_MANAGE);}
     public List<LuaChonLapHoaDon> patients(String text) throws SQLException {
@@ -41,7 +41,7 @@ public final class TaoHoaDonService {
         try(Connection c=connections.open()) {
             begin(c);
             try {require();dao.validateVisit(c,patient,visit);dao.employee(c,session.accountId());
-                BanNhapHoaDon draft=source.load(c,patient,visit,true);validate(draft,patient,visit);checkServices(c,draft);authorization.requireCurrent(session,Quyen.BILLING_MANAGE,c);require();c.commit();return draft;
+                BanNhapHoaDon draft=nguon.load(c,patient,visit,true);validate(draft,patient,visit);checkServices(c,draft);authorization.requireCurrent(session,Quyen.BILLING_MANAGE,c);require();c.commit();return draft;
             } catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }
     }
@@ -53,11 +53,11 @@ public final class TaoHoaDonService {
             try {
                 require();dao.requireWritePermissions(c);dao.validateVisit(c,reviewed.patientId(),reviewed.visitId());
                 String employee=dao.employee(c,session.accountId());
-                BanNhapHoaDon trusted=source.load(c,reviewed.patientId(),reviewed.visitId(),true);
+                BanNhapHoaDon trusted=nguon.load(c,reviewed.patientId(),reviewed.visitId(),true);
                 validate(trusted,reviewed.patientId(),reviewed.visitId());
                 checkServices(c,trusted);
                 if(!trusted.equals(reviewed))throw new IllegalArgumentException("Dữ liệu khám/giá đã đổi. Tải lại bản xem trước rồi xác nhận.");
-                id=ids.next(c);key(id);
+                id=boSinhMaHoaDon.next(c);key(id);
                 dao.insertHeader(c,id,trusted.patientId(),trusted.visitId(),employee);
                 for(DongBanNhapHoaDon line:trusted.lines())dao.insertLine(c,id,line);
                 dao.capNhatTrangThaiMoi(c,id,trusted.total().signum()==0?"DA_THANH_TOAN":"CHUA_THANH_TOAN");
@@ -71,9 +71,9 @@ public final class TaoHoaDonService {
         return id;
     }
     public static final class CommittedInvoiceException extends SQLException {
-        private final String invoiceId;
-        public CommittedInvoiceException(String id,SQLException cause){super("Đã lưu hóa đơn; lỗi đóng kết nối.",cause);invoiceId=id;}
-        public String invoiceId(){return invoiceId;}
+        private final String maHoaDon;
+        public CommittedInvoiceException(String id,SQLException cause){super("Đã lưu hóa đơn; lỗi đóng kết nối.",cause);maHoaDon=id;}
+        public String invoiceId(){return maHoaDon;}
     }
     private static void begin(Connection c)throws SQLException {if(!c.getAutoCommit())throw new SQLException("Expected fresh connection");c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);c.setAutoCommit(false);}
     private static void rollback(Connection c,Exception e){try{c.rollback();}catch(SQLException failure){e.addSuppressed(failure);}}
@@ -82,7 +82,7 @@ public final class TaoHoaDonService {
         for(DongBanNhapHoaDon line:draft.lines()) {
             if (line.medicine()) continue; // Prescription and sale price are reloaded under HOLDLOCK by the source.
             boolean active=dao.serviceActive(c,line.serviceId());
-            source.validateServiceState(c,draft,line.serviceId(),active);
+            nguon.validateServiceState(c,draft,line.serviceId(),active);
         }
     }
     private static void validate(BanNhapHoaDon draft,String patient,String visit) {

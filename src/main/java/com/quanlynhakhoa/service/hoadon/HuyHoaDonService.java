@@ -24,11 +24,11 @@ public final class HuyHoaDonService {
 
 
     private final DesktopSession session;private final ConnectionProvider connections;
-    private final HuyHoaDonDao dao;private final HoaDonDao invoices;private final TaoMaHoaDon ids;
+    private final HuyHoaDonDao dao;private final HoaDonDao hoaDon;private final TaoMaHoaDon boSinhMaHoaDon;
     private final AuthorizationService authorization=new AuthorizationService(new RolePermissionPolicy());
     public HuyHoaDonService(DesktopSession session,ConnectionProvider connections){this(session,connections,new HuyHoaDonDao(),new HoaDonDao(),new TaoMaHoaDonNgauNhien());}
     public HuyHoaDonService(DesktopSession session,ConnectionProvider connections,HuyHoaDonDao dao,HoaDonDao invoices,TaoMaHoaDon ids) {
-        this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);this.dao=Objects.requireNonNull(dao);this.invoices=Objects.requireNonNull(invoices);this.ids=Objects.requireNonNull(ids);
+        this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);this.dao=Objects.requireNonNull(dao);this.hoaDon=Objects.requireNonNull(invoices);this.boSinhMaHoaDon=Objects.requireNonNull(ids);
     }
     private void require(Quyen permission){authorization.require(session,permission);}
     public List<ThongTinYeuCauHuyHoaDon> find(String keyword,LocalDate from,LocalDate to,TrangThaiYeuCauHuyHoaDon status)throws SQLException {
@@ -57,12 +57,12 @@ public final class HuyHoaDonService {
     public String request(String invoiceId,String reason)throws SQLException {
         require(Quyen.INVOICE_CANCEL_REQUEST);key(invoiceId);String normalized=reason(reason);String id=null;boolean committed=false;
         try(Connection c=connections.open()){require(Quyen.INVOICE_CANCEL_REQUEST);begin(c);
-            try{dao.lockInvoice(c,invoiceId);ThongTinHoaDon invoice=invoices.getForPayment(c,invoiceId);
+            try{dao.lockInvoice(c,invoiceId);ThongTinHoaDon invoice=hoaDon.getForPayment(c,invoiceId);
                 if(invoice==null||invoice.trangThai()==TrangThaiHoaDon.DA_HUY)throw new IllegalArgumentException("Không gửi yêu cầu cho hóa đơn đã hủy/không tồn tại.");
                 if(invoice.daThu().signum()!=0)throw new IllegalArgumentException("Hóa đơn đã có khoản thu; chưa hỗ trợ hoàn tiền nên không thể gửi yêu cầu hủy.");
                 if(LanThanhToanService.pending(c,invoiceId)!=null)throw new IllegalArgumentException("Hóa đơn còn lần thu chờ đối soát; giải quyết trước khi yêu cầu hủy.");
                 if(dao.pending(c,invoiceId))throw new IllegalArgumentException("Hóa đơn đã có yêu cầu đang chờ duyệt.");
-                id=ids.next(c);key(id);dao.insert(c,id,invoiceId,session.accountId(),normalized);dao.audit(c,session.accountId(),id,"Gửi yêu cầu hủy");
+                id=boSinhMaHoaDon.next(c);key(id);dao.insert(c,id,invoiceId,session.accountId(),normalized);dao.audit(c,session.accountId(),id,"Gửi yêu cầu hủy");
                 authorization.requireCurrent(session,Quyen.INVOICE_CANCEL_REQUEST,c);require(Quyen.INVOICE_CANCEL_REQUEST);c.commit();committed=true;
             }catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }catch(SQLException e){if(committed)throw new CommittedCancellationException(id,e);if(e.getErrorCode()==2601||e.getErrorCode()==2627)throw new IllegalArgumentException("Trùng mã hoặc đã có yêu cầu chờ duyệt; tải lại để kiểm tra.",e);throw e;}
@@ -80,7 +80,7 @@ public final class HuyHoaDonService {
                 ThongTinYeuCauHuyHoaDon request=dao.get(c,requestId);
                 if(request==null||!invoiceId.equals(request.maHoaDon())||request.trangThai()!=TrangThaiYeuCauHuyHoaDon.CHO_DUYET)throw new IllegalArgumentException("Yêu cầu đã được xử lý hoặc không tồn tại.");
                 if(session.accountId().equals(request.maTaiKhoanTao()))throw new IllegalArgumentException("Người gửi không được tự duyệt hoặc từ chối yêu cầu của mình.");
-                ThongTinHoaDon invoice=invoices.getForPayment(c,invoiceId);
+                ThongTinHoaDon invoice=hoaDon.getForPayment(c,invoiceId);
                 if(invoice==null||invoice.trangThai()==TrangThaiHoaDon.DA_HUY)throw new IllegalArgumentException("Hóa đơn đã hủy/không tồn tại; cần đối soát.");
                 if(approve){
                     if(LanThanhToanService.pending(c,invoiceId)!=null)throw new IllegalArgumentException("Còn lần thu chưa đối soát; chưa thể hủy hóa đơn.");
@@ -94,13 +94,13 @@ public final class HuyHoaDonService {
         }catch(SQLException e){if(committed)throw new CommittedCancellationException(requestId,e);throw e;}
     }
     private DuLieuChiTietHoaDon readInvoice(Connection c,String id)throws SQLException {
-        ThongTinHoaDon invoice=invoices.getForPayment(c,id);if(invoice==null)throw new IllegalArgumentException("Hóa đơn không tồn tại.");
-        List<DongChiTietHoaDon> lines=invoices.lines(c,id);List<ThongTinThanhToan> payments=invoices.payments(c,id);
+        ThongTinHoaDon invoice=hoaDon.getForPayment(c,id);if(invoice==null)throw new IllegalArgumentException("Hóa đơn không tồn tại.");
+        List<DongChiTietHoaDon> lines=hoaDon.lines(c,id);List<ThongTinThanhToan> payments=hoaDon.payments(c,id);
         if(TinhTienHoaDon.total(lines).compareTo(invoice.tongTien())!=0||TinhTienHoaDon.collected(payments).compareTo(invoice.daThu())!=0)throw new SQLException("Kết quả hóa đơn không nhất quán.");
         return new DuLieuChiTietHoaDon(invoice,lines,payments);
     }
     public static final class CommittedCancellationException extends SQLException {
-        private final String id;public CommittedCancellationException(String id,SQLException cause){super("Đã lưu thao tác hủy; lỗi đóng kết nối.",cause);this.id=id;}public String id(){return id;}
+        private final String ma;public CommittedCancellationException(String id,SQLException cause){super("Đã lưu thao tác hủy; lỗi đóng kết nối.",cause);this.ma=id;}public String id(){return ma;}
     }
     private static String reason(String value){String text=value==null?"":value.trim();if(text.isEmpty()||text.length()>500)throw new IllegalArgumentException("Lý do bắt buộc, tối đa 500 ký tự.");return text;}
     private static void key(String id){if(id==null||id.isBlank()||id.length()>10)throw new IllegalArgumentException("Mã cần 1–10 ký tự.");for(char ch:id.toCharArray())if(ch<33||ch>126)throw new IllegalArgumentException("Mã phải là ASCII không khoảng trắng.");}

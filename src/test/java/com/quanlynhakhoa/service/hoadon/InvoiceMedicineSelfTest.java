@@ -36,7 +36,7 @@ public final class InvoiceMedicineSelfTest {
             try {
                 HoaDonPanel panel = new HoaDonPanel(session(VaiTroHeThong.RECEPTIONIST), new FeatureJdbcDouble());
                 panel.showDetail(detail);
-                var field = HoaDonPanel.class.getDeclaredField("tblPrescribedMedicines");field.setAccessible(true);
+                var field = HoaDonPanel.class.getDeclaredField("tblThuocDaKe");field.setAccessible(true);
                 JTable table = (JTable)field.get(panel);
                 check(table.getColumnCount() == 6 && table.getRowCount() == 2, "billing-only medicine table");
                 check(table.getModel().getValueAt(0,5).equals(new BigDecimal("50000")), "priced amount displayed");

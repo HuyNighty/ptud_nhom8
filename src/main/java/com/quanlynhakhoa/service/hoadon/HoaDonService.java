@@ -24,17 +24,17 @@ public final class HoaDonService {
     private final DesktopSession session;
     private final ConnectionProvider connections;
     private final HoaDonDao dao;
-    private TaoHoaDonService creation;
+    private TaoHoaDonService taoHoaDon;
     public HoaDonService(DesktopSession session, ConnectionProvider connections,
                          NguonTinhPhiLamSang source, TaoMaHoaDon ids) {
         this(session, connections);
-        creation = new TaoHoaDonService(session, connections, source, ids);
+        taoHoaDon = new TaoHoaDonService(session, connections, source, ids);
     }
-    public boolean creationConfigured() { return creation != null; }
+    public boolean creationConfigured() { return taoHoaDon != null; }
     private TaoHoaDonService creation() {
         authorization.require(session, Quyen.BILLING_MANAGE);
-        if (creation == null) throw new IllegalStateException("Chờ hợp đồng dữ liệu khám và bộ sinh mã được duyệt.");
-        return creation;
+        if (taoHoaDon == null) throw new IllegalStateException("Chờ hợp đồng dữ liệu khám và bộ sinh mã được duyệt.");
+        return taoHoaDon;
     }
     public List<LuaChonLapHoaDon> patientsForInvoice(String text) throws SQLException { return creation().patients(text); }
     public List<LuaChonLapHoaDon> visitsForInvoice(String patient) throws SQLException { return creation().visits(patient); }

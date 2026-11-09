@@ -17,7 +17,7 @@ public final class TaoHoaDonController {
     private final DesktopSession session;
     private final HoaDonService service;
     private final Saved saved;
-    private BanNhapHoaDon draft;
+    private BanNhapHoaDon banNhap;
     private boolean busy,updating;
     public TaoHoaDonController(TaoHoaDonDialog view,DesktopSession session,HoaDonService service,Saved saved){
         this.view=view;this.session=session;this.service=service;this.saved=saved;
@@ -28,11 +28,11 @@ public final class TaoHoaDonController {
         view.btnTaiDichVu.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){preview();}});
         view.btnLuuHoaDon.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){save();}});
     }
-    private void clear(){draft=null;view.showDraft(null);view.btnLuuHoaDon.setEnabled(false);}
+    private void clear(){banNhap=null;view.showDraft(null);view.btnLuuHoaDon.setEnabled(false);}
     private boolean start(){if(busy)return false;if(!session.isActive()){view.dispose();return false;}busy=true;view.busy(true,false);return true;}
     private abstract class Task<T> extends SessionWorker<T>{
         Task(){super(TaoHoaDonController.this.session);}
-        protected void finished(){busy=false;view.busy(false,draft!=null);}
+        protected void finished(){busy=false;view.busy(false,banNhap!=null);}
         protected void expired(){clear();view.dispose();}
         protected void failed(Throwable failure){view.guide(GiaoDienHoaDon.error(failure));}
     }
@@ -65,13 +65,13 @@ public final class TaoHoaDonController {
         if(patient==null||visit==null||!start())return;clear();view.guide("Đang kiểm tra dịch vụ được phép tính phí…");
         new Task<BanNhapHoaDon>(){
             protected BanNhapHoaDon doInBackground()throws Exception{return service.previewInvoice(patient.id(),visit.id());}
-            protected void succeeded(BanNhapHoaDon result){draft=result;view.showDraft(result);view.busy(false,true);view.guide("Kiểm tra dịch vụ, số lượng và tổng tiền trước khi lưu.");}
+            protected void succeeded(BanNhapHoaDon result){banNhap=result;view.showDraft(result);view.busy(false,true);view.guide("Kiểm tra dịch vụ, số lượng và tổng tiền trước khi lưu.");}
         }.execute();
     }
     private void save(){
-        if(busy||draft==null)return;
-        if(JOptionPane.showConfirmDialog(view,"Lưu hóa đơn với tổng "+GiaoDienHoaDon.vnd(draft.total())+"?","Xác nhận",JOptionPane.YES_NO_OPTION)!=JOptionPane.YES_OPTION)return;
-        if(!start())return;final BanNhapHoaDon reviewed=draft;view.guide("Đang lưu hóa đơn…");
+        if(busy||banNhap==null)return;
+        if(JOptionPane.showConfirmDialog(view,"Lưu hóa đơn với tổng "+GiaoDienHoaDon.vnd(banNhap.total())+"?","Xác nhận",JOptionPane.YES_NO_OPTION)!=JOptionPane.YES_OPTION)return;
+        if(!start())return;final BanNhapHoaDon reviewed=banNhap;view.guide("Đang lưu hóa đơn…");
         new Task<String>(){
             protected String doInBackground()throws Exception{return service.createInvoice(reviewed);}
             protected void succeeded(String id){GiaoDienHoaDon.result(view,"Đã lập hóa đơn "+id+" thành công.");view.dispose();saved.accept(id);ThongBaoThayDoiHoaDon.forSession(session).publish();}

@@ -19,24 +19,24 @@ import javax.swing.table.DefaultTableModel;
 /** Nhập, xuất và ghi nhận chênh lệch tồn kho; mọi ghi dữ liệu đi qua service. */
 public final class QuyTrinhKhoPanel extends JPanel {
     private final JTabbedPane tabs = new JTabbedPane();
-    private final ReceiptTab receipt = new ReceiptTab();
-    private final IssueTab issue = new IssueTab();
-    private final StocktakeTab stocktake = new StocktakeTab();
+    private final ReceiptTab phieuNhap = new ReceiptTab();
+    private final IssueTab phieuXuat = new IssueTab();
+    private final StocktakeTab kiemKe = new StocktakeTab();
 
     public QuyTrinhKhoPanel(DesktopSession session) {
         setLayout(new BorderLayout());
-        tabs.addTab("Nhập kho", receipt);
-        tabs.addTab("Xuất kho", issue);
-        tabs.addTab("Kiểm kê", stocktake);
+        tabs.addTab("Nhập kho", phieuNhap);
+        tabs.addTab("Xuất kho", phieuXuat);
+        tabs.addTab("Kiểm kê", kiemKe);
         tabs.addTab("Yêu cầu cấp phát", new YeuCauCungUngPanel(session, true));
         add(tabs, BorderLayout.CENTER);
         new QuyTrinhKhoController(this, new QuyTrinhKhoService(session));
     }
 
     public JTabbedPane tabs() { return tabs; }
-    public ReceiptTab receipt() { return receipt; }
-    public IssueTab issue() { return issue; }
-    public StocktakeTab stocktake() { return stocktake; }
+    public ReceiptTab receipt() { return phieuNhap; }
+    public IssueTab issue() { return phieuXuat; }
+    public StocktakeTab stocktake() { return kiemKe; }
 
     private static void row(JPanel panel, String label, java.awt.Component field) {
         panel.add(new JLabel(label));
@@ -57,8 +57,8 @@ public final class QuyTrinhKhoPanel extends JPanel {
         final JComboBox<String> loai = new JComboBox<>(new String[]{"THUOC", "VATTU"});
         final JTextField maHang = new JTextField(), ngaySX = new JTextField(), hanSD = new JTextField();
         final JTextField soLuong = new JTextField(), donGia = new JTextField(), ghiChu = new JTextField();
-        final JButton save = new JButton("Tạo phiếu nhập"), refresh = new JButton("Làm mới");
-        final DefaultTableModel data = model("Mã phiếu", "Ngày nhập", "Nhà cung cấp", "Trạng thái", "Mã lô", "Số lượng", "Đơn giá");
+        final JButton btnLuu = new JButton("Tạo phiếu nhập"), btnLamMoi = new JButton("Làm mới");
+        final DefaultTableModel duLieu = model("Mã phiếu", "Ngày nhập", "Nhà cung cấp", "Trạng thái", "Mã lô", "Số lượng", "Đơn giá");
 
         ReceiptTab() {
             setLayout(new BorderLayout(10, 10));
@@ -74,10 +74,10 @@ public final class QuyTrinhKhoPanel extends JPanel {
             row(form, "Số lượng", soLuong);
             row(form, "Đơn giá nhập", donGia);
             row(form, "Ghi chú", ghiChu);
-            form.add(save);
-            form.add(refresh);
+            form.add(btnLuu);
+            form.add(btnLamMoi);
             add(form, BorderLayout.NORTH);
-            add(new JScrollPane(new JTable(data)), BorderLayout.CENTER);
+            add(new JScrollPane(new JTable(duLieu)), BorderLayout.CENTER);
             add(new JLabel("Một phiếu nhập ghi một lô; mã thuốc/vật tư và nhà cung cấp phải tồn tại trong danh mục."), BorderLayout.SOUTH);
         }
 
@@ -92,16 +92,16 @@ public final class QuyTrinhKhoPanel extends JPanel {
         public JTextField soLuong() { return soLuong; }
         public JTextField donGia() { return donGia; }
         public JTextField ghiChu() { return ghiChu; }
-        public JButton save() { return save; }
-        public JButton refresh() { return refresh; }
-        public DefaultTableModel data() { return data; }
+        public JButton save() { return btnLuu; }
+        public JButton refresh() { return btnLamMoi; }
+        public DefaultTableModel data() { return duLieu; }
     }
 
     public static final class IssueTab extends JPanel {
         final JTextField maPhieu = new JTextField(), maLo = new JTextField(), boPhan = new JTextField();
         final JTextField nguoiNhan = new JTextField(), lyDo = new JTextField(), soLuong = new JTextField();
-        final JButton save = new JButton("Tạo phiếu xuất"), refresh = new JButton("Làm mới");
-        final DefaultTableModel data = model("Mã phiếu", "Ngày xuất", "Bộ phận", "Người nhận", "Nhân viên", "Trạng thái", "Mã lô", "Số lượng");
+        final JButton btnLuu = new JButton("Tạo phiếu xuất"), btnLamMoi = new JButton("Làm mới");
+        final DefaultTableModel duLieu = model("Mã phiếu", "Ngày xuất", "Bộ phận", "Người nhận", "Nhân viên", "Trạng thái", "Mã lô", "Số lượng");
 
         IssueTab() {
             setLayout(new BorderLayout(10, 10));
@@ -112,10 +112,10 @@ public final class QuyTrinhKhoPanel extends JPanel {
             row(form, "Người nhận", nguoiNhan);
             row(form, "Lý do", lyDo);
             row(form, "Số lượng", soLuong);
-            form.add(save);
-            form.add(refresh);
+            form.add(btnLuu);
+            form.add(btnLamMoi);
             add(form, BorderLayout.NORTH);
-            add(new JScrollPane(new JTable(data)), BorderLayout.CENTER);
+            add(new JScrollPane(new JTable(duLieu)), BorderLayout.CENTER);
             add(new JLabel("Tồn lô chỉ giảm nếu đủ số lượng; mỗi phiếu xuất ghi một lô."), BorderLayout.SOUTH);
         }
 
@@ -125,28 +125,28 @@ public final class QuyTrinhKhoPanel extends JPanel {
         public JTextField nguoiNhan() { return nguoiNhan; }
         public JTextField lyDo() { return lyDo; }
         public JTextField soLuong() { return soLuong; }
-        public JButton save() { return save; }
-        public JButton refresh() { return refresh; }
-        public DefaultTableModel data() { return data; }
+        public JButton save() { return btnLuu; }
+        public JButton refresh() { return btnLamMoi; }
+        public DefaultTableModel data() { return duLieu; }
     }
 
     public static final class StocktakeTab extends JPanel {
-        final JTextField maPhieu = new JTextField(), maLo = new JTextField(), actual = new JTextField(), reason = new JTextField();
-        final JButton save = new JButton("Gửi yêu cầu kiểm kê"), refresh = new JButton("Làm mới"), approve = new JButton("Duyệt kiểm kê"), reject = new JButton("Từ chối");
-        final DefaultTableModel data = model("Mã phiếu", "Thời gian", "Tạo bởi", "Lý do", "Trạng thái", "Mã lô", "SL hệ thống", "SL thực tế");
-        final JTable table = new JTable(data);
+        final JTextField maPhieu = new JTextField(), maLo = new JTextField(), soLuongThucTe = new JTextField(), lyDo = new JTextField();
+        final JButton btnLuu = new JButton("Gửi yêu cầu kiểm kê"), btnLamMoi = new JButton("Làm mới"), btnDuyet = new JButton("Duyệt kiểm kê"), btnTuChoi = new JButton("Từ chối");
+        final DefaultTableModel duLieu = model("Mã phiếu", "Thời gian", "Tạo bởi", "Lý do", "Trạng thái", "Mã lô", "SL hệ thống", "SL thực tế");
+        final JTable table = new JTable(duLieu);
 
         StocktakeTab() {
             setLayout(new BorderLayout(10, 10));
             JPanel form = new JPanel(new GridLayout(0, 4, 7, 7));
             row(form, "Mã phiếu (≤10)", maPhieu);
             row(form, "Mã lô", maLo);
-            row(form, "Số lượng thực tế", actual);
-            row(form, "Lý do chênh lệch", reason);
-            form.add(save);
-            form.add(refresh);
-            form.add(approve);
-            form.add(reject);
+            row(form, "Số lượng thực tế", soLuongThucTe);
+            row(form, "Lý do chênh lệch", lyDo);
+            form.add(btnLuu);
+            form.add(btnLamMoi);
+            form.add(btnDuyet);
+            form.add(btnTuChoi);
             add(form, BorderLayout.NORTH);
             add(new JScrollPane(table), BorderLayout.CENTER);
             add(new JLabel("Người duyệt khác người tạo. Nếu tồn kho thay đổi sau kiểm kê thì phải kiểm kê lại."), BorderLayout.SOUTH);
@@ -154,16 +154,16 @@ public final class QuyTrinhKhoPanel extends JPanel {
 
         public JTextField maPhieu() { return maPhieu; }
         public JTextField maLo() { return maLo; }
-        public JTextField actual() { return actual; }
-        public JTextField reason() { return reason; }
-        public JButton save() { return save; }
-        public JButton refresh() { return refresh; }
-        public JButton approve() { return approve; }
-        public JButton reject() { return reject; }
+        public JTextField actual() { return soLuongThucTe; }
+        public JTextField reason() { return lyDo; }
+        public JButton save() { return btnLuu; }
+        public JButton refresh() { return btnLamMoi; }
+        public JButton approve() { return btnDuyet; }
+        public JButton reject() { return btnTuChoi; }
         public String selectedId() {
             int r = table.getSelectedRow();
-            return r < 0 ? null : String.valueOf(data.getValueAt(table.convertRowIndexToModel(r), 0));
+            return r < 0 ? null : String.valueOf(duLieu.getValueAt(table.convertRowIndexToModel(r), 0));
         }
-        public DefaultTableModel data() { return data; }
+        public DefaultTableModel data() { return duLieu; }
     }
 }
