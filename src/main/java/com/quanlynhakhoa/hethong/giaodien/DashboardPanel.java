@@ -1,7 +1,12 @@
 package com.quanlynhakhoa.hethong.giaodien;
 
+import com.quanlynhakhoa.model.tongquan.SoLieuNgay;
+import com.quanlynhakhoa.model.tongquan.LichHenTongQuan;
+import com.quanlynhakhoa.model.tongquan.DuLieuTongQuan;
+import com.quanlynhakhoa.model.tongquan.CongViecTongQuan;
+import com.quanlynhakhoa.model.tongquan.CanhBaoTonKho;
 import com.quanlynhakhoa.hethong.tongquan.DashboardService;
-import com.quanlynhakhoa.hethong.tongquan.DashboardService.Summary;
+import com.quanlynhakhoa.model.tongquan.TomTatTongQuan;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
@@ -56,8 +61,8 @@ public final class DashboardPanel extends JPanel implements com.quanlynhakhoa.he
     private final DefaultTableModel alertModel=tableModel("Cảnh báo", "Mặt hàng / lô", "Chi tiết");
     private final JTable appointmentTable=new JTable(appointmentModel), alertTable=new JTable(alertModel);
     private final JPanel workList=new JPanel();
-    private List<Appointment> appointmentRows=List.of();
-    private List<StockAlert> alertRows=List.of();
+    private List<LichHenTongQuan> appointmentRows=List.of();
+    private List<CanhBaoTonKho> alertRows=List.of();
     private final TrendChart visitsChart=new TrendChart(false), moneyChart=new TrendChart(true);
     private final JLabel appointmentStatus=label("Đang tải…",12,MUTED,false);
     private final JLabel stockStatus=label("Đang tải…",12,MUTED,false);
@@ -171,8 +176,8 @@ public final class DashboardPanel extends JPanel implements com.quanlynhakhoa.he
             lblValues[i].setText("—");
             lblDescriptions[i].setText("Đang tải");
         }
-        new SwingWorker<Overview, Void>() {
-            @Override protected Overview doInBackground() throws Exception {
+        new SwingWorker<DuLieuTongQuan, Void>() {
+            @Override protected DuLieuTongQuan doInBackground() throws Exception {
                 return service.loadOverview();
             }
 
@@ -181,8 +186,8 @@ public final class DashboardPanel extends JPanel implements com.quanlynhakhoa.he
                 loading = false;
                 btnRefresh.setEnabled(true);
                 try {
-                    Overview overview = get();
-                    Summary summary = overview.summary();
+                    DuLieuTongQuan overview = get();
+                    TomTatTongQuan summary = overview.summary();
                     showOverview(overview);
                     showLong(0, summary.patients());
                     showLong(1, summary.appointments());
@@ -302,24 +307,24 @@ public final class DashboardPanel extends JPanel implements com.quanlynhakhoa.he
     private JPanel chartCard(String title,TrendChart chart) {
         JPanel panel=section(title,"");panel.add(chart);return panel;
     }
-    private void showOverview(Overview data) {
+    private void showOverview(DuLieuTongQuan data) {
         appointmentRows=data.appointments();appointmentModel.setRowCount(0);
-        for(Appointment row:appointmentRows)appointmentModel.addRow(new Object[]{row.time().format(DateTimeFormatter.ofPattern("HH:mm")),row.patient(),row.doctor(),"DA_XAC_NHAN".equals(row.status())?"Đã xác nhận":"Chờ xác nhận"});
+        for(LichHenTongQuan row:appointmentRows)appointmentModel.addRow(new Object[]{row.time().format(DateTimeFormatter.ofPattern("HH:mm")),row.patient(),row.doctor(),"DA_XAC_NHAN".equals(row.status())?"Đã xác nhận":"Chờ xác nhận"});
         appointmentStatus.setText(data.warnings().contains("Chưa tải được lịch hẹn")?"Chưa tải được lịch hẹn.":appointmentRows.isEmpty()?"Không có lịch đang chờ hôm nay.":appointmentRows.size()+" lịch đang hiển thị.");
         workList.removeAll();
-        for(WorkItem item:data.work()){
+        for(CongViecTongQuan item:data.work()){
             JButton button=new JButton(item.count()+"  ·  "+item.label()+"  →");button.setHorizontalAlignment(SwingConstants.LEFT);
             button.setAlignmentX(Component.LEFT_ALIGNMENT);button.setMaximumSize(new Dimension(Integer.MAX_VALUE,40));button.addActionListener(e->open(item.module(),item.context()));
             workList.add(button);workList.add(Box.createVerticalStrut(8));
         }
         if(data.work().isEmpty())workList.add(label(data.warnings().isEmpty()?"Không có việc chờ xử lý.":"Chưa tải được công việc.",12,MUTED,false));
         workList.revalidate();workList.repaint();AppTheme.applyButtons(workList);
-        alertRows=data.alerts();alertModel.setRowCount(0);for(StockAlert alert:alertRows)alertModel.addRow(new Object[]{alert.kind(),alert.item(),alert.detail()});
+        alertRows=data.alerts();alertModel.setRowCount(0);for(CanhBaoTonKho alert:alertRows)alertModel.addRow(new Object[]{alert.kind(),alert.item(),alert.detail()});
         stockStatus.setText(data.warnings().contains("Chưa tải được cảnh báo kho")?"Chưa tải được cảnh báo kho.":alertRows.isEmpty()?"Không có cảnh báo.":alertRows.size()+" cảnh báo đang hiển thị.");
         visitsChart.rows=data.days();moneyChart.rows=data.days();visitsChart.repaint();moneyChart.repaint();
     }
     private static final class TrendChart extends JPanel {
-        private final boolean money;private List<Day> rows=List.of();
+        private final boolean money;private List<SoLieuNgay> rows=List.of();
         TrendChart(boolean money){this.money=money;setOpaque(false);}
         @Override protected void paintComponent(Graphics graphics) {
             super.paintComponent(graphics);Graphics2D g=(Graphics2D)graphics.create();
@@ -329,12 +334,12 @@ public final class DashboardPanel extends JPanel implements com.quanlynhakhoa.he
                     g.setColor(MUTED);g.drawString("Chưa có dữ liệu để vẽ biểu đồ.",12,40);return;
                 }
                 int bottom=getHeight()-28,top=25,width=getWidth()-20;double max=0,min=0;
-                for(Day row:rows){double value=money?row.collected().doubleValue():row.visits();max=Math.max(max,value);min=Math.min(min,value);}
+                for(SoLieuNgay row:rows){double value=money?row.collected().doubleValue():row.visits();max=Math.max(max,value);min=Math.min(min,value);}
                 double range=max-min;if(range==0)range=1;int baseline=top+(int)((bottom-top)*max/range);
                 double step=width/(double)rows.size();g.setFont(new Font("SansSerif",Font.PLAIN,11));
                 g.setColor(BORDER);g.drawLine(10,baseline,getWidth()-10,baseline);
                 for(int i=0;i<rows.size();i++){
-                    Day row=rows.get(i);double value=money?row.collected().doubleValue():row.visits();
+                    SoLieuNgay row=rows.get(i);double value=money?row.collected().doubleValue():row.visits();
                     int y=top+(int)((bottom-top)*(max-value)/range),height=Math.abs(baseline-y),bar=(int)Math.min(40,step*.55),x=(int)(10+step*(i+.5));
                     g.setColor(money?new Color(38,132,119):NAVY);g.fillRoundRect(x-bar/2,Math.min(baseline,y),bar,Math.max(height,1),5,5);
                     String text=money?compactMoney(row.collected()):Long.toString(row.visits());
