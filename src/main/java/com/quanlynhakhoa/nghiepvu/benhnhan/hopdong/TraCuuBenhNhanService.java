@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.benhnhan.hopdong;
 
-import com.quanlynhakhoa.nghiepvu.benhnhan.entity.BenhNhan;
+import com.quanlynhakhoa.entity.BenhNhan;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.BenhNhanService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.sql.SQLException;

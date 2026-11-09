@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.nghiepvu.benhnhan.entity;
+package com.quanlynhakhoa.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

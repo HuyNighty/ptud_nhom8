@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.benhnhan.controller;
 
-import com.quanlynhakhoa.nghiepvu.benhnhan.entity.BenhNhan;
+import com.quanlynhakhoa.entity.BenhNhan;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.BenhNhanService;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.DuLieuDaThayDoiException;
 import com.quanlynhakhoa.nghiepvu.benhnhan.service.LoiNhapLieuException;
