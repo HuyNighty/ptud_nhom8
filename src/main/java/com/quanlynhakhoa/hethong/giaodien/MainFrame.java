@@ -280,7 +280,7 @@ public final class MainFrame extends JFrame {
         navigate(module);
         JPanel page=featurePages.get(module);
         if(page instanceof com.quanlynhakhoa.nghiepvu.kho.InventoryPanel inventory)inventory.openOverviewSection(context);
-        if(page instanceof com.quanlynhakhoa.nghiepvu.lichhen.view.LichHenPanel appointments && !context.isBlank()){
+        if(page instanceof com.quanlynhakhoa.view.lichhen.LichHenPanel appointments && !context.isBlank()){
             appointments.openDashboardAppointment(context);
         }
     }

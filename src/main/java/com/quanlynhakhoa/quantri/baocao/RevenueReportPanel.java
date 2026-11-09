@@ -7,7 +7,7 @@ import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.SessionWorker;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi;
-import com.quanlynhakhoa.nghiepvu.benhnhan.view.ChonNgayDialog;
+import com.quanlynhakhoa.view.benhnhan.ChonNgayDialog;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;

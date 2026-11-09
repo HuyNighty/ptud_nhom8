@@ -176,7 +176,7 @@ public final class BillingUi {
         final JButton btnChonNgay=new JButton("Lịch");btnChonNgay.setToolTipText("Chọn "+caption.toLowerCase(Locale.ROOT));
         btnChonNgay.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent event){
             if(!input.isEnabled())return;LocalDate current=null;try{current=parseDate(input.getText());}catch(IllegalArgumentException ignored){ /* Let the calendar correct invalid input. */ }
-            LocalDate selected=com.quanlynhakhoa.nghiepvu.benhnhan.view.ChonNgayDialog.chon(SwingUtilities.getWindowAncestor(input),"Chọn ngày",current,LocalDate.of(1900,1,1),LocalDate.of(9999,12,31));
+            LocalDate selected=com.quanlynhakhoa.view.benhnhan.ChonNgayDialog.chon(SwingUtilities.getWindowAncestor(input),"Chọn ngày",current,LocalDate.of(1900,1,1),LocalDate.of(9999,12,31));
             if(selected!=null)input.setText(DATE.format(selected));
         }});
         input.addPropertyChangeListener("enabled",new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){btnChonNgay.setEnabled(input.isEnabled());}});

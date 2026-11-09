@@ -125,7 +125,7 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
         JPanel datePicker=new JPanel(new BorderLayout(6,0));datePicker.add(date,BorderLayout.CENTER);datePicker.add(chooseDate,BorderLayout.EAST);
         chooseDate.addActionListener(new java.awt.event.ActionListener(){
             public void actionPerformed(java.awt.event.ActionEvent event){
-                LocalDate selected=com.quanlynhakhoa.nghiepvu.benhnhan.view.ChonNgayDialog.chon(
+                LocalDate selected=com.quanlynhakhoa.view.benhnhan.ChonNgayDialog.chon(
                         SwingUtilities.getWindowAncestor(date),"Chọn ngày làm việc",LocalDate.parse(date.getText()),
                         LocalDate.of(1900,1,1),LocalDate.of(9999,12,31));
                 if(selected!=null)date.setText(selected.toString());
