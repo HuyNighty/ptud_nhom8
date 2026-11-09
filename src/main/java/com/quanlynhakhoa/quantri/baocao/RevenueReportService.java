@@ -1,9 +1,7 @@
 package com.quanlynhakhoa.quantri.baocao;
 
-
-
-
-
+import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
+import com.quanlynhakhoa.model.baocao.BaoCaoDoanhThu;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import java.math.BigDecimal;
@@ -27,7 +25,7 @@ public final class RevenueReportService {
             throw new IllegalArgumentException("Chọn khoảng ngày hợp lệ; từ ngày không được sau đến ngày.");
     }
     private void require() { authorization.require(session, Permission.REVENUE_REPORT_READ); }
-    public RevenueReport load(LocalDate from, LocalDate to, boolean monthly) throws SQLException {
+    public BaoCaoDoanhThu load(LocalDate from, LocalDate to, boolean monthly) throws SQLException {
         require(); validate(from, to);
         // Bound generated display rows without restricting the date interval itself.
         boolean byMonth = monthly || ChronoUnit.DAYS.between(from, to) > 730;
@@ -35,10 +33,10 @@ public final class RevenueReportService {
             c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE); c.setAutoCommit(false);
             try {
                 require();
-                TreeMap<LocalDate, RevenueReport.Row> rows = new TreeMap<>();
+                TreeMap<LocalDate, DongBaoCaoDoanhThu> rows = new TreeMap<>();
                 LocalDate first = byMonth ? from.withDayOfMonth(1) : from;
                 for (LocalDate day = first; !day.isAfter(to); day = byMonth ? day.plusMonths(1) : day.plusDays(1))
-                    rows.put(day, new RevenueReport.Row(day, 0, BigDecimal.ZERO, BigDecimal.ZERO));
+                    rows.put(day, new DongBaoCaoDoanhThu(day, 0, BigDecimal.ZERO, BigDecimal.ZERO));
                 // Separate aggregates avoid multiplying invoice lines by payment rows.
                 String sql = """
                         WITH InvoiceTotals AS (
@@ -79,7 +77,7 @@ public final class RevenueReportService {
                             LocalDate key = byMonth ? day.withDayOfMonth(1) : day;
                             var old = rows.get(key);
                             boolean revenue = r.getString("kind").equals("REVENUE");
-                            rows.put(key, new RevenueReport.Row(key, old.invoices() + r.getInt("invoices"),
+                            rows.put(key, new DongBaoCaoDoanhThu(key, old.invoices() + r.getInt("invoices"),
                                     revenue ? old.revenue().add(amount) : old.revenue(),
                                     revenue ? old.collected() : old.collected().add(amount)));
                         }
@@ -88,7 +86,7 @@ public final class RevenueReportService {
                 BigDecimal revenue = BigDecimal.ZERO, collected = BigDecimal.ZERO; int invoices = 0;
                 for (var row : rows.values()) { revenue = revenue.add(row.revenue()); collected = collected.add(row.collected()); invoices += row.invoices(); }
                 require(); c.commit();
-                return new RevenueReport(from, to, byMonth, List.copyOf(rows.values()), revenue, collected, debt, invoices);
+                return new BaoCaoDoanhThu(from, to, byMonth, List.copyOf(rows.values()), revenue, collected, debt, invoices);
             } catch (SQLException | RuntimeException failure) {
                 try { c.rollback(); } catch (SQLException rollback) { failure.addSuppressed(rollback); }
                 throw failure;

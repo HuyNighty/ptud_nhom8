@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.quantri.nhatky;
 
+import com.quanlynhakhoa.model.nhatky.KetQuaNhatKy;
+import com.quanlynhakhoa.model.nhatky.BoLocNhatKy;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
@@ -111,20 +113,20 @@ public final class AuditSelfTest {
         return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
     }
     public static void main(String[] args) throws Exception {
-        check(new AuditFilter(null, null, null, null).keyword().isEmpty(), "null keyword normalized");
-        check(new AuditFilter(null, null, "  abc  ", "SUCCESS").keyword().equals("abc"), "trim");
-        reject(IllegalArgumentException.class, () -> new AuditFilter(null, null, "x".repeat(81), null));
-        reject(IllegalArgumentException.class, () -> new AuditFilter(
+        check(new BoLocNhatKy(null, null, null, null).keyword().isEmpty(), "null keyword normalized");
+        check(new BoLocNhatKy(null, null, "  abc  ", "SUCCESS").keyword().equals("abc"), "trim");
+        reject(IllegalArgumentException.class, () -> new BoLocNhatKy(null, null, "x".repeat(81), null));
+        reject(IllegalArgumentException.class, () -> new BoLocNhatKy(
                 LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 1), "", null));
-        reject(IllegalArgumentException.class, () -> new AuditFilter(null, null, "", "SPOOF"));
-        check(new AuditFilter(null, null, "", "DENIED").result().equals("DENIED"), "denied supported");
-        check(new AuditFilter(null, null, "", "FAILED").result().equals("FAILED"), "failed supported");
+        reject(IllegalArgumentException.class, () -> new BoLocNhatKy(null, null, "", "SPOOF"));
+        check(new BoLocNhatKy(null, null, "", "DENIED").result().equals("DENIED"), "denied supported");
+        check(new BoLocNhatKy(null, null, "", "FAILED").result().equals("FAILED"), "failed supported");
 
-        AuditFilter filter = new AuditFilter(LocalDate.of(2026, 10, 31),
+        BoLocNhatKy filter = new BoLocNhatKy(LocalDate.of(2026, 10, 31),
                 LocalDate.of(2026, 10, 31), "TK01", "SUCCESS");
         FakeDb fake = new FakeDb(3);
         AuditService service = new AuditService(session(VaiTroHeThong.SYSTEM_ADMIN), fake::open);
-        AuditDao.Result result = service.search(filter);
+        KetQuaNhatKy result = service.search(filter);
         check(fake.opens.get() == 1, "one connection");
         check(fake.closed, "connection closed");
         check(result.rows().size() == 3 && !result.truncated(), "three rows");
@@ -141,7 +143,7 @@ public final class AuditSelfTest {
         check(fake.binds.get(1).equals(Timestamp.valueOf("2026-10-30 17:00:00")), "Vietnam day UTC start");
         check(fake.binds.get(3).equals(Timestamp.valueOf("2026-10-31 17:00:00")), "exclusive UTC end");
         FakeDb hundred = new FakeDb(201);
-        AuditDao.Result bounded = new AuditDao().search(hundred.open(), new AuditFilter(null,null,"",null));
+        KetQuaNhatKy bounded = new AuditDao().search(hundred.open(), new BoLocNhatKy(null,null,"",null));
         check(bounded.rows().size() == AuditDao.PAGE_LIMIT, "bounded to 200");
         check(bounded.truncated(), "indicates further data");
         check(hundred.selectedRows == 201, "only 201 rows examined");

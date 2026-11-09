@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.baocao;
 
-
-
+import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
+import com.quanlynhakhoa.model.baocao.BaoCaoDoanhThu;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
@@ -31,7 +31,7 @@ public final class RevenueReportSelfTest {
             session.logout();try{service.load(day,day,false);throw new AssertionError("logged out access");}catch(AccessDeniedException expected){ }
         }
         var manager=session(VaiTroHeThong.CLINIC_MANAGER);
-        RevenueReport report=new RevenueReport(day,day,false,List.of(new RevenueReport.Row(day,2,new BigDecimal("400000"),new BigDecimal("150000"))),new BigDecimal("400000"),new BigDecimal("150000"),new BigDecimal("250000"),2);
+        BaoCaoDoanhThu report=new BaoCaoDoanhThu(day,day,false,List.of(new DongBaoCaoDoanhThu(day,2,new BigDecimal("400000"),new BigDecimal("150000"))),new BigDecimal("400000"),new BigDecimal("150000"),new BigDecimal("250000"),2);
         SwingUtilities.invokeAndWait(()->{
             var panel=new RevenueReportPanel(manager,new RevenueReportService(manager,()->{throw new AssertionError("preview must not open SQL");}),false);
             panel.showReport(report);panel.setSize(1200,760);layout(panel);
