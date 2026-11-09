@@ -128,7 +128,7 @@ public final class ThuocDialog extends JDialog {
                 ((Number) spDinhMuc.getValue()).intValue(),
                 chkDaDatHang.isSelected());
         String price = txtGiaBan.getText().trim();
-        if (!price.isEmpty()) value.setDonGiaBan(com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi.moneyInput(price));
+        if (!price.isEmpty()) value.setDonGiaBan(com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon.moneyInput(price));
         return value;
     }
 

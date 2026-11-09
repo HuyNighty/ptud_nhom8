@@ -5,8 +5,8 @@ import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
 import com.quanlynhakhoa.model.baocao.BaoCaoDoanhThu;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
-import com.quanlynhakhoa.nghiepvu.hoadon.controller.SessionWorker;
-import com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi;
+import com.quanlynhakhoa.controller.hoadon.SessionWorker;
+import com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon;
 import com.quanlynhakhoa.view.benhnhan.ChonNgayDialog;
 import java.awt.*;
 import java.awt.event.*;
@@ -33,8 +33,8 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
     private final JButton view = new JButton("Xem báo cáo");
     private final JLabel revenue = new JLabel("—"), collected = new JLabel("—"), debt = new JLabel("—"), invoices = new JLabel("—");
     private final JLabel status = new JLabel(" "), range = new JLabel(" ");
-    private final DefaultTableModel model = BillingUi.model("Ngày", "Số hóa đơn", "Doanh thu", "Tiền đã thu");
-    private final JTable table = BillingUi.table(model);
+    private final DefaultTableModel model = GiaoDienHoaDon.model("Ngày", "Số hóa đơn", "Doanh thu", "Tiền đã thu");
+    private final JTable table = GiaoDienHoaDon.table(model);
     private final Chart chart = new Chart();
     private boolean busy, updatingPeriod;
 
@@ -68,7 +68,7 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
         JPanel details = new JPanel(new BorderLayout(0,8));details.setOpaque(false);
         JLabel tableTitle = new JLabel("Chi tiết theo thời gian");tableTitle.setFont(new Font("SansSerif",Font.BOLD,15));tableTitle.setForeground(NAVY);details.add(tableTitle,BorderLayout.NORTH);
         table.setRowHeight(32);table.getTableHeader().setFont(new Font("SansSerif",Font.BOLD,13));table.getTableHeader().setPreferredSize(new Dimension(0,32));
-        BillingUi.columns(table,160,160,240,240);details.add(BillingUi.scroll(table),BorderLayout.CENTER);
+        GiaoDienHoaDon.columns(table,160,160,240,240);details.add(GiaoDienHoaDon.scroll(table),BorderLayout.CENTER);
         JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT,plot,details);split.setResizeWeight(.55);split.setDividerSize(8);split.setBorder(null);split.setOpaque(false);
         plot.setMinimumSize(new Dimension(200,160));details.setMinimumSize(new Dimension(200,140)); add(split,BorderLayout.CENTER);
         JPanel bottom = transparent(new BorderLayout(0,5));
@@ -120,12 +120,12 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
             protected void finished(){setBusy(false);}
             protected void expired(){clear();setBusy(false);status.setText("Phiên đăng nhập đã kết thúc.");}
             protected void succeeded(BaoCaoDoanhThu value){showReport(value);}
-            protected void failed(Throwable failure){clear();setBusy(false);status.setText("Không tải được báo cáo. "+BillingUi.error(failure));}
+            protected void failed(Throwable failure){clear();setBusy(false);status.setText("Không tải được báo cáo. "+GiaoDienHoaDon.error(failure));}
         }.execute();
     }
     public void showReport(BaoCaoDoanhThu value){
         from.setText(DATE.format(value.from()));to.setText(DATE.format(value.to()));grouping.setSelectedIndex(value.monthly()?1:0);
-        revenue.setText(BillingUi.vnd(value.revenue()));collected.setText(BillingUi.vnd(value.collected()));debt.setText(BillingUi.vnd(value.closingDebt()));invoices.setText(Integer.toString(value.invoices()));
+        revenue.setText(GiaoDienHoaDon.vnd(value.revenue()));collected.setText(GiaoDienHoaDon.vnd(value.collected()));debt.setText(GiaoDienHoaDon.vnd(value.closingDebt()));invoices.setText(Integer.toString(value.invoices()));
         range.setText(DATE.format(value.from())+" – "+DATE.format(value.to()));model.setRowCount(0);
         table.getColumnModel().getColumn(0).setHeaderValue(value.monthly()?"Tháng":"Ngày");table.getTableHeader().repaint();
         DateTimeFormatter periodFormat=DateTimeFormatter.ofPattern(value.monthly()?"MM/uuuu":"dd/MM/uuuu");

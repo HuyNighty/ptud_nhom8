@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.dichvu.service;
 
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
+import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.dichvu.dao.ServiceCatalogDao;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.hethong.phanquyen.*;

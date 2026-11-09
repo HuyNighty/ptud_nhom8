@@ -13,7 +13,7 @@ import com.quanlynhakhoa.quantri.vaitro.ui.RolePanel;
 import com.quanlynhakhoa.view.phieukham.PhieuKhamPanel;
 import com.quanlynhakhoa.nghiepvu.dieutri.view.TreatmentPlanPanel;
 import com.quanlynhakhoa.enums.Module;
-import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
+import com.quanlynhakhoa.view.hoadon.HoaDonPanel;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -47,20 +47,20 @@ public final class FeatureBootstrap {
                 })
                 .register(Module.BILLING, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session) {
-                        return new InvoicePanel(session, TeamDevConnection::open);
+                        return new HoaDonPanel(session, TeamDevConnection::open);
                     }
                 })
                 .register(Module.DEBTS, new FeaturePanelFactory() {
-                    @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel(session,TeamDevConnection::open);}
+                    @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.view.hoadon.CongNoPanel(session,TeamDevConnection::open);}
                 })
                 .register(Module.PAYMENTS, new FeaturePanelFactory() {
-                    @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel(session,TeamDevConnection::open);}
+                    @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.view.hoadon.ThanhToanPanel(session,TeamDevConnection::open);}
                 })
                 .register(Module.SERVICES, new FeaturePanelFactory() {
                     @Override public JPanel create(DesktopSession session){return new ServiceCatalogPanel(session,TeamDevConnection::open,CheDoSuaDanhMucDichVu.COMBINED);}
                 })
                 .register(Module.INVOICE_CANCELLATIONS,new FeaturePanelFactory(){
-                    @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel(session,TeamDevConnection::open);}
+                    @Override public JPanel create(DesktopSession session){return new com.quanlynhakhoa.view.hoadon.HuyHoaDonPanel(session,TeamDevConnection::open);}
                 })
                 .build();
     }

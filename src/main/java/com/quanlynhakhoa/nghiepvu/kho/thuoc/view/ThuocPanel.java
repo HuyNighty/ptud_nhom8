@@ -108,7 +108,7 @@ public final class ThuocPanel extends JPanel {
                     thuoc.getHamLuong() == null ? "—" : thuoc.getHamLuong(),
                     thuoc.getDonViTinh(), thuoc.getTongTon(), thuoc.getDinhMucToiThieu(),
                     mucTon, han, thuoc.isDaDatHang() ? "Có" : "Không",
-                    thuoc.getDonGiaBan() == null ? "Chưa định giá" : com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi.vnd(thuoc.getDonGiaBan())
+                    thuoc.getDonGiaBan() == null ? "Chưa định giá" : com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon.vnd(thuoc.getDonGiaBan())
             });
         }
         lblTrangThai.setForeground(MUTED);

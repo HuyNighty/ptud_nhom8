@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.dichvu.controller;
 
 import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
-import com.quanlynhakhoa.nghiepvu.hoadon.controller.SessionWorker;
-import com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi;
+import com.quanlynhakhoa.controller.hoadon.SessionWorker;
+import com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
@@ -58,12 +58,12 @@ public final class ServiceCatalogController {
                 if(reloadPending){reloadPending=false;load(false);}
             }
             protected void failed(Throwable failure) {
-                view.status((afterSave ? "Đã lưu thành công, nhưng tải lại thất bại. " : "Tải thất bại. ") + BillingUi.error(failure));
+                view.status((afterSave ? "Đã lưu thành công, nhưng tải lại thất bại. " : "Tải thất bại. ") + GiaoDienHoaDon.error(failure));
             }
         }.execute();
     }
     private void showSaveFailure(Throwable failure) {
-        String detail = BillingUi.error(failure);
+        String detail = GiaoDienHoaDon.error(failure);
         if (failure instanceof java.sql.SQLException) {
             view.status("Chưa xác nhận lưu thành công. Dữ liệu nhập vẫn được giữ nguyên. "
                     + "Kiểm tra kết nối/quyền và đối chiếu dữ liệu đã lưu trước khi bấm Lưu lại. "
@@ -102,7 +102,7 @@ public final class ServiceCatalogController {
                 view.showForm(new DichVuNhaKhoa(value.maDichVu(), value.tenDichVu(), value.donGia(), value.moTa(),
                         value.laCanLamSang(), activeOnly == null ? value.dangApDung() : activeOnly));
                 load(true);
-                com.quanlynhakhoa.nghiepvu.hoadon.controller.BillingChangeBus.forSession(session).publish();
+                com.quanlynhakhoa.controller.hoadon.ThongBaoThayDoiHoaDon.forSession(session).publish();
             }
             protected void failed(Throwable failure) {
                 if (failure instanceof ServiceCatalogService.CommittedWriteException) { saved(); return; }

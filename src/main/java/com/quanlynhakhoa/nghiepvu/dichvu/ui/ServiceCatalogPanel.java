@@ -2,8 +2,8 @@ package com.quanlynhakhoa.nghiepvu.dichvu.ui;
 
 import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
-import com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi;
+import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.dichvu.controller.ServiceCatalogController;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
@@ -29,8 +29,8 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
     private final JButton btnNgungApDung = new JButton("Ngừng áp dụng"), btnApDungLai = new JButton("Áp dụng lại");
     private final JLabel lblTrangThai = new JLabel("Chọn dịch vụ để sửa hoặc bấm Thêm mới.");
     private final JPanel pnlForm = new JPanel(new BorderLayout(8,8));
-    private final DefaultTableModel tableModel = BillingUi.model("Mã dịch vụ", "Tên dịch vụ", "Giá hiện hành", "Cận lâm sàng", "Trạng thái");
-    private final JTable tblDichVu = BillingUi.table(tableModel);
+    private final DefaultTableModel tableModel = GiaoDienHoaDon.model("Mã dịch vụ", "Tên dịch vụ", "Giá hiện hành", "Cận lâm sàng", "Trạng thái");
+    private final JTable tblDichVu = GiaoDienHoaDon.table(tableModel);
     private final ServiceCatalogController controller;
     private List<DichVuNhaKhoa> rows = List.of();
     private DichVuNhaKhoa selected;
@@ -49,17 +49,17 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
         JLabel lblTitle = new JLabel(mode==CheDoSuaDanhMucDichVu.COMBINED?"Quản lí dịch vụ":mode==CheDoSuaDanhMucDichVu.SERVICES?"Dịch vụ":"Bảng giá dịch vụ");
         lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 22f));
         pnlTop.add(lblTitle, BorderLayout.NORTH);
-        JPanel pnlTim = BillingUi.filters(BillingUi.field("Mã hoặc tên dịch vụ",txtTuKhoa),BillingUi.field("Trạng thái sử dụng",cmbTrangThai),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)));
+        JPanel pnlTim = GiaoDienHoaDon.filters(GiaoDienHoaDon.field("Mã hoặc tên dịch vụ",txtTuKhoa),GiaoDienHoaDon.field("Trạng thái sử dụng",cmbTrangThai),GiaoDienHoaDon.field(" ",GiaoDienHoaDon.actions(btnTim,btnTaiLai)));
         pnlTop.add(pnlTim, BorderLayout.SOUTH); add(pnlTop, BorderLayout.NORTH);
         pnlForm.setPreferredSize(new Dimension(350,0));pnlForm.setBorder(BorderFactory.createTitledBorder("Thêm dịch vụ mới"));
         JPanel pnlGroup=new JPanel(new BorderLayout(0,4));
         JPanel pnlFields = new JPanel(new BorderLayout(0,4));
         JPanel pnlInputs=new JPanel(new GridLayout(0,1,0,4));
-        pnlInputs.add(BillingUi.field("Mã dịch vụ",txtMaDichVu));
-        pnlInputs.add(BillingUi.field("Tên dịch vụ",txtTenDichVu));
-        pnlInputs.add(BillingUi.field("Đơn giá (VND)",txtDonGia));pnlFields.add(pnlInputs,BorderLayout.CENTER);
+        pnlInputs.add(GiaoDienHoaDon.field("Mã dịch vụ",txtMaDichVu));
+        pnlInputs.add(GiaoDienHoaDon.field("Tên dịch vụ",txtTenDichVu));
+        pnlInputs.add(GiaoDienHoaDon.field("Đơn giá (VND)",txtDonGia));pnlFields.add(pnlInputs,BorderLayout.CENTER);
         JPanel pnlFlags=new JPanel(new GridLayout(1,2));pnlFlags.add(chkLaCanLamSang);pnlFlags.add(chkDangApDung);pnlFields.add(pnlFlags,BorderLayout.SOUTH);
-        txtMaDichVu.setToolTipText("1–10 ký tự chữ/số không dấu. Mã được khóa khi sửa.");txtTenDichVu.setToolTipText("Tối đa 100 ký tự");BillingUi.moneyField(txtDonGia);
+        txtMaDichVu.setToolTipText("1–10 ký tự chữ/số không dấu. Mã được khóa khi sửa.");txtTenDichVu.setToolTipText("Tối đa 100 ký tự");GiaoDienHoaDon.moneyField(txtDonGia);
         pnlGroup.add(pnlFields, BorderLayout.NORTH);
         txaMoTa.setLineWrap(true); txaMoTa.setWrapStyleWord(true);
         JScrollPane scrMoTa = new JScrollPane(txaMoTa);
@@ -70,10 +70,10 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
         if(mode!=CheDoSuaDanhMucDichVu.PRICES)pnlSave.add(btnThem);
         pnlSave.add(btnXoaTrang);pnlSave.add(btnLuu);pnlActions.add(pnlSave,BorderLayout.NORTH);
         JPanel pnlState=new JPanel(new CardLayout());pnlState.add(btnNgungApDung,"stop");pnlState.add(btnApDungLai,"start");pnlState.add(new JPanel(),"new");pnlActions.add(pnlState,BorderLayout.SOUTH);
-        BillingUi.primary(btnLuu);BillingUi.danger(btnNgungApDung);
+        GiaoDienHoaDon.primary(btnLuu);GiaoDienHoaDon.danger(btnNgungApDung);
         btnThem.setVisible(mode!=CheDoSuaDanhMucDichVu.PRICES);
-        pnlGroup.add(pnlActions, BorderLayout.SOUTH);pnlForm.add(BillingUi.topAligned(pnlGroup),BorderLayout.CENTER);
-        JScrollPane scrDanhSach = BillingUi.scroll(tblDichVu);
+        pnlGroup.add(pnlActions, BorderLayout.SOUTH);pnlForm.add(GiaoDienHoaDon.topAligned(pnlGroup),BorderLayout.CENTER);
+        JScrollPane scrDanhSach = GiaoDienHoaDon.scroll(tblDichVu);
         scrDanhSach.setMinimumSize(new Dimension(200,80));
         JPanel pnlBody = new JPanel(new BorderLayout(12, 0));
         pnlBody.add(scrDanhSach, BorderLayout.CENTER); pnlBody.add(pnlForm, BorderLayout.EAST); add(pnlBody, BorderLayout.CENTER);
@@ -82,8 +82,8 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
         pnlBottom.add(lblTrangThai); add(pnlBottom, BorderLayout.SOUTH);
         controller = new ServiceCatalogController(this, session, new ServiceCatalogService(session, connections));
         clearForm();
-        BillingUi.style(this);
-        BillingUi.columns(tblDichVu,110,270,170,145,170);
+        GiaoDienHoaDon.style(this);
+        GiaoDienHoaDon.columns(tblDichVu,110,270,170,145,170);
     }
     @Override public void addNotify() {
         super.addNotify();
@@ -122,14 +122,14 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
     public DichVuNhaKhoa selected() { return selected; }
     public DichVuNhaKhoa input() {
         return new DichVuNhaKhoa(selected == null ? txtMaDichVu.getText() : selected.maDichVu(), txtTenDichVu.getText(),
-        mode==CheDoSuaDanhMucDichVu.SERVICES?(selected==null?java.math.BigDecimal.ZERO:selected.donGia()):BillingUi.moneyInput(txtDonGia.getText()), txaMoTa.getText(), chkLaCanLamSang.isSelected(), chkDangApDung.isSelected());
+        mode==CheDoSuaDanhMucDichVu.SERVICES?(selected==null?java.math.BigDecimal.ZERO:selected.donGia()):GiaoDienHoaDon.moneyInput(txtDonGia.getText()), txaMoTa.getText(), chkLaCanLamSang.isSelected(), chkDangApDung.isSelected());
     }
     public void showRows(List<DichVuNhaKhoa> values) {
         rows = List.of(); tableModel.setRowCount(0); rows = List.copyOf(values);
         for (DichVuNhaKhoa value : rows) tableModel.addRow(new Object[]{value.maDichVu(), value.tenDichVu(), value.donGia(),
                 value.laCanLamSang() ? "Có" : "Không", value.dangApDung() ? "Đang áp dụng" : "Ngừng áp dụng"});
         clearForm();
-        BillingUi.tableState(tblDichVu,values.isEmpty()?(keyword().isBlank()&&activeFilter()==null?"Nhập thông tin dịch vụ bên phải rồi bấm Lưu dịch vụ mới.":"Không tìm thấy dịch vụ phù hợp."):"");
+        GiaoDienHoaDon.tableState(tblDichVu,values.isEmpty()?(keyword().isBlank()&&activeFilter()==null?"Nhập thông tin dịch vụ bên phải rồi bấm Lưu dịch vụ mới.":"Không tìm thấy dịch vụ phù hợp."):"");
     }
     public void selectRow() {
         int index = tblDichVu.getSelectedRow();
@@ -140,7 +140,7 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
     public void showForm(DichVuNhaKhoa value) {
         selected = value;
         txtMaDichVu.setText(value.maDichVu()); txtMaDichVu.setEditable(false);
-        txtTenDichVu.setText(value.tenDichVu()); txtDonGia.setText(BillingUi.moneyText(value.donGia()));
+        txtTenDichVu.setText(value.tenDichVu()); txtDonGia.setText(GiaoDienHoaDon.moneyText(value.donGia()));
         txaMoTa.setText(value.moTa()); chkLaCanLamSang.setSelected(value.laCanLamSang()); chkDangApDung.setSelected(value.dangApDung());
         setBusy(false);
     }
@@ -161,8 +161,8 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
         btnNgungApDung.getParent().setVisible(selected!=null);
         pnlForm.setBorder(BorderFactory.createTitledBorder(selected==null?"Thêm mới dịch vụ":"Chỉnh sửa · "+selected.maDichVu()));
         btnLuu.setText(selected==null?"Lưu mới":"Cập nhật");
-        if(busy)BillingUi.tableState(tblDichVu,"Đang tải dịch vụ…");
+        if(busy)GiaoDienHoaDon.tableState(tblDichVu,"Đang tải dịch vụ…");
     }
-    public void status(String text) { lblTrangThai.setText(text);lblTrangThai.setToolTipText(text);if(tableModel.getRowCount()==0){BillingUi.tableState(tblDichVu,text.startsWith("Chưa có dịch vụ")?"Nhập thông tin dịch vụ bên phải rồi lưu.":text);if(text.startsWith("Chưa có dịch vụ"))lblTrangThai.setText("Đang thêm mới dịch vụ.");else if(text.startsWith("Không tìm"))lblTrangThai.setText("Điều chỉnh bộ lọc để tìm lại.");} }
+    public void status(String text) { lblTrangThai.setText(text);lblTrangThai.setToolTipText(text);if(tableModel.getRowCount()==0){GiaoDienHoaDon.tableState(tblDichVu,text.startsWith("Chưa có dịch vụ")?"Nhập thông tin dịch vụ bên phải rồi lưu.":text);if(text.startsWith("Chưa có dịch vụ"))lblTrangThai.setText("Đang thêm mới dịch vụ.");else if(text.startsWith("Không tìm"))lblTrangThai.setText("Điều chỉnh bộ lọc để tìm lại.");} }
     public void expired() { showRows(List.of()); setBusy(true); status("Phiên đã đăng xuất."); }
 }
