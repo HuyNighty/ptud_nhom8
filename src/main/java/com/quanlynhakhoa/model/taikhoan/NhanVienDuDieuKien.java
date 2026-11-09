@@ -6,37 +6,37 @@ import com.quanlynhakhoa.model.nhanvien.NhanChucDanh;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class NhanVienDuDieuKien {
-    private final String employeeId;
-    private final String fullName;
-    private final String jobTitle;
-    private final VaiTroHeThong role;
+    private final String maNhanVien;
+    private final String hoTen;
+    private final String chucDanh;
+    private final VaiTroHeThong vaiTro;
 
-    public NhanVienDuDieuKien(String employeeId, String fullName, String jobTitle, VaiTroHeThong role) {
-        if (employeeId == null || !employeeId.matches("[A-Z0-9]{1,10}")) {
+    public NhanVienDuDieuKien(String maNhanVien, String hoTen, String chucDanh, VaiTroHeThong vaiTro) {
+        if (maNhanVien == null || !maNhanVien.matches("[A-Z0-9]{1,10}")) {
         throw new IllegalArgumentException("Mã nhân viên không hợp lệ.");
         }
-        if (fullName == null || fullName.isBlank()) {
+        if (hoTen == null || hoTen.isBlank()) {
         throw new IllegalArgumentException("Nhân viên phải có họ tên.");
         }
-        if (role != roleForJob(jobTitle)) {
+        if (vaiTro != roleForJob(chucDanh)) {
         throw new IllegalArgumentException("Vai trò không khớp chức danh nhân viên.");
         }
-        this.employeeId = employeeId;
-        this.fullName = fullName;
-        this.jobTitle = jobTitle;
-        this.role = role;
+        this.maNhanVien = maNhanVien;
+        this.hoTen = hoTen;
+        this.chucDanh = chucDanh;
+        this.vaiTro = vaiTro;
     }
 
-    public String employeeId() { return employeeId; }
-    public String fullName() { return fullName; }
-    public String jobTitle() { return jobTitle; }
-    public VaiTroHeThong role() { return role; }
+    public String employeeId() { return maNhanVien; }
+    public String fullName() { return hoTen; }
+    public String jobTitle() { return chucDanh; }
+    public VaiTroHeThong role() { return vaiTro; }
 
 
 
-    public static VaiTroHeThong roleForJob(String jobTitle) {
-        if (jobTitle == null) throw new IllegalArgumentException("Chức danh không hợp lệ.");
-        return switch (jobTitle) {
+    public static VaiTroHeThong roleForJob(String chucDanh) {
+        if (chucDanh == null) throw new IllegalArgumentException("Chức danh không hợp lệ.");
+        return switch (chucDanh) {
             case "LT" -> VaiTroHeThong.RECEPTIONIST;
             case "BS" -> VaiTroHeThong.DOCTOR;
             case "YT" -> VaiTroHeThong.NURSE;
@@ -47,31 +47,31 @@ public final class NhanVienDuDieuKien {
     }
 
     public String displayLabel() {
-        return employeeId + " — " + fullName + " (" + NhanChucDanh.label(jobTitle) + ")";
+        return maNhanVien + " — " + hoTen + " (" + NhanChucDanh.label(chucDanh) + ")";
     }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof NhanVienDuDieuKien value)) return false;
-        return java.util.Objects.equals(employeeId, value.employeeId)
-                && java.util.Objects.equals(fullName, value.fullName)
-                && java.util.Objects.equals(jobTitle, value.jobTitle)
-                && java.util.Objects.equals(role, value.role);
+        return java.util.Objects.equals(maNhanVien, value.maNhanVien)
+                && java.util.Objects.equals(hoTen, value.hoTen)
+                && java.util.Objects.equals(chucDanh, value.chucDanh)
+                && java.util.Objects.equals(vaiTro, value.vaiTro);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(employeeId);
-        result = 31 * result + java.util.Objects.hashCode(fullName);
-        result = 31 * result + java.util.Objects.hashCode(jobTitle);
-        result = 31 * result + java.util.Objects.hashCode(role);
+        result = 31 * result + java.util.Objects.hashCode(maNhanVien);
+        result = 31 * result + java.util.Objects.hashCode(hoTen);
+        result = 31 * result + java.util.Objects.hashCode(chucDanh);
+        result = 31 * result + java.util.Objects.hashCode(vaiTro);
         return result;
     }
 
     @Override
     public String toString() {
-        return "EligibleEmployee[" + "employeeId=" + employeeId + ", " + "fullName=" + fullName + ", " + "jobTitle=" + jobTitle + ", " + "role=" + role + "]";
+        return "EligibleEmployee[" + "employeeId=" + maNhanVien + ", " + "fullName=" + hoTen + ", " + "jobTitle=" + chucDanh + ", " + "role=" + vaiTro + "]";
     }
 }

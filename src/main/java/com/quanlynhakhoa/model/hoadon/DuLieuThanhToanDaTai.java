@@ -10,45 +10,45 @@ import java.util.*;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class DuLieuThanhToanDaTai {
-    private final DuLieuChiTietHoaDon invoice;
-    private final YeuCauThanhToan pending;
-    private final boolean cancellation;
-    private final String owner;
+    private final DuLieuChiTietHoaDon hoaDon;
+    private final YeuCauThanhToan dangCho;
+    private final boolean yeuCauHuy;
+    private final String chuSoHuu;
 
-    public DuLieuThanhToanDaTai(DuLieuChiTietHoaDon invoice, YeuCauThanhToan pending, boolean cancellation, String owner) {
-        this.invoice = invoice;
-        this.pending = pending;
-        this.cancellation = cancellation;
-        this.owner = owner;
+    public DuLieuThanhToanDaTai(DuLieuChiTietHoaDon hoaDon, YeuCauThanhToan dangCho, boolean yeuCauHuy, String chuSoHuu) {
+        this.hoaDon = hoaDon;
+        this.dangCho = dangCho;
+        this.yeuCauHuy = yeuCauHuy;
+        this.chuSoHuu = chuSoHuu;
     }
 
-    public DuLieuChiTietHoaDon invoice() { return invoice; }
-    public YeuCauThanhToan pending() { return pending; }
-    public boolean cancellation() { return cancellation; }
-    public String owner() { return owner; }
+    public DuLieuChiTietHoaDon invoice() { return hoaDon; }
+    public YeuCauThanhToan pending() { return dangCho; }
+    public boolean cancellation() { return yeuCauHuy; }
+    public String owner() { return chuSoHuu; }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof DuLieuThanhToanDaTai value)) return false;
-        return java.util.Objects.equals(invoice, value.invoice)
-                && java.util.Objects.equals(pending, value.pending)
-                && cancellation == value.cancellation
-                && java.util.Objects.equals(owner, value.owner);
+        return java.util.Objects.equals(hoaDon, value.hoaDon)
+                && java.util.Objects.equals(dangCho, value.dangCho)
+                && yeuCauHuy == value.yeuCauHuy
+                && java.util.Objects.equals(chuSoHuu, value.chuSoHuu);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(invoice);
-        result = 31 * result + java.util.Objects.hashCode(pending);
-        result = 31 * result + Boolean.hashCode(cancellation);
-        result = 31 * result + java.util.Objects.hashCode(owner);
+        result = 31 * result + java.util.Objects.hashCode(hoaDon);
+        result = 31 * result + java.util.Objects.hashCode(dangCho);
+        result = 31 * result + Boolean.hashCode(yeuCauHuy);
+        result = 31 * result + java.util.Objects.hashCode(chuSoHuu);
         return result;
     }
 
     @Override
     public String toString() {
-        return "Loaded[" + "invoice=" + invoice + ", " + "pending=" + pending + ", " + "cancellation=" + cancellation + ", " + "owner=" + owner + "]";
+        return "Loaded[" + "invoice=" + hoaDon + ", " + "pending=" + dangCho + ", " + "cancellation=" + yeuCauHuy + ", " + "owner=" + chuSoHuu + "]";
     }
 }

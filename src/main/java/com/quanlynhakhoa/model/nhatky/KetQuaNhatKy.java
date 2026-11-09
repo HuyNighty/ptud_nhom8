@@ -15,17 +15,17 @@ import java.util.List;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class KetQuaNhatKy {
-    private final List<BanGhiNhatKy> rows;
-    private final boolean truncated;
+    private final List<BanGhiNhatKy> danhSach;
+    private final boolean biGioiHan;
 
-    public KetQuaNhatKy(List<BanGhiNhatKy> rows, boolean truncated) {
-        rows = List.copyOf(rows);
-        this.rows = rows;
-        this.truncated = truncated;
+    public KetQuaNhatKy(List<BanGhiNhatKy> danhSach, boolean biGioiHan) {
+        danhSach = List.copyOf(danhSach);
+        this.danhSach = danhSach;
+        this.biGioiHan = biGioiHan;
     }
 
-    public List<BanGhiNhatKy> rows() { return rows; }
-    public boolean truncated() { return truncated; }
+    public List<BanGhiNhatKy> rows() { return danhSach; }
+    public boolean truncated() { return biGioiHan; }
 
 
 
@@ -33,20 +33,20 @@ public final class KetQuaNhatKy {
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof KetQuaNhatKy value)) return false;
-        return java.util.Objects.equals(rows, value.rows)
-                && truncated == value.truncated;
+        return java.util.Objects.equals(danhSach, value.danhSach)
+                && biGioiHan == value.biGioiHan;
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(this.rows);
-        result = 31 * result + Boolean.hashCode(this.truncated);
+        result = 31 * result + java.util.Objects.hashCode(this.danhSach);
+        result = 31 * result + Boolean.hashCode(this.biGioiHan);
         return result;
     }
 
     @Override
     public String toString() {
-        return "Result[" + "rows=" + rows + ", " + "truncated=" + truncated + "]";
+        return "Result[" + "rows=" + danhSach + ", " + "truncated=" + biGioiHan + "]";
     }
 }

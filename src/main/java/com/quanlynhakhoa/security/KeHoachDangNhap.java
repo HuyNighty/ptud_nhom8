@@ -7,46 +7,46 @@ import java.time.LocalDateTime;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class KeHoachDangNhap {
-    private final boolean authenticated;
-    private final boolean forcePasswordChange;
-    private final boolean stateChanged;
-    private final TrangThaiTaiKhoan nextStatus;
-    private final int nextFailedAttempts;
-    private final LocalDateTime nextFirstFailureAt;
-    private final LocalDateTime nextLockedAt;
-    private final LocalDateTime nextLockedUntil;
-    private final NguonKhoaTaiKhoan nextLockSource;
-    private final String nextLockReason;
-    private final LocalDateTime nextLastLoginAt;
-    private final LocalDateTime nextUpdatedAt;
+    private final boolean daXacThuc;
+    private final boolean batBuocDoiMatKhau;
+    private final boolean daThayDoiTrangThai;
+    private final TrangThaiTaiKhoan trangThaiTiepTheo;
+    private final int soLanSaiTiepTheo;
+    private final LocalDateTime thoiGianSaiDauTiepTheo;
+    private final LocalDateTime thoiGianKhoaTiepTheo;
+    private final LocalDateTime khoaDenLucTiepTheo;
+    private final NguonKhoaTaiKhoan nguonKhoaTiepTheo;
+    private final String lyDoKhoaTiepTheo;
+    private final LocalDateTime thoiGianDangNhapCuoiTiepTheo;
+    private final LocalDateTime thoiGianCapNhatTiepTheo;
 
-    public KeHoachDangNhap(boolean authenticated, boolean forcePasswordChange, boolean stateChanged, TrangThaiTaiKhoan nextStatus, int nextFailedAttempts, LocalDateTime nextFirstFailureAt, LocalDateTime nextLockedAt, LocalDateTime nextLockedUntil, NguonKhoaTaiKhoan nextLockSource, String nextLockReason, LocalDateTime nextLastLoginAt, LocalDateTime nextUpdatedAt) {
-        this.authenticated = authenticated;
-        this.forcePasswordChange = forcePasswordChange;
-        this.stateChanged = stateChanged;
-        this.nextStatus = nextStatus;
-        this.nextFailedAttempts = nextFailedAttempts;
-        this.nextFirstFailureAt = nextFirstFailureAt;
-        this.nextLockedAt = nextLockedAt;
-        this.nextLockedUntil = nextLockedUntil;
-        this.nextLockSource = nextLockSource;
-        this.nextLockReason = nextLockReason;
-        this.nextLastLoginAt = nextLastLoginAt;
-        this.nextUpdatedAt = nextUpdatedAt;
+    public KeHoachDangNhap(boolean daXacThuc, boolean batBuocDoiMatKhau, boolean daThayDoiTrangThai, TrangThaiTaiKhoan trangThaiTiepTheo, int soLanSaiTiepTheo, LocalDateTime thoiGianSaiDauTiepTheo, LocalDateTime thoiGianKhoaTiepTheo, LocalDateTime khoaDenLucTiepTheo, NguonKhoaTaiKhoan nguonKhoaTiepTheo, String lyDoKhoaTiepTheo, LocalDateTime thoiGianDangNhapCuoiTiepTheo, LocalDateTime thoiGianCapNhatTiepTheo) {
+        this.daXacThuc = daXacThuc;
+        this.batBuocDoiMatKhau = batBuocDoiMatKhau;
+        this.daThayDoiTrangThai = daThayDoiTrangThai;
+        this.trangThaiTiepTheo = trangThaiTiepTheo;
+        this.soLanSaiTiepTheo = soLanSaiTiepTheo;
+        this.thoiGianSaiDauTiepTheo = thoiGianSaiDauTiepTheo;
+        this.thoiGianKhoaTiepTheo = thoiGianKhoaTiepTheo;
+        this.khoaDenLucTiepTheo = khoaDenLucTiepTheo;
+        this.nguonKhoaTiepTheo = nguonKhoaTiepTheo;
+        this.lyDoKhoaTiepTheo = lyDoKhoaTiepTheo;
+        this.thoiGianDangNhapCuoiTiepTheo = thoiGianDangNhapCuoiTiepTheo;
+        this.thoiGianCapNhatTiepTheo = thoiGianCapNhatTiepTheo;
     }
 
-    public boolean authenticated() { return authenticated; }
-    public boolean forcePasswordChange() { return forcePasswordChange; }
-    public boolean stateChanged() { return stateChanged; }
-    public TrangThaiTaiKhoan nextStatus() { return nextStatus; }
-    public int nextFailedAttempts() { return nextFailedAttempts; }
-    public LocalDateTime nextFirstFailureAt() { return nextFirstFailureAt; }
-    public LocalDateTime nextLockedAt() { return nextLockedAt; }
-    public LocalDateTime nextLockedUntil() { return nextLockedUntil; }
-    public NguonKhoaTaiKhoan nextLockSource() { return nextLockSource; }
-    public String nextLockReason() { return nextLockReason; }
-    public LocalDateTime nextLastLoginAt() { return nextLastLoginAt; }
-    public LocalDateTime nextUpdatedAt() { return nextUpdatedAt; }
+    public boolean authenticated() { return daXacThuc; }
+    public boolean forcePasswordChange() { return batBuocDoiMatKhau; }
+    public boolean stateChanged() { return daThayDoiTrangThai; }
+    public TrangThaiTaiKhoan nextStatus() { return trangThaiTiepTheo; }
+    public int nextFailedAttempts() { return soLanSaiTiepTheo; }
+    public LocalDateTime nextFirstFailureAt() { return thoiGianSaiDauTiepTheo; }
+    public LocalDateTime nextLockedAt() { return thoiGianKhoaTiepTheo; }
+    public LocalDateTime nextLockedUntil() { return khoaDenLucTiepTheo; }
+    public NguonKhoaTaiKhoan nextLockSource() { return nguonKhoaTiepTheo; }
+    public String nextLockReason() { return lyDoKhoaTiepTheo; }
+    public LocalDateTime nextLastLoginAt() { return thoiGianDangNhapCuoiTiepTheo; }
+    public LocalDateTime nextUpdatedAt() { return thoiGianCapNhatTiepTheo; }
 
     public static KeHoachDangNhap rejectedUnknown() {
         return new KeHoachDangNhap(false, false, false, null, 0,
@@ -64,40 +64,40 @@ public final class KeHoachDangNhap {
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof KeHoachDangNhap value)) return false;
-        return authenticated == value.authenticated
-                && forcePasswordChange == value.forcePasswordChange
-                && stateChanged == value.stateChanged
-                && java.util.Objects.equals(nextStatus, value.nextStatus)
-                && nextFailedAttempts == value.nextFailedAttempts
-                && java.util.Objects.equals(nextFirstFailureAt, value.nextFirstFailureAt)
-                && java.util.Objects.equals(nextLockedAt, value.nextLockedAt)
-                && java.util.Objects.equals(nextLockedUntil, value.nextLockedUntil)
-                && java.util.Objects.equals(nextLockSource, value.nextLockSource)
-                && java.util.Objects.equals(nextLockReason, value.nextLockReason)
-                && java.util.Objects.equals(nextLastLoginAt, value.nextLastLoginAt)
-                && java.util.Objects.equals(nextUpdatedAt, value.nextUpdatedAt);
+        return daXacThuc == value.daXacThuc
+                && batBuocDoiMatKhau == value.batBuocDoiMatKhau
+                && daThayDoiTrangThai == value.daThayDoiTrangThai
+                && java.util.Objects.equals(trangThaiTiepTheo, value.trangThaiTiepTheo)
+                && soLanSaiTiepTheo == value.soLanSaiTiepTheo
+                && java.util.Objects.equals(thoiGianSaiDauTiepTheo, value.thoiGianSaiDauTiepTheo)
+                && java.util.Objects.equals(thoiGianKhoaTiepTheo, value.thoiGianKhoaTiepTheo)
+                && java.util.Objects.equals(khoaDenLucTiepTheo, value.khoaDenLucTiepTheo)
+                && java.util.Objects.equals(nguonKhoaTiepTheo, value.nguonKhoaTiepTheo)
+                && java.util.Objects.equals(lyDoKhoaTiepTheo, value.lyDoKhoaTiepTheo)
+                && java.util.Objects.equals(thoiGianDangNhapCuoiTiepTheo, value.thoiGianDangNhapCuoiTiepTheo)
+                && java.util.Objects.equals(thoiGianCapNhatTiepTheo, value.thoiGianCapNhatTiepTheo);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + Boolean.hashCode(this.authenticated);
-        result = 31 * result + Boolean.hashCode(this.forcePasswordChange);
-        result = 31 * result + Boolean.hashCode(this.stateChanged);
-        result = 31 * result + java.util.Objects.hashCode(this.nextStatus);
-        result = 31 * result + Integer.hashCode(this.nextFailedAttempts);
-        result = 31 * result + java.util.Objects.hashCode(this.nextFirstFailureAt);
-        result = 31 * result + java.util.Objects.hashCode(this.nextLockedAt);
-        result = 31 * result + java.util.Objects.hashCode(this.nextLockedUntil);
-        result = 31 * result + java.util.Objects.hashCode(this.nextLockSource);
-        result = 31 * result + java.util.Objects.hashCode(this.nextLockReason);
-        result = 31 * result + java.util.Objects.hashCode(this.nextLastLoginAt);
-        result = 31 * result + java.util.Objects.hashCode(this.nextUpdatedAt);
+        result = 31 * result + Boolean.hashCode(this.daXacThuc);
+        result = 31 * result + Boolean.hashCode(this.batBuocDoiMatKhau);
+        result = 31 * result + Boolean.hashCode(this.daThayDoiTrangThai);
+        result = 31 * result + java.util.Objects.hashCode(this.trangThaiTiepTheo);
+        result = 31 * result + Integer.hashCode(this.soLanSaiTiepTheo);
+        result = 31 * result + java.util.Objects.hashCode(this.thoiGianSaiDauTiepTheo);
+        result = 31 * result + java.util.Objects.hashCode(this.thoiGianKhoaTiepTheo);
+        result = 31 * result + java.util.Objects.hashCode(this.khoaDenLucTiepTheo);
+        result = 31 * result + java.util.Objects.hashCode(this.nguonKhoaTiepTheo);
+        result = 31 * result + java.util.Objects.hashCode(this.lyDoKhoaTiepTheo);
+        result = 31 * result + java.util.Objects.hashCode(this.thoiGianDangNhapCuoiTiepTheo);
+        result = 31 * result + java.util.Objects.hashCode(this.thoiGianCapNhatTiepTheo);
         return result;
     }
 
     @Override
     public String toString() {
-        return "LoginPlan[" + "authenticated=" + authenticated + ", " + "forcePasswordChange=" + forcePasswordChange + ", " + "stateChanged=" + stateChanged + ", " + "nextStatus=" + nextStatus + ", " + "nextFailedAttempts=" + nextFailedAttempts + ", " + "nextFirstFailureAt=" + nextFirstFailureAt + ", " + "nextLockedAt=" + nextLockedAt + ", " + "nextLockedUntil=" + nextLockedUntil + ", " + "nextLockSource=" + nextLockSource + ", " + "nextLockReason=" + nextLockReason + ", " + "nextLastLoginAt=" + nextLastLoginAt + ", " + "nextUpdatedAt=" + nextUpdatedAt + "]";
+        return "LoginPlan[" + "authenticated=" + daXacThuc + ", " + "forcePasswordChange=" + batBuocDoiMatKhau + ", " + "stateChanged=" + daThayDoiTrangThai + ", " + "nextStatus=" + trangThaiTiepTheo + ", " + "nextFailedAttempts=" + soLanSaiTiepTheo + ", " + "nextFirstFailureAt=" + thoiGianSaiDauTiepTheo + ", " + "nextLockedAt=" + thoiGianKhoaTiepTheo + ", " + "nextLockedUntil=" + khoaDenLucTiepTheo + ", " + "nextLockSource=" + nguonKhoaTiepTheo + ", " + "nextLockReason=" + lyDoKhoaTiepTheo + ", " + "nextLastLoginAt=" + thoiGianDangNhapCuoiTiepTheo + ", " + "nextUpdatedAt=" + thoiGianCapNhatTiepTheo + "]";
     }
 }

@@ -6,29 +6,29 @@ import java.util.List;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class TongHopCongNoBenhNhan {
-    private final String patientId;
-    private final String name;
-    private final BigDecimal total;
-    private final BigDecimal collected;
-    private final BigDecimal debt;
-    private final List<ThongTinHoaDon> invoices;
+    private final String maBenhNhan;
+    private final String ten;
+    private final BigDecimal tongTien;
+    private final BigDecimal daThu;
+    private final BigDecimal congNo;
+    private final List<ThongTinHoaDon> hoaDon;
 
-    public TongHopCongNoBenhNhan(String patientId, String name, BigDecimal total, BigDecimal collected, BigDecimal debt, List<ThongTinHoaDon> invoices) {
-        invoices=List.copyOf(invoices);
-        this.patientId = patientId;
-        this.name = name;
-        this.total = total;
-        this.collected = collected;
-        this.debt = debt;
-        this.invoices = invoices;
+    public TongHopCongNoBenhNhan(String maBenhNhan, String ten, BigDecimal tongTien, BigDecimal daThu, BigDecimal congNo, List<ThongTinHoaDon> hoaDon) {
+        hoaDon=List.copyOf(hoaDon);
+        this.maBenhNhan = maBenhNhan;
+        this.ten = ten;
+        this.tongTien = tongTien;
+        this.daThu = daThu;
+        this.congNo = congNo;
+        this.hoaDon = hoaDon;
     }
 
-    public String patientId() { return patientId; }
-    public String name() { return name; }
-    public BigDecimal total() { return total; }
-    public BigDecimal collected() { return collected; }
-    public BigDecimal debt() { return debt; }
-    public List<ThongTinHoaDon> invoices() { return invoices; }
+    public String patientId() { return maBenhNhan; }
+    public String name() { return ten; }
+    public BigDecimal total() { return tongTien; }
+    public BigDecimal collected() { return daThu; }
+    public BigDecimal debt() { return congNo; }
+    public List<ThongTinHoaDon> invoices() { return hoaDon; }
 
 
 
@@ -36,28 +36,28 @@ public final class TongHopCongNoBenhNhan {
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof TongHopCongNoBenhNhan value)) return false;
-        return java.util.Objects.equals(patientId, value.patientId)
-                && java.util.Objects.equals(name, value.name)
-                && java.util.Objects.equals(total, value.total)
-                && java.util.Objects.equals(collected, value.collected)
-                && java.util.Objects.equals(debt, value.debt)
-                && java.util.Objects.equals(invoices, value.invoices);
+        return java.util.Objects.equals(maBenhNhan, value.maBenhNhan)
+                && java.util.Objects.equals(ten, value.ten)
+                && java.util.Objects.equals(tongTien, value.tongTien)
+                && java.util.Objects.equals(daThu, value.daThu)
+                && java.util.Objects.equals(congNo, value.congNo)
+                && java.util.Objects.equals(hoaDon, value.hoaDon);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(patientId);
-        result = 31 * result + java.util.Objects.hashCode(name);
-        result = 31 * result + java.util.Objects.hashCode(total);
-        result = 31 * result + java.util.Objects.hashCode(collected);
-        result = 31 * result + java.util.Objects.hashCode(debt);
-        result = 31 * result + java.util.Objects.hashCode(invoices);
+        result = 31 * result + java.util.Objects.hashCode(maBenhNhan);
+        result = 31 * result + java.util.Objects.hashCode(ten);
+        result = 31 * result + java.util.Objects.hashCode(tongTien);
+        result = 31 * result + java.util.Objects.hashCode(daThu);
+        result = 31 * result + java.util.Objects.hashCode(congNo);
+        result = 31 * result + java.util.Objects.hashCode(hoaDon);
         return result;
     }
 
     @Override
     public String toString() {
-        return "PatientDebt[" + "patientId=" + patientId + ", " + "name=" + name + ", " + "total=" + total + ", " + "collected=" + collected + ", " + "debt=" + debt + ", " + "invoices=" + invoices + "]";
+        return "PatientDebt[" + "patientId=" + maBenhNhan + ", " + "name=" + ten + ", " + "total=" + tongTien + ", " + "collected=" + daThu + ", " + "debt=" + congNo + ", " + "invoices=" + hoaDon + "]";
     }
 }

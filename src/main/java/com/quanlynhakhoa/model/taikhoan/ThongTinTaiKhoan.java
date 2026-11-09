@@ -7,127 +7,127 @@ import java.time.LocalDateTime;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class ThongTinTaiKhoan {
-    private final String id;
-    private final String employeeId;
-    private final String username;
-    private final String displayName;
-    private final String passwordHash;
-    private final VaiTroHeThong role;
-    private final TrangThaiTaiKhoan status;
-    private final int failedAttempts;
-    private final LocalDateTime firstFailureAt;
-    private final LocalDateTime lockedAt;
-    private final LocalDateTime lockedUntil;
-    private final NguonKhoaTaiKhoan lockSource;
-    private final String lockReason;
-    private final boolean forcePasswordChange;
-    private final LocalDateTime passwordUpdatedAt;
-    private final LocalDateTime lastLoginAt;
-    private final LocalDateTime createdAt;
-    private final LocalDateTime updatedAt;
-    private final LocalDateTime disabledAt;
-    private final String disableReason;
+    private final String ma;
+    private final String maNhanVien;
+    private final String tenDangNhap;
+    private final String tenHienThi;
+    private final String matKhauHash;
+    private final VaiTroHeThong vaiTro;
+    private final TrangThaiTaiKhoan trangThai;
+    private final int soLanDangNhapSai;
+    private final LocalDateTime thoiGianSaiDauTien;
+    private final LocalDateTime thoiGianKhoa;
+    private final LocalDateTime khoaDenLuc;
+    private final NguonKhoaTaiKhoan nguonKhoa;
+    private final String lyDoKhoa;
+    private final boolean batBuocDoiMatKhau;
+    private final LocalDateTime thoiGianCapNhatMatKhau;
+    private final LocalDateTime thoiGianDangNhapCuoi;
+    private final LocalDateTime thoiGianTao;
+    private final LocalDateTime thoiGianCapNhat;
+    private final LocalDateTime thoiGianVoHieuHoa;
+    private final String lyDoVoHieuHoa;
 
-    public ThongTinTaiKhoan(String id, String employeeId, String username, String displayName, String passwordHash, VaiTroHeThong role, TrangThaiTaiKhoan status, int failedAttempts, LocalDateTime firstFailureAt, LocalDateTime lockedAt, LocalDateTime lockedUntil, NguonKhoaTaiKhoan lockSource, String lockReason, boolean forcePasswordChange, LocalDateTime passwordUpdatedAt, LocalDateTime lastLoginAt, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime disabledAt, String disableReason) {
-        this.id = id;
-        this.employeeId = employeeId;
-        this.username = username;
-        this.displayName = displayName;
-        this.passwordHash = passwordHash;
-        this.role = role;
-        this.status = status;
-        this.failedAttempts = failedAttempts;
-        this.firstFailureAt = firstFailureAt;
-        this.lockedAt = lockedAt;
-        this.lockedUntil = lockedUntil;
-        this.lockSource = lockSource;
-        this.lockReason = lockReason;
-        this.forcePasswordChange = forcePasswordChange;
-        this.passwordUpdatedAt = passwordUpdatedAt;
-        this.lastLoginAt = lastLoginAt;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.disabledAt = disabledAt;
-        this.disableReason = disableReason;
+    public ThongTinTaiKhoan(String ma, String maNhanVien, String tenDangNhap, String tenHienThi, String matKhauHash, VaiTroHeThong vaiTro, TrangThaiTaiKhoan trangThai, int soLanDangNhapSai, LocalDateTime thoiGianSaiDauTien, LocalDateTime thoiGianKhoa, LocalDateTime khoaDenLuc, NguonKhoaTaiKhoan nguonKhoa, String lyDoKhoa, boolean batBuocDoiMatKhau, LocalDateTime thoiGianCapNhatMatKhau, LocalDateTime thoiGianDangNhapCuoi, LocalDateTime thoiGianTao, LocalDateTime thoiGianCapNhat, LocalDateTime thoiGianVoHieuHoa, String lyDoVoHieuHoa) {
+        this.ma = ma;
+        this.maNhanVien = maNhanVien;
+        this.tenDangNhap = tenDangNhap;
+        this.tenHienThi = tenHienThi;
+        this.matKhauHash = matKhauHash;
+        this.vaiTro = vaiTro;
+        this.trangThai = trangThai;
+        this.soLanDangNhapSai = soLanDangNhapSai;
+        this.thoiGianSaiDauTien = thoiGianSaiDauTien;
+        this.thoiGianKhoa = thoiGianKhoa;
+        this.khoaDenLuc = khoaDenLuc;
+        this.nguonKhoa = nguonKhoa;
+        this.lyDoKhoa = lyDoKhoa;
+        this.batBuocDoiMatKhau = batBuocDoiMatKhau;
+        this.thoiGianCapNhatMatKhau = thoiGianCapNhatMatKhau;
+        this.thoiGianDangNhapCuoi = thoiGianDangNhapCuoi;
+        this.thoiGianTao = thoiGianTao;
+        this.thoiGianCapNhat = thoiGianCapNhat;
+        this.thoiGianVoHieuHoa = thoiGianVoHieuHoa;
+        this.lyDoVoHieuHoa = lyDoVoHieuHoa;
     }
 
-    public String id() { return id; }
-    public String employeeId() { return employeeId; }
-    public String username() { return username; }
-    public String displayName() { return displayName; }
-    public String passwordHash() { return passwordHash; }
-    public VaiTroHeThong role() { return role; }
-    public TrangThaiTaiKhoan status() { return status; }
-    public int failedAttempts() { return failedAttempts; }
-    public LocalDateTime firstFailureAt() { return firstFailureAt; }
-    public LocalDateTime lockedAt() { return lockedAt; }
-    public LocalDateTime lockedUntil() { return lockedUntil; }
-    public NguonKhoaTaiKhoan lockSource() { return lockSource; }
-    public String lockReason() { return lockReason; }
-    public boolean forcePasswordChange() { return forcePasswordChange; }
-    public LocalDateTime passwordUpdatedAt() { return passwordUpdatedAt; }
-    public LocalDateTime lastLoginAt() { return lastLoginAt; }
-    public LocalDateTime createdAt() { return createdAt; }
-    public LocalDateTime updatedAt() { return updatedAt; }
-    public LocalDateTime disabledAt() { return disabledAt; }
-    public String disableReason() { return disableReason; }
+    public String id() { return ma; }
+    public String employeeId() { return maNhanVien; }
+    public String username() { return tenDangNhap; }
+    public String displayName() { return tenHienThi; }
+    public String passwordHash() { return matKhauHash; }
+    public VaiTroHeThong role() { return vaiTro; }
+    public TrangThaiTaiKhoan status() { return trangThai; }
+    public int failedAttempts() { return soLanDangNhapSai; }
+    public LocalDateTime firstFailureAt() { return thoiGianSaiDauTien; }
+    public LocalDateTime lockedAt() { return thoiGianKhoa; }
+    public LocalDateTime lockedUntil() { return khoaDenLuc; }
+    public NguonKhoaTaiKhoan lockSource() { return nguonKhoa; }
+    public String lockReason() { return lyDoKhoa; }
+    public boolean forcePasswordChange() { return batBuocDoiMatKhau; }
+    public LocalDateTime passwordUpdatedAt() { return thoiGianCapNhatMatKhau; }
+    public LocalDateTime lastLoginAt() { return thoiGianDangNhapCuoi; }
+    public LocalDateTime createdAt() { return thoiGianTao; }
+    public LocalDateTime updatedAt() { return thoiGianCapNhat; }
+    public LocalDateTime disabledAt() { return thoiGianVoHieuHoa; }
+    public String disableReason() { return lyDoVoHieuHoa; }
 
     // passwordHash is intentionally never included in a UI or log response.
     // Do not log/serialize this record: record.toString() contains passwordHash.
     @Override
     public String toString() {
-        return "Account[id=" + id + ",role=" + role + ",status=" + status + "]";
+        return "Account[id=" + ma + ",role=" + vaiTro + ",status=" + trangThai + "]";
     }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof ThongTinTaiKhoan value)) return false;
-        return java.util.Objects.equals(id, value.id)
-                && java.util.Objects.equals(employeeId, value.employeeId)
-                && java.util.Objects.equals(username, value.username)
-                && java.util.Objects.equals(displayName, value.displayName)
-                && java.util.Objects.equals(passwordHash, value.passwordHash)
-                && java.util.Objects.equals(role, value.role)
-                && java.util.Objects.equals(status, value.status)
-                && failedAttempts == value.failedAttempts
-                && java.util.Objects.equals(firstFailureAt, value.firstFailureAt)
-                && java.util.Objects.equals(lockedAt, value.lockedAt)
-                && java.util.Objects.equals(lockedUntil, value.lockedUntil)
-                && java.util.Objects.equals(lockSource, value.lockSource)
-                && java.util.Objects.equals(lockReason, value.lockReason)
-                && forcePasswordChange == value.forcePasswordChange
-                && java.util.Objects.equals(passwordUpdatedAt, value.passwordUpdatedAt)
-                && java.util.Objects.equals(lastLoginAt, value.lastLoginAt)
-                && java.util.Objects.equals(createdAt, value.createdAt)
-                && java.util.Objects.equals(updatedAt, value.updatedAt)
-                && java.util.Objects.equals(disabledAt, value.disabledAt)
-                && java.util.Objects.equals(disableReason, value.disableReason);
+        return java.util.Objects.equals(ma, value.ma)
+                && java.util.Objects.equals(maNhanVien, value.maNhanVien)
+                && java.util.Objects.equals(tenDangNhap, value.tenDangNhap)
+                && java.util.Objects.equals(tenHienThi, value.tenHienThi)
+                && java.util.Objects.equals(matKhauHash, value.matKhauHash)
+                && java.util.Objects.equals(vaiTro, value.vaiTro)
+                && java.util.Objects.equals(trangThai, value.trangThai)
+                && soLanDangNhapSai == value.soLanDangNhapSai
+                && java.util.Objects.equals(thoiGianSaiDauTien, value.thoiGianSaiDauTien)
+                && java.util.Objects.equals(thoiGianKhoa, value.thoiGianKhoa)
+                && java.util.Objects.equals(khoaDenLuc, value.khoaDenLuc)
+                && java.util.Objects.equals(nguonKhoa, value.nguonKhoa)
+                && java.util.Objects.equals(lyDoKhoa, value.lyDoKhoa)
+                && batBuocDoiMatKhau == value.batBuocDoiMatKhau
+                && java.util.Objects.equals(thoiGianCapNhatMatKhau, value.thoiGianCapNhatMatKhau)
+                && java.util.Objects.equals(thoiGianDangNhapCuoi, value.thoiGianDangNhapCuoi)
+                && java.util.Objects.equals(thoiGianTao, value.thoiGianTao)
+                && java.util.Objects.equals(thoiGianCapNhat, value.thoiGianCapNhat)
+                && java.util.Objects.equals(thoiGianVoHieuHoa, value.thoiGianVoHieuHoa)
+                && java.util.Objects.equals(lyDoVoHieuHoa, value.lyDoVoHieuHoa);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(id);
-        result = 31 * result + java.util.Objects.hashCode(employeeId);
-        result = 31 * result + java.util.Objects.hashCode(username);
-        result = 31 * result + java.util.Objects.hashCode(displayName);
-        result = 31 * result + java.util.Objects.hashCode(passwordHash);
-        result = 31 * result + java.util.Objects.hashCode(role);
-        result = 31 * result + java.util.Objects.hashCode(status);
-        result = 31 * result + Integer.hashCode(failedAttempts);
-        result = 31 * result + java.util.Objects.hashCode(firstFailureAt);
-        result = 31 * result + java.util.Objects.hashCode(lockedAt);
-        result = 31 * result + java.util.Objects.hashCode(lockedUntil);
-        result = 31 * result + java.util.Objects.hashCode(lockSource);
-        result = 31 * result + java.util.Objects.hashCode(lockReason);
-        result = 31 * result + Boolean.hashCode(forcePasswordChange);
-        result = 31 * result + java.util.Objects.hashCode(passwordUpdatedAt);
-        result = 31 * result + java.util.Objects.hashCode(lastLoginAt);
-        result = 31 * result + java.util.Objects.hashCode(createdAt);
-        result = 31 * result + java.util.Objects.hashCode(updatedAt);
-        result = 31 * result + java.util.Objects.hashCode(disabledAt);
-        result = 31 * result + java.util.Objects.hashCode(disableReason);
+        result = 31 * result + java.util.Objects.hashCode(ma);
+        result = 31 * result + java.util.Objects.hashCode(maNhanVien);
+        result = 31 * result + java.util.Objects.hashCode(tenDangNhap);
+        result = 31 * result + java.util.Objects.hashCode(tenHienThi);
+        result = 31 * result + java.util.Objects.hashCode(matKhauHash);
+        result = 31 * result + java.util.Objects.hashCode(vaiTro);
+        result = 31 * result + java.util.Objects.hashCode(trangThai);
+        result = 31 * result + Integer.hashCode(soLanDangNhapSai);
+        result = 31 * result + java.util.Objects.hashCode(thoiGianSaiDauTien);
+        result = 31 * result + java.util.Objects.hashCode(thoiGianKhoa);
+        result = 31 * result + java.util.Objects.hashCode(khoaDenLuc);
+        result = 31 * result + java.util.Objects.hashCode(nguonKhoa);
+        result = 31 * result + java.util.Objects.hashCode(lyDoKhoa);
+        result = 31 * result + Boolean.hashCode(batBuocDoiMatKhau);
+        result = 31 * result + java.util.Objects.hashCode(thoiGianCapNhatMatKhau);
+        result = 31 * result + java.util.Objects.hashCode(thoiGianDangNhapCuoi);
+        result = 31 * result + java.util.Objects.hashCode(thoiGianTao);
+        result = 31 * result + java.util.Objects.hashCode(thoiGianCapNhat);
+        result = 31 * result + java.util.Objects.hashCode(thoiGianVoHieuHoa);
+        result = 31 * result + java.util.Objects.hashCode(lyDoVoHieuHoa);
         return result;
     }
 
