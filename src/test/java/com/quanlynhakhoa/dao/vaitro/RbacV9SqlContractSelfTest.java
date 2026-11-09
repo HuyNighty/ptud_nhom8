@@ -48,7 +48,7 @@ public final class RbacV9SqlContractSelfTest {
     public static void main(String[] args)throws Exception {
         Path root=args.length==0?Path.of(""):Path.of(args[0]);
         Path bootstrap=root.resolve("sql/bootstrap");
-        String sql=Files.readString(bootstrap.resolve("V9__create_dynamic_rbac.sql"));
+        String sql=Files.readString(bootstrap.resolve("V9__create_dynamic_rbac.sql")).replace("\r\n", "\n");
         String code=noComments(sql);
         List<List<String>> roles=rows(sql,"SEED ROLES","\\('([A-Z_]+)',N'([^']*)',N'([^']*)',([01]),([01]),([01])\\)",6);
         List<List<String>> permissions=rows(sql,"SEED PERMISSIONS","\\('([A-Z_]+)',N'([^']*)',([01])\\)",3);

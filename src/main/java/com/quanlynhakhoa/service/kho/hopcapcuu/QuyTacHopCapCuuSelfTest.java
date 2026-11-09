@@ -2,7 +2,7 @@ package com.quanlynhakhoa.service.kho.hopcapcuu;
 
 import java.time.LocalDate;
 
-public final class EmergencyKitRulesSelfTest {
+public final class QuyTacHopCapCuuSelfTest {
     private static int checks;
 
     private static void check(boolean value, String label) {

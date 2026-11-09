@@ -18,27 +18,56 @@ public final class TeamM1Permissions {
     private static final Pattern DB_NAME = Pattern.compile("N08Dev_[0-9a-f]{8}");
     private static final Pattern LOGIN_NAME = Pattern.compile("n08dev_[0-9a-f]{8}");
 
-    private record Grant(String table, String privileges) { }
+    private static final class CapQuyenBang {
+        private final String tenBang;
+        private final String cacQuyen;
 
-    private static final List<Grant> GRANTS = List.of(
-            new Grant("NhanVien", "INSERT"),
-            new Grant("BenhNhan", "SELECT, INSERT, UPDATE"),
-            new Grant("HoSoBenhAn", "SELECT, INSERT, UPDATE"),
-            new Grant("LichHen", "SELECT"),
-            new Grant("PhieuKham", "SELECT, INSERT, UPDATE"),
-            new Grant("KeHoachDieuTri", "SELECT"),
-            new Grant("DichVu", "SELECT, INSERT, UPDATE"),
-            new Grant("Thuoc", "SELECT, INSERT, UPDATE"),
-            new Grant("VatTu", "SELECT, INSERT, UPDATE"),
-            new Grant("NhaCungCap", "SELECT, INSERT, UPDATE"),
-            new Grant("LoHang", "SELECT"),
-            new Grant("HoaDon", "SELECT"),
-            new Grant("ChiTietHoaDon", "SELECT"),
-            new Grant("ThanhToan", "SELECT"),
-            new Grant("LanThuHoaDon", "SELECT, INSERT, UPDATE"),
-            new Grant("DieuChinhThanhToan", "SELECT, INSERT"),
-            new Grant("DongTienHoaDon", "SELECT"),
-            new Grant("NhatKyThaoTac", "SELECT, INSERT")
+        private CapQuyenBang(String table, String privileges) {
+            this.tenBang = table;
+            this.cacQuyen = privileges;
+        }
+
+        public String table() { return tenBang; }
+        public String privileges() { return cacQuyen; }
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            if (!(other instanceof CapQuyenBang value)) return false;
+            return java.util.Objects.equals(tenBang, value.tenBang)
+                    && java.util.Objects.equals(cacQuyen, value.cacQuyen);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * java.util.Objects.hashCode(tenBang) + java.util.Objects.hashCode(cacQuyen);
+        }
+
+        @Override
+        public String toString() {
+            return "Grant[table=" + tenBang + ", privileges=" + cacQuyen + "]";
+        }
+    }
+
+    private static final List<CapQuyenBang> GRANTS = List.of(
+            new CapQuyenBang("NhanVien", "INSERT"),
+            new CapQuyenBang("BenhNhan", "SELECT, INSERT, UPDATE"),
+            new CapQuyenBang("HoSoBenhAn", "SELECT, INSERT, UPDATE"),
+            new CapQuyenBang("LichHen", "SELECT"),
+            new CapQuyenBang("PhieuKham", "SELECT, INSERT, UPDATE"),
+            new CapQuyenBang("KeHoachDieuTri", "SELECT"),
+            new CapQuyenBang("DichVu", "SELECT, INSERT, UPDATE"),
+            new CapQuyenBang("Thuoc", "SELECT, INSERT, UPDATE"),
+            new CapQuyenBang("VatTu", "SELECT, INSERT, UPDATE"),
+            new CapQuyenBang("NhaCungCap", "SELECT, INSERT, UPDATE"),
+            new CapQuyenBang("LoHang", "SELECT"),
+            new CapQuyenBang("HoaDon", "SELECT"),
+            new CapQuyenBang("ChiTietHoaDon", "SELECT"),
+            new CapQuyenBang("ThanhToan", "SELECT"),
+            new CapQuyenBang("LanThuHoaDon", "SELECT, INSERT, UPDATE"),
+            new CapQuyenBang("DieuChinhThanhToan", "SELECT, INSERT"),
+            new CapQuyenBang("DongTienHoaDon", "SELECT"),
+            new CapQuyenBang("NhatKyThaoTac", "SELECT, INSERT")
     );
 
     private TeamM1Permissions() { }
@@ -47,7 +76,7 @@ public final class TeamM1Permissions {
         requireDevelopmentSchema(admin, appSqlLogin);
         try (Statement statement = admin.createStatement()) {
             statement.setQueryTimeout(15);
-            for (Grant grant : GRANTS) {
+            for (CapQuyenBang grant : GRANTS) {
                 statement.execute("GRANT " + grant.privileges()
                         + " ON OBJECT::dbo." + grant.table()
                         + " TO [" + appSqlLogin + "]");
@@ -99,7 +128,7 @@ public final class TeamM1Permissions {
                 }
             }
         }
-        for (Grant grant : GRANTS) {
+        for (CapQuyenBang grant : GRANTS) {
             try (PreparedStatement statement = admin.prepareStatement(
                     "SELECT OBJECT_ID(?)")) {
                 statement.setString(1, "dbo." + grant.table());
@@ -115,7 +144,7 @@ public final class TeamM1Permissions {
     private static int verifyEffectivePrivileges(boolean mustBeComplete) throws SQLException {
         try (Connection app = TeamDevConnection.open()) {
             int missing = 0;
-            for (Grant grant : GRANTS) {
+            for (CapQuyenBang grant : GRANTS) {
                 for (String privilege : grant.privileges().split(", ")) {
                     if (!hasPermission(app, grant.table(), privilege)) {
                         System.out.println("MISSING: " + grant.table() + " / " + privilege);
