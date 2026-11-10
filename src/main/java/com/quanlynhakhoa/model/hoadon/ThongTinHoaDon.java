@@ -1,6 +1,7 @@
 package com.quanlynhakhoa.model.hoadon;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.InvoiceStatus;
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -12,13 +13,13 @@ public final class ThongTinHoaDon {
     private final String tenBenhNhan;
     private final String maPhieuKham;
     private final LocalDateTime ngayLap;
-    private final InvoiceStatus trangThai;
+    private final TrangThaiHoaDon trangThai;
     private final BigDecimal tongTien;
     private final BigDecimal daThu;
     private final BigDecimal congNoBenhNhan;
-    private final ThongTinYeuCauHuyHoaDon.TrangThai cancellationStatus;
+    private final TrangThaiYeuCauHuyHoaDon cancellationStatus;
 
-    public ThongTinHoaDon(String maHoaDon, String maNhanVien, String maBenhNhan, String tenBenhNhan, String maPhieuKham, LocalDateTime ngayLap, InvoiceStatus trangThai, BigDecimal tongTien, BigDecimal daThu, BigDecimal congNoBenhNhan, ThongTinYeuCauHuyHoaDon.TrangThai cancellationStatus) {
+    public ThongTinHoaDon(String maHoaDon, String maNhanVien, String maBenhNhan, String tenBenhNhan, String maPhieuKham, LocalDateTime ngayLap, TrangThaiHoaDon trangThai, BigDecimal tongTien, BigDecimal daThu, BigDecimal congNoBenhNhan, TrangThaiYeuCauHuyHoaDon cancellationStatus) {
         this.maHoaDon = maHoaDon;
         this.maNhanVien = maNhanVien;
         this.maBenhNhan = maBenhNhan;
@@ -38,20 +39,20 @@ public final class ThongTinHoaDon {
     public String tenBenhNhan() { return tenBenhNhan; }
     public String maPhieuKham() { return maPhieuKham; }
     public LocalDateTime ngayLap() { return ngayLap; }
-    public InvoiceStatus trangThai() { return trangThai; }
+    public TrangThaiHoaDon trangThai() { return trangThai; }
     public BigDecimal tongTien() { return tongTien; }
     public BigDecimal daThu() { return daThu; }
     public BigDecimal congNoBenhNhan() { return congNoBenhNhan; }
-    public ThongTinYeuCauHuyHoaDon.TrangThai cancellationStatus() { return cancellationStatus; }
+    public TrangThaiYeuCauHuyHoaDon cancellationStatus() { return cancellationStatus; }
 
     public ThongTinHoaDon(String maHoaDon, String maNhanVien, String maBenhNhan, String tenBenhNhan,
-                   String maPhieuKham, LocalDateTime ngayLap, InvoiceStatus trangThai,
+                   String maPhieuKham, LocalDateTime ngayLap, TrangThaiHoaDon trangThai,
                    BigDecimal tongTien, BigDecimal daThu, BigDecimal congNoBenhNhan) {
         this(maHoaDon, maNhanVien, maBenhNhan, tenBenhNhan, maPhieuKham, ngayLap,
                 trangThai, tongTien, daThu, congNoBenhNhan, null);
     }
     public boolean cancellationPending() {
-        return cancellationStatus == ThongTinYeuCauHuyHoaDon.TrangThai.CHO_DUYET;
+        return cancellationStatus == TrangThaiYeuCauHuyHoaDon.CHO_DUYET;
     }
     public String cancellationLabel() {
         if (cancellationStatus == null) return "Chưa yêu cầu";
@@ -62,12 +63,12 @@ public final class ThongTinHoaDon {
         };
     }
     public BigDecimal conNo() { return tongTien.subtract(daThu); }
-    public BigDecimal noTheoDoi() { return trangThai == InvoiceStatus.DA_HUY ? BigDecimal.ZERO : conNo(); }
+    public BigDecimal noTheoDoi() { return trangThai == TrangThaiHoaDon.DA_HUY ? BigDecimal.ZERO : conNo(); }
     public String canhBao() {
         if (daThu.compareTo(tongTien) > 0) return "BẤT NHẤT: đã thu vượt tổng hóa đơn";
-        if (trangThai == InvoiceStatus.DA_HUY) return "ĐÃ HỦY — không cộng công nợ theo dõi";
-        InvoiceStatus expected = conNo().signum() == 0 ? InvoiceStatus.DA_THANH_TOAN : daThu.signum() == 0 ? InvoiceStatus.CHUA_THANH_TOAN
-                : conNo().signum() == 0 ? InvoiceStatus.DA_THANH_TOAN : InvoiceStatus.THANH_TOAN_MOT_PHAN;
+        if (trangThai == TrangThaiHoaDon.DA_HUY) return "ĐÃ HỦY — không cộng công nợ theo dõi";
+        TrangThaiHoaDon expected = conNo().signum() == 0 ? TrangThaiHoaDon.DA_THANH_TOAN : daThu.signum() == 0 ? TrangThaiHoaDon.CHUA_THANH_TOAN
+                : conNo().signum() == 0 ? TrangThaiHoaDon.DA_THANH_TOAN : TrangThaiHoaDon.THANH_TOAN_MOT_PHAN;
         return expected == trangThai ? "" : "BẤT NHẤT: trạng thái khác số tiền; cần đối soát";
     }
 

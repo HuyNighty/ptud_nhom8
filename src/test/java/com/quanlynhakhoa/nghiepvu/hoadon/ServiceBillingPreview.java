@@ -1,10 +1,12 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.CheDoXemHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
 import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
@@ -32,7 +34,7 @@ public final class ServiceBillingPreview {
                     render(pnlCatalog, "target/service-catalog-preview.png");
                     InvoicePanel pnlBilling = new InvoicePanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST), jdbc);
                     ThongTinHoaDon invoice = new ThongTinHoaDon("TSTHD001", "TSTNV", "TSTBN", "Bệnh nhân tổng hợp", "TSTPK",
-                            LocalDateTime.of(2026, 10, 30, 9, 0), InvoiceStatus.THANH_TOAN_MOT_PHAN,
+                            LocalDateTime.of(2026, 10, 30, 9, 0), TrangThaiHoaDon.THANH_TOAN_MOT_PHAN,
                             new BigDecimal("300000"), new BigDecimal("100000"), new BigDecimal("200000"));
                     pnlBilling.showRows(List.of(invoice));
                     pnlBilling.showDetail(new DuLieuChiTietHoaDon(invoice, List.of(new DongChiTietHoaDon(1, "TSTHD001", "TST001", null, null, 2, new BigDecimal("150000"))), List.of()));
@@ -43,7 +45,7 @@ public final class ServiceBillingPreview {
                     pnlDebt.tblBenhNhan.setRowSelectionInterval(0,0);pnlDebt.showDetail(new DuLieuChiTietHoaDon(invoice,List.of(),List.of()));render(pnlDebt,"target/latest-debt-preview.png");
                     com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel pnlPayment=new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc);
                     com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentForm pnlForm=new com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentForm();pnlForm.showInvoice(new DuLieuChiTietHoaDon(invoice,List.of(),List.of()));pnlForm.busy(false,true,false);pnlForm.txtSoTien.setText("200000");pnlForm.txtTienMat.setText("100000");pnlForm.txtChuyenKhoan.setText("100000");pnlForm.txtKhachDua.setText("100000");pnlPayment.showForm(pnlForm);render(pnlPayment,"target/latest-payment-preview.png");
-                    for(InvoicePanel.ViewMode mode:InvoicePanel.ViewMode.values()) {
+                    for(CheDoXemHoaDon mode:CheDoXemHoaDon.values()) {
                         InvoicePanel pnlMode=new InvoicePanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc,mode);
                         pnlMode.showRows(List.of(invoice));pnlMode.showDetail(new DuLieuChiTietHoaDon(invoice,List.of(),List.of()));
                         pnlMode.status("XEM BỐ CỤC · dữ liệu tổng hợp · không SQL");render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
@@ -53,7 +55,7 @@ public final class ServiceBillingPreview {
                         pnlMode.showRows(List.of(value));pnlMode.showForm(value);render(pnlMode,"target/"+mode.name().toLowerCase()+"-preview.png");
                     }
                     com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel pnlCancellation=new com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel(ServiceBillingSelfTest.session(Role.CLINIC_MANAGER),jdbc);
-                    ThongTinYeuCauHuyHoaDon request=new ThongTinYeuCauHuyHoaDon("TSTYC001",invoice.maHoaDon(),invoice.maBenhNhan(),invoice.tenBenhNhan(),invoice.tongTien(),invoice.daThu(),"TST_ACC",LocalDateTime.of(2026,10,30,10,0),"[KIỂM THỬ] Đề nghị kiểm tra chứng từ",ThongTinYeuCauHuyHoaDon.TrangThai.CHO_DUYET,null,null,null);
+                    ThongTinYeuCauHuyHoaDon request=new ThongTinYeuCauHuyHoaDon("TSTYC001",invoice.maHoaDon(),invoice.maBenhNhan(),invoice.tenBenhNhan(),invoice.tongTien(),invoice.daThu(),"TST_ACC",LocalDateTime.of(2026,10,30,10,0),"[KIỂM THỬ] Đề nghị kiểm tra chứng từ",TrangThaiYeuCauHuyHoaDon.CHO_DUYET,null,null,null);
                     pnlCancellation.showRows(List.of(request));
                     pnlCancellation.showDetail(new com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy(request,new DuLieuChiTietHoaDon(invoice,List.of(),List.of())));
                     pnlCancellation.lblTrangThai.setText("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · hóa đơn có thu tiền nên chặn duyệt hủy");render(pnlCancellation,"target/cancellation-preview.png");

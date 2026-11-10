@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.model.hoadon;
 
 
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
+
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import java.awt.event.*;

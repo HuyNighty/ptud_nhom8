@@ -1,11 +1,11 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.TongHopCongNoBenhNhan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.DebtController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.awt.*;
@@ -57,7 +57,7 @@ public final class DebtPanel extends JPanel implements RefreshableFeature {
     public String selectedInvoice(){int row=tblHoaDon.getSelectedRow();if(row<0)return null;row=tblHoaDon.convertRowIndexToModel(row);return row<invoices.size()?invoices.get(row).maHoaDon():null;}
     public void showDetail(DuLieuChiTietHoaDon detail){pnlDetails.showInvoice(detail);detailId=detail.hoaDon().maHoaDon();updateActions();}
     private void openDetail(){if(working||detailId==null||!detailId.equals(selectedInvoice()))return;if(winDetails!=null)winDetails.dispose();winDetails=new JDialog(SwingUtilities.getWindowAncestor(this),"Chi tiết hóa đơn · "+detailId,Dialog.ModalityType.MODELESS);JPanel root=new JPanel(new BorderLayout());root.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));root.add(pnlDetails);BillingUi.style(root);winDetails.setContentPane(root);winDetails.setSize(980,520);winDetails.setLocationRelativeTo(this);winDetails.setVisible(true);}
-    private void updateActions(){boolean selected=dataCurrent&&selectedInvoice()!=null;boolean eligible=false;if(selected)for(ThongTinHoaDon h:invoices)if(h.maHoaDon().equals(selectedInvoice()))eligible=h.conNo().signum()>0&&h.trangThai()!=InvoiceStatus.DA_HUY&&h.canhBao().isEmpty();btnThuNo.setEnabled(!working&&mayCollect&&eligible);btnXemChiTiet.setEnabled(!working&&selected&&selectedInvoice().equals(detailId));}
+    private void updateActions(){boolean selected=dataCurrent&&selectedInvoice()!=null;boolean eligible=false;if(selected)for(ThongTinHoaDon h:invoices)if(h.maHoaDon().equals(selectedInvoice()))eligible=h.conNo().signum()>0&&h.trangThai()!=TrangThaiHoaDon.DA_HUY&&h.canhBao().isEmpty();btnThuNo.setEnabled(!working&&mayCollect&&eligible);btnXemChiTiet.setEnabled(!working&&selected&&selectedInvoice().equals(detailId));}
     public void busy(boolean busy){working=busy;for(Component control:new Component[]{txtTuKhoa,txtTuNgay,txtDenNgay,btnTim,btnTaiLai,tblBenhNhan,tblHoaDon})control.setEnabled(!busy);updateActions();}
     public void loading(){detailId=null;lblTrangThai.setText("Đang tải công nợ…");BillingUi.tableState(tblBenhNhan,"Đang tải công nợ…");}
     public void failed(String message){detailId=null;dataCurrent=false;lblTrangThai.setText(message);lblTongCongNo.setText("Còn phải thu: —");lblSoBenhNhan.setText("Bệnh nhân còn nợ: —");lblSoHoaDon.setText("Hóa đơn còn nợ: —");BillingUi.tableState(tblBenhNhan,"Chưa tải được công nợ. Bấm Làm mới để thử lại.");updateActions();}

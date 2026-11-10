@@ -1,11 +1,13 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
@@ -30,10 +32,10 @@ public final class ServiceBillingSelfTest {
     private static BigDecimal money(String value) { return new BigDecimal(value); }
     private static DentalService value(String price) { return new DentalService(" TST1 ", " Dịch vụ kiểm thử ", money(price), " ", false, true); }
     private static ThongTinThanhToan payment(String id, String amount, boolean cancelled) {
-        return new ThongTinThanhToan(id, "H1", LocalDateTime.of(2026, 1, 1, 8, 0), money(amount), ThongTinThanhToan.PhuongThuc.TIEN_MAT,
-                null, money("999999"), cancelled ? ThongTinThanhToan.TrangThai.DA_HUY : ThongTinThanhToan.TrangThai.THANH_CONG, "NV1", null, null, null);
+        return new ThongTinThanhToan(id, "H1", LocalDateTime.of(2026, 1, 1, 8, 0), money(amount), PhuongThucThanhToan.TIEN_MAT,
+                null, money("999999"), cancelled ? TrangThaiThanhToan.DA_HUY : TrangThaiThanhToan.THANH_CONG, "NV1", null, null, null);
     }
-    private static ThongTinHoaDon invoice(String total, String collected, InvoiceStatus status) {
+    private static ThongTinHoaDon invoice(String total, String collected, TrangThaiHoaDon status) {
         return new ThongTinHoaDon("H1", "NV1", "B1", "Synthetic", null, LocalDateTime.now(), status, money(total), money(collected), BigDecimal.ZERO);
     }
     public static void main(String[] args) throws Exception {
@@ -49,14 +51,14 @@ public final class ServiceBillingSelfTest {
         check(BillingCalculator.collected(List.of()).signum() == 0, "no payments = zero");
         List<ThongTinThanhToan> payments = List.of(payment("T1", "60", false), payment("T2", "40", false), payment("T3", "900", true));
         check(BillingCalculator.collected(payments).compareTo(money("100")) == 0, "2 lines of successful collection, cancelled ignored, customer tender ignored");
-        check(invoice("300", "0", InvoiceStatus.CHUA_THANH_TOAN).conNo().intValueExact() == 300, "unpaid");
-        check(invoice("300", "100", InvoiceStatus.THANH_TOAN_MOT_PHAN).conNo().intValueExact() == 200, "partial");
-        check(invoice("300", "300", InvoiceStatus.DA_THANH_TOAN).conNo().signum() == 0, "paid");
-        ThongTinHoaDon overpaid = invoice("300", "400", InvoiceStatus.DA_THANH_TOAN);
+        check(invoice("300", "0", TrangThaiHoaDon.CHUA_THANH_TOAN).conNo().intValueExact() == 300, "unpaid");
+        check(invoice("300", "100", TrangThaiHoaDon.THANH_TOAN_MOT_PHAN).conNo().intValueExact() == 200, "partial");
+        check(invoice("300", "300", TrangThaiHoaDon.DA_THANH_TOAN).conNo().signum() == 0, "paid");
+        ThongTinHoaDon overpaid = invoice("300", "400", TrangThaiHoaDon.DA_THANH_TOAN);
         check(overpaid.conNo().intValueExact() == -100 && overpaid.canhBao().contains("vượt"), "overpayment not clamped");
-        check(BillingCalculator.patientDebt(List.of(invoice("300", "100", InvoiceStatus.THANH_TOAN_MOT_PHAN),
-                invoice("1000", "0", InvoiceStatus.DA_HUY), overpaid)).intValueExact() == 100, "cancelled invoices excluded, negative debt visible");
-        check(invoice("300", "100", InvoiceStatus.DA_THANH_TOAN).canhBao().contains("BẤT NHẤT"), "status discrepancy");
+        check(BillingCalculator.patientDebt(List.of(invoice("300", "100", TrangThaiHoaDon.THANH_TOAN_MOT_PHAN),
+                invoice("1000", "0", TrangThaiHoaDon.DA_HUY), overpaid)).intValueExact() == 100, "cancelled invoices excluded, negative debt visible");
+        check(invoice("300", "100", TrangThaiHoaDon.DA_THANH_TOAN).canhBao().contains("BẤT NHẤT"), "status discrepancy");
         BigDecimal big = new DongChiTietHoaDon(1, "H1", "DV1", null, null, Integer.MAX_VALUE, money("999999999999999999")).thanhTien();
         check(big.equals(money("2147483646999999997852516353")), "large exact decimal");
         expect(IllegalArgumentException.class, new Action() { public void run() { new DongChiTietHoaDon(1, "H1", "D1", "T1", null, 1, money("1")); } });
@@ -132,7 +134,7 @@ public final class ServiceBillingSelfTest {
     }
     private static void reads() throws Exception {
         final FeatureJdbcDouble jdbc = new FeatureJdbcDouble(); final InvoiceService service = new InvoiceService(session(Role.RECEPTIONIST), jdbc);
-        service.find("O'Brien_%", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31), InvoiceStatus.DA_HUY);
+        service.find("O'Brien_%", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31), TrangThaiHoaDon.DA_HUY);
         check(!jdbc.sql.getFirst().contains("O'Brien"), "search is parameterized, wildcard characters literal via CHARINDEX");
         check(jdbc.bindings.getFirst().get(8).equals(Timestamp.valueOf("2026-02-01 00:00:00")), "inclusive end date");
         check(jdbc.isolation == Connection.TRANSACTION_READ_COMMITTED, "list does not retain serializable range locks");

@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
@@ -7,7 +8,6 @@ import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.sql.*;
 import java.time.LocalDate;
@@ -42,7 +42,7 @@ public final class InvoiceService {
         this.connections = Objects.requireNonNull(connections);
         this.dao = Objects.requireNonNull(dao);
     }
-    public List<ThongTinHoaDon> find(String keyword, LocalDate from, LocalDate to, InvoiceStatus status) throws SQLException {
+    public List<ThongTinHoaDon> find(String keyword, LocalDate from, LocalDate to, TrangThaiHoaDon status) throws SQLException {
         require();
         String text = keyword == null ? "" : keyword.trim();
         if (text.length() > 100) throw new IllegalArgumentException("Từ khóa tối đa 100 ký tự.");
@@ -52,7 +52,7 @@ public final class InvoiceService {
             List<ThongTinHoaDon> result=dao.find(c,text,from,to,status);require();return result;
         }
     }
-    public List<ThongTinHoaDon> findPage(String keyword,LocalDate from,LocalDate to,InvoiceStatus status,int page)throws SQLException {
+    public List<ThongTinHoaDon> findPage(String keyword,LocalDate from,LocalDate to,TrangThaiHoaDon status,int page)throws SQLException {
         require();validateDates(from,to);String text=keyword==null?"":keyword.trim();
         if(text.length()>100||page<0||page>1000000)throw new IllegalArgumentException("Bộ lọc hoặc trang không hợp lệ.");
         try(Connection c=connections.open()){

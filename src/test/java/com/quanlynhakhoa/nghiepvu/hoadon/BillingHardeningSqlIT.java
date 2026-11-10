@@ -1,5 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
+import com.quanlynhakhoa.enums.LoaiDaoThanhToan;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
@@ -7,7 +11,6 @@ import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.dieutri.dao.TreatmentPlanDao;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
@@ -29,7 +32,7 @@ public final class BillingHardeningSqlIT {
     private static void sql(String text)throws Exception{try(Connection c=connections.open();Statement s=c.createStatement()){s.executeUpdate(text);}}
     private static BigDecimal scalar(String text)throws Exception{try(Connection c=connections.open();Statement s=c.createStatement();ResultSet r=s.executeQuery(text)){r.next();return r.getBigDecimal(1);}}
     private static DesktopSession session(String account,Role role){var s=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,account,role,false));s.bindCurrentAccountCheck(new JdbcSessionVerifier(connections::open));return s;}
-    private static YeuCauThanhToan cash(String invoice,String id,int amount){var m=BigDecimal.valueOf(amount);return new YeuCauThanhToan(invoice,m,List.of(new PhanThanhToan(id,m,ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,m)),false);}
+    private static YeuCauThanhToan cash(String invoice,String id,int amount){var m=BigDecimal.valueOf(amount);return new YeuCauThanhToan(invoice,m,List.of(new PhanThanhToan(id,m,PhuongThucThanhToan.TIEN_MAT,null,m)),false);}
     private static void header(String id,String visit,int total)throws Exception{
         sql("INSERT dbo.HoaDon(maHoaDon,maNhanVien,maBenhNhan,maPhieuKham,ngayLap,trangThai) VALUES('"+id+"','N1','B1',"+(visit==null?"NULL":"'"+visit+"'")+",CURRENT_TIMESTAMP,'CHUA_THANH_TOAN')");
         sql("INSERT dbo.ChiTietHoaDon(maHoaDon,maDichVu,soLuong,donGiaApDung) VALUES('"+id+"','D1',1,"+total+")");
@@ -58,21 +61,21 @@ public final class BillingHardeningSqlIT {
         var after=invoiceService.detail("H1");check(before.hoaDon().tenBenhNhan().equals(after.hoaDon().tenBenhNhan()),"patient snapshot immutable after rename");check(before.chiTiet().getFirst().tenHienThi().equals(after.chiTiet().getFirst().tenHienThi()),"service snapshot immutable after rename");
         var freeSource=new ClinicalBillingSource(){public void validateServiceState(Connection c,BanNhapHoaDon d,String id,boolean active){} public BanNhapHoaDon load(Connection c,String patient,String visit,boolean lock){return new BanNhapHoaDon(patient,visit,"free",List.of(new DongBanNhapHoaDon("D1","Free",1,BigDecimal.ZERO)));}};
         new InvoiceCreationService(cashier,connections,freeSource,c->"FREE").create(new BanNhapHoaDon("B1","V0","free",List.of(new DongBanNhapHoaDon("D1","Free",1,BigDecimal.ZERO))));
-        check(invoiceService.detail("FREE").hoaDon().trangThai()==InvoiceStatus.DA_THANH_TOAN,"free invoice finalized");check(invoiceService.detail("FREE").hoaDon().canhBao().isEmpty(),"free invoice consistent");
+        check(invoiceService.detail("FREE").hoaDon().trangThai()==TrangThaiHoaDon.DA_THANH_TOAN,"free invoice finalized");check(invoiceService.detail("FREE").hoaDon().canhBao().isEmpty(),"free invoice consistent");
         var attempts=new PaymentAttemptService(cashier,connections);var request=cash("H1","P1",100);attempts.reserve(request);
         check(new PaymentAttemptService(second,connections).pending("H1")!=null,"second workstation sees reservation");
         denied(()->new PaymentService(second,connections).collect(cash("H1","OTHER",100)),"second attempt blocked");
         new PaymentService(cashier,connections).collect(request);new PaymentService(cashier,connections).collect(request);
         check(invoiceService.detail("H1").hoaDon().daThu().compareTo(BigDecimal.valueOf(100))==0,"retry records money exactly once");
-        denied(()->new PaymentReversalService(cashier,connections).reverse("H1","P1",PaymentReversalService.Kind.HOAN_TIEN,"reason","receipt"),"cashier cannot refund");
+        denied(()->new PaymentReversalService(cashier,connections).reverse("H1","P1",LoaiDaoThanhToan.HOAN_TIEN,"reason","receipt"),"cashier cannot refund");
         sql("UPDATE dbo.ThanhToan SET thoiGian=DATEADD(day,-1,CURRENT_TIMESTAMP) WHERE maThanhToan='P1'");
-        new PaymentReversalService(manager,connections).reverse("H1","P1",PaymentReversalService.Kind.HOAN_TIEN,"Synthetic refund","receipt-test");
-        check(invoiceService.detail("H1").hoaDon().daThu().signum()==0,"refund reopens debt");check(invoiceService.detail("H1").thanhToan().getFirst().trangThai()==ThongTinThanhToan.TrangThai.DA_HOAN_TIEN,"refund preserves original row");
-        denied(()->new PaymentReversalService(manager,connections).reverse("H1","P1",PaymentReversalService.Kind.HOAN_TIEN,"again","receipt"),"double refund rejected");
-        new PaymentService(cashier,connections).collect(cash("H1","P2",50));new PaymentReversalService(manager,connections).reverse("H1","P2",PaymentReversalService.Kind.HUY_GHI_NHAN,"Synthetic wrong entry","proof-test");
+        new PaymentReversalService(manager,connections).reverse("H1","P1",LoaiDaoThanhToan.HOAN_TIEN,"Synthetic refund","receipt-test");
+        check(invoiceService.detail("H1").hoaDon().daThu().signum()==0,"refund reopens debt");check(invoiceService.detail("H1").thanhToan().getFirst().trangThai()==TrangThaiThanhToan.DA_HOAN_TIEN,"refund preserves original row");
+        denied(()->new PaymentReversalService(manager,connections).reverse("H1","P1",LoaiDaoThanhToan.HOAN_TIEN,"again","receipt"),"double refund rejected");
+        new PaymentService(cashier,connections).collect(cash("H1","P2",50));new PaymentReversalService(manager,connections).reverse("H1","P2",LoaiDaoThanhToan.HUY_GHI_NHAN,"Synthetic wrong entry","proof-test");
         check(scalar("SELECT SUM(soTien) FROM dbo.DongTienHoaDon WHERE maHoaDon='H1'").signum()==0,"signed movements reconcile refund and correction");
         String cancel=new CancellationService(cashier,connections).request("H1","No remaining services");new CancellationService(manager,connections).decide(cancel,true,"");
-        check(invoiceService.detail("H1").hoaDon().trangThai()==InvoiceStatus.DA_HUY,"fully refunded invoice can be cancelled");
+        check(invoiceService.detail("H1").hoaDon().trangThai()==TrangThaiHoaDon.DA_HUY,"fully refunded invoice can be cancelled");
         attempts.reserve(cash("H2","RELEASE",100));new PaymentAttemptService(manager,connections).release("H2","RELEASE","Verified no money received");
         denied(()->new PaymentService(cashier,connections).collect(cash("H2","RELEASE",100)),"released attempt cannot later collect");
         header("HLOST",null,300);

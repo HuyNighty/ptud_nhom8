@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -53,7 +53,7 @@ public final class InvoiceController {
     public void load() {
         if (busy) { reloadPending=true;return; }
         if (!session.isActive()) { view.expired(); return; }
-        final String keyword = view.keyword(); final InvoiceStatus filter = view.statusFilter();
+        final String keyword = view.keyword(); final TrangThaiHoaDon filter = view.statusFilter();
         final LocalDate from, to;
         try { from = date(view.fromText()); to = date(view.toText()); }
         catch (IllegalArgumentException failure) { view.status(failure.getMessage()); return; }

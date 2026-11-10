@@ -1,10 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.CancellationController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.CancellationService;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.hethong.phanquyen.*;
@@ -31,7 +31,7 @@ public final class CancellationPanel extends JPanel implements RefreshableFeatur
         setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
         JLabel lblTitle=new JLabel("Duyệt hủy hóa đơn");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
         JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);
-        cmbTrangThai.addItem("Tất cả");for(ThongTinYeuCauHuyHoaDon.TrangThai status:ThongTinYeuCauHuyHoaDon.TrangThai.values())cmbTrangThai.addItem(status);
+        cmbTrangThai.addItem("Tất cả");for(TrangThaiYeuCauHuyHoaDon status:TrangThaiYeuCauHuyHoaDon.values())cmbTrangThai.addItem(status);
         JPanel pnlFilter=BillingUi.filters(BillingUi.field("Yêu cầu / hóa đơn / người gửi",txtTuKhoa),BillingUi.dateField(txtTuNgay,"Ngày gửi từ"),BillingUi.dateField(txtDenNgay,"Đến ngày"),BillingUi.field("Trạng thái yêu cầu",cmbTrangThai),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)));pnlTop.add(pnlFilter,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
         JScrollPane scrRequests=BillingUi.scroll(tblYeuCau);
         JTabbedPane tabDetails=new JTabbedPane();

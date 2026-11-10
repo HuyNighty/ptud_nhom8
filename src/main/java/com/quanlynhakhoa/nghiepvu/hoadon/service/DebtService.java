@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.TongHopCongNoBenhNhan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.util.*;
 
 /** Projection of existing invoice data; no separate receivables storage or invented due dates. */
@@ -10,7 +10,7 @@ public final class DebtService {
     private DebtService(){ }
     public static List<ThongTinHoaDon> outstanding(List<ThongTinHoaDon> invoices){
         List<ThongTinHoaDon> result=new ArrayList<>();
-        for(ThongTinHoaDon h:invoices)if(h.trangThai()!=InvoiceStatus.DA_HUY&&h.conNo().signum()>0)result.add(h);
+        for(ThongTinHoaDon h:invoices)if(h.trangThai()!=TrangThaiHoaDon.DA_HUY&&h.conNo().signum()>0)result.add(h);
         return List.copyOf(result);
     }
     public static List<TongHopCongNoBenhNhan> byPatient(List<ThongTinHoaDon> invoices){
