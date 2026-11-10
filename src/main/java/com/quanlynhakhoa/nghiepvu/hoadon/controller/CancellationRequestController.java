@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
+import com.quanlynhakhoa.model.hoadon.XemTruocHuyHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.InvoiceStatus;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.InvoiceStatus;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.CancellationService;
@@ -24,9 +25,9 @@ public final class CancellationRequestController {
     }
     private void load(){
         if(busy)return;busy=true;maySubmit=false;view.busy(true,false);
-        new Task<CancellationService.Preview>(){
-            protected CancellationService.Preview doInBackground()throws Exception{return service.preview(invoiceId);}
-            protected void succeeded(CancellationService.Preview preview){maySubmit=!preview.pending()&&preview.invoice().hoaDon().trangThai()!=InvoiceStatus.DA_HUY&&preview.invoice().hoaDon().daThu().signum()==0;view.showPreview(preview);view.busy(false,maySubmit);}
+        new Task<XemTruocHuyHoaDon>(){
+            protected XemTruocHuyHoaDon doInBackground()throws Exception{return service.preview(invoiceId);}
+            protected void succeeded(XemTruocHuyHoaDon preview){maySubmit=!preview.pending()&&preview.invoice().hoaDon().trangThai()!=InvoiceStatus.DA_HUY&&preview.invoice().hoaDon().daThu().signum()==0;view.showPreview(preview);view.busy(false,maySubmit);}
         }.execute();
     }
     private void send(){

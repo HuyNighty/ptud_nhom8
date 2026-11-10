@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
+import com.quanlynhakhoa.model.hoadon.TongHopCongNoBenhNhan;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -33,9 +34,9 @@ public final class DebtController {
         final String keyword=view.txtTuKhoa.getText();final LocalDate from,to;
         try{from=date(view.txtTuNgay.getText());to=date(view.txtDenNgay.getText());}catch(RuntimeException e){view.lblTrangThai.setText("Ngày phải có dạng dd/MM/yyyy và tồn tại.");return;}
         busy=true;view.busy(true);view.loading();
-        new Task<List<PatientDebt>>(){
-            protected List<PatientDebt> doInBackground()throws Exception{return DebtService.byPatient(invoices.find(keyword,from,to,null));}
-            protected void succeeded(List<PatientDebt> rows){busy=true;view.showPatients(rows);busy=false;view.lblTrangThai.setText(rows.isEmpty()?"Tổng hợp theo bộ lọc ngày lập hóa đơn hiện tại.":" ");next();}
+        new Task<List<TongHopCongNoBenhNhan>>(){
+            protected List<TongHopCongNoBenhNhan> doInBackground()throws Exception{return DebtService.byPatient(invoices.find(keyword,from,to,null));}
+            protected void succeeded(List<TongHopCongNoBenhNhan> rows){busy=true;view.showPatients(rows);busy=false;view.lblTrangThai.setText(rows.isEmpty()?"Tổng hợp theo bộ lọc ngày lập hóa đơn hiện tại.":" ");next();}
         }.execute();
     }
     private void detail(){final String id=view.selectedInvoice();if(id==null)return;busy=true;view.busy(true);new Task<DuLieuChiTietHoaDon>(){

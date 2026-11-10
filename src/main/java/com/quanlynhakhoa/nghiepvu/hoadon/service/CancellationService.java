@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.model.hoadon.XemTruocHuyHoaDon;
+import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
@@ -13,8 +15,8 @@ import java.time.LocalDate;
 import java.util.*;
 
 public final class CancellationService {
-    public record Detail(ThongTinYeuCauHuyHoaDon request,DuLieuChiTietHoaDon invoice) { }
-    public record Preview(DuLieuChiTietHoaDon invoice,boolean pending) { }
+
+
     private final DesktopSession session;private final ConnectionProvider connections;
     private final CancellationDao dao;private final InvoiceDao invoices;private final InvoiceIdGenerator ids;
     private final AuthorizationService authorization=new AuthorizationService(new RolePermissionPolicy());
@@ -31,18 +33,18 @@ public final class CancellationService {
             catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }
     }
-    public Preview preview(String invoiceId)throws SQLException {
+    public XemTruocHuyHoaDon preview(String invoiceId)throws SQLException {
         require(Permission.INVOICE_CANCEL_REQUEST);key(invoiceId);
         try(Connection c=connections.open()){require(Permission.INVOICE_CANCEL_REQUEST);begin(c);
-            try{DuLieuChiTietHoaDon detail=readInvoice(c,invoiceId);boolean pending=dao.pending(c,invoiceId);require(Permission.INVOICE_CANCEL_REQUEST);c.commit();return new Preview(detail,pending);}
+            try{DuLieuChiTietHoaDon detail=readInvoice(c,invoiceId);boolean pending=dao.pending(c,invoiceId);require(Permission.INVOICE_CANCEL_REQUEST);c.commit();return new XemTruocHuyHoaDon(detail,pending);}
             catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }
     }
-    public Detail detail(String requestId)throws SQLException {
+    public ChiTietYeuCauHuy detail(String requestId)throws SQLException {
         require(Permission.INVOICE_CANCEL_APPROVE);key(requestId);
         try(Connection c=connections.open()){require(Permission.INVOICE_CANCEL_APPROVE);begin(c);
             try{ThongTinYeuCauHuyHoaDon request=dao.get(c,requestId);if(request==null)throw new IllegalArgumentException("Yêu cầu không tồn tại.");
-                Detail result=new Detail(request,readInvoice(c,request.maHoaDon()));require(Permission.INVOICE_CANCEL_APPROVE);c.commit();return result;}
+                ChiTietYeuCauHuy result=new ChiTietYeuCauHuy(request,readInvoice(c,request.maHoaDon()));require(Permission.INVOICE_CANCEL_APPROVE);c.commit();return result;}
             catch(SQLException|RuntimeException e){rollback(c,e);throw e;}
         }
     }

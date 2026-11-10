@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.model.hoadon.TongHopCongNoBenhNhan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.util.*;
@@ -12,14 +13,14 @@ public final class DebtService {
         for(ThongTinHoaDon h:invoices)if(h.trangThai()!=InvoiceStatus.DA_HUY&&h.conNo().signum()>0)result.add(h);
         return List.copyOf(result);
     }
-    public static List<PatientDebt> byPatient(List<ThongTinHoaDon> invoices){
+    public static List<TongHopCongNoBenhNhan> byPatient(List<ThongTinHoaDon> invoices){
         Map<String,List<ThongTinHoaDon>> grouped=new LinkedHashMap<>();
         for(ThongTinHoaDon h:outstanding(invoices)){List<ThongTinHoaDon> rows=grouped.get(h.maBenhNhan());if(rows==null){rows=new ArrayList<>();grouped.put(h.maBenhNhan(),rows);}rows.add(h);}
-        List<PatientDebt> result=new ArrayList<>();
+        List<TongHopCongNoBenhNhan> result=new ArrayList<>();
         for(var entry:grouped.entrySet()){
             java.math.BigDecimal total=java.math.BigDecimal.ZERO,paid=java.math.BigDecimal.ZERO,debt=java.math.BigDecimal.ZERO;
             for(ThongTinHoaDon h:entry.getValue()){total=total.add(h.tongTien());paid=paid.add(h.daThu());debt=debt.add(h.conNo());}
-            result.add(new PatientDebt(entry.getKey(),entry.getValue().getFirst().tenBenhNhan(),total,paid,debt,entry.getValue()));
+            result.add(new TongHopCongNoBenhNhan(entry.getKey(),entry.getValue().getFirst().tenBenhNhan(),total,paid,debt,entry.getValue()));
         }
         return List.copyOf(result);
     }

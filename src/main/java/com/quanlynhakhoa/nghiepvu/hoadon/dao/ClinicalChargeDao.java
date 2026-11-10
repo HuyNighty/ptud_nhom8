@@ -1,15 +1,15 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
+import com.quanlynhakhoa.model.hoadon.BangChungTinhPhi;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 
 /** Reads existing clinical evidence only; no invented visits or performed services. */
 public class ClinicalChargeDao {
-    public record Evidence(String kind, String sourceId, String serviceId, String name,
-                           BigDecimal price, boolean active, boolean clinicalService) { }
 
-    public List<Evidence> load(Connection c, String patient, String visit) throws SQLException {
+
+    public List<BangChungTinhPhi> load(Connection c, String patient, String visit) throws SQLException {
         try (PreparedStatement s=c.prepareStatement("""
                 SELECT p.trangThai FROM dbo.PhieuKham p WITH (HOLDLOCK)
                 JOIN dbo.HoSoBenhAn h WITH (HOLDLOCK) ON h.maHoSo=p.maHoSo
@@ -34,7 +34,7 @@ public class ClinicalChargeDao {
             s.setQueryTimeout(15);s.setString(1,visit);s.setString(2,patient);
             try(ResultSet r=s.executeQuery()){if(r.next())throw new IllegalArgumentException("Kế hoạch chưa hoàn tất hoặc cần đối soát hạng mục hủy/đã thực hiện.");}
         }
-        List<Evidence> result=new ArrayList<>();
+        List<BangChungTinhPhi> result=new ArrayList<>();
         try(PreparedStatement s=c.prepareStatement("""
                 SELECT x.maChiDinh,x.trangThai,x.ketQua,x.thoiGianKetQua,
                        d.maDichVu,d.tenDichVu,d.donGia,d.dangApDung,d.laCanLamSang
@@ -67,7 +67,7 @@ public class ClinicalChargeDao {
         }
         return List.copyOf(result);
     }
-    private static Evidence map(ResultSet r,String kind,String id)throws SQLException {
-        return new Evidence(kind,id,r.getString("maDichVu"),r.getNString("tenDichVu"),r.getBigDecimal("donGia"),r.getBoolean("dangApDung"),r.getBoolean("laCanLamSang"));
+    private static BangChungTinhPhi map(ResultSet r,String kind,String id)throws SQLException {
+        return new BangChungTinhPhi(kind,id,r.getString("maDichVu"),r.getNString("tenDichVu"),r.getBigDecimal("donGia"),r.getBoolean("dangApDung"),r.getBoolean("laCanLamSang"));
     }
 }

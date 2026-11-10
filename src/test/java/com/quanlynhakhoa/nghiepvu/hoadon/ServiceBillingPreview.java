@@ -55,7 +55,7 @@ public final class ServiceBillingPreview {
                     com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel pnlCancellation=new com.quanlynhakhoa.nghiepvu.hoadon.ui.CancellationPanel(ServiceBillingSelfTest.session(Role.CLINIC_MANAGER),jdbc);
                     ThongTinYeuCauHuyHoaDon request=new ThongTinYeuCauHuyHoaDon("TSTYC001",invoice.maHoaDon(),invoice.maBenhNhan(),invoice.tenBenhNhan(),invoice.tongTien(),invoice.daThu(),"TST_ACC",LocalDateTime.of(2026,10,30,10,0),"[KIỂM THỬ] Đề nghị kiểm tra chứng từ",ThongTinYeuCauHuyHoaDon.TrangThai.CHO_DUYET,null,null,null);
                     pnlCancellation.showRows(List.of(request));
-                    pnlCancellation.showDetail(new com.quanlynhakhoa.nghiepvu.hoadon.service.CancellationService.Detail(request,new DuLieuChiTietHoaDon(invoice,List.of(),List.of())));
+                    pnlCancellation.showDetail(new com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy(request,new DuLieuChiTietHoaDon(invoice,List.of(),List.of())));
                     pnlCancellation.lblTrangThai.setText("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · hóa đơn có thu tiền nên chặn duyệt hủy");render(pnlCancellation,"target/cancellation-preview.png");
                     if (jdbc.opens != 0) throw new AssertionError("Preview must not open JDBC");
                 } catch (Exception failure) { throw new RuntimeException(failure); }
