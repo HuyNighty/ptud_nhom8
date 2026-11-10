@@ -1,5 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.phieukham;
 
+import com.quanlynhakhoa.model.phieukham.KetQuaHangChoKham;
+
+import com.quanlynhakhoa.model.phieukham.DongHangChoKham;
+
 import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -42,13 +46,9 @@ public final class ExamQueueDao {
                      p.thoiGianTiepNhan, p.maPhieuKham
             """;
 
-    public record Result(List<ExamQueueRow> rows, boolean truncated) {
-        public Result {
-            rows = List.copyOf(rows);
-        }
-    }
 
-    public Result listForDay(Connection connection, LocalDate day, Role role, String accountId)
+
+    public KetQuaHangChoKham listForDay(Connection connection, LocalDate day, Role role, String accountId)
             throws SQLException {
         Objects.requireNonNull(connection, "connection");
         Objects.requireNonNull(day, "day");
@@ -59,7 +59,7 @@ public final class ExamQueueDao {
         if (accountId == null || accountId.isBlank()) {
             throw new IllegalArgumentException("Missing authenticated account");
         }
-        List<ExamQueueRow> rows = new ArrayList<>();
+        List<DongHangChoKham> rows = new ArrayList<>();
         boolean truncated = false;
         try (PreparedStatement statement = connection.prepareStatement(QUEUE_SQL)) {
             statement.setQueryTimeout(12);
@@ -75,7 +75,7 @@ public final class ExamQueueDao {
                     }
                     Timestamp arrivedAt = result.getTimestamp("thoiGianTiepNhan");
                     if (arrivedAt == null) throw new SQLException("Examination has no arrival time");
-                    rows.add(new ExamQueueRow(
+                    rows.add(new DongHangChoKham(
                             result.getString("maPhieuKham"),
                             result.getString("maBenhNhan"),
                             result.getNString("tenBenhNhan"),
@@ -87,6 +87,6 @@ public final class ExamQueueDao {
                 }
             }
         }
-        return new Result(rows, truncated);
+        return new KetQuaHangChoKham(rows, truncated);
     }
 }

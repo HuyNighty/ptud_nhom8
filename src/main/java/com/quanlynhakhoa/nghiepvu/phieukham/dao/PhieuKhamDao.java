@@ -1,8 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.BacSi;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKhamListItem;
+import com.quanlynhakhoa.model.phieukham.ThongTinKhoaKetLuanPhieuKham;
+
+import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
+import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
+import com.quanlynhakhoa.model.phieukham.DongDanhSachPhieuKham;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -17,14 +19,9 @@ import java.util.Optional;
 
 public final class PhieuKhamDao {
 
-    public record PhieuKhamKetLuanLock(
-            String maBenhNhan,
-            String maNhanVien,
-            String maLichHen,
-            String trangThai) {
-    }
 
-    public Optional<PhieuKhamKetLuanLock> khoaPhieuDeKetLuan(
+
+    public Optional<ThongTinKhoaKetLuanPhieuKham> khoaPhieuDeKetLuan(
             Connection connection, String maPhieuKham) throws SQLException {
 
         String sql = """
@@ -42,7 +39,7 @@ public final class PhieuKhamDao {
                     return Optional.empty();
                 }
 
-                return Optional.of(new PhieuKhamKetLuanLock(
+                return Optional.of(new ThongTinKhoaKetLuanPhieuKham(
                         rows.getString("maBenhNhan"),
                         rows.getString("maNhanVien"),
                         rows.getString("maLichHen"),
@@ -124,7 +121,7 @@ public final class PhieuKhamDao {
             WHERE pk.maPhieuKham = ?
             """;
 
-    public List<PhieuKhamListItem> timKiem(Connection connection,
+    public List<DongDanhSachPhieuKham> timKiem(Connection connection,
                                             LocalDate ngayKham,
                                             String maBacSi,
                                             String trangThai,
@@ -136,7 +133,7 @@ public final class PhieuKhamDao {
         String status = safe(trangThai);
         String keyword = safe(tuKhoa);
         String pattern = "%" + keyword + "%";
-        List<PhieuKhamListItem> result = new ArrayList<>();
+        List<DongDanhSachPhieuKham> result = new ArrayList<>();
 
         try (PreparedStatement statement = connection.prepareStatement(SQL_DANH_SACH)) {
             statement.setDate(1, Date.valueOf(ngayKham));
@@ -151,7 +148,7 @@ public final class PhieuKhamDao {
             statement.setQueryTimeout(10);
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
-                    result.add(new PhieuKhamListItem(
+                    result.add(new DongDanhSachPhieuKham(
                             rs.getString("maPhieuKham"),
                             rs.getString("maBenhNhan"),
                             rs.getNString("tenBenhNhan"),
@@ -166,7 +163,7 @@ public final class PhieuKhamDao {
         return result;
     }
 
-    public Optional<PhieuKham> timTheoMa(Connection connection, String maPhieuKham)
+    public Optional<ThongTinPhieuKham> timTheoMa(Connection connection, String maPhieuKham)
             throws SQLException {
         if (connection == null) throw new IllegalArgumentException("connection required");
         if (maPhieuKham == null || maPhieuKham.isBlank()) return Optional.empty();
@@ -175,7 +172,7 @@ public final class PhieuKhamDao {
             statement.setQueryTimeout(10);
             try (ResultSet rs = statement.executeQuery()) {
                 if (!rs.next()) return Optional.empty();
-                return Optional.of(new PhieuKham(
+                return Optional.of(new ThongTinPhieuKham(
                         rs.getString("maPhieuKham"),
                         rs.getString("maBenhNhan"),
                         rs.getNString("tenBenhNhan"),
@@ -209,19 +206,19 @@ public final class PhieuKhamDao {
         }
     }
 
-    public List<BacSi> danhSachBacSiDangLamViec(Connection connection) throws SQLException {
+    public List<BacSiChonKham> danhSachBacSiDangLamViec(Connection connection) throws SQLException {
         String sql = """
                 SELECT maNhanVien, hoTen
                 FROM dbo.NhanVien
                 WHERE chucDanh = 'BS' AND trangThai = 'DANG_LAM_VIEC'
                 ORDER BY hoTen, maNhanVien
                 """;
-        List<BacSi> result = new ArrayList<>();
+        List<BacSiChonKham> result = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setQueryTimeout(10);
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
-                    result.add(new BacSi(rs.getString("maNhanVien"), rs.getNString("hoTen")));
+                    result.add(new BacSiChonKham(rs.getString("maNhanVien"), rs.getNString("hoTen")));
                 }
             }
         }

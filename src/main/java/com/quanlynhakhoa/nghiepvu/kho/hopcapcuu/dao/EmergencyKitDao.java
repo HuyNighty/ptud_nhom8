@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.hopcapcuu.dao;
 
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.kho.hopcapcuu.service.EmergencyKitService.CheckLine;
+import com.quanlynhakhoa.model.kho.DongKiemTraCapCuu;
 import com.quanlynhakhoa.nghiepvu.kho.workflow.dao.InventoryWorkflowDao;
 
 import java.sql.*;
@@ -32,7 +32,7 @@ public final class EmergencyKitDao {
         }
         return rows;
     }
-    public void ghiKiemTra(Connection con, String accountId, String checkId, String note, List<CheckLine> lines) throws SQLException {
+    public void ghiKiemTra(Connection con, String accountId, String checkId, String note, List<DongKiemTraCapCuu> lines) throws SQLException {
         String employee = InventoryWorkflowDao.layMaNhanVien(con, accountId);
         boolean allOk = true;
         List<Object[]> values = new ArrayList<>();
@@ -44,7 +44,7 @@ public final class EmergencyKitDao {
         }
         String select = "SELECT soLuongToiThieu,hanSuDungGanNhat FROM dbo.DanhMucCapCuu WHERE maMuc=? AND dangApDung=1";
 
-        for (CheckLine line : lines) {
+        for (DongKiemTraCapCuu line : lines) {
             int min;
             Date nearestExpiry;
             try (PreparedStatement stmt = con.prepareStatement(select)) {
@@ -71,7 +71,7 @@ public final class EmergencyKitDao {
 
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.ChiTietKiemTraCapCuu(maKiemTra,maMuc,soLuongThucTe,hanSuDung,dat) VALUES (?,?,?,?,?)")) {
             for (Object[] value : values) {
-                CheckLine line = (CheckLine) value[0];
+                DongKiemTraCapCuu line = (DongKiemTraCapCuu) value[0];
                 stmt.setString(1, checkId);
                 stmt.setString(2, line.itemId());
                 stmt.setInt(3, line.actualQuantity());

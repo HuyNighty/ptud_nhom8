@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.kho.lohang.view;
 
 import com.quanlynhakhoa.nghiepvu.kho.lohang.controller.LoHangController;
-import com.quanlynhakhoa.nghiepvu.kho.lohang.entity.LoHang;
+import com.quanlynhakhoa.model.kho.ThongTinLoHang;
 import com.quanlynhakhoa.nghiepvu.kho.lohang.service.LoHangService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
@@ -41,7 +41,7 @@ public final class LoHangPanel extends JPanel {
     private final JLabel lblTrangThai = new JLabel("Đang tải danh sách lô...");
     private final DefaultTableModel tableModel;
     private final JTable tblLoHang;
-    private List<LoHang> dsLoHang = new ArrayList<>();
+    private List<ThongTinLoHang> dsLoHang = new ArrayList<>();
 
     public LoHangPanel(DesktopSession phien) {
         setLayout(new BorderLayout(12, 12));
@@ -90,10 +90,10 @@ public final class LoHangPanel extends JPanel {
         new LoHangController(this, new LoHangService(phien));
     }
 
-    public void hienDanhSach(List<LoHang> danhSach) {
+    public void hienDanhSach(List<ThongTinLoHang> danhSach) {
         dsLoHang = new ArrayList<>(danhSach);
         tableModel.setRowCount(0);
-        for (LoHang lo : dsLoHang) {
+        for (ThongTinLoHang lo : dsLoHang) {
             String maHang = lo.getMaThuoc() != null ? lo.getMaThuoc() : lo.getMaVatTu();
             tableModel.addRow(new Object[]{lo.getMaLo(), lo.getSoLo(), lo.getLoaiHangHienThi(), maHang,
                     lo.getTenHang(), lo.getTenNhaCungCap() + " (" + lo.getMaNhaCungCap() + ")",
@@ -108,16 +108,16 @@ public final class LoHangPanel extends JPanel {
     public String getTuKhoa() { return txtTimKiem.getText(); }
     public String getLoaiLoc() {
         return switch (cmbLoai.getSelectedIndex()) {
-            case 1 -> LoHang.LOAI_THUOC;
-            case 2 -> LoHang.LOAI_VAT_TU;
-            default -> LoHang.LOAI_TAT_CA;
+            case 1 -> ThongTinLoHang.LOAI_THUOC;
+            case 2 -> ThongTinLoHang.LOAI_VAT_TU;
+            default -> ThongTinLoHang.LOAI_TAT_CA;
         };
     }
     public String getHanLoc() {
         return switch (cmbHan.getSelectedIndex()) {
-            case 1 -> LoHang.HAN_HET_HAN;
-            case 2 -> LoHang.HAN_CON_HAN;
-            default -> LoHang.HAN_TAT_CA;
+            case 1 -> ThongTinLoHang.HAN_HET_HAN;
+            case 2 -> ThongTinLoHang.HAN_CON_HAN;
+            default -> ThongTinLoHang.HAN_TAT_CA;
         };
     }
     public JButton getBtnTim() { return btnTim; }

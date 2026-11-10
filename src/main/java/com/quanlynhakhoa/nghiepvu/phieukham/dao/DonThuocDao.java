@@ -1,7 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.Thuoc;
+import com.quanlynhakhoa.model.phieukham.ThongTinDauDonThuoc;
+
+import com.quanlynhakhoa.model.phieukham.DongChiTietDonThuoc;
+import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -13,20 +15,20 @@ import java.util.Optional;
 
 public final class DonThuocDao {
 
-    public record DonThuocHeader(String maDonThuoc, String loiDan) { }
 
-    public List<Thuoc> danhSachThuoc(Connection connection) throws SQLException {
+
+    public List<ThuocChonKeDon> danhSachThuoc(Connection connection) throws SQLException {
         String sql = """
                 SELECT maThuoc, tenThuoc, donViTinh, kiemSoatDacBiet, hamLuong, hoatChat
                 FROM dbo.Thuoc
                 ORDER BY tenThuoc, maThuoc
                 """;
-        List<Thuoc> result = new ArrayList<>();
+        List<ThuocChonKeDon> result = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setQueryTimeout(10);
             try (ResultSet rows = statement.executeQuery()) {
                 while (rows.next()) {
-                    result.add(new Thuoc(
+                    result.add(new ThuocChonKeDon(
                             rows.getString("maThuoc"),
                             rows.getNString("tenThuoc"),
                             rows.getNString("donViTinh"),
@@ -39,7 +41,7 @@ public final class DonThuocDao {
         return List.copyOf(result);
     }
 
-    public Optional<DonThuocHeader> timDonThuocTheoPhieu(
+    public Optional<ThongTinDauDonThuoc> timDonThuocTheoPhieu(
             Connection connection, String maPhieuKham) throws SQLException {
         String sql = "SELECT maDonThuoc, loiDan FROM dbo.DonThuoc WHERE maPhieuKham = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -47,13 +49,13 @@ public final class DonThuocDao {
             statement.setQueryTimeout(10);
             try (ResultSet rows = statement.executeQuery()) {
                 if (!rows.next()) return Optional.empty();
-                return Optional.of(new DonThuocHeader(
+                return Optional.of(new ThongTinDauDonThuoc(
                         rows.getString("maDonThuoc"), rows.getNString("loiDan")));
             }
         }
     }
 
-    public List<ChiTietDonThuoc> danhSachChiTiet(
+    public List<DongChiTietDonThuoc> danhSachChiTiet(
             Connection connection, String maDonThuoc) throws SQLException {
         String sql = """
                 SELECT ct.maThuoc, t.tenThuoc, t.donViTinh, ct.soLuong,
@@ -64,13 +66,13 @@ public final class DonThuocDao {
                 WHERE ct.maDonThuoc = ?
                 ORDER BY t.tenThuoc, ct.maThuoc
                 """;
-        List<ChiTietDonThuoc> result = new ArrayList<>();
+        List<DongChiTietDonThuoc> result = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, maDonThuoc);
             statement.setQueryTimeout(10);
             try (ResultSet rows = statement.executeQuery()) {
                 while (rows.next()) {
-                    result.add(new ChiTietDonThuoc(
+                    result.add(new DongChiTietDonThuoc(
                             rows.getString("maThuoc"),
                             rows.getNString("tenThuoc"),
                             rows.getNString("donViTinh"),
@@ -109,7 +111,7 @@ public final class DonThuocDao {
     }
 
     public void taoChiTiet(Connection connection, String maDonThuoc,
-                           ChiTietDonThuoc item) throws SQLException {
+                           DongChiTietDonThuoc item) throws SQLException {
         String sql = """
                 INSERT INTO dbo.ChiTietDonThuoc
                     (maDonThuoc, maThuoc, soLuong, lieuDung, cachDung, soNgayDung)

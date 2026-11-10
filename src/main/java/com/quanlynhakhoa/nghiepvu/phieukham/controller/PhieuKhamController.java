@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.controller;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.BacSi;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKhamListItem;
+import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
+import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
+import com.quanlynhakhoa.model.phieukham.DongDanhSachPhieuKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.service.PhieuKhamService;
 import com.quanlynhakhoa.nghiepvu.phieukham.view.PhieuKhamPanel;
 import java.util.List;
@@ -40,9 +40,9 @@ public final class PhieuKhamController {
 
     private void taiBacSiVaDanhSach() {
         view.setDangTai(true, "Đang tải danh sách bác sĩ...");
-        new SwingWorker<List<BacSi>, Void>() {
+        new SwingWorker<List<BacSiChonKham>, Void>() {
             @Override
-            protected List<BacSi> doInBackground() throws Exception {
+            protected List<BacSiChonKham> doInBackground() throws Exception {
                 return service.danhSachBacSi();
             }
 
@@ -74,16 +74,16 @@ public final class PhieuKhamController {
         final String statusFilter = view.layTrangThaiLoc();
         final String keyword = view.layTuKhoa();
         view.setDangTai(true, "Đang tải phiếu khám...");
-        new SwingWorker<List<PhieuKhamListItem>, Void>() {
+        new SwingWorker<List<DongDanhSachPhieuKham>, Void>() {
             @Override
-            protected List<PhieuKhamListItem> doInBackground() throws Exception {
+            protected List<DongDanhSachPhieuKham> doInBackground() throws Exception {
                 return service.timKiem(date, doctorFilter, statusFilter, keyword);
             }
 
             @Override
             protected void done() {
                 try {
-                    List<PhieuKhamListItem> rows = get();
+                    List<DongDanhSachPhieuKham> rows = get();
                     view.hienDanhSach(rows);
                     view.setDangTai(false, "Có " + rows.size() + " phiếu khám.");
                 } catch (InterruptedException ex) {
@@ -103,9 +103,9 @@ public final class PhieuKhamController {
             return;
         }
         view.setDangTaiChiTiet(true);
-        new SwingWorker<PhieuKham, Void>() {
+        new SwingWorker<ThongTinPhieuKham, Void>() {
             @Override
-            protected PhieuKham doInBackground() throws Exception {
+            protected ThongTinPhieuKham doInBackground() throws Exception {
                 return service.chiTiet(code);
             }
 

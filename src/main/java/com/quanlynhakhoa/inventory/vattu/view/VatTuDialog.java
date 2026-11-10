@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.inventory.vattu.view;
 
-import com.quanlynhakhoa.inventory.vattu.entity.VatTu;
+import com.quanlynhakhoa.entity.VatTu;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;

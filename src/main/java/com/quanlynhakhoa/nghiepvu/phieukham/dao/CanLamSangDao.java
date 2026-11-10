@@ -1,7 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiDinhCanLamSang;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.DichVuCanLamSang;
+import com.quanlynhakhoa.model.phieukham.ThongTinPhanCongKham;
+
+import com.quanlynhakhoa.model.phieukham.ThongTinChiDinhCanLamSang;
+import com.quanlynhakhoa.model.phieukham.DichVuCanLamSangChon;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,21 +15,21 @@ import java.util.Optional;
 
 public final class CanLamSangDao {
 
-    public record PhieuKhamAssignment(String maNhanVien, String trangThai) { }
 
-    public List<DichVuCanLamSang> danhSachDichVu(Connection connection) throws SQLException {
+
+    public List<DichVuCanLamSangChon> danhSachDichVu(Connection connection) throws SQLException {
         String sql = """
                 SELECT maDichVu, tenDichVu, donGia, moTa
                 FROM dbo.DichVu
                 WHERE laCanLamSang = 1 AND dangApDung = 1
                 ORDER BY tenDichVu, maDichVu
                 """;
-        List<DichVuCanLamSang> result = new ArrayList<>();
+        List<DichVuCanLamSangChon> result = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setQueryTimeout(10);
             try (ResultSet rows = statement.executeQuery()) {
                 while (rows.next()) {
-                    result.add(new DichVuCanLamSang(
+                    result.add(new DichVuCanLamSangChon(
                             rows.getString("maDichVu"),
                             rows.getNString("tenDichVu"),
                             rows.getBigDecimal("donGia"),
@@ -38,7 +40,7 @@ public final class CanLamSangDao {
         return List.copyOf(result);
     }
 
-    public List<ChiDinhCanLamSang> danhSachChiDinh(Connection connection, String maPhieuKham)
+    public List<ThongTinChiDinhCanLamSang> danhSachChiDinh(Connection connection, String maPhieuKham)
             throws SQLException {
         String sql = """
                 SELECT c.maChiDinh, c.maPhieuKham, c.maDichVu,
@@ -50,7 +52,7 @@ public final class CanLamSangDao {
                 WHERE c.maPhieuKham = ?
                 ORDER BY c.thoiGianChiDinh DESC, c.maChiDinh DESC
                 """;
-        List<ChiDinhCanLamSang> result = new ArrayList<>();
+        List<ThongTinChiDinhCanLamSang> result = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, maPhieuKham);
             statement.setQueryTimeout(10);
@@ -58,7 +60,7 @@ public final class CanLamSangDao {
                 while (rows.next()) {
                     Timestamp orderedAt = rows.getTimestamp("thoiGianChiDinh");
                     Timestamp resultAt = rows.getTimestamp("thoiGianKetQua");
-                    result.add(new ChiDinhCanLamSang(
+                    result.add(new ThongTinChiDinhCanLamSang(
                             rows.getString("maChiDinh"),
                             rows.getString("maPhieuKham"),
                             rows.getString("maDichVu"),
@@ -76,17 +78,17 @@ public final class CanLamSangDao {
         return List.copyOf(result);
     }
 
-    public Optional<PhieuKhamAssignment> timPhieuKham(Connection connection, String maPhieuKham)
+    public Optional<ThongTinPhanCongKham> timPhieuKham(Connection connection, String maPhieuKham)
             throws SQLException {
         return readAssignment(connection, maPhieuKham, false);
     }
 
-    public Optional<PhieuKhamAssignment> khoaPhieuKham(Connection connection, String maPhieuKham)
+    public Optional<ThongTinPhanCongKham> khoaPhieuKham(Connection connection, String maPhieuKham)
             throws SQLException {
         return readAssignment(connection, maPhieuKham, true);
     }
 
-    private Optional<PhieuKhamAssignment> readAssignment(Connection connection, String maPhieuKham,
+    private Optional<ThongTinPhanCongKham> readAssignment(Connection connection, String maPhieuKham,
                                                           boolean lock) throws SQLException {
         String sql = lock
                 ? "SELECT maNhanVien, trangThai FROM dbo.PhieuKham WITH (UPDLOCK, HOLDLOCK) WHERE maPhieuKham = ?"
@@ -96,7 +98,7 @@ public final class CanLamSangDao {
             statement.setQueryTimeout(10);
             try (ResultSet rows = statement.executeQuery()) {
                 if (!rows.next()) return Optional.empty();
-                return Optional.of(new PhieuKhamAssignment(
+                return Optional.of(new ThongTinPhanCongKham(
                         rows.getString("maNhanVien"), rows.getString("trangThai")));
             }
         }
