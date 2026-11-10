@@ -3,7 +3,7 @@ package com.quanlynhakhoa.service.hoadon;
 import com.quanlynhakhoa.dao.hoadon.ThanhToanDao;
 import com.quanlynhakhoa.dao.hoadon.TaoHoaDonDao;
 import com.quanlynhakhoa.dao.hoadon.HuyHoaDonDao;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import java.sql.*;
 import java.util.List;
 

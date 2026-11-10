@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.service.dieutri;
 
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.AccessDeniedException;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.service.dieutri.KeHoachDieuTriService;

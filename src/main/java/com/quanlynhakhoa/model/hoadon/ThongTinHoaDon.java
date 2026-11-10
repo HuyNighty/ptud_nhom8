@@ -17,9 +17,9 @@ public final class ThongTinHoaDon {
     private final BigDecimal tongTien;
     private final BigDecimal daThu;
     private final BigDecimal congNoBenhNhan;
-    private final TrangThaiYeuCauHuyHoaDon cancellationStatus;
+    private final TrangThaiYeuCauHuyHoaDon trangThaiYeuCauHuy;
 
-    public ThongTinHoaDon(String maHoaDon, String maNhanVien, String maBenhNhan, String tenBenhNhan, String maPhieuKham, LocalDateTime ngayLap, TrangThaiHoaDon trangThai, BigDecimal tongTien, BigDecimal daThu, BigDecimal congNoBenhNhan, TrangThaiYeuCauHuyHoaDon cancellationStatus) {
+    public ThongTinHoaDon(String maHoaDon, String maNhanVien, String maBenhNhan, String tenBenhNhan, String maPhieuKham, LocalDateTime ngayLap, TrangThaiHoaDon trangThai, BigDecimal tongTien, BigDecimal daThu, BigDecimal congNoBenhNhan, TrangThaiYeuCauHuyHoaDon trangThaiYeuCauHuy) {
         this.maHoaDon = maHoaDon;
         this.maNhanVien = maNhanVien;
         this.maBenhNhan = maBenhNhan;
@@ -30,7 +30,7 @@ public final class ThongTinHoaDon {
         this.tongTien = tongTien;
         this.daThu = daThu;
         this.congNoBenhNhan = congNoBenhNhan;
-        this.cancellationStatus = cancellationStatus;
+        this.trangThaiYeuCauHuy = trangThaiYeuCauHuy;
     }
 
     public String maHoaDon() { return maHoaDon; }
@@ -43,7 +43,7 @@ public final class ThongTinHoaDon {
     public BigDecimal tongTien() { return tongTien; }
     public BigDecimal daThu() { return daThu; }
     public BigDecimal congNoBenhNhan() { return congNoBenhNhan; }
-    public TrangThaiYeuCauHuyHoaDon cancellationStatus() { return cancellationStatus; }
+    public TrangThaiYeuCauHuyHoaDon cancellationStatus() { return trangThaiYeuCauHuy; }
 
     public ThongTinHoaDon(String maHoaDon, String maNhanVien, String maBenhNhan, String tenBenhNhan,
                    String maPhieuKham, LocalDateTime ngayLap, TrangThaiHoaDon trangThai,
@@ -52,11 +52,11 @@ public final class ThongTinHoaDon {
                 trangThai, tongTien, daThu, congNoBenhNhan, null);
     }
     public boolean cancellationPending() {
-        return cancellationStatus == TrangThaiYeuCauHuyHoaDon.CHO_DUYET;
+        return trangThaiYeuCauHuy == TrangThaiYeuCauHuyHoaDon.CHO_DUYET;
     }
     public String cancellationLabel() {
-        if (cancellationStatus == null) return "Chưa yêu cầu";
-        return switch (cancellationStatus) {
+        if (trangThaiYeuCauHuy == null) return "Chưa yêu cầu";
+        return switch (trangThaiYeuCauHuy) {
             case CHO_DUYET -> "Chờ duyệt hủy";
             case DA_DUYET -> "Đã duyệt hủy";
             case TU_CHOI -> "Đã từ chối hủy";
@@ -86,7 +86,7 @@ public final class ThongTinHoaDon {
                 && java.util.Objects.equals(tongTien, value.tongTien)
                 && java.util.Objects.equals(daThu, value.daThu)
                 && java.util.Objects.equals(congNoBenhNhan, value.congNoBenhNhan)
-                && java.util.Objects.equals(cancellationStatus, value.cancellationStatus);
+                && java.util.Objects.equals(trangThaiYeuCauHuy, value.trangThaiYeuCauHuy);
     }
 
     @Override
@@ -102,12 +102,12 @@ public final class ThongTinHoaDon {
         result = 31 * result + java.util.Objects.hashCode(tongTien);
         result = 31 * result + java.util.Objects.hashCode(daThu);
         result = 31 * result + java.util.Objects.hashCode(congNoBenhNhan);
-        result = 31 * result + java.util.Objects.hashCode(cancellationStatus);
+        result = 31 * result + java.util.Objects.hashCode(trangThaiYeuCauHuy);
         return result;
     }
 
     @Override
     public String toString() {
-        return "Invoice[" + "maHoaDon=" + maHoaDon + ", " + "maNhanVien=" + maNhanVien + ", " + "maBenhNhan=" + maBenhNhan + ", " + "tenBenhNhan=" + tenBenhNhan + ", " + "maPhieuKham=" + maPhieuKham + ", " + "ngayLap=" + ngayLap + ", " + "trangThai=" + trangThai + ", " + "tongTien=" + tongTien + ", " + "daThu=" + daThu + ", " + "congNoBenhNhan=" + congNoBenhNhan + ", " + "cancellationStatus=" + cancellationStatus + "]";
+        return "Invoice[" + "maHoaDon=" + maHoaDon + ", " + "maNhanVien=" + maNhanVien + ", " + "maBenhNhan=" + maBenhNhan + ", " + "tenBenhNhan=" + tenBenhNhan + ", " + "maPhieuKham=" + maPhieuKham + ", " + "ngayLap=" + ngayLap + ", " + "trangThai=" + trangThai + ", " + "tongTien=" + tongTien + ", " + "daThu=" + daThu + ", " + "congNoBenhNhan=" + congNoBenhNhan + ", " + "cancellationStatus=" + trangThaiYeuCauHuy + "]";
     }
 }

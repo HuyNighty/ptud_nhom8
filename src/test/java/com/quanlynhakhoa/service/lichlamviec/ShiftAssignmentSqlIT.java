@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.service.lichlamviec;
 
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.dao.lichlamviec.PhanCongDao;
 import com.quanlynhakhoa.service.lichlamviec.PhanCongService;
 import com.quanlynhakhoa.view.lichlamviec.LichLamViecPanel;

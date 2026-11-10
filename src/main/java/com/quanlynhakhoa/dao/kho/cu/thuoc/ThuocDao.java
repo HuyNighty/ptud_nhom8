@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.dao.kho.cu.thuoc;
 
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.entity.Thuoc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

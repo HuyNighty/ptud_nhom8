@@ -1,12 +1,12 @@
 package com.quanlynhakhoa.service.kho.thuoc;
 
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.dao.kho.thuoc.ThuocDao;
 import com.quanlynhakhoa.entity.Thuoc;
-import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;

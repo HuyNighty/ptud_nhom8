@@ -1,11 +1,13 @@
 package com.quanlynhakhoa.view.baocao;
 
+import com.quanlynhakhoa.security.RolePermissionPolicy;
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.service.baocao.BaoCaoDoanhThuService;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
 import com.quanlynhakhoa.model.baocao.BaoCaoDoanhThu;
-import com.quanlynhakhoa.hethong.phanquyen.*;
-import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
+import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.controller.hoadon.SessionWorker;
 import com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon;
 import com.quanlynhakhoa.view.benhnhan.ChonNgayDialog;

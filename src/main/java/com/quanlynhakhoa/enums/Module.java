@@ -28,14 +28,14 @@ public enum Module {
     SHIFT_ASSIGNMENTS(Quyen.WORKFORCE_READ),
     REVENUE_REPORTS(Quyen.REVENUE_REPORT_READ);
 
-    private final Quyen openPermission;
+    private final Quyen quyenMo;
 
-    Module(Quyen openPermission) {
-        this.openPermission = openPermission;
+    Module(Quyen quyenMo) {
+        this.quyenMo = quyenMo;
     }
 
     public Quyen openPermission() {
-        return openPermission;
+        return quyenMo;
     }
 
 }

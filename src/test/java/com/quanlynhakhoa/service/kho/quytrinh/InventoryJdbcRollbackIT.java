@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.service.kho.quytrinh;
 
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.dao.kho.quytrinh.QuyTrinhKhoDao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -1,8 +1,11 @@
 package com.quanlynhakhoa.service.hoadon;
 
+import com.quanlynhakhoa.security.RolePermissionPolicy;
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.dao.hoadon.HuyHoaDonDao;
 import com.quanlynhakhoa.dao.hoadon.HoaDonDao;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
@@ -13,7 +16,6 @@ import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
-import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.*;
@@ -22,10 +24,10 @@ public final class HuyHoaDonService {
 
 
     private final DesktopSession session;private final ConnectionProvider connections;
-    private final HuyHoaDonDao dao;private final HoaDonDao invoices;private final InvoiceIdGenerator ids;
+    private final HuyHoaDonDao dao;private final HoaDonDao invoices;private final TaoMaHoaDon ids;
     private final AuthorizationService authorization=new AuthorizationService(new RolePermissionPolicy());
-    public HuyHoaDonService(DesktopSession session,ConnectionProvider connections){this(session,connections,new HuyHoaDonDao(),new HoaDonDao(),new RandomInvoiceIdGenerator());}
-    public HuyHoaDonService(DesktopSession session,ConnectionProvider connections,HuyHoaDonDao dao,HoaDonDao invoices,InvoiceIdGenerator ids) {
+    public HuyHoaDonService(DesktopSession session,ConnectionProvider connections){this(session,connections,new HuyHoaDonDao(),new HoaDonDao(),new TaoMaHoaDonNgauNhien());}
+    public HuyHoaDonService(DesktopSession session,ConnectionProvider connections,HuyHoaDonDao dao,HoaDonDao invoices,TaoMaHoaDon ids) {
         this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);this.dao=Objects.requireNonNull(dao);this.invoices=Objects.requireNonNull(invoices);this.ids=Objects.requireNonNull(ids);
     }
     private void require(Quyen permission){authorization.require(session,permission);}

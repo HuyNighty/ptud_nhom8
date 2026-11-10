@@ -1,11 +1,11 @@
 package com.quanlynhakhoa.view.phieukham;
 
 import com.quanlynhakhoa.model.phieukham.KetQuaHangChoKham;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.model.phieukham.DongHangChoKham;
 import com.quanlynhakhoa.service.phieukham.HangChoKhamService;
-import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -83,7 +83,7 @@ public final class HangChoKhamPanel extends JPanel implements RefreshableFeature
                 BorderFactory.createLineBorder(new Color(220, 231, 242)),
                 new EmptyBorder(8, 10, 8, 10)));
         filters.add(new JLabel("Ngày tiếp nhận (dd/MM/yyyy):"));
-        filters.add(com.quanlynhakhoa.hethong.giaodien.DateInput.wrap(txtDay,"ngày tiếp nhận",DAY,LocalDate.of(1900,1,1),LocalDate.of(9999,12,31)));
+        filters.add(com.quanlynhakhoa.view.hethong.DateInput.wrap(txtDay,"ngày tiếp nhận",DAY,LocalDate.of(1900,1,1),LocalDate.of(9999,12,31)));
         filters.add(new JLabel("Mã / tên bệnh nhân:"));
         filters.add(txtKeyword);
         filters.add(btnRefresh);

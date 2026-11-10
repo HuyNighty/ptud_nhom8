@@ -6,7 +6,7 @@ import com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.service.dichvu.DanhMucDichVuService;
 import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.event.*;
 import java.util.List;
 import javax.swing.event.*;

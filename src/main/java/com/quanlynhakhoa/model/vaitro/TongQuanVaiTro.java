@@ -6,23 +6,23 @@ import java.util.Set;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class TongQuanVaiTro {
-    private final VaiTroHeThong role;
-    private final Set<Quyen> permissions;
-    private final int accountCount;
+    private final VaiTroHeThong vaiTro;
+    private final Set<Quyen> cacQuyen;
+    private final int soTaiKhoan;
 
-    public TongQuanVaiTro(VaiTroHeThong role, Set<Quyen> permissions, int accountCount) {
-        if (role == null || permissions == null || accountCount < 0) {
+    public TongQuanVaiTro(VaiTroHeThong vaiTro, Set<Quyen> cacQuyen, int soTaiKhoan) {
+        if (vaiTro == null || cacQuyen == null || soTaiKhoan < 0) {
         throw new IllegalArgumentException("Invalid role overview");
         }
-        permissions = Set.copyOf(permissions);
-        this.role = role;
-        this.permissions = permissions;
-        this.accountCount = accountCount;
+        cacQuyen = Set.copyOf(cacQuyen);
+        this.vaiTro = vaiTro;
+        this.cacQuyen = cacQuyen;
+        this.soTaiKhoan = soTaiKhoan;
     }
 
-    public VaiTroHeThong role() { return role; }
-    public Set<Quyen> permissions() { return permissions; }
-    public int accountCount() { return accountCount; }
+    public VaiTroHeThong role() { return vaiTro; }
+    public Set<Quyen> permissions() { return cacQuyen; }
+    public int accountCount() { return soTaiKhoan; }
 
 
 
@@ -30,22 +30,22 @@ public final class TongQuanVaiTro {
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof TongQuanVaiTro value)) return false;
-        return java.util.Objects.equals(role, value.role)
-                && java.util.Objects.equals(permissions, value.permissions)
-                && accountCount == value.accountCount;
+        return java.util.Objects.equals(vaiTro, value.vaiTro)
+                && java.util.Objects.equals(cacQuyen, value.cacQuyen)
+                && soTaiKhoan == value.soTaiKhoan;
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(role);
-        result = 31 * result + java.util.Objects.hashCode(permissions);
-        result = 31 * result + Integer.hashCode(accountCount);
+        result = 31 * result + java.util.Objects.hashCode(vaiTro);
+        result = 31 * result + java.util.Objects.hashCode(cacQuyen);
+        result = 31 * result + Integer.hashCode(soTaiKhoan);
         return result;
     }
 
     @Override
     public String toString() {
-        return "RoleOverview[" + "role=" + role + ", " + "permissions=" + permissions + ", " + "accountCount=" + accountCount + "]";
+        return "RoleOverview[" + "role=" + vaiTro + ", " + "permissions=" + cacQuyen + ", " + "accountCount=" + soTaiKhoan + "]";
     }
 }

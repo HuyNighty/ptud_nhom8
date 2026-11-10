@@ -29,7 +29,7 @@ public final class NewShiftSelfTest {
         rejects(java.sql.SQLException.class, () -> failService.createWithNewShift("NV1", "Lỗi nhật ký", start, end, day, "Khám"));
         check(failing.commits == 0 && failing.rollbacks == 1 && failing.assignments.isEmpty(), "audit failure rolls back transaction");
         var staff = new PhanCongService(session(VaiTroHeThong.DOCTOR), db::open);
-        rejects(com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException.class,
+        rejects(com.quanlynhakhoa.security.AccessDeniedException.class,
                 () -> staff.createWithNewShift("NV1", "Không có quyền", start, end, day, "Khám"));
         System.out.println("PASS: new shift validation, permissions, atomic assignment, overlap and audit rollback.");
     }

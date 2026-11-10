@@ -2,13 +2,13 @@ package com.quanlynhakhoa.service.nhanvien;
 
 import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
-import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
+import com.quanlynhakhoa.config.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
-import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.NavigationPolicy;
+import com.quanlynhakhoa.security.AccessDeniedException;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;

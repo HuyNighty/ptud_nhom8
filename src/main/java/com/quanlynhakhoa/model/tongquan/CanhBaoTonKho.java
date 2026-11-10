@@ -18,45 +18,45 @@ import java.util.*;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class CanhBaoTonKho {
-    private final String kind;
-    private final String item;
-    private final String detail;
-    private final String context;
+    private final String loai;
+    private final String matHang;
+    private final String chiTiet;
+    private final String nguCanh;
 
-    public CanhBaoTonKho(String kind, String item, String detail, String context) {
-        this.kind = kind;
-        this.item = item;
-        this.detail = detail;
-        this.context = context;
+    public CanhBaoTonKho(String loai, String matHang, String chiTiet, String nguCanh) {
+        this.loai = loai;
+        this.matHang = matHang;
+        this.chiTiet = chiTiet;
+        this.nguCanh = nguCanh;
     }
 
-    public String kind() { return kind; }
-    public String item() { return item; }
-    public String detail() { return detail; }
-    public String context() { return context; }
+    public String kind() { return loai; }
+    public String item() { return matHang; }
+    public String detail() { return chiTiet; }
+    public String context() { return nguCanh; }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof CanhBaoTonKho value)) return false;
-        return java.util.Objects.equals(kind, value.kind)
-                && java.util.Objects.equals(item, value.item)
-                && java.util.Objects.equals(detail, value.detail)
-                && java.util.Objects.equals(context, value.context);
+        return java.util.Objects.equals(loai, value.loai)
+                && java.util.Objects.equals(matHang, value.matHang)
+                && java.util.Objects.equals(chiTiet, value.chiTiet)
+                && java.util.Objects.equals(nguCanh, value.nguCanh);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(this.kind);
-        result = 31 * result + java.util.Objects.hashCode(this.item);
-        result = 31 * result + java.util.Objects.hashCode(this.detail);
-        result = 31 * result + java.util.Objects.hashCode(this.context);
+        result = 31 * result + java.util.Objects.hashCode(this.loai);
+        result = 31 * result + java.util.Objects.hashCode(this.matHang);
+        result = 31 * result + java.util.Objects.hashCode(this.chiTiet);
+        result = 31 * result + java.util.Objects.hashCode(this.nguCanh);
         return result;
     }
 
     @Override
     public String toString() {
-        return "StockAlert[" + "kind=" + kind + ", " + "item=" + item + ", " + "detail=" + detail + ", " + "context=" + context + "]";
+        return "StockAlert[" + "kind=" + loai + ", " + "item=" + matHang + ", " + "detail=" + chiTiet + ", " + "context=" + nguCanh + "]";
     }
 }

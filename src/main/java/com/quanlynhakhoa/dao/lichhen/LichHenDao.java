@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.dao.lichhen;
 
 import com.quanlynhakhoa.dao.benhnhan.BenhNhanDao;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.model.lichhen.BacSiChonLichHen;
 import com.quanlynhakhoa.entity.LichHen;
 import java.sql.Connection;

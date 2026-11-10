@@ -4,7 +4,7 @@ import com.quanlynhakhoa.view.kho.lohang.LoHangPanel;
 import com.quanlynhakhoa.view.kho.nhacungcap.NhaCungCapPanel;
 import com.quanlynhakhoa.view.kho.thuoc.ThuocPanel;
 import com.quanlynhakhoa.view.kho.vattu.VatTuPanel;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.util.Objects;
 import javax.swing.JPanel;
@@ -23,7 +23,7 @@ public final class KhoPanel extends JPanel {
         tabbedPane.addTab("Vật tư", new JPanel());
         tabbedPane.addTab("Nhà cung cấp", new JPanel());
         tabbedPane.addTab("Lô hàng", new JPanel());
-        if(new com.quanlynhakhoa.hethong.phanquyen.AuthorizationService(new com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy()).can(phienDangNhap,com.quanlynhakhoa.enums.Quyen.INVENTORY_MANAGE))
+        if(new com.quanlynhakhoa.security.AuthorizationService(new com.quanlynhakhoa.security.RolePermissionPolicy()).can(phienDangNhap,com.quanlynhakhoa.enums.Quyen.INVENTORY_MANAGE))
             tabbedPane.addTab("Nhập / xuất / kiểm kê",new JPanel());
         add(tabbedPane, BorderLayout.CENTER);
         tabbedPane.addChangeListener(event -> khoiTaoTab(tabbedPane.getSelectedIndex()));
@@ -52,7 +52,7 @@ public final class KhoPanel extends JPanel {
             case 4 -> new com.quanlynhakhoa.view.kho.quytrinh.QuyTrinhKhoPanel(phienDangNhap);
             default -> throw new IllegalArgumentException("Tab inventory không hợp lệ: " + chiSo);
         };
-        com.quanlynhakhoa.hethong.giaodien.AppTheme.apply(panel);
+        com.quanlynhakhoa.view.hethong.AppTheme.apply(panel);
         tabbedPane.setComponentAt(chiSo, panel);
     }
 }

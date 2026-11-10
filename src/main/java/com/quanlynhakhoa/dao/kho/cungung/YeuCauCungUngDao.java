@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.dao.kho.cungung;
 
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.dao.kho.quytrinh.QuyTrinhKhoDao;
 import com.quanlynhakhoa.model.kho.PhanBoLo;
 import com.quanlynhakhoa.model.kho.DongYeuCauCungUng;

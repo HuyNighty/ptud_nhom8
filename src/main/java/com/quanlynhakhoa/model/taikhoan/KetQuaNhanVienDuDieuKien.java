@@ -10,17 +10,17 @@ import java.util.Objects;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class KetQuaNhanVienDuDieuKien {
-    private final List<NhanVienDuDieuKien> employees;
-    private final boolean truncated;
+    private final List<NhanVienDuDieuKien> nhanVien;
+    private final boolean biGioiHan;
 
-    public KetQuaNhanVienDuDieuKien(List<NhanVienDuDieuKien> employees, boolean truncated) {
-        employees = List.copyOf(Objects.requireNonNull(employees, "employees"));
-        this.employees = employees;
-        this.truncated = truncated;
+    public KetQuaNhanVienDuDieuKien(List<NhanVienDuDieuKien> nhanVien, boolean biGioiHan) {
+        nhanVien = List.copyOf(Objects.requireNonNull(nhanVien, "employees"));
+        this.nhanVien = nhanVien;
+        this.biGioiHan = biGioiHan;
     }
 
-    public List<NhanVienDuDieuKien> employees() { return employees; }
-    public boolean truncated() { return truncated; }
+    public List<NhanVienDuDieuKien> employees() { return nhanVien; }
+    public boolean truncated() { return biGioiHan; }
 
 
 
@@ -28,20 +28,20 @@ public final class KetQuaNhanVienDuDieuKien {
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof KetQuaNhanVienDuDieuKien value)) return false;
-        return java.util.Objects.equals(employees, value.employees)
-                && truncated == value.truncated;
+        return java.util.Objects.equals(nhanVien, value.nhanVien)
+                && biGioiHan == value.biGioiHan;
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(employees);
-        result = 31 * result + Boolean.hashCode(truncated);
+        result = 31 * result + java.util.Objects.hashCode(nhanVien);
+        result = 31 * result + Boolean.hashCode(biGioiHan);
         return result;
     }
 
     @Override
     public String toString() {
-        return "Result[" + "employees=" + employees + ", " + "truncated=" + truncated + "]";
+        return "Result[" + "employees=" + nhanVien + ", " + "truncated=" + biGioiHan + "]";
     }
 }

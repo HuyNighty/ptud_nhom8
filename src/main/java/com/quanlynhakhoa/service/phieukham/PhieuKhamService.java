@@ -1,14 +1,14 @@
 package com.quanlynhakhoa.service.phieukham;
 
 import com.quanlynhakhoa.model.phieukham.ThongTinKhoaKetLuanPhieuKham;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.dao.phieukham.PhieuKhamDao;
 import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
 import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
 import com.quanlynhakhoa.model.phieukham.DongDanhSachPhieuKham;
-import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -23,7 +23,7 @@ public final class PhieuKhamService {
 
     private final DesktopSession session;
     private final AuthorizationService authorization =
-            new AuthorizationService(new com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy());
+            new AuthorizationService(new com.quanlynhakhoa.security.RolePermissionPolicy());
     private final PhieuKhamDao dao;
 
     public PhieuKhamService(DesktopSession session) {

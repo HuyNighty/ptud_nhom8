@@ -2,7 +2,7 @@ package com.quanlynhakhoa.service.hoadon;
 
 import com.quanlynhakhoa.dao.hoadon.TaoHoaDonDao;
 import com.quanlynhakhoa.dao.hoadon.HoaDonDao;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.service.hoadon.JdbcNguonTinhPhiLamSang;
 import java.math.BigDecimal;
 import java.sql.*;

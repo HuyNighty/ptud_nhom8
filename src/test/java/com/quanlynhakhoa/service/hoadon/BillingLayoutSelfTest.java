@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.service.hoadon;
 
+import com.quanlynhakhoa.config.tinhnang.FeatureRegistry;
+import com.quanlynhakhoa.config.tinhnang.FeaturePanelFactory;
 import com.quanlynhakhoa.view.hoadon.ThanhToanPanel;
 import com.quanlynhakhoa.view.hoadon.ThanhToanForm;
 import com.quanlynhakhoa.view.hoadon.TaoHoaDonDialog;
@@ -23,11 +25,10 @@ import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
-import com.quanlynhakhoa.hethong.tinhnang.*;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.giaodien.MainFrame;
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.view.hethong.MainFrame;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
@@ -66,7 +67,7 @@ public final class BillingLayoutSelfTest {
     }
     private static void screenshot(JComponent root,String name)throws Exception{layout(root);if(!Boolean.getBoolean("billing.syntheticScreenshots"))return;BufferedImage image=new BufferedImage(root.getWidth(),root.getHeight(),BufferedImage.TYPE_INT_RGB);Graphics2D g=image.createGraphics();root.printAll(g);g.dispose();ImageIO.write(image,"png",OUTPUT.resolve(name+".png").toFile());}
     private static void navigate(MainFrame frame,Module module)throws Exception{var method=MainFrame.class.getDeclaredMethod("navigate",Module.class);method.setAccessible(true);method.invoke(frame,module);}
-    private static FeaturePanelFactory factory(final Module module,final com.quanlynhakhoa.dao.hoadon.ConnectionProvider jdbc){return new FeaturePanelFactory(){public JPanel create(DesktopSession session){JPanel result=switch(module){case SERVICE_CATALOG -> new DanhMucDichVuPanel(session,jdbc);case BILLING -> new HoaDonPanel(session,jdbc);case DEBTS -> new CongNoPanel(session,jdbc);case PAYMENTS -> new ThanhToanPanel(session,jdbc);case INVOICE_CANCELLATIONS -> new HuyHoaDonPanel(session,jdbc);default -> throw new AssertionError(module);};pages.put(module,result);return result;}};}
+    private static FeaturePanelFactory factory(final Module module,final com.quanlynhakhoa.config.ConnectionProvider jdbc){return new FeaturePanelFactory(){public JPanel create(DesktopSession session){JPanel result=switch(module){case SERVICE_CATALOG -> new DanhMucDichVuPanel(session,jdbc);case BILLING -> new HoaDonPanel(session,jdbc);case DEBTS -> new CongNoPanel(session,jdbc);case PAYMENTS -> new ThanhToanPanel(session,jdbc);case INVOICE_CANCELLATIONS -> new HuyHoaDonPanel(session,jdbc);default -> throw new AssertionError(module);};pages.put(module,result);return result;}};}
     private static ThongTinHoaDon invoice(){return new ThongTinHoaDon("TESTHD01","TESTNV","TESTBN","[KIỂM THỬ] Nguyễn An","TESTPK",LocalDateTime.of(2026,10,31,9,15),TrangThaiHoaDon.THANH_TOAN_MOT_PHAN,new BigDecimal("1500000"),new BigDecimal("500000"),BigDecimal.ZERO);}
     private static DuLieuChiTietHoaDon detail(){return new DuLieuChiTietHoaDon(invoice(),List.of(new DongChiTietHoaDon(1,"TESTHD01","TESTDV",null,null,1,new BigDecimal("1500000"),"[KIỂM THỬ] Điều trị răng")),List.of(new ThongTinThanhToan("TESTTT01","TESTHD01",LocalDateTime.of(2026,10,31,10,0),new BigDecimal("500000"),PhuongThucThanhToan.TIEN_MAT,null,new BigDecimal("500000"),TrangThaiThanhToan.THANH_CONG,"TESTNV",null,null,null)));}
     private static void empty(Module module,JPanel panel){switch(module){case SERVICE_CATALOG -> ((DanhMucDichVuPanel)panel).showRows(List.of());case BILLING -> ((HoaDonPanel)panel).showRows(List.of());case DEBTS -> ((CongNoPanel)panel).showPatients(List.of());case PAYMENTS -> {var view=(ThanhToanPanel)panel;view.showChoices(List.of(),null);view.showForm(new ThanhToanForm());view.pickerEnabled(true);}case INVOICE_CANCELLATIONS -> ((HuyHoaDonPanel)panel).showRows(List.of());default -> throw new AssertionError(module);}}
@@ -85,11 +86,11 @@ public final class BillingLayoutSelfTest {
         try{SwingUtilities.invokeAndWait(new Runnable(){public void run(){
             DesktopSession session=ServiceBillingSelfTest.session(VaiTroHeThong.SYSTEM_ADMIN);MainFrame frame=null;
             try{
-                check(!com.quanlynhakhoa.hatang.phattrien.TeamDevConnection.hasLocalConfig(),"Synthetic principal must never use real SQL config");
+                check(!com.quanlynhakhoa.config.phattrien.TeamDevConnection.hasLocalConfig(),"Synthetic principal must never use real SQL config");
                 check(GiaoDienHoaDon.parseDate("31/10/2026").equals(LocalDate.of(2026,10,31)),"VN date parsing");try{GiaoDienHoaDon.parseDate("31/02/2026");throw new AssertionError("Impossible date accepted");}catch(IllegalArgumentException expected){checks++;}
                 check(GiaoDienHoaDon.moneyInput("1.500.000").equals(new BigDecimal("1500000")),"Grouped money exact");try{GiaoDienHoaDon.moneyInput("15.00");throw new AssertionError("Malformed grouping accepted");}catch(IllegalArgumentException expected){checks++;}
                 String error=GiaoDienHoaDon.error(new SQLException("secret SQL parameter must not be logged","S0005",229));check(!error.contains("S0005")&&!error.contains("229")&&error.contains("quyền"),"Human SQL error");
-                FeatureRegistry.Builder registry=FeatureRegistry.builder();com.quanlynhakhoa.dao.hoadon.ConnectionProvider jdbc=new com.quanlynhakhoa.dao.hoadon.ConnectionProvider(){public java.sql.Connection open()throws SQLException{throw new SQLException("Synthetic display only","08001");}};
+                FeatureRegistry.Builder registry=FeatureRegistry.builder();com.quanlynhakhoa.config.ConnectionProvider jdbc=new com.quanlynhakhoa.config.ConnectionProvider(){public java.sql.Connection open()throws SQLException{throw new SQLException("Synthetic display only","08001");}};
                 for(Module module:List.of(Module.SERVICE_CATALOG,Module.BILLING,Module.PAYMENTS,Module.INVOICE_CANCELLATIONS,Module.DEBTS))registry.register(module,factory(module,jdbc));
                 frame=new MainFrame(session,new Runnable(){public void run(){}},registry.build());
                 Dimension maximum=Toolkit.getDefaultToolkit().getScreenSize();

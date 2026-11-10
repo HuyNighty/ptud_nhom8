@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.view.hoadon;
 
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.text.NumberFormat;
@@ -46,7 +46,7 @@ public final class GiaoDienHoaDon {
     }
     public static void style(javax.swing.JPanel root){
         markHeadings(root);styleChildren(root);root.setOpaque(true);root.setBackground(BACKGROUND);
-        com.quanlynhakhoa.hethong.giaodien.AppTheme.apply(root);
+        com.quanlynhakhoa.view.hethong.AppTheme.apply(root);
     }
     private static void markHeadings(Component component){
         if(component instanceof JLabel label&&label.getFont()!=null&&label.getFont().getSize()>=20&&!Boolean.TRUE.equals(label.getClientProperty("billing.value")))label.putClientProperty("billing.heading",true);

@@ -6,7 +6,7 @@ import com.quanlynhakhoa.model.phieukham.DongChiTietDonThuoc;
 import com.quanlynhakhoa.model.phieukham.DuLieuDonThuoc;
 import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
 import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;

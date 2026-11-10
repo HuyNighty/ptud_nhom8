@@ -18,50 +18,50 @@ import java.time.LocalDateTime;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class LichHenTongQuan {
-    private final String id;
-    private final LocalDateTime time;
-    private final String patient;
-    private final String doctor;
-    private final String status;
+    private final String ma;
+    private final LocalDateTime thoiGian;
+    private final String benhNhan;
+    private final String bacSi;
+    private final String trangThai;
 
-    public LichHenTongQuan(String id, LocalDateTime time, String patient, String doctor, String status) {
-        this.id = id;
-        this.time = time;
-        this.patient = patient;
-        this.doctor = doctor;
-        this.status = status;
+    public LichHenTongQuan(String ma, LocalDateTime thoiGian, String benhNhan, String bacSi, String trangThai) {
+        this.ma = ma;
+        this.thoiGian = thoiGian;
+        this.benhNhan = benhNhan;
+        this.bacSi = bacSi;
+        this.trangThai = trangThai;
     }
 
-    public String id() { return id; }
-    public LocalDateTime time() { return time; }
-    public String patient() { return patient; }
-    public String doctor() { return doctor; }
-    public String status() { return status; }
+    public String id() { return ma; }
+    public LocalDateTime time() { return thoiGian; }
+    public String patient() { return benhNhan; }
+    public String doctor() { return bacSi; }
+    public String status() { return trangThai; }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof LichHenTongQuan value)) return false;
-        return java.util.Objects.equals(id, value.id)
-                && java.util.Objects.equals(time, value.time)
-                && java.util.Objects.equals(patient, value.patient)
-                && java.util.Objects.equals(doctor, value.doctor)
-                && java.util.Objects.equals(status, value.status);
+        return java.util.Objects.equals(ma, value.ma)
+                && java.util.Objects.equals(thoiGian, value.thoiGian)
+                && java.util.Objects.equals(benhNhan, value.benhNhan)
+                && java.util.Objects.equals(bacSi, value.bacSi)
+                && java.util.Objects.equals(trangThai, value.trangThai);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(this.id);
-        result = 31 * result + java.util.Objects.hashCode(this.time);
-        result = 31 * result + java.util.Objects.hashCode(this.patient);
-        result = 31 * result + java.util.Objects.hashCode(this.doctor);
-        result = 31 * result + java.util.Objects.hashCode(this.status);
+        result = 31 * result + java.util.Objects.hashCode(this.ma);
+        result = 31 * result + java.util.Objects.hashCode(this.thoiGian);
+        result = 31 * result + java.util.Objects.hashCode(this.benhNhan);
+        result = 31 * result + java.util.Objects.hashCode(this.bacSi);
+        result = 31 * result + java.util.Objects.hashCode(this.trangThai);
         return result;
     }
 
     @Override
     public String toString() {
-        return "Appointment[" + "id=" + id + ", " + "time=" + time + ", " + "patient=" + patient + ", " + "doctor=" + doctor + ", " + "status=" + status + "]";
+        return "Appointment[" + "id=" + ma + ", " + "time=" + thoiGian + ", " + "patient=" + benhNhan + ", " + "doctor=" + bacSi + ", " + "status=" + trangThai + "]";
     }
 }
