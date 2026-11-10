@@ -1,8 +1,9 @@
 package com.quanlynhakhoa.quantri.vaitro;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -32,8 +33,8 @@ public final class RoleOverviewSelfTest {
         }
         throw new AssertionError("Expected " + expected.getSimpleName());
     }
-    private static DesktopSession session(Role role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
+    private static DesktopSession session(VaiTroHeThong role) {
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
     @SuppressWarnings("unchecked")
     private static <T> T proxy(Class<T> type, java.lang.reflect.InvocationHandler handler) {
@@ -80,23 +81,23 @@ public final class RoleOverviewSelfTest {
 
     public static void main(String[] args) throws Exception {
         check(FeatureBootstrap.createRegistry().contains(Module.ROLES), "Roles panel registered");
-        check(Role.values().length == 6, "Six canonical roles");
+        check(VaiTroHeThong.values().length == 6, "Six canonical roles");
         check(Permission.values().length == 26, "26 declared permissions");
         RolePermissionPolicy policy = new RolePermissionPolicy();
-        for (Role role : Role.values()) {
+        for (VaiTroHeThong role : VaiTroHeThong.values()) {
             check(!policy.permissionsFor(role).isEmpty(), "Policy grants for " + role);
         }
-        check(policy.permissionsFor(Role.SYSTEM_ADMIN).size() == Permission.values().length,
+        check(policy.permissionsFor(VaiTroHeThong.SYSTEM_ADMIN).size() == Permission.values().length,
                 "System admin has all permissions");
-        check(!policy.isAllowed(Role.DOCTOR, Permission.ROLE_MANAGE), "Doctor cannot read role console");
-        check(policy.isAllowed(Role.CLINIC_MANAGER, Permission.ROLE_MANAGE), "Manager can read role console");
+        check(!policy.isAllowed(VaiTroHeThong.DOCTOR, Permission.ROLE_MANAGE), "Doctor cannot read role console");
+        check(policy.isAllowed(VaiTroHeThong.CLINIC_MANAGER, Permission.ROLE_MANAGE), "Manager can read role console");
         AtomicInteger attempts = new AtomicInteger();
         var unreachable = (com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService.ConnectionProvider) () -> {
             attempts.incrementAndGet();
             throw new SQLException("synthetic no SQL");
         };
-        DesktopSession receptionist = session(Role.RECEPTIONIST);
-        DesktopSession doctor = session(Role.DOCTOR);
+        DesktopSession receptionist = session(VaiTroHeThong.RECEPTIONIST);
+        DesktopSession doctor = session(VaiTroHeThong.DOCTOR);
         reject(AccessDeniedException.class,
                 () -> new RoleOverviewService(receptionist, unreachable).load());
         reject(AccessDeniedException.class,
@@ -112,32 +113,32 @@ public final class RoleOverviewSelfTest {
             attempts.incrementAndGet();
             return fakeConnection(closes, queries, counts);
         };
-        DesktopSession manager = session(Role.CLINIC_MANAGER);
-        List<RoleOverview> overviews = new RoleOverviewService(manager, provider).load();
-        check(overviews.size() == Role.values().length, "Six summary rows");
-        check(overviews.get(0).role() == Role.RECEPTIONIST, "Order matches canonical Role enum");
+        DesktopSession manager = session(VaiTroHeThong.CLINIC_MANAGER);
+        List<TongQuanVaiTro> overviews = new RoleOverviewService(manager, provider).load();
+        check(overviews.size() == VaiTroHeThong.values().length, "Six summary rows");
+        check(overviews.get(0).role() == VaiTroHeThong.RECEPTIONIST, "Order matches canonical Role enum");
         check(overviews.get(0).accountCount() == 1, "Receptionist count");
         check(overviews.get(1).accountCount() == 2, "Doctor count");
         check(overviews.get(2).accountCount() == 0, "Absent nurse count is zero");
         check(overviews.get(5).accountCount() == 1, "System admin count");
-        check(overviews.get(1).permissions().equals(policy.permissionsFor(Role.DOCTOR)),
+        check(overviews.get(1).permissions().equals(policy.permissionsFor(VaiTroHeThong.DOCTOR)),
                 "Permissions match real policy");
         check(closes.get() == 1 && queries.get() == 1, "Exactly one SELECT; JDBC closed");
         reject(UnsupportedOperationException.class, () -> overviews.clear());
         reject(UnsupportedOperationException.class,
                 () -> overviews.get(1).permissions().clear());
         reject(IllegalArgumentException.class,
-                () -> new RoleOverview(Role.DOCTOR, policy.permissionsFor(Role.DOCTOR), -1));
+                () -> new TongQuanVaiTro(VaiTroHeThong.DOCTOR, policy.permissionsFor(VaiTroHeThong.DOCTOR), -1));
 
         manager.logout();
         reject(AccessDeniedException.class, () -> new RoleOverviewService(manager, provider).load());
         check(attempts.get() == 1, "Logged-out session does not open SQL");
-        DesktopSession admin = session(Role.SYSTEM_ADMIN);
+        DesktopSession admin = session(VaiTroHeThong.SYSTEM_ADMIN);
         check(new RoleOverviewService(admin, provider).load().size() == 6,
                 "System admin permitted");
         check(closes.get() == 2, "Connection closed after administrator read");
 
-        DesktopSession bad = session(Role.CLINIC_MANAGER);
+        DesktopSession bad = session(VaiTroHeThong.CLINIC_MANAGER);
         var badProvider = (com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService.ConnectionProvider)
                 () -> fakeConnection(closes, queries, new String[][]{{"INVENTED_ROLE", "1"}});
         reject(SQLException.class, () -> new RoleOverviewService(bad, badProvider).load());

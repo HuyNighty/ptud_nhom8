@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
+import com.quanlynhakhoa.model.taikhoan.NhanVienDuDieuKien;
+import com.quanlynhakhoa.model.taikhoan.KetQuaNhanVienDuDieuKien;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,15 +25,11 @@ public final class EligibleEmployeeDao {
             ORDER BY n.hoTen, n.maNhanVien
             """;
 
-    public record Result(List<EligibleEmployee> employees, boolean truncated) {
-        public Result {
-            employees = List.copyOf(Objects.requireNonNull(employees, "employees"));
-        }
-    }
 
-    public Result findEligible(Connection connection) throws SQLException {
+
+    public KetQuaNhanVienDuDieuKien findEligible(Connection connection) throws SQLException {
         Objects.requireNonNull(connection, "connection");
-        List<EligibleEmployee> employees = new ArrayList<>();
+        List<NhanVienDuDieuKien> employees = new ArrayList<>();
         boolean truncated = false;
         try (PreparedStatement statement = connection.prepareStatement(LIST_SQL)) {
             statement.setQueryTimeout(12);
@@ -42,14 +40,14 @@ public final class EligibleEmployeeDao {
                         break;
                     }
                     String title = rows.getString("chucDanh");
-                    employees.add(new EligibleEmployee(
+                    employees.add(new NhanVienDuDieuKien(
                             rows.getString("maNhanVien"),
                             rows.getNString("hoTen"),
                             title,
-                            EligibleEmployee.roleForJob(title)));
+                            NhanVienDuDieuKien.roleForJob(title)));
                 }
             }
         }
-        return new Result(employees, truncated);
+        return new KetQuaNhanVienDuDieuKien(employees, truncated);
     }
 }

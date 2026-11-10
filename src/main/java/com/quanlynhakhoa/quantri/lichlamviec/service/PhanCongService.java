@@ -1,14 +1,9 @@
 package com.quanlynhakhoa.quantri.lichlamviec.service;
 
-
-
-
-
-
-
-
+import com.quanlynhakhoa.model.lichlamviec.ThongTinPhanCong;
+import com.quanlynhakhoa.model.lichlamviec.DuLieuPhanCong;
+import com.quanlynhakhoa.entity.CaLamViec;
 import com.quanlynhakhoa.quantri.lichlamviec.dao.PhanCongDao;
-import com.quanlynhakhoa.quantri.lichlamviec.entity.*;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.sql.*;
 import java.time.LocalDate;
@@ -16,9 +11,7 @@ import java.util.*;
 
 public final class PhanCongService {
     @FunctionalInterface public interface Connections { Connection open() throws SQLException; }
-    public record DuLieu(List<PhanCong> rows, List<NhanVienChon> employees, List<CaLamViec> shifts, String message) {
-        public DuLieu {rows=List.copyOf(rows);employees=List.copyOf(employees);shifts=List.copyOf(shifts);}
-    }
+
     private static final java.security.SecureRandom RANDOM=new java.security.SecureRandom();
     private final DesktopSession session;
     private final Connections connections;
@@ -27,21 +20,21 @@ public final class PhanCongService {
     public PhanCongService(DesktopSession session,Connections connections){this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);}
     public boolean canManage(){return auth.can(session,Permission.WORKFORCE_MANAGE);}
     public boolean isActive(){return session.isActive();}
-    public DuLieu management(LocalDate from,LocalDate to,String keyword,String employee) throws SQLException {
+    public DuLieuPhanCong management(LocalDate from,LocalDate to,String keyword,String employee) throws SQLException {
         auth.require(session,Permission.WORKFORCE_READ);range(from,to);
         try(var c=connections.open()){
-            var data=new DuLieu(dao.schedule(c,from,to,employee),dao.employees(c,keyword==null?"":keyword.trim()),dao.shifts(c),"");
+            var data=new DuLieuPhanCong(dao.schedule(c,from,to,employee),dao.employees(c,keyword==null?"":keyword.trim()),dao.shifts(c),"");
             auth.require(session,Permission.WORKFORCE_READ);return data;
         }
     }
     /** No caller-supplied employee ID: resolve only the trusted account association. */
-    public DuLieu mine(LocalDate from,LocalDate to) throws SQLException {
+    public DuLieuPhanCong mine(LocalDate from,LocalDate to) throws SQLException {
         auth.require(session,Permission.SCHEDULE_SELF_READ);range(from,to);
         try(var c=connections.open()){
             String employee=dao.employeeForAccount(c,session.accountId());
-            var rows=employee==null?List.<PhanCong>of():dao.schedule(c,from,to,employee);
+            var rows=employee==null?List.<ThongTinPhanCong>of():dao.schedule(c,from,to,employee);
             auth.require(session,Permission.SCHEDULE_SELF_READ);
-            return new DuLieu(rows,List.of(),List.of(),employee==null?"Tài khoản chưa liên kết với hồ sơ nhân viên.":"");
+            return new DuLieuPhanCong(rows,List.of(),List.of(),employee==null?"Tài khoản chưa liên kết với hồ sơ nhân viên.":"");
         }
     }
     public String create(String employee,String shift,LocalDate day,String task) throws SQLException {
@@ -110,7 +103,7 @@ public final class PhanCongService {
             }
         }
     }
-    public static void checkAssignment(CaLamViec chosen,List<PhanCong> existing,int maximum){
+    public static void checkAssignment(CaLamViec chosen,List<ThongTinPhanCong> existing,int maximum){
         if(!chosen.batDau().isBefore(chosen.ketThuc()))throw new IllegalArgumentException("Ca không hợp lệ; không hỗ trợ ca qua đêm.");
         var active=existing.stream().filter(p->!"DA_HUY".equals(p.trangThai())).toList();
         if(active.size()>=maximum)throw new IllegalArgumentException("Nhân viên đã đủ số ca tối đa trong ngày.");

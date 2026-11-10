@@ -1,8 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.phieukham;
 
 import com.quanlynhakhoa.model.phieukham.KetQuaHangChoKham;
-
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -47,7 +46,7 @@ public final class ExamQueueService {
 
     private void requireQueueAccess() {
         auth.require(session, Permission.MEDICAL_RECORD_READ);
-        if (session.role() != Role.DOCTOR && session.role() != Role.SYSTEM_ADMIN) {
+        if (session.role() != VaiTroHeThong.DOCTOR && session.role() != VaiTroHeThong.SYSTEM_ADMIN) {
             throw new AccessDeniedException();
         }
     }

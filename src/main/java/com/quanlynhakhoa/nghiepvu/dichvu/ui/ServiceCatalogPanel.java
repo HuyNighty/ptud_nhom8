@@ -8,7 +8,7 @@ import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.dichvu.controller.ServiceCatalogController;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.awt.*;
@@ -34,8 +34,8 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
     private final DefaultTableModel tableModel = BillingUi.model("Mã dịch vụ", "Tên dịch vụ", "Giá hiện hành", "Cận lâm sàng", "Trạng thái");
     private final JTable tblDichVu = BillingUi.table(tableModel);
     private final ServiceCatalogController controller;
-    private List<DentalService> rows = List.of();
-    private DentalService selected;
+    private List<DichVuNhaKhoa> rows = List.of();
+    private DichVuNhaKhoa selected;
     private boolean loaded;
 
     public ServiceCatalogPanel(DesktopSession session) { this(session, TeamDevConnection::open); }
@@ -121,14 +121,14 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
     }
     public Boolean activeFilter() { return cmbTrangThai.getSelectedIndex() == 0 ? null : cmbTrangThai.getSelectedIndex() == 1; }
     public boolean creating() { return selected == null; }
-    public DentalService selected() { return selected; }
-    public DentalService input() {
-        return new DentalService(selected == null ? txtMaDichVu.getText() : selected.maDichVu(), txtTenDichVu.getText(),
+    public DichVuNhaKhoa selected() { return selected; }
+    public DichVuNhaKhoa input() {
+        return new DichVuNhaKhoa(selected == null ? txtMaDichVu.getText() : selected.maDichVu(), txtTenDichVu.getText(),
         mode==EditorMode.SERVICES?(selected==null?java.math.BigDecimal.ZERO:selected.donGia()):BillingUi.moneyInput(txtDonGia.getText()), txaMoTa.getText(), chkLaCanLamSang.isSelected(), chkDangApDung.isSelected());
     }
-    public void showRows(List<DentalService> values) {
+    public void showRows(List<DichVuNhaKhoa> values) {
         rows = List.of(); tableModel.setRowCount(0); rows = List.copyOf(values);
-        for (DentalService value : rows) tableModel.addRow(new Object[]{value.maDichVu(), value.tenDichVu(), value.donGia(),
+        for (DichVuNhaKhoa value : rows) tableModel.addRow(new Object[]{value.maDichVu(), value.tenDichVu(), value.donGia(),
                 value.laCanLamSang() ? "Có" : "Không", value.dangApDung() ? "Đang áp dụng" : "Ngừng áp dụng"});
         clearForm();
         BillingUi.tableState(tblDichVu,values.isEmpty()?(keyword().isBlank()&&activeFilter()==null?"Nhập thông tin dịch vụ bên phải rồi bấm Lưu dịch vụ mới.":"Không tìm thấy dịch vụ phù hợp."):"");
@@ -139,7 +139,7 @@ public final class ServiceCatalogPanel extends JPanel implements com.quanlynhakh
         index = tblDichVu.convertRowIndexToModel(index);
         if (index >= 0 && index < rows.size()) showForm(rows.get(index));
     }
-    public void showForm(DentalService value) {
+    public void showForm(DichVuNhaKhoa value) {
         selected = value;
         txtMaDichVu.setText(value.maDichVu()); txtMaDichVu.setEditable(false);
         txtTenDichVu.setText(value.tenDichVu()); txtDonGia.setText(BillingUi.moneyText(value.donGia()));

@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.hethong.tongquan;
 
+import com.quanlynhakhoa.model.tongquan.LichHenTongQuan;
+import com.quanlynhakhoa.model.tongquan.CanhBaoTonKho;
 import java.sql.*;
 import java.time.*;
 import java.math.BigDecimal;
@@ -17,7 +19,7 @@ final class DashboardDetailsDao {
             try(ResultSet rows=s.executeQuery()){if(!rows.next())throw new SQLException("Missing count");return rows.getLong(1);}
         }
     }
-    List<Appointment> appointments(Connection c, LocalDate today) throws SQLException {
+    List<LichHenTongQuan> appointments(Connection c, LocalDate today) throws SQLException {
         String sql="""
             SELECT TOP (8) l.maLichHen,l.thoiGianHen,b.hoTen,n.hoTen,l.trangThai
             FROM dbo.LichHen l JOIN dbo.BenhNhan b ON b.maBenhNhan=l.maBenhNhan
@@ -26,15 +28,15 @@ final class DashboardDetailsDao {
               AND l.trangThai IN ('CHO_XAC_NHAN','DA_XAC_NHAN')
             ORDER BY l.thoiGianHen,l.maLichHen
             """;
-        List<Appointment> result=new ArrayList<>();
+        List<LichHenTongQuan> result=new ArrayList<>();
         try(PreparedStatement s=prepare(c,sql)) {
             s.setObject(1,today.atStartOfDay());s.setObject(2,today.plusDays(1).atStartOfDay());
-            try(ResultSet rows=s.executeQuery()){while(rows.next())result.add(new Appointment(rows.getString(1),rows.getTimestamp(2).toLocalDateTime(),rows.getNString(3),rows.getNString(4),rows.getString(5)));}
+            try(ResultSet rows=s.executeQuery()){while(rows.next())result.add(new LichHenTongQuan(rows.getString(1),rows.getTimestamp(2).toLocalDateTime(),rows.getNString(3),rows.getNString(4),rows.getString(5)));}
         }
         return List.copyOf(result);
     }
-    List<StockAlert> stock(Connection c, LocalDate today) throws SQLException {
-        List<StockAlert> result=new ArrayList<>();
+    List<CanhBaoTonKho> stock(Connection c, LocalDate today) throws SQLException {
+        List<CanhBaoTonKho> result=new ArrayList<>();
         String low="""
             WITH items AS (
                 SELECT N'Thuốc' AS loai,maThuoc AS ma,tenThuoc AS ten,dinhMucToiThieu FROM dbo.Thuoc
@@ -52,7 +54,7 @@ final class DashboardDetailsDao {
             """;
         try(PreparedStatement s=prepare(c,low)) {
             s.setObject(1,today);
-            try(ResultSet rows=s.executeQuery()){while(rows.next())result.add(new StockAlert("Tồn thấp",rows.getString(2)+" · "+rows.getNString(3),"Còn "+rows.getLong(4)+" / định mức "+rows.getInt(5),"Vật tư".equals(rows.getNString(1))?"low-supply":"low"));}
+            try(ResultSet rows=s.executeQuery()){while(rows.next())result.add(new CanhBaoTonKho("Tồn thấp",rows.getString(2)+" · "+rows.getNString(3),"Còn "+rows.getLong(4)+" / định mức "+rows.getInt(5),"Vật tư".equals(rows.getNString(1))?"low-supply":"low"));}
         }
         String expiry="""
             SELECT TOP (8) l.maLo,COALESCE(t.tenThuoc,v.tenVatTu),l.hanSuDung,l.soLuongTon
@@ -65,7 +67,7 @@ final class DashboardDetailsDao {
             s.setObject(1,today.plusDays(30));
             try(ResultSet rows=s.executeQuery()){while(rows.next()){
                 LocalDate expiryDate=rows.getDate(3).toLocalDate();
-                result.add(new StockAlert(expiryDate.isBefore(today)?"Đã hết hạn":"Sắp hết hạn",rows.getString(1)+" · "+rows.getNString(2),expiryDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))+" · Còn "+rows.getLong(4),"lots"));
+                result.add(new CanhBaoTonKho(expiryDate.isBefore(today)?"Đã hết hạn":"Sắp hết hạn",rows.getString(1)+" · "+rows.getNString(2),expiryDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))+" · Còn "+rows.getLong(4),"lots"));
             }}
         }
         return List.copyOf(result);

@@ -1,12 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
-
-
-
-
-
-
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -57,20 +53,20 @@ public final class InvoiceController {
     public void load() {
         if (busy) { reloadPending=true;return; }
         if (!session.isActive()) { view.expired(); return; }
-        final String keyword = view.keyword(); final InvoiceStatus filter = view.statusFilter();
+        final String keyword = view.keyword(); final TrangThaiHoaDon filter = view.statusFilter();
         final LocalDate from, to;
         try { from = date(view.fromText()); to = date(view.toText()); }
         catch (IllegalArgumentException failure) { view.status(failure.getMessage()); return; }
         busy = true; view.setBusy(true); view.clearDetail(); view.status("Đang đọc hóa đơn...");
         final boolean followingPayment=afterPayment;
-        new SessionWorker<List<Invoice>>(session) {
-            protected List<Invoice> doInBackground() throws Exception {
-                List<Invoice> found=service.findPage(keyword, from, to, filter,page);
+        new SessionWorker<List<ThongTinHoaDon>>(session) {
+            protected List<ThongTinHoaDon> doInBackground() throws Exception {
+                List<ThongTinHoaDon> found=service.findPage(keyword, from, to, filter,page);
                 return view.outstandingOnly()?com.quanlynhakhoa.nghiepvu.hoadon.service.DebtService.outstanding(found):found;
             }
             protected void finished() { busy = false; view.setBusy(false); }
             protected void expired() { view.expired(); }
-            protected void succeeded(List<Invoice> rows) {
+            protected void succeeded(List<ThongTinHoaDon> rows) {
                 // Keep selection listeners idle while replacing the model.
                 boolean next=rows.size()>100;
                 busy = true; view.showRows(next?rows.subList(0,100):rows); busy = false;view.pageState(page,next);
@@ -89,11 +85,11 @@ public final class InvoiceController {
         view.clearDetail();
         if (id == null) return;
         busy = true; view.setBusy(true); view.status("Đang đọc chi tiết và lịch sử thu...");
-        new SessionWorker<InvoiceDetails>(session) {
-            protected InvoiceDetails doInBackground() throws Exception { return service.detail(id); }
+        new SessionWorker<DuLieuChiTietHoaDon>(session) {
+            protected DuLieuChiTietHoaDon doInBackground() throws Exception { return service.detail(id); }
             protected void finished() { busy = false; view.setBusy(false); }
             protected void expired() { view.expired(); }
-            protected void succeeded(InvoiceDetails value) {
+            protected void succeeded(DuLieuChiTietHoaDon value) {
                 // Ignore programmatic selection changes while a request is running.
                 if (!id.equals(view.selectedId())) { detail(); return; }
                 view.showDetail(value);

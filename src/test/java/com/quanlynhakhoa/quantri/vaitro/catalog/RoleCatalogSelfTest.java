@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.vaitro.catalog;
 
+import com.quanlynhakhoa.entity.VaiTro;
 import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.*;
@@ -21,9 +22,9 @@ public final class RoleCatalogSelfTest {
         }
         throw new AssertionError("Expected " + type.getSimpleName());
     }
-    private static RoleEntity role(String code, String name, String description, boolean active,
+    private static VaiTro role(String code, String name, String description, boolean active,
                                    boolean system, boolean protectedRole, byte[] version) {
-        return new RoleEntity(code, name, description, active, system, protectedRole, version);
+        return new VaiTro(code, name, description, active, system, protectedRole, version);
     }
     private static Map<String, Object> row(String code, boolean active) {
         Map<String, Object> row = new HashMap<>();
@@ -83,20 +84,20 @@ public final class RoleCatalogSelfTest {
     }
     public static void main(String[] args) throws Exception {
         byte[] revision = new byte[8];
-        RoleEntity a = role("NEW_ROLE", "Tên tiếng Việt", "", true, false, false, revision);
+        VaiTro a = role("NEW_ROLE", "Tên tiếng Việt", "", true, false, false, revision);
         revision[0] = 9;
         check(a.revision()[0] == 0, "Constructor defensive copy");
         byte[] returned = a.revision(); returned[0] = 8;
         check(a.revision()[0] == 0, "Accessor defensive copy");
-        RoleEntity same = role("NEW_ROLE", "Tên khác", "Khác", false, false, false, new byte[8]);
+        VaiTro same = role("NEW_ROLE", "Tên khác", "Khác", false, false, false, new byte[8]);
         check(a.equals(same) && a.hashCode() == same.hashCode(), "Identity by exact code");
         check(!a.equals(null) && !a.equals("NEW_ROLE"), "Typed identity");
         check(a.displayName().equals("Tên tiếng Việt") && a.active() && !a.system(), "Fields");
         check(!a.equals(role("OTHER", "Khác", "", true, false, false, new byte[8])), "Different code");
         for (String code : new String[]{"A", "A" + "0".repeat(31), "CUSTOM_123"})
-            RoleEntity.requireCode(code);
+            VaiTro.requireCode(code);
         for (String code : new String[]{null, "", "lower", "1BAD", " ROLE", "ROLE ", "R\t", "R-X", "Á", "A".repeat(33)})
-            rejects(IllegalArgumentException.class, () -> RoleEntity.requireCode(code));
+            rejects(IllegalArgumentException.class, () -> VaiTro.requireCode(code));
         for (String name : new String[]{null, "", " ", "N".repeat(101)})
             rejects(IllegalArgumentException.class, () -> role("CUSTOM", name, "", true, false, false, new byte[8]));
         for (String description : new String[]{null, "D".repeat(501)})
@@ -104,7 +105,7 @@ public final class RoleCatalogSelfTest {
         for (byte[] invalid : new byte[][]{null, new byte[0], new byte[7], new byte[9]})
             rejects(IllegalArgumentException.class, () -> role("CUSTOM", "Tên", "", true, false, false, invalid));
         for (String code : new String[]{"RECEPTIONIST","DOCTOR","NURSE","CLINIC_MANAGER","INVENTORY_MANAGER","SYSTEM_ADMIN"}) {
-            RoleEntity legacy = role(code, "Legacy", "", true, true, code.equals("SYSTEM_ADMIN"), new byte[8]);
+            VaiTro legacy = role(code, "Legacy", "", true, true, code.equals("SYSTEM_ADMIN"), new byte[8]);
             check(legacy.system(), "Legacy system metadata");
             rejects(IllegalArgumentException.class, () -> role(code, "Legacy", "", true, false, false, new byte[8]));
         }
@@ -121,7 +122,7 @@ public final class RoleCatalogSelfTest {
         FakeJdbc empty = new FakeJdbc(List.of());
         check(repository.findByCode(empty.connection(), "MISSING").isEmpty(), "Missing is empty, no fallback");
         FakeJdbc all = new FakeJdbc(List.of(row("A", true), row("B", false)));
-        List<RoleEntity> list = repository.findAll(all.connection());
+        List<VaiTro> list = repository.findAll(all.connection());
         check(list.size() == 2 && !list.get(1).active() && all.sql.endsWith("ORDER BY roleCode"), "All includes inactive");
         rejects(UnsupportedOperationException.class, () -> list.add(a));
         check(repository.findAll(new FakeJdbc(List.of()).connection()).isEmpty(), "Empty catalog");

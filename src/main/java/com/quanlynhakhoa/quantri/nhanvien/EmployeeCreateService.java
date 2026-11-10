@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.nhanvien;
 
+import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -31,9 +32,9 @@ public final class EmployeeCreateService {
         this.connections = Objects.requireNonNull(connections, "connections");
     }
 
-    public String create(EmployeeCreateRequest draft) throws SQLException {
+    public String create(YeuCauTaoNhanVien draft) throws SQLException {
         authorization.require(session, Permission.WORKFORCE_MANAGE);
-        EmployeeCreateRequest request = validate(draft);
+        YeuCauTaoNhanVien request = validate(draft);
         authorization.require(session, Permission.WORKFORCE_MANAGE);
         try (Connection connection = connections.open()) {
             if (!connection.getAutoCommit()) {
@@ -63,7 +64,7 @@ public final class EmployeeCreateService {
         }
     }
 
-    public static EmployeeCreateRequest validate(EmployeeCreateRequest input) {
+    public static YeuCauTaoNhanVien validate(YeuCauTaoNhanVien input) {
         Objects.requireNonNull(input, "input");
         String id = trimmed(input.employeeId()).toUpperCase(Locale.ROOT);
         String name = trimmed(input.fullName());
@@ -103,7 +104,7 @@ public final class EmployeeCreateService {
         if (birth != null && (birth.isAfter(LocalDate.now()) || birth.isAfter(joined))) {
             throw new IllegalArgumentException("Ngày sinh không hợp lệ.");
         }
-        return new EmployeeCreateRequest(id, name, phone, job, birth, gender, email, joined, specialty);
+        return new YeuCauTaoNhanVien(id, name, phone, job, birth, gender, email, joined, specialty);
     }
 
     private static String trimmed(String value) {

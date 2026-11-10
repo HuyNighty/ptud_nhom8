@@ -1,13 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.TongHopCongNoBenhNhan;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -38,14 +33,14 @@ public final class DebtController {
         final String keyword=view.txtTuKhoa.getText();final LocalDate from,to;
         try{from=date(view.txtTuNgay.getText());to=date(view.txtDenNgay.getText());}catch(RuntimeException e){view.lblTrangThai.setText("Ngày phải có dạng dd/MM/yyyy và tồn tại.");return;}
         busy=true;view.busy(true);view.loading();
-        new Task<List<PatientDebt>>(){
-            protected List<PatientDebt> doInBackground()throws Exception{return DebtService.byPatient(invoices.find(keyword,from,to,null));}
-            protected void succeeded(List<PatientDebt> rows){busy=true;view.showPatients(rows);busy=false;view.lblTrangThai.setText(rows.isEmpty()?"Tổng hợp theo bộ lọc ngày lập hóa đơn hiện tại.":" ");next();}
+        new Task<List<TongHopCongNoBenhNhan>>(){
+            protected List<TongHopCongNoBenhNhan> doInBackground()throws Exception{return DebtService.byPatient(invoices.find(keyword,from,to,null));}
+            protected void succeeded(List<TongHopCongNoBenhNhan> rows){busy=true;view.showPatients(rows);busy=false;view.lblTrangThai.setText(rows.isEmpty()?"Tổng hợp theo bộ lọc ngày lập hóa đơn hiện tại.":" ");next();}
         }.execute();
     }
-    private void detail(){final String id=view.selectedInvoice();if(id==null)return;busy=true;view.busy(true);new Task<InvoiceDetails>(){
-        protected InvoiceDetails doInBackground()throws Exception{return invoices.detail(id);}
-        protected void succeeded(InvoiceDetails value){if(id.equals(view.selectedInvoice()))view.showDetail(value);next();}
+    private void detail(){final String id=view.selectedInvoice();if(id==null)return;busy=true;view.busy(true);new Task<DuLieuChiTietHoaDon>(){
+        protected DuLieuChiTietHoaDon doInBackground()throws Exception{return invoices.detail(id);}
+        protected void succeeded(DuLieuChiTietHoaDon value){if(id.equals(view.selectedInvoice()))view.showDetail(value);next();}
     }.execute();}
     private static LocalDate date(String text){return BillingUi.parseDate(text);}
 }

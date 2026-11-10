@@ -1,9 +1,9 @@
 package com.quanlynhakhoa.quantri.taikhoan.dao;
 
-import com.quanlynhakhoa.quantri.taikhoan.entity.Account;
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,7 +29,7 @@ public final class AccountDao {
      * The caller owns Connection; this DAO closes only statement and result set.
      * R3-A2 must add an explicit transaction and row lock before mutating login state.
      */
-    public Optional<Account> findByUsername(Connection connection, String username)
+    public Optional<ThongTinTaiKhoan> findByUsername(Connection connection, String username)
             throws SQLException {
         if (connection == null) throw new IllegalArgumentException("connection required");
         if (username == null || username.isBlank()) return Optional.empty();
@@ -42,21 +42,21 @@ public final class AccountDao {
         }
     }
 
-    private static Account map(ResultSet rs) throws SQLException {
+    private static ThongTinTaiKhoan map(ResultSet rs) throws SQLException {
         String lock = rs.getString("nguonKhoa");
-        return new Account(
+        return new ThongTinTaiKhoan(
                 rs.getString("maTaiKhoan"),
                 rs.getString("maNhanVien"),
                 rs.getString("tenDangNhap"),
                 rs.getString("tenHienThi"),
                 rs.getString("matKhauHash"),
-                Role.valueOf(rs.getString("vaiTro")),
-                AccountStatus.valueOf(rs.getString("trangThai")),
+                VaiTroHeThong.valueOf(rs.getString("vaiTro")),
+                TrangThaiTaiKhoan.valueOf(rs.getString("trangThai")),
                 rs.getInt("soLanSai"),
                 at(rs, "lanSaiDau"),
                 at(rs, "khoaLuc"),
                 at(rs, "khoaDen"),
-                lock == null ? null : LockSource.valueOf(lock),
+                lock == null ? null : NguonKhoaTaiKhoan.valueOf(lock),
                 rs.getString("lyDoKhoa"),
                 rs.getBoolean("phaiDoiMatKhau"),
                 at(rs, "matKhauCapNhatLuc"),

@@ -3,7 +3,7 @@ package com.quanlynhakhoa.nghiepvu.lichhen.view;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.BieuTuong;
 import com.quanlynhakhoa.nghiepvu.benhnhan.view.MauNut;
 import com.quanlynhakhoa.nghiepvu.lichhen.controller.TiepNhanController;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.LichHen;
+import com.quanlynhakhoa.entity.LichHen;
 import com.quanlynhakhoa.nghiepvu.lichhen.service.LichHenService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;

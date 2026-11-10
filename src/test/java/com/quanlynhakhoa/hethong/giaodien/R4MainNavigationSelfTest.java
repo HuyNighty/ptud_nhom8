@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.hethong.giaodien;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -19,11 +19,11 @@ public final class R4MainNavigationSelfTest {
         try { action.run(); } catch (AccessDeniedException expected) { failedClosed = true; }
         check(failedClosed);
     }
-    private static DesktopSession session(Role role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
+    private static DesktopSession session(VaiTroHeThong role) {
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
     public static void main(String[] args) {
-        MainNavigationModel admin = new MainNavigationModel(session(Role.SYSTEM_ADMIN));
+        MainNavigationModel admin = new MainNavigationModel(session(VaiTroHeThong.SYSTEM_ADMIN));
         check(admin.availableModules().size() == Module.values().length);
         check(admin.selected() == Module.HOME);
         for (Module item : Module.values()) {
@@ -38,7 +38,7 @@ public final class R4MainNavigationSelfTest {
         denied(() -> admin.select(Module.HOME));
         denied(() -> admin.select(Module.PATIENTS));
 
-        MainNavigationModel reception = new MainNavigationModel(session(Role.RECEPTIONIST));
+        MainNavigationModel reception = new MainNavigationModel(session(VaiTroHeThong.RECEPTIONIST));
         check(reception.availableModules().equals(List.of(
                 Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING,
                 Module.MY_SCHEDULE, Module.DEBTS, Module.PAYMENTS, Module.RECEPTION)));
@@ -55,7 +55,7 @@ public final class R4MainNavigationSelfTest {
         denied(() -> reception.select(Module.PATIENTS));
         denied(() -> reception.select(Module.RECEPTION));
 
-        MainNavigationModel doctor = new MainNavigationModel(session(Role.DOCTOR));
+        MainNavigationModel doctor = new MainNavigationModel(session(VaiTroHeThong.DOCTOR));
         check(doctor.availableModules().equals(List.of(
                 Module.HOME, Module.PATIENTS, Module.MEDICAL_RECORDS,
                 Module.EXAMINATIONS, Module.TREATMENT_PLANS, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE)));
@@ -65,20 +65,20 @@ public final class R4MainNavigationSelfTest {
         check(doctor.selected() == Module.MEDICAL_RECORDS);
         denied(() -> doctor.select(Module.WORKFORCE));
 
-        MainNavigationModel nurse = new MainNavigationModel(session(Role.NURSE));
+        MainNavigationModel nurse = new MainNavigationModel(session(VaiTroHeThong.NURSE));
         check(nurse.availableModules().equals(List.of(
                 Module.HOME, Module.SUPPLY_REQUESTS, Module.MY_SCHEDULE, Module.EMERGENCY_KIT)));
         for (Module module : Module.values()) {
             if (!nurse.availableModules().contains(module)) denied(() -> nurse.select(module));
         }
-        MainNavigationModel manager = new MainNavigationModel(session(Role.CLINIC_MANAGER));
+        MainNavigationModel manager = new MainNavigationModel(session(VaiTroHeThong.CLINIC_MANAGER));
         check(manager.availableModules().equals(List.of(
                 Module.HOME, Module.BILLING, Module.WORKFORCE,
                 Module.ACCOUNTS, Module.ROLES, Module.AUDIT,
                 Module.SERVICE_CATALOG, Module.MY_SCHEDULE, Module.SERVICES, Module.DEBTS, Module.INVOICE_CANCELLATIONS, Module.SHIFT_ASSIGNMENTS, Module.REVENUE_REPORTS)));
         manager.select(Module.WORKFORCE);
         denied(() -> manager.select(Module.INVENTORY));
-        MainNavigationModel inventory = new MainNavigationModel(session(Role.INVENTORY_MANAGER));
+        MainNavigationModel inventory = new MainNavigationModel(session(VaiTroHeThong.INVENTORY_MANAGER));
         check(inventory.availableModules().equals(List.of(Module.HOME, Module.INVENTORY, Module.MY_SCHEDULE)));
         inventory.select(Module.INVENTORY);
         denied(() -> inventory.select(Module.BILLING));

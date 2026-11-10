@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.model.hoadon.BangChungTinhPhi;
 import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ClinicalChargeDao;
-import com.quanlynhakhoa.nghiepvu.hoadon.dao.ClinicalChargeDao.Evidence;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import java.sql.*;
 import java.math.BigDecimal;
@@ -47,11 +47,11 @@ public final class JdbcClinicalBillingSource implements ClinicalBillingSource {
         if(lines.isEmpty())throw new IllegalArgumentException("Lượt khám chưa có dịch vụ hoặc thuốc được phép tính phí.");
         return new BanNhapHoaDon(patient,visit,revision.toString(),lines);
     }
-    public static BanNhapHoaDon build(String patient,String visit,List<Evidence> evidence) {
+    public static BanNhapHoaDon build(String patient,String visit,List<BangChungTinhPhi> evidence) {
         List<DongBanNhapHoaDon> lines=new ArrayList<>();
         Map<String,String> serviceKinds=new HashMap<>();Set<String> sourceIds=new HashSet<>();
         StringBuilder revision=new StringBuilder("PERFORMED_V1");
-        for(Evidence row:evidence) {
+        for(BangChungTinhPhi row:evidence) {
             if(!sourceIds.add(row.kind()+":"+row.sourceId()))throw new IllegalArgumentException("Trùng bằng chứng tính phí.");
             String old=serviceKinds.putIfAbsent(row.serviceId(),row.kind());
             if(old!=null && !old.equals(row.kind()))throw new IllegalArgumentException("Dịch vụ có ở cả CLS và điều trị; cần đối soát tránh tính hai lần.");

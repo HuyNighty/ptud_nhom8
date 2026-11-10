@@ -1,9 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -36,7 +36,7 @@ public final class ServiceBillingUiSelfTest {
     public static void main(String[] args) throws Exception {
         System.setProperty("java.awt.headless", "true");
         final FeatureJdbcDouble jdbc = new FeatureJdbcDouble();
-        final DesktopSession session = session(Role.CLINIC_MANAGER);
+        final DesktopSession session = session(VaiTroHeThong.CLINIC_MANAGER);
         final ServiceCatalogPanel[] panel = new ServiceCatalogPanel[1];
         final InvoicePanel[] billing = new InvoicePanel[1];
         edt(new Action() { public void run() {
@@ -44,8 +44,8 @@ public final class ServiceBillingUiSelfTest {
         } });
         check(jdbc.opens == 0, "constructors must not open JDBC");
         edt(new Action() { public void run() throws Exception {
-            panel[0].showRows(List.of(new DentalService("B", "B", new BigDecimal("20"), null, false, true),
-                    new DentalService("A", "A", new BigDecimal("100"), null, true, false)));
+            panel[0].showRows(List.of(new DichVuNhaKhoa("B", "B", new BigDecimal("20"), null, false, true),
+                    new DichVuNhaKhoa("A", "A", new BigDecimal("100"), null, true, false)));
             JTable tblDichVu = field(panel[0], "tblDichVu", JTable.class);
             tblDichVu.getRowSorter().toggleSortOrder(0); tblDichVu.setRowSelectionInterval(0, 0);
             check(panel[0].selected().maDichVu().equals("A"), "view to model index after sort");
@@ -108,11 +108,11 @@ public final class ServiceBillingUiSelfTest {
         edt(new Action(){public void run(){check(cancellation[0].btnThuLai.isVisible()&&!cancellation[0].btnDuyet.isEnabled()&&!cancellation[0].btnTuChoi.isEnabled(),"Permission failure exposes retry and disables decisions");check(!cancellation[0].lblTrangThai.getText().contains("S0005")&&!cancellation[0].lblTrangThai.getText().contains("229"),"Technical SQL details absent from UI");cancellation[0].btnThuLai.doClick();}});
         waitFor(cancellation[0].lblTrangThai,"quyền");check(retries.get()==2,"Explicit retry performs one additional read");
         final FeatureJdbcDouble delayed = new FeatureJdbcDouble(); delayed.release = new CountDownLatch(1);
-        final DesktopSession expiredSession = session(Role.CLINIC_MANAGER);
+        final DesktopSession expiredSession = session(VaiTroHeThong.CLINIC_MANAGER);
         final ServiceCatalogPanel[] expiredPanel = new ServiceCatalogPanel[1];
         edt(new Action() { public void run() throws Exception {
             expiredPanel[0] = new ServiceCatalogPanel(expiredSession, delayed);
-            expiredPanel[0].showForm(new DentalService("TST1", "Synthetic", BigDecimal.ONE, null, false, true));
+            expiredPanel[0].showForm(new DichVuNhaKhoa("TST1", "Synthetic", BigDecimal.ONE, null, false, true));
             field(expiredPanel[0], "btnTaiLai", JButton.class).doClick();
         } });
         check(delayed.opened.await(5, TimeUnit.SECONDS), "delayed query started");

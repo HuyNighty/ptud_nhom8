@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.vaitro.catalog;
 
+import com.quanlynhakhoa.entity.VaiTro;
 import java.awt.EventQueue;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,15 +28,15 @@ public final class JdbcRoleRepository implements RoleRepository {
             throw new SQLException("Không được đọc catalog trên Swing EDT.");
     }
 
-    @Override public Optional<RoleEntity> findByCode(Connection connection, String code) throws SQLException {
-        RoleEntity.requireCode(code);
+    @Override public Optional<VaiTro> findByCode(Connection connection, String code) throws SQLException {
+        VaiTro.requireCode(code);
         requireWorker(connection);
         try (PreparedStatement statement = connection.prepareStatement(FIND)) {
             statement.setQueryTimeout(10);
             statement.setString(1, code);
             try (ResultSet result = statement.executeQuery()) {
                 if (!result.next()) return Optional.empty();
-                RoleEntity role = map(result);
+                VaiTro role = map(result);
                 if (!role.code().equals(code) || result.next())
                     throw new SQLException("Kết quả tra cứu vai trò không nhất quán.");
                 return Optional.of(role);
@@ -43,15 +44,15 @@ public final class JdbcRoleRepository implements RoleRepository {
         }
     }
 
-    @Override public List<RoleEntity> findAll(Connection connection) throws SQLException {
+    @Override public List<VaiTro> findAll(Connection connection) throws SQLException {
         requireWorker(connection);
         try (PreparedStatement statement = connection.prepareStatement(ALL)) {
             statement.setQueryTimeout(10);
             try (ResultSet result = statement.executeQuery()) {
-                List<RoleEntity> roles = new ArrayList<>();
+                List<VaiTro> roles = new ArrayList<>();
                 HashSet<String> seen = new HashSet<>();
                 while (result.next()) {
-                    RoleEntity role = map(result);
+                    VaiTro role = map(result);
                     if (!seen.add(role.code())) throw new SQLException("Mã vai trò bị trùng trong catalog.");
                     roles.add(role);
                 }
@@ -66,9 +67,9 @@ public final class JdbcRoleRepository implements RoleRepository {
         return value;
     }
 
-    private static RoleEntity map(ResultSet result) throws SQLException {
+    private static VaiTro map(ResultSet result) throws SQLException {
         try {
-            return new RoleEntity(result.getString("roleCode"), result.getString("roleName"),
+            return new VaiTro(result.getString("roleCode"), result.getString("roleName"),
                     result.getString("description"), flag(result, "enabled"),
                     flag(result, "isSystem"), flag(result, "isProtected"), result.getBytes("revision"));
         } catch (IllegalArgumentException invalid) {

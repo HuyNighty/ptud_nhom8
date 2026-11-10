@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.quantri.vaitro;
 
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,18 +17,18 @@ public final class RoleOverviewDao {
             GROUP BY vaiTro
             """;
 
-    public Map<Role, Integer> countAccountsByRole(Connection connection) throws SQLException {
+    public Map<VaiTroHeThong, Integer> countAccountsByRole(Connection connection) throws SQLException {
         Objects.requireNonNull(connection, "connection");
-        EnumMap<Role, Integer> counts = new EnumMap<>(Role.class);
-        for (Role role : Role.values()) counts.put(role, 0);
+        EnumMap<VaiTroHeThong, Integer> counts = new EnumMap<>(VaiTroHeThong.class);
+        for (VaiTroHeThong role : VaiTroHeThong.values()) counts.put(role, 0);
         try (PreparedStatement statement = connection.prepareStatement(COUNT_SQL)) {
             statement.setQueryTimeout(10);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
                     String name = result.getString("vaiTro");
-                    final Role role;
+                    final VaiTroHeThong role;
                     try {
-                        role = Role.valueOf(name);
+                        role = VaiTroHeThong.valueOf(name);
                     } catch (IllegalArgumentException | NullPointerException invalid) {
                         throw new SQLException("Unexpected role in the account database", invalid);
                     }

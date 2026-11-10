@@ -1,12 +1,15 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThanhToanDangCho;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.model.hoadon.DuLieuThanhToanDaTai;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -17,7 +20,7 @@ import javax.swing.JOptionPane;
 
 public final class PaymentController {
     private final PaymentForm view;private final DesktopSession session;private final InvoiceService invoices;private final PaymentService payments;
-    private final String invoiceId;private final Runnable saved;private InvoiceDetails detail;private boolean busy;private YeuCauThanhToan pending;
+    private final String invoiceId;private final Runnable saved;private DuLieuChiTietHoaDon detail;private boolean busy;private YeuCauThanhToan pending;
     private final PendingPaymentStore journal;
     private final PaymentAttemptService attempts;
     private final java.util.function.Predicate<YeuCauThanhToan> confirmation;
@@ -47,7 +50,7 @@ public final class PaymentController {
 
         load();
     }
-    private boolean allowed(){return !pendingCancellation&&detail!=null&&detail.hoaDon().trangThai()!=InvoiceStatus.DA_HUY&&detail.hoaDon().conNo().signum()>0&&detail.hoaDon().canhBao().isEmpty();}
+    private boolean allowed(){return !pendingCancellation&&detail!=null&&detail.hoaDon().trangThai()!=TrangThaiHoaDon.DA_HUY&&detail.hoaDon().conNo().signum()>0&&detail.hoaDon().canhBao().isEmpty();}
     private abstract class Task<T> extends SessionWorker<T> {
         Task(){super(PaymentController.this.session);}
         protected void finished(){busy=false;view.busy(false,allowed(),pending!=null);}
@@ -63,18 +66,18 @@ public final class PaymentController {
                 ThanhToanDangCho shared=attempts.pending(invoiceId);
                 if(local!=null&&shared!=null&&!local.equals(shared.request()))throw new java.io.IOException("Lần thu trên máy khác không khớp nhật ký cục bộ; cần quản lý đối soát.");
                 YeuCauThanhToan restored=shared==null?local:shared.request();
-                InvoiceDetails result=invoices.detail(invoiceId);
+                DuLieuChiTietHoaDon result=invoices.detail(invoiceId);
                 return new DuLieuThanhToanDaTai(result,restored,payments.pendingCancellation(invoiceId),shared==null?session.accountId():shared.owner());
             }
             protected void succeeded(DuLieuThanhToanDaTai loaded){
-                InvoiceDetails result=loaded.invoice();pending=loaded.pending();
+                DuLieuChiTietHoaDon result=loaded.invoice();pending=loaded.pending();
                 detail=result;pendingCancellation=loaded.cancellation();view.showInvoice(result);
                 if(pending!=null){
                     view.restoreRequest(pending);
                     int found=0;boolean mismatch=false;
                     for(PhanThanhToan part:pending.parts())for(ThongTinThanhToan prior:result.thanhToan())if(part.id().equals(prior.maThanhToan())){
                         found++;
-                        if(prior.trangThai()!=ThongTinThanhToan.TrangThai.THANH_CONG||prior.phuongThuc()!=part.method()
+                        if(prior.trangThai()!=TrangThaiThanhToan.THANH_CONG||prior.phuongThuc()!=part.method()
                                 ||prior.soTien().compareTo(part.amount())!=0||!Objects.equals(prior.maGiaoDich(),part.reference())
                                 ||(prior.tienKhachDua()==null?part.customerTender()!=null:part.customerTender()==null||prior.tienKhachDua().compareTo(part.customerTender())!=0))mismatch=true;
                     }
@@ -100,8 +103,8 @@ public final class PaymentController {
             if(retrying){request=pending;}else{
             BigDecimal cash=view.cashAmount(),bank=view.bankAmount();
             List<PhanThanhToan> parts=new ArrayList<>();RandomInvoiceIdGenerator ids=new RandomInvoiceIdGenerator();
-            if(cash.signum()>0)parts.add(new PhanThanhToan(ids.next(null),cash,ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,BillingUi.moneyInput(view.txtKhachDua.getText())));
-            if(bank.signum()>0)parts.add(new PhanThanhToan(ids.next(null),bank,ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN,view.txtMaGiaoDich.getText().trim(),null));
+            if(cash.signum()>0)parts.add(new PhanThanhToan(ids.next(null),cash,PhuongThucThanhToan.TIEN_MAT,null,BillingUi.moneyInput(view.txtKhachDua.getText())));
+            if(bank.signum()>0)parts.add(new PhanThanhToan(ids.next(null),bank,PhuongThucThanhToan.CHUYEN_KHOAN,view.txtMaGiaoDich.getText().trim(),null));
             request=new YeuCauThanhToan(invoiceId,BillingUi.moneyInput(view.txtSoTien.getText()),parts,view.chkDaNhanChuyenKhoan.isSelected());PaymentService.validate(request);
             }
         }catch(RuntimeException failure){view.lblTrangThai.setText(BillingUi.error(failure));return;}

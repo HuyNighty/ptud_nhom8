@@ -1,13 +1,13 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.PaymentController;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.PendingPaymentStore;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentForm;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.math.BigDecimal;
 import java.nio.file.*;
 import java.sql.Timestamp;
@@ -20,7 +20,7 @@ import javax.swing.SwingUtilities;
 public final class PaymentRecoverySelfTest {
     private static void check(boolean value,String message){if(!value)throw new AssertionError(message);}
     private static YeuCauThanhToan request(String id){return new YeuCauThanhToan("H1",new BigDecimal("100"),List.of(
-            new PhanThanhToan(id,new BigDecimal("100"),ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,new BigDecimal("200"))),false);}
+            new PhanThanhToan(id,new BigDecimal("100"),PhuongThucThanhToan.TIEN_MAT,null,new BigDecimal("200"))),false);}
     private static FeatureJdbcDouble fixture(String paymentId,int paid){
         FeatureJdbcDouble db=new FeatureJdbcDouble();Map<String,Object> header=new HashMap<>();
         header.put("maHoaDon","H1");header.put("maNhanVien","NV1");header.put("maBenhNhan","BN1");header.put("tenBenhNhan","Fixture");
@@ -44,7 +44,7 @@ public final class PaymentRecoverySelfTest {
         check(new PendingPaymentStore(folder).read("H1").equals(pending),"new store instance recovers exact ID, amount and tender from disk");
         try{new PendingPaymentStore(folder).create(request("OTHER"));throw new AssertionError("Overwrote unresolved attempt");}catch(java.nio.file.FileAlreadyExistsException expected){}
         try{store.clear(request("OTHER"));throw new AssertionError("Cleared another request");}catch(java.io.IOException expected){}
-        var session=ServiceBillingSelfTest.session(Role.RECEPTIONIST);final PaymentForm[] first={null};FeatureJdbcDouble absent=fixture(null,0);
+        var session=ServiceBillingSelfTest.session(VaiTroHeThong.RECEPTIONIST);final PaymentForm[] first={null};FeatureJdbcDouble absent=fixture(null,0);
         edt(new Runnable(){public void run(){first[0]=new PaymentForm();new PaymentController(first[0],session,absent,"H1",new Runnable(){public void run(){}},new PendingPaymentStore(folder));}});await(first[0]);
         edt(new Runnable(){public void run(){check(first[0].hasUncertainResult()&&!first[0].btnThuTien.isEnabled(),"reopening unresolved attempt blocks a new collection");check(first[0].btnThuLai.isVisible()&&first[0].btnThuLai.isEnabled(),"absent result offers retry of same attempt only");check(!first[0].txtSoTien.isEnabled(),"cannot edit an unresolved attempt");check(first[0].txtSoTien.getText().equals("100")&&first[0].txtKhachDua.getText().equals("200"),"original amount and cash tender restored for review");}});
         check(store.read("H1").equals(pending)&&absent.updates==0,"read-only check never clears an absent attempt or writes payment");

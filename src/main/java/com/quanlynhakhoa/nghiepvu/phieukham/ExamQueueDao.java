@@ -1,10 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.phieukham;
 
 import com.quanlynhakhoa.model.phieukham.KetQuaHangChoKham;
-
 import com.quanlynhakhoa.model.phieukham.DongHangChoKham;
-
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,12 +46,12 @@ public final class ExamQueueDao {
 
 
 
-    public KetQuaHangChoKham listForDay(Connection connection, LocalDate day, Role role, String accountId)
+    public KetQuaHangChoKham listForDay(Connection connection, LocalDate day, VaiTroHeThong role, String accountId)
             throws SQLException {
         Objects.requireNonNull(connection, "connection");
         Objects.requireNonNull(day, "day");
         Objects.requireNonNull(role, "role");
-        if (role != Role.DOCTOR && role != Role.SYSTEM_ADMIN) {
+        if (role != VaiTroHeThong.DOCTOR && role != VaiTroHeThong.SYSTEM_ADMIN) {
             throw new IllegalArgumentException("Only doctor or system administrator can read this queue");
         }
         if (accountId == null || accountId.isBlank()) {
@@ -65,7 +63,7 @@ public final class ExamQueueDao {
             statement.setQueryTimeout(12);
             statement.setTimestamp(1, Timestamp.valueOf(day.atStartOfDay()));
             statement.setTimestamp(2, Timestamp.valueOf(day.plusDays(1).atStartOfDay()));
-            statement.setInt(3, role == Role.SYSTEM_ADMIN ? 1 : 0);
+            statement.setInt(3, role == VaiTroHeThong.SYSTEM_ADMIN ? 1 : 0);
             statement.setString(4, accountId);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {

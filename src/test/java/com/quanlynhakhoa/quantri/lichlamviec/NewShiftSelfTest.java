@@ -1,14 +1,14 @@
 package com.quanlynhakhoa.quantri.lichlamviec;
 
 import com.quanlynhakhoa.quantri.lichlamviec.service.PhanCongService;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.time.*;
 import static com.quanlynhakhoa.quantri.lichlamviec.PhanCongSelfTest.*;
 
 public final class NewShiftSelfTest {
     public static void main(String[] args) throws Exception {
         var db = new ShiftJdbcDouble();
-        var manager = session(Role.CLINIC_MANAGER);
+        var manager = session(VaiTroHeThong.CLINIC_MANAGER);
         var service = new PhanCongService(manager, db::open);
         LocalDate day = LocalDate.now();
         LocalTime start = LocalTime.of(8, 0), end = LocalTime.of(12, 0);
@@ -28,7 +28,7 @@ public final class NewShiftSelfTest {
         var failService = new PhanCongService(manager, failing::open);
         rejects(java.sql.SQLException.class, () -> failService.createWithNewShift("NV1", "Lỗi nhật ký", start, end, day, "Khám"));
         check(failing.commits == 0 && failing.rollbacks == 1 && failing.assignments.isEmpty(), "audit failure rolls back transaction");
-        var staff = new PhanCongService(session(Role.DOCTOR), db::open);
+        var staff = new PhanCongService(session(VaiTroHeThong.DOCTOR), db::open);
         rejects(com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException.class,
                 () -> staff.createWithNewShift("NV1", "Không có quyền", start, end, day, "Khám"));
         System.out.println("PASS: new shift validation, permissions, atomic assignment, overlap and audit rollback.");

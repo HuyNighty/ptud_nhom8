@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,7 +26,7 @@ public final class ServiceSavedVisibilitySelfTest {
                 "donGia", BigDecimal.TEN, "moTa", "", "laCanLamSang", false, "dangApDung", true));
         ServiceCatalogPanel[] panel = new ServiceCatalogPanel[1];
         SwingUtilities.invokeAndWait(() -> {
-            panel[0] = new ServiceCatalogPanel(session(Role.SYSTEM_ADMIN), jdbc);
+            panel[0] = new ServiceCatalogPanel(session(VaiTroHeThong.SYSTEM_ADMIN), jdbc);
             try {
                 field(panel[0], "txtTuKhoa", JTextField.class).setText("unrelated");
                 field(panel[0], "cmbTrangThai", JComboBox.class).setSelectedIndex(2);

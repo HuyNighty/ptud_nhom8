@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.vaitro.catalog;
 
+import com.quanlynhakhoa.entity.VaiTro;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -10,8 +11,8 @@ import java.util.Optional;
  * transaction/lifecycle. No implementation is wired to application runtime in C2A.
  */
 public interface RoleRepository {
-    Optional<RoleEntity> findByCode(Connection connection, String code) throws SQLException;
+    Optional<VaiTro> findByCode(Connection connection, String code) throws SQLException;
     /** Includes inactive and zero-grant roles; sorted by code, not a grant decision. */
-    List<RoleEntity> findAll(Connection connection) throws SQLException;
+    List<VaiTro> findAll(Connection connection) throws SQLException;
 }
 

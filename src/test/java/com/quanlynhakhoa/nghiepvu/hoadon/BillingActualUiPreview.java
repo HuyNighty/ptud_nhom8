@@ -1,31 +1,20 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
+import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.dichvu.dao.ServiceCatalogDao;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.hethong.tinhnang.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.giaodien.MainFrame;
@@ -41,7 +30,7 @@ import javax.swing.event.ListSelectionListener;
 
 /** Read actual permitted dev data before rendering. No invented business rows or authenticated GUI session. */
 public final class BillingActualUiPreview {
-    private record Data(List<DentalService> services,List<Invoice> invoices,List<InvoiceCancellationRequest> requests,List<LuaChonLapHoaDon> patients,List<LuaChonLapHoaDon> visits,Map<String,InvoiceDetails> details){}
+    private record Data(List<DichVuNhaKhoa> services,List<ThongTinHoaDon> invoices,List<ThongTinYeuCauHuyHoaDon> requests,List<LuaChonLapHoaDon> patients,List<LuaChonLapHoaDon> visits,Map<String,DuLieuChiTietHoaDon> details){}
     private static Data read()throws Exception{
         if(!TeamDevConnection.hasLocalConfig())throw new IllegalStateException("Approved local dev configuration required");
         try(Connection c=TeamDevConnection.open()){
@@ -49,8 +38,8 @@ public final class BillingActualUiPreview {
             try{
                 var services=new ServiceCatalogDao().find(c,"",null);var invoiceDao=new InvoiceDao();var invoices=invoiceDao.find(c,"",null,null,null);var requests=new CancellationDao().find(c,"",null,null,null);
                 var patients=new InvoiceCreateDao().patients(c,"");var visits=patients.isEmpty()?List.<LuaChonLapHoaDon>of():new InvoiceCreateDao().visits(c,patients.getFirst().id());
-                Map<String,InvoiceDetails> details=new HashMap<>();
-                for(Invoice h:invoices)details.put(h.maHoaDon(),new InvoiceDetails(h,invoiceDao.lines(c,h.maHoaDon()),invoiceDao.payments(c,h.maHoaDon())));
+                Map<String,DuLieuChiTietHoaDon> details=new HashMap<>();
+                for(ThongTinHoaDon h:invoices)details.put(h.maHoaDon(),new DuLieuChiTietHoaDon(h,invoiceDao.lines(c,h.maHoaDon()),invoiceDao.payments(c,h.maHoaDon())));
                 c.commit();System.out.println("Actual SQL snapshot: services="+services.size()+", invoices="+invoices.size()+", cancellation requests="+requests.size()+", patients="+patients.size()+", candidate visits for first patient="+visits.size());
                 return new Data(services,invoices,requests,patients,visits,details);
             }catch(Exception e){c.rollback();throw e;}
@@ -69,7 +58,7 @@ public final class BillingActualUiPreview {
             case BILLING -> {var view=(InvoicePanel)panel;view.showRows(data.invoices());if(!data.invoices().isEmpty()){select(firstTable(view));view.showDetail(data.details().get(data.invoices().getFirst().maHoaDon()));}view.setBusy(false);view.status(data.invoices().isEmpty()?"Chưa có hóa đơn.":"Dữ liệu chứng từ từ SQL development.");}
             case DEBTS -> {var view=(DebtPanel)panel;view.showPatients(DebtService.byPatient(data.invoices()));select(view.tblBenhNhan);view.selectPatient();select(view.tblHoaDon);if(view.selectedInvoice()!=null)view.showDetail(data.details().get(view.selectedInvoice()));view.busy(false);view.lblTrangThai.setText("Các số tổng hợp tính theo bộ lọc ngày lập hóa đơn.");}
             case PAYMENTS -> {var view=(PaymentPanel)panel;var found=DebtService.outstanding(data.invoices());var listeners=view.cmbHoaDon.getActionListeners();for(var listener:listeners)view.cmbHoaDon.removeActionListener(listener);view.showChoices(found,null);for(var listener:listeners)view.cmbHoaDon.addActionListener(listener);view.lblTrangThai.setText(found.isEmpty()?"Chưa có hóa đơn còn phải thu.":"Chọn hóa đơn từ kết quả tìm kiếm.");}
-            case INVOICE_CANCELLATIONS -> {var view=(CancellationPanel)panel;view.showRows(data.requests());if(!data.requests().isEmpty()){var y=data.requests().getFirst();select(view.tblYeuCau);if(data.details().containsKey(y.maHoaDon()))view.showDetail(new CancellationService.Detail(y,data.details().get(y.maHoaDon())));}view.lblTrangThai.setText("Lọc theo ngày gửi và trạng thái yêu cầu.");view.tableStatus(data.requests().isEmpty()?"Chưa có yêu cầu hủy hóa đơn.":"");}
+            case INVOICE_CANCELLATIONS -> {var view=(CancellationPanel)panel;view.showRows(data.requests());if(!data.requests().isEmpty()){var y=data.requests().getFirst();select(view.tblYeuCau);if(data.details().containsKey(y.maHoaDon()))view.showDetail(new ChiTietYeuCauHuy(y,data.details().get(y.maHoaDon())));}view.lblTrangThai.setText("Lọc theo ngày gửi và trạng thái yêu cầu.");view.tableStatus(data.requests().isEmpty()?"Chưa có yêu cầu hủy hóa đơn.":"");}
             default -> throw new AssertionError(module);
         }
     }
@@ -80,7 +69,7 @@ public final class BillingActualUiPreview {
         try{SwingUtilities.invokeAndWait(new Runnable(){public void run(){
             ConnectionProvider disabled=new ConnectionProvider(){public Connection open()throws SQLException{throw new SQLException("Read-only snapshot: interactive SQL disabled");}};
             for(Dimension size:List.of(new Dimension(1280,720),new Dimension(1366,768),new Dimension(1920,1080))){
-                DesktopSession display=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,"XEM-CHI-DOC",Role.SYSTEM_ADMIN,false));Map<Module,JPanel> pages=new EnumMap<>(Module.class);FeatureRegistry.Builder registry=FeatureRegistry.builder();
+                DesktopSession display=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"XEM-CHI-DOC",VaiTroHeThong.SYSTEM_ADMIN,false));Map<Module,JPanel> pages=new EnumMap<>(Module.class);FeatureRegistry.Builder registry=FeatureRegistry.builder();
                 for(final Module module:List.of(Module.SERVICE_CATALOG,Module.BILLING,Module.PAYMENTS,Module.INVOICE_CANCELLATIONS,Module.DEBTS))registry.register(module,new FeaturePanelFactory(){public JPanel create(DesktopSession session){JPanel panel=switch(module){case SERVICE_CATALOG -> new ServiceCatalogPanel(session,disabled);case BILLING -> new InvoicePanel(session,disabled);case PAYMENTS -> new PaymentPanel(session,disabled);case INVOICE_CANCELLATIONS -> new CancellationPanel(session,disabled);case DEBTS -> new DebtPanel(session,disabled);default -> throw new AssertionError(module);};pages.put(module,panel);return panel;}});
                 MainFrame frame=new MainFrame(display,new Runnable(){public void run(){}},registry.build());
                 try{

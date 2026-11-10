@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.dieutri.view;
 
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.nghiepvu.dieutri.service.TreatmentPlanService;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -54,7 +54,7 @@ public final class TreatmentPlanPanel extends JPanel {
         JSplitPane split=new JSplitPane(JSplitPane.VERTICAL_SPLIT,top,bottom);
         split.setResizeWeight(.48);
         add(split,BorderLayout.CENTER);
-        if (session.role() != Role.DOCTOR && session.role() != Role.SYSTEM_ADMIN) {
+        if (session.role() != VaiTroHeThong.DOCTOR && session.role() != VaiTroHeThong.SYSTEM_ADMIN) {
             createPlan.setEnabled(false);
             addStep.setEnabled(false);
             completeStep.setEnabled(false);

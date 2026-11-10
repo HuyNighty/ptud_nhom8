@@ -1,8 +1,9 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.model.taikhoan.TaiKhoanDich;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -51,21 +52,21 @@ public final class AccountStateService {
             connection.setAutoCommit(false);
             try {
                 requireAuthorized();
-                AccountStateDao.Target target = dao.lockTarget(connection, id);
+                TaiKhoanDich target = dao.lockTarget(connection, id);
                 requireAuthorized();
-                if (target.role() == Role.SYSTEM_ADMIN) {
+                if (target.role() == VaiTroHeThong.SYSTEM_ADMIN) {
                     throw new IllegalArgumentException("Không được khóa hoặc mở khóa tài khoản quản trị hệ thống.");
                 }
                 if (locking) {
                     if (session.accountId().equalsIgnoreCase(target.accountId())) {
                         throw new IllegalArgumentException("Không được tự khóa tài khoản đang đăng nhập.");
                     }
-                    if (target.status() != AccountStatus.HOAT_DONG) {
+                    if (target.status() != TrangThaiTaiKhoan.HOAT_DONG) {
                         throw new IllegalArgumentException("Chỉ được khóa tài khoản đang hoạt động. Hãy làm mới danh sách.");
                     }
                     dao.lock(connection, target.accountId(), session.accountId(), reason);
                 } else {
-                    if (target.status() != AccountStatus.BI_KHOA || target.lockSource() != LockSource.ADMIN_ACTION) {
+                    if (target.status() != TrangThaiTaiKhoan.BI_KHOA || target.lockSource() != NguonKhoaTaiKhoan.ADMIN_ACTION) {
                         throw new IllegalArgumentException("Chỉ được mở khóa tài khoản do quản trị viên khóa. Hãy làm mới danh sách.");
                     }
                     dao.unlock(connection, target.accountId());

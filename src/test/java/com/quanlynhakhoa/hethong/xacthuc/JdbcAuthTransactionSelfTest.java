@@ -1,7 +1,8 @@
 package com.quanlynhakhoa.hethong.xacthuc;
 
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -37,7 +38,7 @@ public final class JdbcAuthTransactionSelfTest {
         check(JdbcAuthService.UPDATE_ACCOUNT_SQL.contains("WHERE maTaiKhoan = ?"), "update targets one id");
 
         FakeJdbc success = new FakeJdbc();
-        AuthDecision ok = service(success).authenticate("synthetic-admin", "correct");
+        KetQuaDangNhap ok = service(success).authenticate("synthetic-admin", "correct");
         check(ok.authenticated() && ok.role() != null && !ok.forcePasswordChange(), "valid login");
         check(success.commits == 1 && success.rollbacks == 0, "success commit");
         check(success.updates == 1, "success update");
@@ -51,7 +52,7 @@ public final class JdbcAuthTransactionSelfTest {
         check("T0001".equals(success.bound.get(10)), "update account id");
 
         FakeJdbc failed = new FakeJdbc();
-        AuthDecision bad = service(failed).authenticate("synthetic-admin", "bad");
+        KetQuaDangNhap bad = service(failed).authenticate("synthetic-admin", "bad");
         check(!bad.authenticated(), "bad password rejected");
         check(failed.commits == 1 && failed.updates == 1, "failed attempt persisted");
         check(Integer.valueOf(1).equals(failed.bound.get(2)), "failure count updated");
@@ -61,7 +62,7 @@ public final class JdbcAuthTransactionSelfTest {
         FakeJdbc fifth = new FakeJdbc();
         fifth.failedAttempts = 4;
         fifth.firstFailureAt = UTC_NOW.minusMinutes(4);
-        AuthDecision locked = service(fifth).authenticate("synthetic-admin", "bad");
+        KetQuaDangNhap locked = service(fifth).authenticate("synthetic-admin", "bad");
         check(!locked.authenticated(), "fifth rejected");
         check("BI_KHOA".equals(fifth.bound.get(1)), "fifth locks account");
         check(Integer.valueOf(5).equals(fifth.bound.get(2)), "five failures");
@@ -95,7 +96,7 @@ public final class JdbcAuthTransactionSelfTest {
         check(!service(blank).authenticate(" ", "correct").authenticated(), "blank rejects");
         check(blank.opens == 0, "blank never accesses database");
 
-        check(AccountStatus.HOAT_DONG != null && LockSource.FAILED_LOGIN != null,
+        check(TrangThaiTaiKhoan.HOAT_DONG != null && NguonKhoaTaiKhoan.FAILED_LOGIN != null,
                 "compile-time enum linkage");
         System.out.println("PASS: R3-A2B TRANSACTION SYNTHETIC TESTS (" + checks + " checks)");
         System.out.println("FAKE JDBC ONLY; NO REAL DB CONNECTION OR WRITES");

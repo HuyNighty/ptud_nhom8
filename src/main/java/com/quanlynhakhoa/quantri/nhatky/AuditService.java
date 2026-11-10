@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.quantri.nhatky;
 
+import com.quanlynhakhoa.model.nhatky.KetQuaNhatKy;
+import com.quanlynhakhoa.model.nhatky.BoLocNhatKy;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -31,12 +33,12 @@ public final class AuditService {
         this.dao = Objects.requireNonNull(dao, "dao");
     }
 
-    public AuditDao.Result search(AuditFilter filter) throws SQLException {
+    public KetQuaNhatKy search(BoLocNhatKy filter) throws SQLException {
         authorization.require(session, Permission.AUDIT_READ);
         Objects.requireNonNull(filter, "filter");
         try (Connection connection = connections.open()) {
             authorization.require(session, Permission.AUDIT_READ);
-            AuditDao.Result result = dao.search(connection, filter);
+            KetQuaNhatKy result = dao.search(connection, filter);
             authorization.require(session, Permission.AUDIT_READ);
             return result;
         }

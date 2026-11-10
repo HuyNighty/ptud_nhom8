@@ -1,8 +1,8 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.xacthuc.DesktopLoginGate;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class DesktopSession {
     private final String accountId;
-    private final Role role;
+    private final VaiTroHeThong role;
     private final Instant startedAt;
     @FunctionalInterface public interface CurrentAccountCheck { void check(DesktopSession session); }
     private CurrentAccountCheck currentAccountCheck;
@@ -23,19 +23,19 @@ public final class DesktopSession {
 
     private final AtomicBoolean active = new AtomicBoolean(true);
 
-    private DesktopSession(String accountId, Role role, Instant startedAt) {
+    private DesktopSession(String accountId, VaiTroHeThong role, Instant startedAt) {
         this.accountId = accountId;
         this.role = role;
         this.startedAt = startedAt;
     }
 
-    public static DesktopSession fromSuccessfulLogin(AuthDecision decision) {
+    public static DesktopSession fromSuccessfulLogin(KetQuaDangNhap decision) {
         if (!DesktopLoginGate.mayOpenMain(decision)) throw new AccessDeniedException();
         return new DesktopSession(decision.accountId(), decision.role(), Instant.now());
     }
 
     public String accountId() { return accountId; }
-    public Role role() { return role; }
+    public VaiTroHeThong role() { return role; }
     public Instant startedAt() { return startedAt; }
     public boolean isActive() { return active.get(); }
 

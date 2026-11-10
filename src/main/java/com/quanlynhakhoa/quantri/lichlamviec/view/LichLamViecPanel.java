@@ -1,14 +1,9 @@
 package com.quanlynhakhoa.quantri.lichlamviec.view;
 
-
-
-
-
-
-
-
-
-import com.quanlynhakhoa.quantri.lichlamviec.entity.*;
+import com.quanlynhakhoa.model.lichlamviec.ThongTinPhanCong;
+import com.quanlynhakhoa.model.lichlamviec.NhanVienChon;
+import com.quanlynhakhoa.model.lichlamviec.DuLieuPhanCong;
+import com.quanlynhakhoa.entity.CaLamViec;
 import com.quanlynhakhoa.quantri.lichlamviec.service.PhanCongService;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.*;
@@ -78,12 +73,12 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
     }
     private void setWeek(LocalDate day){LocalDate monday=day.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));from.setText(monday.toString());to.setText(monday.plusDays(6).toString());}
     private void move(int days){try{LocalDate f=LocalDate.parse(from.getText().trim()),t=LocalDate.parse(to.getText().trim());from.setText(f.plusDays(days).toString());to.setText(t.plusDays(days).toString());refreshData();}catch(DateTimeException e){status.setText("Ngày không hợp lệ. Dùng yyyy-MM-dd.");}}
-    private PhanCong selected(){int row=table.getSelectedRow();return row<0?null:model.rows.get(table.convertRowIndexToModel(row));}
+    private ThongTinPhanCong selected(){int row=table.getSelectedRow();return row<0?null:model.rows.get(table.convertRowIndexToModel(row));}
     private void buttons(){
         boolean active=service.isActive(),write=management&&service.canManage();
         for(Component c:new Component[]{from,to,keyword,employees,previous,next,today,refresh,table})c.setEnabled(!busy&&active);
         create.setEnabled(!busy&&active&&write&&employees.getItemCount()>1);
-        PhanCong p=selected();detail.setEnabled(!busy&&active&&p!=null);cancel.setEnabled(!busy&&write&&p!=null&&PhanCongService.canCancelStatus(p.trangThai()));
+        ThongTinPhanCong p=selected();detail.setEnabled(!busy&&active&&p!=null);cancel.setEnabled(!busy&&write&&p!=null&&PhanCongService.canCancelStatus(p.trangThai()));
     }
     private void clear(){model.rows=List.of();model.fireTableDataChanged();shifts=List.of();employees.removeAllItems();employees.addItem(null);}
     @Override public void refreshData(){
@@ -92,8 +87,8 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
             LocalDate f=LocalDate.parse(from.getText().trim()),t=LocalDate.parse(to.getText().trim());PhanCongService.range(f,t);
             String search=keyword.getText();NhanVienChon chosen=(NhanVienChon)employees.getSelectedItem();String id=chosen==null?null:chosen.id();
             busy=true;buttons();status.setText("Đang tải lịch làm việc…");
-            new SwingWorker<PhanCongService.DuLieu,Void>(){
-                @Override protected PhanCongService.DuLieu doInBackground() throws Exception{return management?service.management(f,t,search,id):service.mine(f,t);}
+            new SwingWorker<DuLieuPhanCong,Void>(){
+                @Override protected DuLieuPhanCong doInBackground() throws Exception{return management?service.management(f,t,search,id):service.mine(f,t);}
                 @Override protected void done(){
                     busy=false;
                     try{
@@ -118,7 +113,7 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
             }.execute();
         }catch(DateTimeException|IllegalArgumentException e){status.setText("Khoảng ngày không hợp lệ. Dùng yyyy-MM-dd.");}
     }
-    private void showDetail(){PhanCong p=selected();if(p==null)return;JTextArea text=new JTextArea("Mã: "+p.id()+"\nNhân viên: "+p.tenNhanVien()+" ("+p.nhanVienId()+")\nNgày: "+p.ngay()+"\nCa: "+p.ca()+"\nNhiệm vụ: "+p.nhiemVu()+"\nTrạng thái: "+p.trangThaiHienThi()+"\nLý do hủy: "+(p.lyDoHuy()==null?"—":p.lyDoHuy()),10,48);text.setEditable(false);text.setLineWrap(true);text.setWrapStyleWord(true);JOptionPane.showMessageDialog(this,new JScrollPane(text),"Chi tiết phân công",JOptionPane.INFORMATION_MESSAGE);}
+    private void showDetail(){ThongTinPhanCong p=selected();if(p==null)return;JTextArea text=new JTextArea("Mã: "+p.id()+"\nNhân viên: "+p.tenNhanVien()+" ("+p.nhanVienId()+")\nNgày: "+p.ngay()+"\nCa: "+p.ca()+"\nNhiệm vụ: "+p.nhiemVu()+"\nTrạng thái: "+p.trangThaiHienThi()+"\nLý do hủy: "+(p.lyDoHuy()==null?"—":p.lyDoHuy()),10,48);text.setEditable(false);text.setLineWrap(true);text.setWrapStyleWord(true);JOptionPane.showMessageDialog(this,new JScrollPane(text),"Chi tiết phân công",JOptionPane.INFORMATION_MESSAGE);}
     private void create(){
         if(busy||!service.canManage())return;
         JComboBox<NhanVienChon> employee=new JComboBox<>();for(int i=1;i<employees.getItemCount();i++)employee.addItem(employees.getItemAt(i));
@@ -189,7 +184,7 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
         input.weighty=stretch?1:0;input.fill=GridBagConstraints.BOTH;input.insets=new Insets(4,0,8,0);form.add(control,input);
     }
     private void cancel(){
-        PhanCong p=selected();if(p==null||busy||!service.canManage())return;
+        ThongTinPhanCong p=selected();if(p==null||busy||!service.canManage())return;
         if(!PhanCongService.canCancelStatus(p.trangThai())){status.setText("Chỉ hủy phân công chờ hiệu lực. Hãy tải lại.");return;}
         String reason=JOptionPane.showInputDialog(this,"Lý do hủy phân công "+p.id()+" (bắt buộc, tối đa 300 ký tự):");if(reason==null)return;
         if(reason.isBlank()||reason.trim().length()>300){status.setText("Lý do hủy phải có 1–300 ký tự.");return;}
@@ -216,9 +211,9 @@ public final class LichLamViecPanel extends JPanel implements RefreshableFeature
         return "Không tải/lưu được lịch. Hãy tải lại hoặc liên hệ quản trị.";
     }
     private static final class Rows extends AbstractTableModel {
-        private List<PhanCong> rows=List.of();private final String[] titles={"Ngày","Nhân viên","Ca","Bắt đầu","Kết thúc","Nhiệm vụ","Trạng thái"};
+        private List<ThongTinPhanCong> rows=List.of();private final String[] titles={"Ngày","Nhân viên","Ca","Bắt đầu","Kết thúc","Nhiệm vụ","Trạng thái"};
         @Override public int getRowCount(){return rows.size();}@Override public int getColumnCount(){return titles.length;}@Override public String getColumnName(int col){return titles[col];}
-        @Override public Object getValueAt(int row,int col){PhanCong p=rows.get(row);return switch(col){case 0->p.ngay();case 1->p.tenNhanVien()+" ("+p.nhanVienId()+")";case 2->p.ca().ten();case 3->p.ca().batDau();case 4->p.ca().ketThuc();case 5->p.nhiemVu();default->p.trangThaiHienThi();};}
+        @Override public Object getValueAt(int row,int col){ThongTinPhanCong p=rows.get(row);return switch(col){case 0->p.ngay();case 1->p.tenNhanVien()+" ("+p.nhanVienId()+")";case 2->p.ca().ten();case 3->p.ca().batDau();case 4->p.ca().ketThuc();case 5->p.nhiemVu();default->p.trangThaiHienThi();};}
         @Override public Class<?> getColumnClass(int col){return switch(col){case 0->LocalDate.class;case 3,4->LocalTime.class;default->String.class;};}
     }
 }

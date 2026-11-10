@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.quantri.nhanvien;
 
+import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,7 +31,7 @@ public final class EmployeeCreateDao {
                     'SUCCESS', N'NhanVien', ?, N'Tạo hồ sơ nhân viên')
             """;
 
-    public void requireUnique(Connection connection, EmployeeCreateRequest request) throws SQLException {
+    public void requireUnique(Connection connection, YeuCauTaoNhanVien request) throws SQLException {
         Objects.requireNonNull(connection, "connection");
         try (PreparedStatement statement = connection.prepareStatement(CHECK_DUPLICATE_SQL)) {
             statement.setQueryTimeout(12);
@@ -44,7 +45,7 @@ public final class EmployeeCreateDao {
         }
     }
 
-    public void insert(Connection connection, EmployeeCreateRequest request) throws SQLException {
+    public void insert(Connection connection, YeuCauTaoNhanVien request) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(INSERT_SQL)) {
             statement.setQueryTimeout(12);
             statement.setString(1, request.employeeId());
