@@ -3,7 +3,6 @@ package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

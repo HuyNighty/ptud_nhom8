@@ -1,7 +1,8 @@
 package com.quanlynhakhoa.quantri.vaitro;
 
+import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
 import com.quanlynhakhoa.quantri.taikhoan.AccountDirectoryService;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -27,15 +28,15 @@ public final class RoleOverviewService {
         this.connections = Objects.requireNonNull(connections, "connections");
     }
 
-    public List<RoleOverview> load() throws SQLException {
+    public List<TongQuanVaiTro> load() throws SQLException {
         requireRead();
         try (Connection connection = connections.open()) {
             requireRead();
-            Map<Role, Integer> counts = dao.countAccountsByRole(connection);
+            Map<VaiTroHeThong, Integer> counts = dao.countAccountsByRole(connection);
             requireRead();
-            List<RoleOverview> rows = new ArrayList<>();
-            for (Role role : Role.values()) {
-                rows.add(new RoleOverview(role, policy.permissionsFor(role), counts.get(role)));
+            List<TongQuanVaiTro> rows = new ArrayList<>();
+            for (VaiTroHeThong role : VaiTroHeThong.values()) {
+                rows.add(new TongQuanVaiTro(role, policy.permissionsFor(role), counts.get(role)));
             }
             requireRead();
             return List.copyOf(rows);

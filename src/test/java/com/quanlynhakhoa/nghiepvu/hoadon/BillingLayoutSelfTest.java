@@ -1,17 +1,25 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
+import com.quanlynhakhoa.enums.PhuongThucNhapThanhToan;
+import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
+import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.hethong.tinhnang.*;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.dieuhuong.Module;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.giaodien.MainFrame;
@@ -54,23 +62,23 @@ public final class BillingLayoutSelfTest {
     private static void screenshot(JComponent root,String name)throws Exception{layout(root);if(!Boolean.getBoolean("billing.syntheticScreenshots"))return;BufferedImage image=new BufferedImage(root.getWidth(),root.getHeight(),BufferedImage.TYPE_INT_RGB);Graphics2D g=image.createGraphics();root.printAll(g);g.dispose();ImageIO.write(image,"png",OUTPUT.resolve(name+".png").toFile());}
     private static void navigate(MainFrame frame,Module module)throws Exception{var method=MainFrame.class.getDeclaredMethod("navigate",Module.class);method.setAccessible(true);method.invoke(frame,module);}
     private static FeaturePanelFactory factory(final Module module,final com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider jdbc){return new FeaturePanelFactory(){public JPanel create(DesktopSession session){JPanel result=switch(module){case SERVICE_CATALOG -> new ServiceCatalogPanel(session,jdbc);case BILLING -> new InvoicePanel(session,jdbc);case DEBTS -> new DebtPanel(session,jdbc);case PAYMENTS -> new PaymentPanel(session,jdbc);case INVOICE_CANCELLATIONS -> new CancellationPanel(session,jdbc);default -> throw new AssertionError(module);};pages.put(module,result);return result;}};}
-    private static Invoice invoice(){return new Invoice("TESTHD01","TESTNV","TESTBN","[KIỂM THỬ] Nguyễn An","TESTPK",LocalDateTime.of(2026,10,31,9,15),InvoiceStatus.THANH_TOAN_MOT_PHAN,new BigDecimal("1500000"),new BigDecimal("500000"),BigDecimal.ZERO);}
-    private static InvoiceDetails detail(){return new InvoiceDetails(invoice(),List.of(new DongChiTietHoaDon(1,"TESTHD01","TESTDV",null,null,1,new BigDecimal("1500000"),"[KIỂM THỬ] Điều trị răng")),List.of(new ThongTinThanhToan("TESTTT01","TESTHD01",LocalDateTime.of(2026,10,31,10,0),new BigDecimal("500000"),ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,new BigDecimal("500000"),ThongTinThanhToan.TrangThai.THANH_CONG,"TESTNV",null,null,null)));}
+    private static ThongTinHoaDon invoice(){return new ThongTinHoaDon("TESTHD01","TESTNV","TESTBN","[KIỂM THỬ] Nguyễn An","TESTPK",LocalDateTime.of(2026,10,31,9,15),TrangThaiHoaDon.THANH_TOAN_MOT_PHAN,new BigDecimal("1500000"),new BigDecimal("500000"),BigDecimal.ZERO);}
+    private static DuLieuChiTietHoaDon detail(){return new DuLieuChiTietHoaDon(invoice(),List.of(new DongChiTietHoaDon(1,"TESTHD01","TESTDV",null,null,1,new BigDecimal("1500000"),"[KIỂM THỬ] Điều trị răng")),List.of(new ThongTinThanhToan("TESTTT01","TESTHD01",LocalDateTime.of(2026,10,31,10,0),new BigDecimal("500000"),PhuongThucThanhToan.TIEN_MAT,null,new BigDecimal("500000"),TrangThaiThanhToan.THANH_CONG,"TESTNV",null,null,null)));}
     private static void empty(Module module,JPanel panel){switch(module){case SERVICE_CATALOG -> ((ServiceCatalogPanel)panel).showRows(List.of());case BILLING -> ((InvoicePanel)panel).showRows(List.of());case DEBTS -> ((DebtPanel)panel).showPatients(List.of());case PAYMENTS -> {var view=(PaymentPanel)panel;view.showChoices(List.of(),null);view.showForm(new PaymentForm());view.pickerEnabled(true);}case INVOICE_CANCELLATIONS -> ((CancellationPanel)panel).showRows(List.of());default -> throw new AssertionError(module);}}
     private static void seed(Module module,JPanel panel){
         switch(module){
-            case SERVICE_CATALOG -> {var view=(ServiceCatalogPanel)panel;var item=new DentalService("TESTDV","[KIỂM THỬ] Điều trị răng",new BigDecimal("1500000"),"Giá hiện hành; hóa đơn cũ giữ giá đã chốt.",false,true);view.showRows(List.of(item));view.showForm(item);}
+            case SERVICE_CATALOG -> {var view=(ServiceCatalogPanel)panel;var item=new DichVuNhaKhoa("TESTDV","[KIỂM THỬ] Điều trị răng",new BigDecimal("1500000"),"Giá hiện hành; hóa đơn cũ giữ giá đã chốt.",false,true);view.showRows(List.of(item));view.showForm(item);}
             case BILLING -> {var view=(InvoicePanel)panel;view.showRows(List.of(invoice()));select(field(view,"tblHoaDon",JTable.class));view.showDetail(detail());view.setBusy(false);check(field(view,"btnThanhToan",JButton.class).isEnabled(),"Pay enabled on eligible selected invoice");}
             case DEBTS -> {var view=(DebtPanel)panel;view.showPatients(DebtService.byPatient(List.of(invoice())));select(view.tblBenhNhan);view.selectPatient();select(view.tblHoaDon);view.showDetail(detail());view.busy(false);check(view.btnThuNo.isEnabled()&&view.btnXemChiTiet.isEnabled(),"Debt actions bound to selected invoice");}
-            case PAYMENTS -> {var view=(PaymentPanel)panel;var form=new PaymentForm();form.cmbPhuongThuc.setSelectedItem(PaymentForm.Method.BANK);form.showInvoice(detail());form.busy(false,true,false);form.txtSoTien.setText("800.000");form.txtKhachDua.setText("300.000");form.txtMaGiaoDich.setText("TEST-REF");var listeners=view.cmbHoaDon.getActionListeners();for(var listener:listeners)view.cmbHoaDon.removeActionListener(listener);view.showChoices(List.of(invoice()),"TESTHD01");for(var listener:listeners)view.cmbHoaDon.addActionListener(listener);view.showForm(form);view.pickerEnabled(true);view.lblTrangThai.setText("Đang xem hóa đơn TESTHD01 · dữ liệu tổng hợp kiểm tra bố cục.");form.lblTrangThai.setText("Kiểm tra khoản thu và xác nhận đã nhận tiền thực tế trước khi lưu.");check(form.lblPhanBo.getText().contains("Khớp")&&form.lblNoSauThu.getText().contains("200.000"),"Allocation and remaining-debt preview exact");}
-            case INVOICE_CANCELLATIONS -> {var view=(CancellationPanel)panel;var request=new InvoiceCancellationRequest("TESTYC01","TESTHD01","TESTBN","[KIỂM THỬ] Nguyễn An",invoice().tongTien(),invoice().daThu(),"TESTACC",LocalDateTime.of(2026,10,31,11,0),"[KIỂM THỬ] Cần kiểm tra lại chứng từ",InvoiceCancellationRequest.TrangThai.CHO_DUYET,null,null,null);view.showRows(List.of(request));select(view.tblYeuCau);view.showDetail(new CancellationService.Detail(request,detail()));view.buttons(false,true);view.lblTrangThai.setText("Hóa đơn đã có khoản thu: chặn duyệt hủy khi chưa có quy trình hoàn tiền.");}
+            case PAYMENTS -> {var view=(PaymentPanel)panel;var form=new PaymentForm();form.cmbPhuongThuc.setSelectedItem(PhuongThucNhapThanhToan.BANK);form.showInvoice(detail());form.busy(false,true,false);form.txtSoTien.setText("800.000");form.txtKhachDua.setText("300.000");form.txtMaGiaoDich.setText("TEST-REF");var listeners=view.cmbHoaDon.getActionListeners();for(var listener:listeners)view.cmbHoaDon.removeActionListener(listener);view.showChoices(List.of(invoice()),"TESTHD01");for(var listener:listeners)view.cmbHoaDon.addActionListener(listener);view.showForm(form);view.pickerEnabled(true);view.lblTrangThai.setText("Đang xem hóa đơn TESTHD01 · dữ liệu tổng hợp kiểm tra bố cục.");form.lblTrangThai.setText("Kiểm tra khoản thu và xác nhận đã nhận tiền thực tế trước khi lưu.");check(form.lblPhanBo.getText().contains("Khớp")&&form.lblNoSauThu.getText().contains("200.000"),"Allocation and remaining-debt preview exact");}
+            case INVOICE_CANCELLATIONS -> {var view=(CancellationPanel)panel;var request=new ThongTinYeuCauHuyHoaDon("TESTYC01","TESTHD01","TESTBN","[KIỂM THỬ] Nguyễn An",invoice().tongTien(),invoice().daThu(),"TESTACC",LocalDateTime.of(2026,10,31,11,0),"[KIỂM THỬ] Cần kiểm tra lại chứng từ",TrangThaiYeuCauHuyHoaDon.CHO_DUYET,null,null,null);view.showRows(List.of(request));select(view.tblYeuCau);view.showDetail(new ChiTietYeuCauHuy(request,detail()));view.buttons(false,true);view.lblTrangThai.setText("Hóa đơn đã có khoản thu: chặn duyệt hủy khi chưa có quy trình hoàn tiền.");}
             default -> throw new AssertionError(module);
         }
     }
     public static void main(String[] args)throws Exception{
         Files.createDirectories(OUTPUT);Path noConfig=OUTPUT.resolve("no-config");Files.createDirectories(noConfig);String previous=System.getProperty("user.dir");System.setProperty("user.dir",noConfig.toString());
         try{SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-            DesktopSession session=ServiceBillingSelfTest.session(Role.SYSTEM_ADMIN);MainFrame frame=null;
+            DesktopSession session=ServiceBillingSelfTest.session(VaiTroHeThong.SYSTEM_ADMIN);MainFrame frame=null;
             try{
                 check(!com.quanlynhakhoa.hatang.phattrien.TeamDevConnection.hasLocalConfig(),"Synthetic principal must never use real SQL config");
                 check(BillingUi.parseDate("31/10/2026").equals(LocalDate.of(2026,10,31)),"VN date parsing");try{BillingUi.parseDate("31/02/2026");throw new AssertionError("Impossible date accepted");}catch(IllegalArgumentException expected){checks++;}

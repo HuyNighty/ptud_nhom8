@@ -2,8 +2,8 @@ package com.quanlynhakhoa.nghiepvu.lichhen.dao;
 
 import com.quanlynhakhoa.nghiepvu.benhnhan.dao.BenhNhanDao;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.BacSi;
-import com.quanlynhakhoa.nghiepvu.lichhen.entity.LichHen;
+import com.quanlynhakhoa.model.lichhen.BacSiChonLichHen;
+import com.quanlynhakhoa.entity.LichHen;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -75,8 +75,8 @@ public class LichHenDao {
         return danhSachLichHen;
     }
 
-    public ArrayList<BacSi> layDanhSachBacSi() throws SQLException {
-        ArrayList<BacSi> danhSachBacSi = new ArrayList<>();
+    public ArrayList<BacSiChonLichHen> layDanhSachBacSi() throws SQLException {
+        ArrayList<BacSiChonLichHen> danhSachBacSi = new ArrayList<>();
         String sql = "SELECT maNhanVien, hoTen FROM dbo.NhanVien "
                 + "WHERE chucDanh = 'BS' AND trangThai = 'DANG_LAM_VIEC' "
                 + "ORDER BY hoTen";
@@ -84,7 +84,7 @@ public class LichHenDao {
              PreparedStatement cauLenh = BenhNhanDao.taoCauLenh(ketNoi, sql);
              ResultSet ketQua = cauLenh.executeQuery()) {
             while (ketQua.next()) {
-                danhSachBacSi.add(new BacSi(ketQua.getString(1), ketQua.getNString(2)));
+                danhSachBacSi.add(new BacSiChonLichHen(ketQua.getString(1), ketQua.getNString(2)));
             }
         }
         return danhSachBacSi;

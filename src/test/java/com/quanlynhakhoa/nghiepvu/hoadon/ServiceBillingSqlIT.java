@@ -1,14 +1,11 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
-
-
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.xacthuc.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.Invoice;
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.InvoiceService;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.io.Console;
@@ -29,7 +26,7 @@ public final class ServiceBillingSqlIT {
         if (console == null) throw new IllegalStateException("Run java in an interactive terminal for hidden password input.");
         String username = console.readLine("Swing username (CLINIC_MANAGER): ");
         char[] password = console.readPassword("Swing password: ");
-        AuthDecision decision;
+        KetQuaDangNhap decision;
         try {
             decision = new JdbcAuthService(TeamDevConnection::open, new LoginPolicy(new BCryptPasswordVerifier()), Clock.systemUTC())
                     .authenticate(username, new String(password));
@@ -39,21 +36,21 @@ public final class ServiceBillingSqlIT {
             ServiceCatalogService catalog = new ServiceCatalogService(session, TeamDevConnection::open);
             if (args[0].equals("--write")) {
                 if (!catalog.find(args[1], null).isEmpty()) throw new IllegalArgumentException("Test ID exists; choose a fresh ID. No automatic overwrite/retry.");
-                catalog.save(new DentalService(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", BigDecimal.ZERO, "Dữ liệu kiểm thử giữ lại, không xóa.", false, true), true);
+                catalog.save(new DichVuNhaKhoa(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", BigDecimal.ZERO, "Dữ liệu kiểm thử giữ lại, không xóa.", false, true), true);
                 verify(catalog, args[1], "0", true);
-                catalog.save(new DentalService(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", new BigDecimal("123456"), "Dữ liệu kiểm thử giữ lại, không xóa.", true, true), false);
+                catalog.save(new DichVuNhaKhoa(args[1], "[KIỂM THỬ M1] Dịch vụ tổng hợp", new BigDecimal("123456"), "Dữ liệu kiểm thử giữ lại, không xóa.", true, true), false);
                 verify(catalog, args[1], "123456", true);
                 catalog.changeActive(args[1], false); verify(catalog, args[1], "123456", false);
                 catalog.changeActive(args[1], true);
             }
             verify(catalog, args[1], "123456", true);
-            List<Invoice> invoices = new InvoiceService(session, TeamDevConnection::open).find("", null, null, null);
+            List<ThongTinHoaDon> invoices = new InvoiceService(session, TeamDevConnection::open).find("", null, null, null);
             System.out.println("PASS: real service read " + args[1] + "; billing read " + invoices.size() + " invoices (no patient details printed).");
             System.out.println("Run --read with this ID in a NEW process to verify restart persistence; UI still requires manual acceptance.");
         } finally { session.logout(); }
     }
     private static void verify(ServiceCatalogService service, String id, String price, boolean active) throws Exception {
-        for (DentalService value : service.find(id, null)) {
+        for (DichVuNhaKhoa value : service.find(id, null)) {
             if (value.maDichVu().equals(id) && value.donGia().compareTo(new BigDecimal(price)) == 0 && value.dangApDung() == active) return;
         }
         throw new AssertionError("Service readback failed");

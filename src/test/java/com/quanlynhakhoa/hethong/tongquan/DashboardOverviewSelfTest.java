@@ -4,8 +4,8 @@ package com.quanlynhakhoa.hethong.tongquan;
 
 
 import com.quanlynhakhoa.hethong.phanquyen.*;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.math.BigDecimal;
@@ -45,8 +45,8 @@ public final class DashboardOverviewSelfTest {
     private static void layout(java.awt.Container root){root.doLayout();for(java.awt.Component child:root.getComponents())if(child instanceof java.awt.Container nested)layout(nested);}
     public static void main(String[] args)throws Exception{
         System.setProperty("java.awt.headless","true");
-        for(Role role:Role.values()){
-            var session=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,"TEST",role,false));
+        for(VaiTroHeThong role:VaiTroHeThong.values()){
+            var session=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"TEST",role,false));
             List<String> queries=new ArrayList<>();DashboardService service=new DashboardService(session,()->connection(queries,false));
             var result=service.loadOverview();check(result.warnings().isEmpty(),"no synthetic failures");check(result.days().size()==7,"seven zero-filled days");
             for(var day:result.days()){
@@ -56,10 +56,10 @@ public final class DashboardOverviewSelfTest {
             check(queries.stream().anyMatch(q->q.contains("dbo.LoHang"))==service.can(Permission.INVENTORY_READ),"no unauthorized inventory query");
             check(queries.stream().anyMatch(q->q.contains("SELECT TOP (8) l.maLichHen"))==service.can(Permission.APPOINTMENT_READ),"no unauthorized appointment query");
             check(queries.stream().anyMatch(q->q.contains("GROUP BY CAST(thoiGian"))==service.can(Permission.REVENUE_REPORT_READ),"no unauthorized money trend query");
-            if(role==Role.DOCTOR)for(String sql:queries)if(sql.contains("dbo.PhieuKham"))check(sql.contains("maTaiKhoan=?"),"doctor aggregate scoped by account");
+            if(role==VaiTroHeThong.DOCTOR)for(String sql:queries)if(sql.contains("dbo.PhieuKham"))check(sql.contains("maTaiKhoan=?"),"doctor aggregate scoped by account");
             int before=queries.size();session.logout();boolean denied=false;try{service.loadOverview();}catch(AccessDeniedException expected){denied=true;}check(denied&&before==queries.size(),"logout rejects before SQL");
         }
-        var admin=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,"TEST",Role.SYSTEM_ADMIN,false));
+        var admin=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"TEST",VaiTroHeThong.SYSTEM_ADMIN,false));
         var partial=new DashboardService(admin,()->connection(new ArrayList<>(),true)).loadOverview();
         check(partial.warnings().contains("Chưa tải được cảnh báo kho"),"stock error reported");
         check(partial.work().size()==3&&partial.days().get(0).collected()!=null,"unrelated sections survive");

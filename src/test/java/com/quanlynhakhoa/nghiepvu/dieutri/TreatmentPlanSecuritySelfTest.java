@@ -2,8 +2,8 @@ package com.quanlynhakhoa.nghiepvu.dieutri;
 
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.nghiepvu.dieutri.service.TreatmentPlanService;
 import java.time.LocalDate;
 
@@ -11,8 +11,8 @@ import java.time.LocalDate;
 public final class TreatmentPlanSecuritySelfTest {
     private static int checks;
     @FunctionalInterface private interface Checked { void run() throws Exception; }
-    private static DesktopSession as(Role role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTH-TP", role, false));
+    private static DesktopSession as(VaiTroHeThong role) {
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTH-TP", role, false));
     }
     private static void denied(Checked operation, String label) throws Exception {
         boolean rejected = false;
@@ -22,9 +22,9 @@ public final class TreatmentPlanSecuritySelfTest {
         checks++;
     }
     public static void main(String[] args) throws Exception {
-        TreatmentPlanService admin = new TreatmentPlanService(as(Role.SYSTEM_ADMIN));
-        TreatmentPlanService receptionist = new TreatmentPlanService(as(Role.RECEPTIONIST));
-        TreatmentPlanService manager = new TreatmentPlanService(as(Role.CLINIC_MANAGER));
+        TreatmentPlanService admin = new TreatmentPlanService(as(VaiTroHeThong.SYSTEM_ADMIN));
+        TreatmentPlanService receptionist = new TreatmentPlanService(as(VaiTroHeThong.RECEPTIONIST));
+        TreatmentPlanService manager = new TreatmentPlanService(as(VaiTroHeThong.CLINIC_MANAGER));
         denied(() -> admin.taoKeHoach("KHDEMO01", "HSDEMO01", "PKDEMO01", LocalDate.now(), "Demo"), "Admin may not create plans without doctor identity");
         denied(() -> admin.themBuoc("KHDEMO01", "DVDEMO01", "16", LocalDate.now(), ""), "Admin may not add steps");
         denied(() -> admin.hoanThanhBuoc(1, LocalDate.now(), "Demo"), "Admin may not complete steps");

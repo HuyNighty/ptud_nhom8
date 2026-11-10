@@ -1,7 +1,9 @@
 package com.quanlynhakhoa.quantri.nhanvien;
 
-import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
+import com.quanlynhakhoa.model.nhanvien.DongDanhSachNhanVien;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -27,13 +29,9 @@ public final class EmployeeDirectoryDao {
             ORDER BY n.maNhanVien
             """;
 
-    public record Result(List<EmployeeDirectoryRow> rows, boolean truncated) {
-        public Result {
-            rows = List.copyOf(rows);
-        }
-    }
 
-    public Result search(Connection connection, String keyword, EmployeeStatus status) throws SQLException {
+
+    public KetQuaDanhSachNhanVien search(Connection connection, String keyword, TrangThaiNhanVien status) throws SQLException {
         Objects.requireNonNull(connection, "connection");
         Objects.requireNonNull(keyword, "keyword");
         try (PreparedStatement statement = connection.prepareStatement(SEARCH_SQL)) {
@@ -44,7 +42,7 @@ public final class EmployeeDirectoryDao {
             String statusName = status == null ? null : status.name();
             statement.setString(4, statusName);
             statement.setString(5, statusName);
-            List<EmployeeDirectoryRow> rows = new ArrayList<>();
+            List<DongDanhSachNhanVien> rows = new ArrayList<>();
             boolean truncated = false;
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
@@ -54,17 +52,17 @@ public final class EmployeeDirectoryDao {
                     }
                     Date joined = result.getDate("ngayVaoLam");
                     String accountRole = result.getString("vaiTro");
-                    rows.add(new EmployeeDirectoryRow(
+                    rows.add(new DongDanhSachNhanVien(
                             result.getString("maNhanVien"),
                             result.getNString("hoTen"),
                             result.getString("chucDanh"),
-                            EmployeeStatus.valueOf(result.getString("trangThai")),
+                            TrangThaiNhanVien.valueOf(result.getString("trangThai")),
                             joined == null ? null : joined.toLocalDate(),
                             result.getString("maTaiKhoan"),
-                            accountRole == null ? null : Role.valueOf(accountRole)));
+                            accountRole == null ? null : VaiTroHeThong.valueOf(accountRole)));
                 }
             }
-            return new Result(rows, truncated);
+            return new KetQuaDanhSachNhanVien(rows, truncated);
         }
     }
 }

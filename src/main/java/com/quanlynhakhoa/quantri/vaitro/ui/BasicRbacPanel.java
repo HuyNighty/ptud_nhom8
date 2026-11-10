@@ -1,10 +1,12 @@
 package com.quanlynhakhoa.quantri.vaitro.ui;
 
+import com.quanlynhakhoa.model.vaitro.DongVaiTro;
+import com.quanlynhakhoa.model.vaitro.DongQuyen;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
 import com.quanlynhakhoa.quantri.vaitro.catalog.BasicRbacService;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -56,7 +58,7 @@ public final class BasicRbacPanel extends JPanel {
         this.service = new BasicRbacService(session, TeamDevConnection::open);
         setLayout(new BorderLayout(0, 8));
         setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
-        boolean admin = session.isActive() && session.role() == Role.SYSTEM_ADMIN;
+        boolean admin = session.isActive() && session.role() == VaiTroHeThong.SYSTEM_ADMIN;
         JLabel explanation = new JLabel(admin
                 ? "Chỉ lưu catalog V9; chưa gán role mới cho tài khoản và chưa kích hoạt authorization động."
                 : "Chỉ SYSTEM_ADMIN được tạo vai trò và khai báo quyền trong MVP.");
@@ -148,17 +150,17 @@ public final class BasicRbacPanel extends JPanel {
         working = true;
         setEnabledActions(false);
         status.setText("Đang đọc danh mục quyền...");
-        new SwingWorker<List<BasicRbacService.PermissionRow>, Void>() {
-            @Override protected List<BasicRbacService.PermissionRow> doInBackground() throws Exception {
+        new SwingWorker<List<DongQuyen>, Void>() {
+            @Override protected List<DongQuyen> doInBackground() throws Exception {
                 return service.listPermissions();
             }
             @Override protected void done() {
                 working = false;
                 setEnabledActions(true);
                 try {
-                    List<BasicRbacService.PermissionRow> rows = get();
+                    List<DongQuyen> rows = get();
                     permissionModel.setRowCount(0);
-                    for (BasicRbacService.PermissionRow p : rows) permissionModel.addRow(new Object[]{
+                    for (DongQuyen p : rows) permissionModel.addRow(new Object[]{
                             p.code(), p.name(), p.builtIn() ? "Đã có trong ứng dụng" : "Chưa tích hợp nghiệp vụ"});
                     status.setText("Đã tải " + rows.size() + " quyền V9.");
                 } catch (Exception ex) { status.setText(safeFailure(ex)); }
@@ -188,17 +190,17 @@ public final class BasicRbacPanel extends JPanel {
         working = true;
         setEnabledActions(false);
         status.setText("Đang đọc vai trò...");
-        new SwingWorker<List<BasicRbacService.RoleRow>, Void>() {
-            @Override protected List<BasicRbacService.RoleRow> doInBackground() throws Exception {
+        new SwingWorker<List<DongVaiTro>, Void>() {
+            @Override protected List<DongVaiTro> doInBackground() throws Exception {
                 return service.listRoles();
             }
             @Override protected void done() {
                 working = false;
                 setEnabledActions(true);
                 try {
-                    List<BasicRbacService.RoleRow> rows = get();
+                    List<DongVaiTro> rows = get();
                     model.setRowCount(0);
-                    for (BasicRbacService.RoleRow r : rows) model.addRow(new Object[]{
+                    for (DongVaiTro r : rows) model.addRow(new Object[]{
                             r.code(), r.name(), r.system() ? "Hệ thống" : "Tùy chỉnh",
                             r.active() ? "Đang bật" : "Đã tắt"});
                     status.setText("Đã tải " + rows.size() + " vai trò V9.");
@@ -225,7 +227,7 @@ public final class BasicRbacPanel extends JPanel {
         }.execute();
     }
     private void setEnabledActions(boolean enabled) {
-        boolean admin = enabled && session.isActive() && session.role() == Role.SYSTEM_ADMIN;
+        boolean admin = enabled && session.isActive() && session.role() == VaiTroHeThong.SYSTEM_ADMIN;
         saveRole.setEnabled(admin);
         savePermission.setEnabled(admin);
         reload.setEnabled(admin);

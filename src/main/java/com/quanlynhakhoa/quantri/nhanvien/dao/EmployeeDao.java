@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.quantri.nhanvien.dao;
 
-import com.quanlynhakhoa.quantri.nhanvien.entity.Employee;
-import com.quanlynhakhoa.quantri.nhanvien.entity.EmployeeStatus;
+import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,7 +17,7 @@ public final class EmployeeDao {
             WHERE maNhanVien = ?
             """;
 
-    public Optional<Employee> findById(Connection connection, String employeeId)
+    public Optional<ThongTinNhanVien> findById(Connection connection, String employeeId)
             throws SQLException {
         if (connection == null) throw new IllegalArgumentException("connection required");
         if (employeeId == null || employeeId.isBlank()) return Optional.empty();
@@ -27,11 +27,11 @@ public final class EmployeeDao {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) return Optional.empty();
                 Date end = rs.getDate("ngayNghiViec");
-                return Optional.of(new Employee(
+                return Optional.of(new ThongTinNhanVien(
                         rs.getString("maNhanVien"),
                         rs.getString("hoTen"),
                         rs.getString("chucDanh"),
-                        EmployeeStatus.valueOf(rs.getString("trangThai")),
+                        TrangThaiNhanVien.valueOf(rs.getString("trangThai")),
                         end == null ? null : end.toLocalDate()
                 ));
             }

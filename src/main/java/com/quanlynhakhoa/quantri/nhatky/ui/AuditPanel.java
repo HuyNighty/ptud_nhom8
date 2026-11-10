@@ -1,8 +1,9 @@
 package com.quanlynhakhoa.quantri.nhatky.ui;
 
+import com.quanlynhakhoa.model.nhatky.KetQuaNhatKy;
 import com.quanlynhakhoa.quantri.nhatky.AuditDao;
-import com.quanlynhakhoa.quantri.nhatky.AuditEntry;
-import com.quanlynhakhoa.quantri.nhatky.AuditFilter;
+import com.quanlynhakhoa.model.nhatky.BanGhiNhatKy;
+import com.quanlynhakhoa.model.nhatky.BoLocNhatKy;
 import com.quanlynhakhoa.quantri.nhatky.AuditService;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
@@ -128,7 +129,7 @@ public final class AuditPanel extends JPanel implements RefreshableFeature {
             reloadPending = true;
             return;
         }
-        final AuditFilter filter;
+        final BoLocNhatKy filter;
         try {
             LocalDate start = parse(from.getText());
             LocalDate finish = parse(to.getText());
@@ -138,7 +139,7 @@ public final class AuditPanel extends JPanel implements RefreshableFeature {
                 case 3 -> "FAILED";
                 default -> null;
             };
-            filter = new AuditFilter(start, finish, keyword.getText(), selected);
+            filter = new BoLocNhatKy(start, finish, keyword.getText(), selected);
         } catch (IllegalArgumentException invalid) {
             status.setText("Bộ lọc không hợp lệ. Dùng yyyy-MM-dd và tối đa 80 ký tự tìm kiếm.");
             return;
@@ -146,8 +147,8 @@ public final class AuditPanel extends JPanel implements RefreshableFeature {
         loading = true;
         updateControls(true);
         status.setText("Đang tải nhật ký...");
-        new SwingWorker<AuditDao.Result, Void>() {
-            @Override protected AuditDao.Result doInBackground() throws Exception {
+        new SwingWorker<KetQuaNhatKy, Void>() {
+            @Override protected KetQuaNhatKy doInBackground() throws Exception {
                 return service.search(filter);
             }
 
@@ -155,7 +156,7 @@ public final class AuditPanel extends JPanel implements RefreshableFeature {
                 loading = false;
                 updateControls(false);
                 try {
-                    AuditDao.Result result = get();
+                    KetQuaNhatKy result = get();
                     if (!session.isActive()) {
                         model.setRows(List.of());
                         status.setText("Phiên đăng nhập đã kết thúc.");
@@ -199,8 +200,8 @@ public final class AuditPanel extends JPanel implements RefreshableFeature {
         private static final String[] COLUMNS = {
                 "Thời gian (VN)", "Mã nhật ký", "Tác nhân", "Tài khoản", "Chức năng",
                 "Hành động", "Kết quả", "Đối tượng", "Mã đối tượng"};
-        private List<AuditEntry> rows = List.of();
-        void setRows(List<AuditEntry> values) {
+        private List<BanGhiNhatKy> rows = List.of();
+        void setRows(List<BanGhiNhatKy> values) {
             rows = List.copyOf(values);
             fireTableDataChanged();
         }
@@ -208,7 +209,7 @@ public final class AuditPanel extends JPanel implements RefreshableFeature {
         @Override public int getColumnCount() { return COLUMNS.length; }
         @Override public String getColumnName(int column) { return COLUMNS[column]; }
         @Override public Object getValueAt(int row, int column) {
-            AuditEntry entry = rows.get(row);
+            BanGhiNhatKy entry = rows.get(row);
             return switch (column) {
                 case 0 -> DATE_TIME.format(entry.utcTime().atZone(ZoneOffset.UTC)
                         .withZoneSameInstant(VIETNAM));

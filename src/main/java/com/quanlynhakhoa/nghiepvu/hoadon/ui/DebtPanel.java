@@ -1,16 +1,11 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
-
-
-
-
-
-
-
-
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.model.hoadon.TongHopCongNoBenhNhan;
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.DebtController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.awt.*;
@@ -32,7 +27,7 @@ public final class DebtPanel extends JPanel implements RefreshableFeature {
     private boolean working,dataCurrent;private String detailId;private JDialog winDetails;
     private final boolean mayCollect;private final DebtController controller;private final DesktopSession session;
     private InvoicePanel.PaymentNavigation paymentNavigation;
-    private List<PatientDebt> patients=List.of();private List<Invoice> invoices=List.of();
+    private List<TongHopCongNoBenhNhan> patients=List.of();private List<ThongTinHoaDon> invoices=List.of();
     public DebtPanel(DesktopSession session,ConnectionProvider connections){
         this.session=session;new AuthorizationService(new RolePermissionPolicy()).require(session,Permission.BILLING_READ);mayCollect=new AuthorizationService(new RolePermissionPolicy()).can(session,Permission.BILLING_MANAGE);
         setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
@@ -53,16 +48,16 @@ public final class DebtPanel extends JPanel implements RefreshableFeature {
     @Override public void refreshData(){controller.load();}
     public void setPaymentNavigation(InvoicePanel.PaymentNavigation navigation){paymentNavigation=navigation;}
     public void paySelected(){String id=selectedInvoice();if(id==null){lblTrangThai.setText("Chọn hóa đơn còn nợ của bệnh nhân để thu.");return;}if(!session.isActive()||!mayCollect){lblTrangThai.setText("Không có quyền thu nợ.");return;}if(paymentNavigation==null){lblTrangThai.setText("Mở trang này từ menu Tổng kết để chuyển sang Thanh toán.");return;}paymentNavigation.open(id);}
-    public void showPatients(List<PatientDebt> values){
+    public void showPatients(List<TongHopCongNoBenhNhan> values){
         if(winDetails!=null)winDetails.dispose();detailId=null;lblHoaDonBenhNhan.setText("Hóa đơn còn nợ · chưa chọn bệnh nhân");patients=List.of();invoices=List.of();patientModel.setRowCount(0);invoiceModel.setRowCount(0);pnlDetails.clear();patients=List.copyOf(values);BigDecimal total=BigDecimal.ZERO;int count=0;
-        for(PatientDebt p:patients){patientModel.addRow(new Object[]{p.patientId(),p.name(),p.invoices().size(),p.total(),p.collected(),p.debt()});total=total.add(p.debt());count+=p.invoices().size();}lblTongCongNo.setText("Còn phải thu: "+BillingUi.vnd(total));lblTongCongNo.setToolTipText("Tổng công nợ ngày lập hóa đơn hiện tại");lblSoBenhNhan.setText("Bệnh nhân còn nợ: "+patients.size());lblSoHoaDon.setText("Hóa đơn còn nợ: "+count);dataCurrent=true;updateActions();
+        for(TongHopCongNoBenhNhan p:patients){patientModel.addRow(new Object[]{p.patientId(),p.name(),p.invoices().size(),p.total(),p.collected(),p.debt()});total=total.add(p.debt());count+=p.invoices().size();}lblTongCongNo.setText("Còn phải thu: "+BillingUi.vnd(total));lblTongCongNo.setToolTipText("Tổng công nợ ngày lập hóa đơn hiện tại");lblSoBenhNhan.setText("Bệnh nhân còn nợ: "+patients.size());lblSoHoaDon.setText("Hóa đơn còn nợ: "+count);dataCurrent=true;updateActions();
         BillingUi.tableState(tblBenhNhan,values.isEmpty()?"Không có khoản còn phải thu phù hợp.":"");BillingUi.tableState(tblHoaDon,"Chọn bệnh nhân để xem các hóa đơn còn nợ.");
     }
-    public void selectPatient(){if(winDetails!=null)winDetails.dispose();detailId=null;lblHoaDonBenhNhan.setText("Hóa đơn còn nợ · chưa chọn bệnh nhân");invoices=List.of();invoiceModel.setRowCount(0);pnlDetails.clear();updateActions();int row=tblBenhNhan.getSelectedRow();if(row<0)return;row=tblBenhNhan.convertRowIndexToModel(row);if(row>=patients.size())return;PatientDebt patient=patients.get(row);lblHoaDonBenhNhan.setText("Hóa đơn còn nợ · "+patient.patientId()+" — "+patient.name());lblHoaDonBenhNhan.setToolTipText(lblHoaDonBenhNhan.getText());invoices=patient.invoices();for(Invoice h:invoices)invoiceModel.addRow(new Object[]{h.maHoaDon(),h.ngayLap(),h.tongTien(),h.daThu(),h.conNo(),h.trangThai()});}
+    public void selectPatient(){if(winDetails!=null)winDetails.dispose();detailId=null;lblHoaDonBenhNhan.setText("Hóa đơn còn nợ · chưa chọn bệnh nhân");invoices=List.of();invoiceModel.setRowCount(0);pnlDetails.clear();updateActions();int row=tblBenhNhan.getSelectedRow();if(row<0)return;row=tblBenhNhan.convertRowIndexToModel(row);if(row>=patients.size())return;TongHopCongNoBenhNhan patient=patients.get(row);lblHoaDonBenhNhan.setText("Hóa đơn còn nợ · "+patient.patientId()+" — "+patient.name());lblHoaDonBenhNhan.setToolTipText(lblHoaDonBenhNhan.getText());invoices=patient.invoices();for(ThongTinHoaDon h:invoices)invoiceModel.addRow(new Object[]{h.maHoaDon(),h.ngayLap(),h.tongTien(),h.daThu(),h.conNo(),h.trangThai()});}
     public String selectedInvoice(){int row=tblHoaDon.getSelectedRow();if(row<0)return null;row=tblHoaDon.convertRowIndexToModel(row);return row<invoices.size()?invoices.get(row).maHoaDon():null;}
-    public void showDetail(InvoiceDetails detail){pnlDetails.showInvoice(detail);detailId=detail.hoaDon().maHoaDon();updateActions();}
+    public void showDetail(DuLieuChiTietHoaDon detail){pnlDetails.showInvoice(detail);detailId=detail.hoaDon().maHoaDon();updateActions();}
     private void openDetail(){if(working||detailId==null||!detailId.equals(selectedInvoice()))return;if(winDetails!=null)winDetails.dispose();winDetails=new JDialog(SwingUtilities.getWindowAncestor(this),"Chi tiết hóa đơn · "+detailId,Dialog.ModalityType.MODELESS);JPanel root=new JPanel(new BorderLayout());root.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));root.add(pnlDetails);BillingUi.style(root);winDetails.setContentPane(root);winDetails.setSize(980,520);winDetails.setLocationRelativeTo(this);winDetails.setVisible(true);}
-    private void updateActions(){boolean selected=dataCurrent&&selectedInvoice()!=null;boolean eligible=false;if(selected)for(Invoice h:invoices)if(h.maHoaDon().equals(selectedInvoice()))eligible=h.conNo().signum()>0&&h.trangThai()!=InvoiceStatus.DA_HUY&&h.canhBao().isEmpty();btnThuNo.setEnabled(!working&&mayCollect&&eligible);btnXemChiTiet.setEnabled(!working&&selected&&selectedInvoice().equals(detailId));}
+    private void updateActions(){boolean selected=dataCurrent&&selectedInvoice()!=null;boolean eligible=false;if(selected)for(ThongTinHoaDon h:invoices)if(h.maHoaDon().equals(selectedInvoice()))eligible=h.conNo().signum()>0&&h.trangThai()!=TrangThaiHoaDon.DA_HUY&&h.canhBao().isEmpty();btnThuNo.setEnabled(!working&&mayCollect&&eligible);btnXemChiTiet.setEnabled(!working&&selected&&selectedInvoice().equals(detailId));}
     public void busy(boolean busy){working=busy;for(Component control:new Component[]{txtTuKhoa,txtTuNgay,txtDenNgay,btnTim,btnTaiLai,tblBenhNhan,tblHoaDon})control.setEnabled(!busy);updateActions();}
     public void loading(){detailId=null;lblTrangThai.setText("Đang tải công nợ…");BillingUi.tableState(tblBenhNhan,"Đang tải công nợ…");}
     public void failed(String message){detailId=null;dataCurrent=false;lblTrangThai.setText(message);lblTongCongNo.setText("Còn phải thu: —");lblSoBenhNhan.setText("Bệnh nhân còn nợ: —");lblSoHoaDon.setText("Hóa đơn còn nợ: —");BillingUi.tableState(tblBenhNhan,"Chưa tải được công nợ. Bấm Làm mới để thử lại.");updateActions();}

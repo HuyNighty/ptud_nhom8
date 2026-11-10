@@ -1,9 +1,7 @@
 package com.quanlynhakhoa.quantri.baocao;
 
-
-
-
-
+import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
+import com.quanlynhakhoa.model.baocao.BaoCaoDoanhThu;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.SessionWorker;
@@ -116,15 +114,15 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
         try{start=LocalDate.parse(from.getText(),DATE);end=LocalDate.parse(to.getText(),DATE);RevenueReportService.validate(start,end);}
         catch(IllegalArgumentException|java.time.DateTimeException error){status.setText("Từ ngày phải trước hoặc bằng đến ngày.");return;}
         final boolean monthly=grouping.getSelectedIndex()==1;clear();setBusy(true);status.setText("Đang tổng hợp số liệu…");
-        new SessionWorker<RevenueReport>(session){
-            protected RevenueReport doInBackground()throws Exception{return service.load(start,end,monthly);}
+        new SessionWorker<BaoCaoDoanhThu>(session){
+            protected BaoCaoDoanhThu doInBackground()throws Exception{return service.load(start,end,monthly);}
             protected void finished(){setBusy(false);}
             protected void expired(){clear();setBusy(false);status.setText("Phiên đăng nhập đã kết thúc.");}
-            protected void succeeded(RevenueReport value){showReport(value);}
+            protected void succeeded(BaoCaoDoanhThu value){showReport(value);}
             protected void failed(Throwable failure){clear();setBusy(false);status.setText("Không tải được báo cáo. "+BillingUi.error(failure));}
         }.execute();
     }
-    public void showReport(RevenueReport value){
+    public void showReport(BaoCaoDoanhThu value){
         from.setText(DATE.format(value.from()));to.setText(DATE.format(value.to()));grouping.setSelectedIndex(value.monthly()?1:0);
         revenue.setText(BillingUi.vnd(value.revenue()));collected.setText(BillingUi.vnd(value.collected()));debt.setText(BillingUi.vnd(value.closingDebt()));invoices.setText(Integer.toString(value.invoices()));
         range.setText(DATE.format(value.from())+" – "+DATE.format(value.to()));model.setRowCount(0);
@@ -134,9 +132,9 @@ public final class RevenueReportPanel extends JPanel implements RefreshableFeatu
         chart.setRows(value.rows(),value.monthly());status.setText(value.invoices()==0&&value.collected().signum()==0?"Không phát sinh doanh thu hoặc khoản thu trong kỳ đã chọn.":" ");setBusy(false);
     }
     private static final class Chart extends JPanel {
-        private List<RevenueReport.Row> rows=List.of();private boolean monthly;
+        private List<DongBaoCaoDoanhThu> rows=List.of();private boolean monthly;
         Chart(){setBackground(Color.WHITE);setPreferredSize(new Dimension(800,240));}
-        void setRows(List<RevenueReport.Row> value,boolean monthly){this.rows=List.copyOf(value);this.monthly=monthly;repaint();}
+        void setRows(List<DongBaoCaoDoanhThu> value,boolean monthly){this.rows=List.copyOf(value);this.monthly=monthly;repaint();}
         @Override protected void paintComponent(Graphics graphics){
             super.paintComponent(graphics);Graphics2D g=(Graphics2D)graphics.create();
             try{

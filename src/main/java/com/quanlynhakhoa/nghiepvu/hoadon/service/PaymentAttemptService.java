@@ -1,11 +1,14 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThanhToanDangCho;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.sql.*;
 import java.util.*;
@@ -25,9 +28,9 @@ public final class PaymentAttemptService {
         try(PreparedStatement s=statement(c,"SELECT maLanThu,maHoaDon,maTaiKhoan,soTien,phuongThuc,maGiaoDich,tienKhachDua FROM dbo.LanThuHoaDon WHERE maHoaDon=? AND trangThai='CHO_XU_LY'")){
             s.setString(1,invoice);try(ResultSet r=s.executeQuery()){
                 if(!r.next())return null;
-                var method=ThongTinThanhToan.PhuongThuc.valueOf(r.getString("phuongThuc"));
+                var method=PhuongThucThanhToan.valueOf(r.getString("phuongThuc"));
                 var part=new PhanThanhToan(r.getString("maLanThu"),r.getBigDecimal("soTien"),method,r.getString("maGiaoDich"),r.getBigDecimal("tienKhachDua"));
-                return new ThanhToanDangCho(new YeuCauThanhToan(invoice,part.amount(),List.of(part),method==ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN),r.getString("maTaiKhoan"));
+                return new ThanhToanDangCho(new YeuCauThanhToan(invoice,part.amount(),List.of(part),method==PhuongThucThanhToan.CHUYEN_KHOAN),r.getString("maTaiKhoan"));
             }
         }
     }
@@ -51,8 +54,8 @@ public final class PaymentAttemptService {
                 if(recorded&&!PaymentService.matches(prior,request.invoiceId(),new InvoiceCreateDao().employee(c,session.accountId()),request.parts().getFirst()))
                     throw new IllegalArgumentException("Mã lần thu đã có giao dịch khác hoặc đã điều chỉnh.");
                 if(!recorded&&pending(c,request.invoiceId())!=null)throw new IllegalArgumentException("Hóa đơn đang có lần thu chờ đối soát trên máy khác. Bấm Kiểm tra để tải lần thu đó.");
-                Invoice invoice=new InvoiceDao().getForPayment(c,request.invoiceId());
-                if(!recorded&&(invoice==null||invoice.trangThai()==InvoiceStatus.DA_HUY||!invoice.canhBao().isEmpty()||request.amount().compareTo(invoice.conNo())>0))throw new IllegalArgumentException("Hóa đơn không còn đủ số nợ cho lần thu này.");
+                ThongTinHoaDon invoice=new InvoiceDao().getForPayment(c,request.invoiceId());
+                if(!recorded&&(invoice==null||invoice.trangThai()==TrangThaiHoaDon.DA_HUY||!invoice.canhBao().isEmpty()||request.amount().compareTo(invoice.conNo())>0))throw new IllegalArgumentException("Hóa đơn không còn đủ số nợ cho lần thu này.");
                 if(!recorded)new PaymentDao().requireNoPendingCancellation(c,request.invoiceId());
                 var part=request.parts().getFirst();
                 try(PreparedStatement s=statement(c,"INSERT INTO dbo.LanThuHoaDon(maLanThu,maHoaDon,maTaiKhoan,soTien,phuongThuc,maGiaoDich,tienKhachDua,trangThai) VALUES(?,?,?,?,?,?,?,?)")){
@@ -97,7 +100,7 @@ public final class PaymentAttemptService {
                 if(pending==null||!pending.request().parts().getFirst().id().equals(attempt))throw new IllegalArgumentException("Lần thu đã được xử lý.");
                 if(recorded!=null){
                     var part=pending.request().parts().getFirst();
-                    if(!invoice.equals(recorded.maHoaDon())||recorded.trangThai()!=ThongTinThanhToan.TrangThai.THANH_CONG||recorded.soTien().compareTo(part.amount())!=0||recorded.phuongThuc()!=part.method()||!Objects.equals(recorded.maGiaoDich(),part.reference())||!equal(recorded.tienKhachDua(),part.customerTender()))throw new IllegalArgumentException("Giao dịch không khớp lần thu; cần kiểm tra thủ công.");
+                    if(!invoice.equals(recorded.maHoaDon())||recorded.trangThai()!=TrangThaiThanhToan.THANH_CONG||recorded.soTien().compareTo(part.amount())!=0||recorded.phuongThuc()!=part.method()||!Objects.equals(recorded.maGiaoDich(),part.reference())||!equal(recorded.tienKhachDua(),part.customerTender()))throw new IllegalArgumentException("Giao dịch không khớp lần thu; cần kiểm tra thủ công.");
                 }
                 try(PreparedStatement s=statement(c,"UPDATE dbo.LanThuHoaDon SET trangThai=?,maTaiKhoanXuLy=?,lyDoXuLy=? WHERE maLanThu=? AND maHoaDon=? AND trangThai='CHO_XU_LY'")){
                     s.setString(1,recorded==null?"DA_HUY":"THANH_CONG");s.setString(2,session.accountId());s.setNString(3,reason.trim());s.setString(4,attempt);s.setString(5,invoice);if(s.executeUpdate()!=1)throw new IllegalArgumentException("Lần thu đã được xử lý.");

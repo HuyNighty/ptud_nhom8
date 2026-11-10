@@ -1,13 +1,12 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
-
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,14 +27,14 @@ public final class InvoiceMedicineSelfTest {
         var unpriced = new ThuocKeTinhTien("T2", "Thuốc chưa tính tiền", "Hộp", 3, null);
         check(priced.total().compareTo(new BigDecimal("50000")) == 0, "medicine line amount");
         check(unpriced.total() == null, "unknown price is not silently treated as free");
-        var invoice = new Invoice("H1", "NV1", "BN1", "Synthetic", "PK1", LocalDateTime.now(),
-                InvoiceStatus.CHUA_THANH_TOAN, new BigDecimal("350000"), BigDecimal.ZERO, new BigDecimal("350000"));
+        var invoice = new ThongTinHoaDon("H1", "NV1", "BN1", "Synthetic", "PK1", LocalDateTime.now(),
+                TrangThaiHoaDon.CHUA_THANH_TOAN, new BigDecimal("350000"), BigDecimal.ZERO, new BigDecimal("350000"));
         var lines = List.of(new DongChiTietHoaDon(1,"H1","DV1",null,null,1,new BigDecimal("300000")),
                 new DongChiTietHoaDon(2,"H1",null,"T1",null,2,new BigDecimal("25000")));
-        var detail = new InvoiceDetails(invoice, lines, List.of(), List.of(), List.of(priced,unpriced));
+        var detail = new DuLieuChiTietHoaDon(invoice, lines, List.of(), List.of(), List.of(priced,unpriced));
         SwingUtilities.invokeAndWait(() -> {
             try {
-                InvoicePanel panel = new InvoicePanel(session(Role.RECEPTIONIST), new FeatureJdbcDouble());
+                InvoicePanel panel = new InvoicePanel(session(VaiTroHeThong.RECEPTIONIST), new FeatureJdbcDouble());
                 panel.showDetail(detail);
                 var field = InvoicePanel.class.getDeclaredField("tblPrescribedMedicines");field.setAccessible(true);
                 JTable table = (JTable)field.get(panel);

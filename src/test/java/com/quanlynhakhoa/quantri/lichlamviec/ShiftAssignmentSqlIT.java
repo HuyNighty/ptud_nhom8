@@ -4,7 +4,7 @@ import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.quantri.lichlamviec.dao.PhanCongDao;
 import com.quanlynhakhoa.quantri.lichlamviec.service.PhanCongService;
 import com.quanlynhakhoa.quantri.lichlamviec.view.LichLamViecPanel;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.time.LocalDate;
@@ -22,7 +22,7 @@ public final class ShiftAssignmentSqlIT {
     public static void main(String[] args) throws Exception {
         if (args.length != 1 || !(args[0].equals("--read-only") || args[0].equals("--rollback-check"))
                 || !TeamDevConnection.hasLocalConfig()) throw new IllegalArgumentException("Local SQL test mode required");
-        var session = session(Role.CLINIC_MANAGER);
+        var session = session(VaiTroHeThong.CLINIC_MANAGER);
         var service = new PhanCongService(session, TeamDevConnection::open);
         LocalDate day = LocalDate.now();
         var data = service.management(day.minusDays(7), day.plusDays(7), "", null);
@@ -69,7 +69,7 @@ public final class ShiftAssignmentSqlIT {
                 }
                 LocalDate day = LocalDate.of(2026, 11, 20);
                 dao.lockEmployee(c, "TSTNV01", day, true);
-                var shift = new com.quanlynhakhoa.quantri.lichlamviec.entity.CaLamViec("TSTCATRY", "[KIỂM THỬ] Ca mới hoàn tác", java.time.LocalTime.of(8,0), java.time.LocalTime.of(12,0));
+                var shift = new com.quanlynhakhoa.entity.CaLamViec("TSTCATRY", "[KIỂM THỬ] Ca mới hoàn tác", java.time.LocalTime.of(8,0), java.time.LocalTime.of(12,0));
                 PhanCongService.checkAssignment(shift, dao.schedule(c, day, day, "TSTNV01"), dao.maximumPerDay(c));
                 dao.insertShift(c, shift);
                 dao.insert(c, id, "TSTNV01", shift.id(), day, "[KIỂM THỬ] Phân công sẽ hoàn tác");

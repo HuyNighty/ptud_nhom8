@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -32,7 +32,7 @@ public final class AccountCreateService {
     }
 
     public String create(String employeeId, String username, String displayName,
-                         Role role, char[] chosenPassword) throws SQLException {
+                         VaiTroHeThong role, char[] chosenPassword) throws SQLException {
         authorization.require(session, Permission.ACCOUNT_MANAGE);
         Objects.requireNonNull(chosenPassword, "chosenPassword");
         Objects.requireNonNull(role, "role");
@@ -48,7 +48,7 @@ public final class AccountCreateService {
         if (display.isEmpty() || display.length() > 100) {
             throw new IllegalArgumentException("Tên hiển thị phải có từ 1 đến 100 ký tự.");
         }
-        if (role == Role.SYSTEM_ADMIN) {
+        if (role == VaiTroHeThong.SYSTEM_ADMIN) {
             throw new IllegalArgumentException("Không được tạo SYSTEM_ADMIN qua giao diện.");
         }
         int passwordLength = new String(chosenPassword).getBytes(StandardCharsets.UTF_8).length;

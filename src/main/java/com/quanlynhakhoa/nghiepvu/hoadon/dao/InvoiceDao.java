@@ -1,9 +1,14 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
+import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,16 +40,16 @@ public class InvoiceDao {
             FROM WithDebt
             """;
 
-    public List<Invoice> find(Connection connection, String keyword, LocalDate from, LocalDate to,
-                             InvoiceStatus status) throws SQLException {
+    public List<ThongTinHoaDon> find(Connection connection, String keyword, LocalDate from, LocalDate to,
+                             TrangThaiHoaDon status) throws SQLException {
         return findPage(connection,keyword,from,to,status,0,0);
     }
-    public List<Invoice> findPage(Connection connection,String keyword,LocalDate from,LocalDate to,
-                                  InvoiceStatus status,int offset,int limit)throws SQLException {
+    public List<ThongTinHoaDon> findPage(Connection connection,String keyword,LocalDate from,LocalDate to,
+                                  TrangThaiHoaDon status,int offset,int limit)throws SQLException {
         return findPage(connection,keyword,from,to,status,offset,limit,false);
     }
-    public List<Invoice> findPage(Connection connection,String keyword,LocalDate from,LocalDate to,
-                                  InvoiceStatus status,int offset,int limit,boolean outstandingOnly)throws SQLException {
+    public List<ThongTinHoaDon> findPage(Connection connection,String keyword,LocalDate from,LocalDate to,
+                                  TrangThaiHoaDon status,int offset,int limit,boolean outstandingOnly)throws SQLException {
         if(offset<0||limit<0||limit>201)throw new IllegalArgumentException("Invalid page");
         String sql = LEDGER + """
                 WHERE (? = N'' OR CHARINDEX(?,maHoaDon)>0 OR CHARINDEX(?,maBenhNhan)>0 OR CHARINDEX(?,tenBenhNhan + N' ' + soDienThoai)>0)
@@ -63,24 +68,24 @@ public class InvoiceDao {
             statement.setString(9, status == null ? null : status.name());
             statement.setString(10, status == null ? null : status.name());
             if(limit>0){statement.setInt(11,offset);statement.setInt(12,limit);}
-            List<Invoice> result = new ArrayList<>();
+            List<ThongTinHoaDon> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) { while (rows.next()) result.add(map(rows)); }
             return List.copyOf(result);
         }
     }
 
-    public Invoice get(Connection connection, String id) throws SQLException {
+    public ThongTinHoaDon get(Connection connection, String id) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(LEDGER + " WHERE maHoaDon=?")) {
             statement.setQueryTimeout(15);
             statement.setString(1, id);
             try (ResultSet rows = statement.executeQuery()) { if(!rows.next())return null;
-                Invoice result=map(rows);
+                ThongTinHoaDon result=map(rows);
                 java.math.BigDecimal debt=patientDebt(connection,result.maBenhNhan());
-                return new Invoice(result.maHoaDon(),result.maNhanVien(),result.maBenhNhan(),result.tenBenhNhan(),result.maPhieuKham(),result.ngayLap(),result.trangThai(),result.tongTien(),result.daThu(),debt,result.cancellationStatus()); }
+                return new ThongTinHoaDon(result.maHoaDon(),result.maNhanVien(),result.maBenhNhan(),result.tenBenhNhan(),result.maPhieuKham(),result.ngayLap(),result.trangThai(),result.tongTien(),result.daThu(),debt,result.cancellationStatus()); }
         }
     }
     /** Targeted money snapshot under the caller's invoice lock; avoids scanning unrelated invoices while collecting. */
-    public Invoice getForPayment(Connection connection,String id)throws SQLException {
+    public ThongTinHoaDon getForPayment(Connection connection,String id)throws SQLException {
         try(PreparedStatement s=connection.prepareStatement("""
                 SELECT h.maHoaDon,h.maNhanVien,h.maBenhNhan,COALESCE(h.tenBenhNhanChot,b.hoTen) AS tenBenhNhan,h.maPhieuKham,h.ngayLap,h.trangThai,
                     COALESCE((SELECT SUM(CAST(d.soLuong AS decimal(10,0))*d.donGiaApDung)
@@ -159,8 +164,8 @@ public class InvoiceDao {
             try (ResultSet rows = statement.executeQuery()) {
                 while (rows.next()) result.add(new ThongTinThanhToan(rows.getString("maThanhToan"), rows.getString("maHoaDon"),
                         time(rows, "thoiGian"), rows.getBigDecimal("soTien"),
-                        ThongTinThanhToan.PhuongThuc.valueOf(rows.getString("phuongThuc")), rows.getString("maGiaoDich"),
-                        rows.getBigDecimal("tienKhachDua"), ThongTinThanhToan.TrangThai.valueOf(rows.getString("trangThai")),
+                        PhuongThucThanhToan.valueOf(rows.getString("phuongThuc")), rows.getString("maGiaoDich"),
+                        rows.getBigDecimal("tienKhachDua"), TrangThaiThanhToan.valueOf(rows.getString("trangThai")),
                         rows.getString("maNhanVien"), rows.getString("maTaiKhoanHuy"), time(rows, "thoiGianHuy"),
                         rows.getNString("lyDoHuy")));
             }
@@ -168,13 +173,13 @@ public class InvoiceDao {
         }
     }
 
-    private static Invoice map(ResultSet rows) throws SQLException {
-        return new Invoice(rows.getString("maHoaDon"), rows.getString("maNhanVien"), rows.getString("maBenhNhan"),
+    private static ThongTinHoaDon map(ResultSet rows) throws SQLException {
+        return new ThongTinHoaDon(rows.getString("maHoaDon"), rows.getString("maNhanVien"), rows.getString("maBenhNhan"),
                 rows.getNString("tenBenhNhan"), rows.getString("maPhieuKham"), time(rows, "ngayLap"),
-                InvoiceStatus.valueOf(rows.getString("trangThai")), rows.getBigDecimal("tongTien"),
+                TrangThaiHoaDon.valueOf(rows.getString("trangThai")), rows.getBigDecimal("tongTien"),
                 rows.getBigDecimal("daThu"), rows.getBigDecimal("congNoBenhNhan"),
                 rows.getString("cancellationStatus") == null ? null
-                        : InvoiceCancellationRequest.TrangThai.valueOf(rows.getString("cancellationStatus")));
+                        : TrangThaiYeuCauHuyHoaDon.valueOf(rows.getString("cancellationStatus")));
     }
     private static LocalDateTime time(ResultSet rows, String column) throws SQLException {
         Timestamp value = rows.getTimestamp(column);

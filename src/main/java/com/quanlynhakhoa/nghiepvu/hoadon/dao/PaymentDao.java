@@ -1,8 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
+import com.quanlynhakhoa.enums.TrangThaiThanhToan;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.sql.*;
 import java.util.List;
 
@@ -35,8 +37,8 @@ public class PaymentDao {
                 if(!r.next())return null;
                 Timestamp cancelled=r.getTimestamp("thoiGianHuy");
                 return new ThongTinThanhToan(r.getString("maThanhToan"),r.getString("maHoaDon"),r.getTimestamp("thoiGian").toLocalDateTime(),
-                        r.getBigDecimal("soTien"),ThongTinThanhToan.PhuongThuc.valueOf(r.getString("phuongThuc")),r.getString("maGiaoDich"),r.getBigDecimal("tienKhachDua"),
-                        ThongTinThanhToan.TrangThai.valueOf(r.getString("trangThai")),r.getString("maNhanVien"),r.getString("maTaiKhoanHuy"),
+                        r.getBigDecimal("soTien"),PhuongThucThanhToan.valueOf(r.getString("phuongThuc")),r.getString("maGiaoDich"),r.getBigDecimal("tienKhachDua"),
+                        TrangThaiThanhToan.valueOf(r.getString("trangThai")),r.getString("maNhanVien"),r.getString("maTaiKhoanHuy"),
                         cancelled==null?null:cancelled.toLocalDateTime(),r.getNString("lyDoHuy"));
             }
         }
@@ -68,7 +70,7 @@ public class PaymentDao {
             s.setString(7,employee);one(s.executeUpdate());
         }
     }
-    public void updateStatus(Connection c,String id,InvoiceStatus status)throws SQLException {
+    public void updateStatus(Connection c,String id,TrangThaiHoaDon status)throws SQLException {
         try(PreparedStatement s=c.prepareStatement("UPDATE dbo.HoaDon SET trangThai=? WHERE maHoaDon=? AND trangThai<>'DA_HUY'")) {
             s.setQueryTimeout(15);s.setString(1,status.name());s.setString(2,id);one(s.executeUpdate());
         }

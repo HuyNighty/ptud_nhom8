@@ -2,7 +2,6 @@ package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

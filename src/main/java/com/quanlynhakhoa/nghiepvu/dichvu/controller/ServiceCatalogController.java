@@ -2,7 +2,7 @@ package com.quanlynhakhoa.nghiepvu.dichvu.controller;
 
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.SessionWorker;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.BillingUi;
-import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
+import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.nghiepvu.dichvu.service.ServiceCatalogService;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -46,11 +46,11 @@ public final class ServiceCatalogController {
         final String keyword = view.keyword(); final Boolean active = view.activeFilter();
         view.setBusy(true);
         view.status(afterSave ? "Đã lưu thành công. Đang tải lại..." : "Đang đọc database...");
-        new SessionWorker<List<DentalService>>(session) {
-            protected List<DentalService> doInBackground() throws Exception { return service.find(keyword, active); }
+        new SessionWorker<List<DichVuNhaKhoa>>(session) {
+            protected List<DichVuNhaKhoa> doInBackground() throws Exception { return service.find(keyword, active); }
             protected void finished() { busy = false; view.setBusy(false); }
             protected void expired() { view.expired(); }
-            protected void succeeded(List<DentalService> values) {
+            protected void succeeded(List<DichVuNhaKhoa> values) {
                 view.showRows(values);
                 view.selectService(selectedId);
                 view.status((afterSave ? "Đã lưu và tải lại. Dịch vụ " + selectedId + ". Đã bỏ bộ lọc. " : "") + (values.isEmpty() ? keyword.isBlank()&&active==null?"Chưa có dịch vụ. Bấm Thêm mới để bắt đầu.":"Không tìm thấy dịch vụ phù hợp." : values.size() + " dịch vụ."));
@@ -76,7 +76,7 @@ public final class ServiceCatalogController {
         if (busy) return;
         if (!session.isActive()) { view.expired(); return; }
         final boolean creating = view.creating();
-        final DentalService value;
+        final DichVuNhaKhoa value;
         try {
             if (activeOnly != null) {
                 if (view.selected() == null) return;
@@ -98,7 +98,7 @@ public final class ServiceCatalogController {
             protected void expired() { view.expired(); }
             protected void succeeded(Void ignored) { saved(); }
             private void saved() {
-                view.showForm(new DentalService(value.maDichVu(), value.tenDichVu(), value.donGia(), value.moTa(),
+                view.showForm(new DichVuNhaKhoa(value.maDichVu(), value.tenDichVu(), value.donGia(), value.moTa(),
                         value.laCanLamSang(), activeOnly == null ? value.dangApDung() : activeOnly));
                 load(true);
                 com.quanlynhakhoa.nghiepvu.hoadon.controller.BillingChangeBus.forSession(session).publish();

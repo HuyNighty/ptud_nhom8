@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
@@ -63,7 +64,7 @@ public final class PendingPaymentStore {
                 String prefix = "part." + i + ".";
                 String tender = data.getProperty(prefix + "tender");
                 parts.add(new PhanThanhToan(data.getProperty(prefix + "id"), new BigDecimal(data.getProperty(prefix + "amount")),
-                        ThongTinThanhToan.PhuongThuc.valueOf(data.getProperty(prefix + "method")), data.getProperty(prefix + "reference"),
+                        PhuongThucThanhToan.valueOf(data.getProperty(prefix + "method")), data.getProperty(prefix + "reference"),
                         tender == null ? null : new BigDecimal(tender)));
             }
             YeuCauThanhToan request=new YeuCauThanhToan(invoice, new BigDecimal(data.getProperty("amount")), parts, Boolean.parseBoolean(data.getProperty("confirmed")));

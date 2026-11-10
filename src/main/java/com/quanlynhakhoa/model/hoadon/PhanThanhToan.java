@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.model.hoadon;
 
+import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import java.math.BigDecimal;
 
 
@@ -7,11 +8,11 @@ import java.math.BigDecimal;
 public final class PhanThanhToan {
     private final String id;
     private final BigDecimal amount;
-    private final ThongTinThanhToan.PhuongThuc method;
+    private final PhuongThucThanhToan method;
     private final String reference;
     private final BigDecimal customerTender;
 
-    public PhanThanhToan(String id, BigDecimal amount, ThongTinThanhToan.PhuongThuc method, String reference, BigDecimal customerTender) {
+    public PhanThanhToan(String id, BigDecimal amount, PhuongThucThanhToan method, String reference, BigDecimal customerTender) {
         this.id = id;
         this.amount = amount;
         this.method = method;
@@ -21,7 +22,7 @@ public final class PhanThanhToan {
 
     public String id() { return id; }
     public BigDecimal amount() { return amount; }
-    public ThongTinThanhToan.PhuongThuc method() { return method; }
+    public PhuongThucThanhToan method() { return method; }
     public String reference() { return reference; }
     public BigDecimal customerTender() { return customerTender; }
 

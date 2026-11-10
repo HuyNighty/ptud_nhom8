@@ -1,14 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
-
-
-
-
-
-
-
-
-
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.xacthuc.*;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.nghiepvu.dichvu.ui.ServiceCatalogPanel;
@@ -48,8 +40,8 @@ public final class ServiceBillingLauncher {
                 final String username = txtUsername.getText().trim(); final char[] password = txtPassword.getPassword();
                 txtPassword.setText(""); btnLogin.setEnabled(false); txtUsername.setEnabled(false); txtPassword.setEnabled(false);
                 lblStatus.setText("Đang xác thực...");
-                new SwingWorker<AuthDecision, Void>() {
-                    protected AuthDecision doInBackground() throws Exception {
+                new SwingWorker<KetQuaDangNhap, Void>() {
+                    protected KetQuaDangNhap doInBackground() throws Exception {
                         try {
                             return new JdbcAuthService(TeamDevConnection::open, new LoginPolicy(new BCryptPasswordVerifier()),
                                     Clock.systemUTC()).authenticate(username, new String(password));
@@ -58,7 +50,7 @@ public final class ServiceBillingLauncher {
                     protected void done() {
                         btnLogin.setEnabled(true); txtUsername.setEnabled(true); txtPassword.setEnabled(true);
                         try {
-                            AuthDecision decision = get();
+                            KetQuaDangNhap decision = get();
                             if (!winLogin.isDisplayable()) return;
                             if (!DesktopLoginGate.mayOpenMain(decision)) {
                                 lblStatus.setText(decision.forcePasswordChange() ? "Cần đổi mật khẩu qua Core trước khi đăng nhập." : "Đăng nhập bị từ chối.");

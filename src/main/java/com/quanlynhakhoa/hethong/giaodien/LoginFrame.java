@@ -1,10 +1,9 @@
 package com.quanlynhakhoa.hethong.giaodien;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.xacthuc.DesktopLoginGate;
 import com.quanlynhakhoa.hethong.xacthuc.JdbcAuthService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -276,8 +275,8 @@ public final class LoginFrame extends JFrame {
         chkShowPassword.setEnabled(false);
         lblStatus.setText("Đang xác thực...");
 
-        new SwingWorker<AuthDecision, Void>() {
-            @Override protected AuthDecision doInBackground() throws Exception {
+        new SwingWorker<KetQuaDangNhap, Void>() {
+            @Override protected KetQuaDangNhap doInBackground() throws Exception {
                 try {
                     // API currently accepts String. A short-lived immutable copy is unavoidable.
                     return auth.authenticate(username, new String(chars));
@@ -293,7 +292,7 @@ public final class LoginFrame extends JFrame {
                 txtPassword.setEnabled(true);
                 chkShowPassword.setEnabled(true);
                 try {
-                    AuthDecision decision = get();
+                    KetQuaDangNhap decision = get();
                     if (DesktopLoginGate.mayOpenMain(decision)) {
                         DesktopSession session = DesktopSession.fromSuccessfulLogin(decision);
                         auth.bindSession(session);

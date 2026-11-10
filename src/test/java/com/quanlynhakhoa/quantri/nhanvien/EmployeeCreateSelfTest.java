@@ -1,7 +1,8 @@
 package com.quanlynhakhoa.quantri.nhanvien;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.InvocationHandler;
@@ -34,18 +35,18 @@ public final class EmployeeCreateSelfTest {
         }
     }
 
-    private static DesktopSession session(Role role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "SYNTHETIC", role, false));
+    private static DesktopSession session(VaiTroHeThong role) {
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "SYNTHETIC", role, false));
     }
 
-    private static EmployeeCreateRequest good() {
-        return new EmployeeCreateRequest(" testbs01 ", " Bác sĩ Thử Nghiệm ", "0912345678", "bs",
+    private static YeuCauTaoNhanVien good() {
+        return new YeuCauTaoNhanVien(" testbs01 ", " Bác sĩ Thử Nghiệm ", "0912345678", "bs",
                 LocalDate.of(1999, 4, 5), "NAM", "doctor@example.test", LocalDate.now(), "Nha tổng quát");
     }
 
-    private static EmployeeCreateRequest change(String id, String phone, String job) {
-        EmployeeCreateRequest src = good();
-        return new EmployeeCreateRequest(id, src.fullName(), phone, job, src.birthDate(), src.gender(),
+    private static YeuCauTaoNhanVien change(String id, String phone, String job) {
+        YeuCauTaoNhanVien src = good();
+        return new YeuCauTaoNhanVien(id, src.fullName(), phone, job, src.birthDate(), src.gender(),
                 src.email(), src.joinedAt(), src.specialty());
     }
 
@@ -101,7 +102,7 @@ public final class EmployeeCreateSelfTest {
     }
 
     public static void main(String[] args) throws Exception {
-        EmployeeCreateRequest normalized = EmployeeCreateService.validate(good());
+        YeuCauTaoNhanVien normalized = EmployeeCreateService.validate(good());
         check("TESTBS01".equals(normalized.employeeId()), "normalized ID");
         check("BS".equals(normalized.jobTitle()), "normalized job title");
         check("Bác sĩ Thử Nghiệm".equals(normalized.fullName()), "trimmed name");
@@ -110,15 +111,15 @@ public final class EmployeeCreateSelfTest {
         rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(change("TESTBS01", "12", "BS")));
         rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(change("TESTBS01", "0912345678", "AD")));
         rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(change("TESTBS01", "0912345678", "WRONG")));
-        rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(new EmployeeCreateRequest(
+        rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(new YeuCauTaoNhanVien(
                 "TESTBS01", "", "0912345678", "BS", null, null, null, null, null)));
-        rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(new EmployeeCreateRequest(
+        rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(new YeuCauTaoNhanVien(
                 "TESTBS01", "Doctor", "0912345678", "BS", LocalDate.now().plusDays(1), null, null, null, null)));
-        rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(new EmployeeCreateRequest(
+        rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(new YeuCauTaoNhanVien(
                 "TESTBS01", "Doctor", "0912345678", "BS", null, null, "not-an-email", null, null)));
-        rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(new EmployeeCreateRequest(
+        rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(new YeuCauTaoNhanVien(
                 "TESTBS01", "Doctor", "0912345678", "BS", null, "X", null, null, null)));
-        rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(new EmployeeCreateRequest(
+        rejects(IllegalArgumentException.class, () -> EmployeeCreateService.validate(new YeuCauTaoNhanVien(
                 "TESTBS01", "Doctor", "0912345678", "BS", null, null, null, LocalDate.now().plusDays(1), null)));
 
         AtomicInteger deniedConnections = new AtomicInteger();
@@ -126,16 +127,16 @@ public final class EmployeeCreateSelfTest {
             deniedConnections.incrementAndGet();
             throw new SQLException("Should not connect");
         };
-        rejects(AccessDeniedException.class, () -> new EmployeeCreateService(session(Role.RECEPTIONIST), forbidden).create(good()));
-        rejects(AccessDeniedException.class, () -> new EmployeeCreateService(session(Role.DOCTOR), forbidden).create(good()));
+        rejects(AccessDeniedException.class, () -> new EmployeeCreateService(session(VaiTroHeThong.RECEPTIONIST), forbidden).create(good()));
+        rejects(AccessDeniedException.class, () -> new EmployeeCreateService(session(VaiTroHeThong.DOCTOR), forbidden).create(good()));
         check(deniedConnections.get() == 0, "RBAC checked before JDBC connection");
-        DesktopSession closed = session(Role.CLINIC_MANAGER);
+        DesktopSession closed = session(VaiTroHeThong.CLINIC_MANAGER);
         closed.logout();
         rejects(AccessDeniedException.class, () -> new EmployeeCreateService(closed, forbidden).create(good()));
         check(deniedConnections.get() == 0, "Logged out user cannot connect");
 
         SimulatedDb success = new SimulatedDb();
-        String id = new EmployeeCreateService(session(Role.CLINIC_MANAGER), success::open).create(good());
+        String id = new EmployeeCreateService(session(VaiTroHeThong.CLINIC_MANAGER), success::open).create(good());
         check("TESTBS01".equals(id), "manager created ID");
         check(success.opens == 1 && success.checks == 1, "one connection and duplicate preflight");
         check(success.inserts == 1 && success.audits == 1 && success.commits == 1, "employee and audit committed together");
@@ -143,13 +144,13 @@ public final class EmployeeCreateSelfTest {
 
         SimulatedDb duplicate = new SimulatedDb();
         duplicate.duplicate = true;
-        rejects(IllegalArgumentException.class, () -> new EmployeeCreateService(session(Role.SYSTEM_ADMIN), duplicate::open).create(good()));
+        rejects(IllegalArgumentException.class, () -> new EmployeeCreateService(session(VaiTroHeThong.SYSTEM_ADMIN), duplicate::open).create(good()));
         check(duplicate.inserts == 0 && duplicate.audits == 0, "duplicate never writes");
         check(duplicate.rollbacks == 1 && duplicate.commits == 0, "duplicate rolls back");
 
         SimulatedDb auditFailure = new SimulatedDb();
         auditFailure.failAudit = true;
-        rejects(SQLException.class, () -> new EmployeeCreateService(session(Role.SYSTEM_ADMIN), auditFailure::open).create(good()));
+        rejects(SQLException.class, () -> new EmployeeCreateService(session(VaiTroHeThong.SYSTEM_ADMIN), auditFailure::open).create(good()));
         check(auditFailure.inserts == 1 && auditFailure.audits == 1, "audit failure follows insert");
         check(auditFailure.rollbacks == 1 && auditFailure.commits == 0, "audit failure rolls back transaction");
 

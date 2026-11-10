@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.model.hoadon.XemTruocHuyHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.CancellationService;
 import java.awt.*;
 import javax.swing.*;
@@ -15,7 +16,7 @@ public final class CancellationRequestDialog extends JDialog {
         JPanel pnlBottom=new JPanel(new BorderLayout(0,8));JPanel pnlActions=new JPanel(new FlowLayout(FlowLayout.RIGHT));pnlActions.add(btnTaiLai);pnlActions.add(btnGuiYeuCau);pnlBottom.add(pnlActions,BorderLayout.NORTH);pnlBottom.add(lblTrangThai,BorderLayout.SOUTH);pnlRoot.add(pnlBottom,BorderLayout.SOUTH);
         BillingUi.style(pnlRoot);setContentPane(pnlRoot);setSize(1000,330);setLocationRelativeTo(owner);setDefaultCloseOperation(DISPOSE_ON_CLOSE);btnGuiYeuCau.setEnabled(false);
     }
-    public void showPreview(CancellationService.Preview preview){
+    public void showPreview(XemTruocHuyHoaDon preview){
         var h=preview.invoice().hoaDon();lblHoaDon.setText(h.maHoaDon()+" · "+h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Tổng "+BillingUi.vnd(h.tongTien())+" · Đã thu "+BillingUi.vnd(h.daThu())+" · Còn nợ "+BillingUi.vnd(h.conNo()));
         lblTrangThai.setText(preview.pending()?"Hóa đơn đã có yêu cầu chờ duyệt, không gửi thêm.":h.daThu().signum()>0?"Hóa đơn đã có khoản thu; không thể gửi yêu cầu hủy khi chưa hỗ trợ hoàn tiền.":"Gửi yêu cầu chưa hủy hóa đơn; chờ người khác có quyền xét duyệt.");
     }

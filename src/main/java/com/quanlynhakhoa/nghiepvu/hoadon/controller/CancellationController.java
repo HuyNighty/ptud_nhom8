@@ -1,10 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
-
-
-
-
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
+import com.quanlynhakhoa.enums.TrangThaiHoaDon;
+import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
+import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.CancellationService;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
@@ -17,7 +16,7 @@ import javax.swing.event.*;
 
 public final class CancellationController {
     private final CancellationPanel view;private final DesktopSession session;private final CancellationService service;
-    private boolean busy,reloadPending;private CancellationService.Detail selected;private String writeMessage="";
+    private boolean busy,reloadPending;private ChiTietYeuCauHuy selected;private String writeMessage="";
     private final Runnable invalidated;
     public CancellationController(CancellationPanel view,DesktopSession session,CancellationService service){
         this.view=view;this.session=session;this.service=service;
@@ -32,7 +31,7 @@ public final class CancellationController {
         invalidated=new Runnable(){public void run(){load();}};BillingChangeBus.forSession(session).subscribe(invalidated);
     }
     private boolean start(){if(busy)return false;if(!session.isActive()){view.expired();return false;}busy=true;view.busy(true);return true;}
-    private boolean mayReject(){return selected!=null&&selected.request().trangThai()==InvoiceCancellationRequest.TrangThai.CHO_DUYET&&!session.accountId().equals(selected.request().maTaiKhoanTao())&&selected.invoice().hoaDon().trangThai()!=InvoiceStatus.DA_HUY;}
+    private boolean mayReject(){return selected!=null&&selected.request().trangThai()==TrangThaiYeuCauHuyHoaDon.CHO_DUYET&&!session.accountId().equals(selected.request().maTaiKhoanTao())&&selected.invoice().hoaDon().trangThai()!=TrangThaiHoaDon.DA_HUY;}
     private void buttons(){view.buttons(mayReject()&&selected.invoice().hoaDon().daThu().signum()==0,mayReject());}
     private abstract class Task<T> extends SessionWorker<T>{
         Task(){super(CancellationController.this.session);}
@@ -43,20 +42,20 @@ public final class CancellationController {
     public void load(){
         if(busy){reloadPending=true;return;}final String keyword=view.txtTuKhoa.getText();final LocalDate from,to;
         try{from=date(view.txtTuNgay.getText());to=date(view.txtDenNgay.getText());}catch(IllegalArgumentException e){view.lblTrangThai.setText(e.getMessage());return;}
-        final InvoiceCancellationRequest.TrangThai status=view.cmbTrangThai.getSelectedItem() instanceof InvoiceCancellationRequest.TrangThai value?value:null;
+        final TrangThaiYeuCauHuyHoaDon status=view.cmbTrangThai.getSelectedItem() instanceof TrangThaiYeuCauHuyHoaDon value?value:null;
         if(!start())return;selected=null;view.clearDetail();view.lblTrangThai.setText("Đang tải yêu cầu hủy…");view.tableStatus("Đang tải yêu cầu hủy…");
-        new Task<List<InvoiceCancellationRequest>>(){
-            protected List<InvoiceCancellationRequest> doInBackground()throws Exception{return service.find(keyword,from,to,status);}
-            protected void succeeded(List<InvoiceCancellationRequest> rows){busy=true;view.showRows(rows);busy=false;view.tableStatus(rows.isEmpty()?"Không có yêu cầu hủy phù hợp.":"");view.lblTrangThai.setText(writeMessage+(rows.isEmpty()?"Lọc theo ngày gửi và trạng thái yêu cầu.":rows.size()+" yêu cầu."));writeMessage="";if(reloadPending){reloadPending=false;load();}}
+        new Task<List<ThongTinYeuCauHuyHoaDon>>(){
+            protected List<ThongTinYeuCauHuyHoaDon> doInBackground()throws Exception{return service.find(keyword,from,to,status);}
+            protected void succeeded(List<ThongTinYeuCauHuyHoaDon> rows){busy=true;view.showRows(rows);busy=false;view.tableStatus(rows.isEmpty()?"Không có yêu cầu hủy phù hợp.":"");view.lblTrangThai.setText(writeMessage+(rows.isEmpty()?"Lọc theo ngày gửi và trạng thái yêu cầu.":rows.size()+" yêu cầu."));writeMessage="";if(reloadPending){reloadPending=false;load();}}
         }.execute();
     }
     private void detail(){
         selected=null;view.clearDetail();final String id=view.selectedId();if(id==null||!start())return;
-        new Task<CancellationService.Detail>(){
-            protected CancellationService.Detail doInBackground()throws Exception{return service.detail(id);}
-            protected void succeeded(CancellationService.Detail result){
+        new Task<ChiTietYeuCauHuy>(){
+            protected ChiTietYeuCauHuy doInBackground()throws Exception{return service.detail(id);}
+            protected void succeeded(ChiTietYeuCauHuy result){
                 if(!id.equals(view.selectedId())){detail();return;}selected=result;view.showDetail(result);buttons();
-                view.lblTrangThai.setText(result.request().trangThai()!=InvoiceCancellationRequest.TrangThai.CHO_DUYET?"Yêu cầu đã được xử lý, chỉ xem lịch sử.":session.accountId().equals(result.request().maTaiKhoanTao())?"Không được tự xét duyệt yêu cầu của mình.":result.invoice().hoaDon().daThu().signum()>0?"Chặn duyệt hủy: có khoản thu hợp lệ, chưa có quy trình hoàn tiền. Có thể từ chối và ghi lý do.":"Kiểm tra thông tin và lịch sử thu trước khi quyết định.");
+                view.lblTrangThai.setText(result.request().trangThai()!=TrangThaiYeuCauHuyHoaDon.CHO_DUYET?"Yêu cầu đã được xử lý, chỉ xem lịch sử.":session.accountId().equals(result.request().maTaiKhoanTao())?"Không được tự xét duyệt yêu cầu của mình.":result.invoice().hoaDon().daThu().signum()>0?"Chặn duyệt hủy: có khoản thu hợp lệ, chưa có quy trình hoàn tiền. Có thể từ chối và ghi lý do.":"Kiểm tra thông tin và lịch sử thu trước khi quyết định.");
                 if(reloadPending){reloadPending=false;load();}
             }
         }.execute();

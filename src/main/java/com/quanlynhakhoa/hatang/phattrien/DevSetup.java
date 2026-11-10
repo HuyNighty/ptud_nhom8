@@ -1,10 +1,10 @@
 package com.quanlynhakhoa.hatang.phattrien;
 
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.hethong.xacthuc.BCryptPasswordVerifier;
 import com.quanlynhakhoa.hethong.xacthuc.JdbcAuthService;
 import com.quanlynhakhoa.hethong.xacthuc.LoginPolicy;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -171,9 +171,9 @@ public final class DevSetup {
             JdbcAuthService auth = new JdbcAuthService(
                     () -> DriverManager.getConnection(devUrl, sqlUser, sqlPassword),
                     new LoginPolicy(new BCryptPasswordVerifier()), Clock.systemUTC());
-            AuthDecision decision = auth.authenticate(APP_USERNAME, appPassword);
+            KetQuaDangNhap decision = auth.authenticate(APP_USERNAME, appPassword);
             if (!decision.authenticated() || decision.forcePasswordChange()
-                    || decision.role() != Role.SYSTEM_ADMIN) {
+                    || decision.role() != VaiTroHeThong.SYSTEM_ADMIN) {
                 throw new IllegalStateException("Synthetic login verification did not pass");
             }
 

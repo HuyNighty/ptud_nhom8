@@ -1,11 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.phieukham;
 
 import com.quanlynhakhoa.model.phieukham.KetQuaHangChoKham;
-
 import com.quanlynhakhoa.model.phieukham.DongHangChoKham;
-
-import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.security.KetQuaDangNhap;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.lang.reflect.InvocationHandler;
@@ -40,8 +38,8 @@ public final class ExamQueueSelfTest {
         check(thrown, "reject " + expected.getSimpleName());
     }
     @FunctionalInterface private interface Checked { void run() throws Exception; }
-    private static DesktopSession session(Role role) {
-        return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "TKTEST", role, false));
+    private static DesktopSession session(VaiTroHeThong role) {
+        return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "TKTEST", role, false));
     }
     private static final LocalDate DAY = LocalDate.of(2026, 10, 31);
 
@@ -134,7 +132,7 @@ public final class ExamQueueSelfTest {
         Jdbc doctor = new Jdbc();
         doctor.rows.add(row(1, "CHO_KHAM"));
         doctor.rows.add(row(2, "DANG_KHAM"));
-        ExamQueueService doctorService = new ExamQueueService(session(Role.DOCTOR), doctor::connection);
+        ExamQueueService doctorService = new ExamQueueService(session(VaiTroHeThong.DOCTOR), doctor::connection);
         KetQuaHangChoKham found = doctorService.load(DAY);
         check(found.rows().size() == 2, "two open examinations returned");
         check(!found.truncated(), "small result not truncated");
@@ -153,23 +151,23 @@ public final class ExamQueueSelfTest {
 
         Jdbc admin = new Jdbc();
         admin.rows.add(row(7, "CHO_KHAM"));
-        KetQuaHangChoKham all = new ExamQueueService(session(Role.SYSTEM_ADMIN), admin::connection).load(DAY);
+        KetQuaHangChoKham all = new ExamQueueService(session(VaiTroHeThong.SYSTEM_ADMIN), admin::connection).load(DAY);
         check(all.rows().size() == 1, "admin can read queue");
         check(admin.binds.get(3).equals(1), "admin SQL scope flag");
         check(admin.connectionClosed == 1, "admin connection closed");
 
         AtomicInteger unauthorizedConnection = new AtomicInteger();
-        ExamQueueService receptionist = new ExamQueueService(session(Role.RECEPTIONIST), () -> {
+        ExamQueueService receptionist = new ExamQueueService(session(VaiTroHeThong.RECEPTIONIST), () -> {
             unauthorizedConnection.incrementAndGet(); return new Jdbc().connection();
         });
         reject(AccessDeniedException.class, () -> receptionist.load(DAY));
         check(unauthorizedConnection.get() == 0, "receptionist rejected before JDBC");
-        ExamQueueService manager = new ExamQueueService(session(Role.CLINIC_MANAGER), () -> {
+        ExamQueueService manager = new ExamQueueService(session(VaiTroHeThong.CLINIC_MANAGER), () -> {
             unauthorizedConnection.incrementAndGet(); return new Jdbc().connection();
         });
         reject(AccessDeniedException.class, () -> manager.load(DAY));
         check(unauthorizedConnection.get() == 0, "manager rejected before JDBC");
-        DesktopSession loggedOut = session(Role.DOCTOR);
+        DesktopSession loggedOut = session(VaiTroHeThong.DOCTOR);
         loggedOut.logout();
         ExamQueueService loggedOutService = new ExamQueueService(loggedOut, () -> {
             unauthorizedConnection.incrementAndGet(); return new Jdbc().connection();
@@ -180,13 +178,13 @@ public final class ExamQueueSelfTest {
 
         Jdbc failed = new Jdbc();
         failed.failQuery = true;
-        reject(SQLException.class, () -> new ExamQueueService(session(Role.DOCTOR), failed::connection).load(DAY));
+        reject(SQLException.class, () -> new ExamQueueService(session(VaiTroHeThong.DOCTOR), failed::connection).load(DAY));
         check(failed.statementClosed == 1 && failed.connectionClosed == 1, "failure closes JDBC");
         check(failed.resultClosed == 0, "no result to close after failed query");
 
         Jdbc big = new Jdbc();
         for (int i = 1; i <= 201; i++) big.rows.add(row(i, "CHO_KHAM"));
-        KetQuaHangChoKham limited = new ExamQueueService(session(Role.DOCTOR), big::connection).load(DAY);
+        KetQuaHangChoKham limited = new ExamQueueService(session(VaiTroHeThong.DOCTOR), big::connection).load(DAY);
         check(limited.rows().size() == 200, "only 200 exposed");
         check(limited.truncated(), "truncation reported");
         check(big.connectionClosed == 1 && big.resultClosed == 1, "bounded result closes JDBC");

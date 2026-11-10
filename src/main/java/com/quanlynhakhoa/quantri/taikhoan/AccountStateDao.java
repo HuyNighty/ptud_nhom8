@@ -1,8 +1,9 @@
 package com.quanlynhakhoa.quantri.taikhoan;
 
-import com.quanlynhakhoa.quantri.taikhoan.entity.AccountStatus;
-import com.quanlynhakhoa.quantri.taikhoan.entity.LockSource;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.model.taikhoan.TaiKhoanDich;
+import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
+import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,18 +40,18 @@ public final class AccountStateDao {
             VALUES ('ACCOUNT', ?, N'TaiKhoan', ?, 'SUCCESS', 'TaiKhoan', ?, ?)
             """;
 
-    public record Target(String accountId, Role role, AccountStatus status, LockSource lockSource) { }
 
-    public Target lockTarget(Connection connection, String targetId) throws SQLException {
+
+    public TaiKhoanDich lockTarget(Connection connection, String targetId) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(TARGET_SQL)) {
             statement.setQueryTimeout(TIMEOUT_SECONDS);
             statement.setString(1, targetId);
             try (ResultSet rows = statement.executeQuery()) {
                 if (!rows.next()) throw new IllegalArgumentException("Không tìm thấy tài khoản.");
                 String source = rows.getString("nguonKhoa");
-                return new Target(rows.getString("maTaiKhoan"), Role.valueOf(rows.getString("vaiTro")),
-                        AccountStatus.valueOf(rows.getString("trangThai")),
-                        source == null ? null : LockSource.valueOf(source));
+                return new TaiKhoanDich(rows.getString("maTaiKhoan"), VaiTroHeThong.valueOf(rows.getString("vaiTro")),
+                        TrangThaiTaiKhoan.valueOf(rows.getString("trangThai")),
+                        source == null ? null : NguonKhoaTaiKhoan.valueOf(source));
             }
         }
     }

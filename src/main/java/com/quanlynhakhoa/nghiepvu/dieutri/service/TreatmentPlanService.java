@@ -5,7 +5,7 @@ import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
-import com.quanlynhakhoa.quantri.vaitro.entity.Role;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
@@ -62,7 +62,7 @@ public final class TreatmentPlanService {
 
     private void requireDoctorCandidate() {
         requireLocalPermission(Permission.MEDICAL_RECORD_UPDATE);
-        if (session.role() != Role.DOCTOR) throw new AccessDeniedException();
+        if (session.role() != VaiTroHeThong.DOCTOR) throw new AccessDeniedException();
         // DOCTOR is a prerequisite, NOT proof of linked active doctor identity.
         // All operations still fail closed: never wire DAO writes behind this check alone.
     }

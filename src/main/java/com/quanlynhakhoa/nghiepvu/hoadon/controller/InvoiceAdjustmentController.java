@@ -1,8 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
-
-
-
+import com.quanlynhakhoa.enums.LoaiDaoThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
@@ -26,7 +24,7 @@ public final class InvoiceAdjustmentController {
         JPanel form=new JPanel(new GridLayout(0,1,4,6));form.add(new JLabel("Khoản thu "+payment+" · Hóa đơn "+invoice));form.add(kind);form.add(new JLabel("Lý do (tối đa 300 ký tự)"));form.add(reason);form.add(new JLabel("Bằng chứng / biên nhận hoàn tiền (tối đa 100 ký tự)"));form.add(reference);form.add(confirmed);
         if(JOptionPane.showConfirmDialog(view,form,"Điều chỉnh toàn bộ khoản thu",JOptionPane.OK_CANCEL_OPTION,JOptionPane.WARNING_MESSAGE)!=JOptionPane.OK_OPTION)return;
         if(!confirmed.isSelected()){BillingUi.result(view,"Cần đánh dấu xác nhận đã đối chiếu tiền thực tế trước khi tiếp tục.");return;}
-        var type=kind.getSelectedIndex()==0?PaymentReversalService.Kind.HUY_GHI_NHAN:PaymentReversalService.Kind.HOAN_TIEN;
+        var type=kind.getSelectedIndex()==0?LoaiDaoThanhToan.HUY_GHI_NHAN:LoaiDaoThanhToan.HOAN_TIEN;
         run(new Work(){public void execute()throws Exception{new PaymentReversalService(session,connections).reverse(invoice,payment,type,reason.getText(),reference.getText());}},"Đã điều chỉnh khoản thu. Lịch sử gốc được giữ lại.");
     }
     private interface Work{void execute()throws Exception;}

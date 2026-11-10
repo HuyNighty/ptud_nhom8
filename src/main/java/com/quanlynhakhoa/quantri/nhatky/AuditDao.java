@@ -1,5 +1,8 @@
 package com.quanlynhakhoa.quantri.nhatky;
 
+import com.quanlynhakhoa.model.nhatky.KetQuaNhatKy;
+import com.quanlynhakhoa.model.nhatky.BoLocNhatKy;
+import com.quanlynhakhoa.model.nhatky.BanGhiNhatKy;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,13 +35,9 @@ public final class AuditDao {
             ORDER BY thoiGian DESC, maNhatKy DESC
             """;
 
-    public record Result(List<AuditEntry> rows, boolean truncated) {
-        public Result {
-            rows = List.copyOf(rows);
-        }
-    }
 
-    public Result search(Connection connection, AuditFilter filter) throws SQLException {
+
+    public KetQuaNhatKy search(Connection connection, BoLocNhatKy filter) throws SQLException {
         Objects.requireNonNull(connection, "connection");
         Objects.requireNonNull(filter, "filter");
         LocalDateTime fromUtc = toUtcStart(filter.from());
@@ -55,7 +54,7 @@ public final class AuditDao {
             for (int position = 8; position <= 12; position++) {
                 statement.setNString(position, filter.keyword());
             }
-            List<AuditEntry> rows = new ArrayList<>();
+            List<BanGhiNhatKy> rows = new ArrayList<>();
             boolean truncated = false;
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
@@ -65,14 +64,14 @@ public final class AuditDao {
                     }
                     Timestamp time = result.getTimestamp("thoiGian");
                     long id = result.getLong("maNhatKy");
-                    rows.add(new AuditEntry(id, Objects.requireNonNull(time, "thoiGian").toLocalDateTime(),
+                    rows.add(new BanGhiNhatKy(id, Objects.requireNonNull(time, "thoiGian").toLocalDateTime(),
                             result.getString("loaiTacNhan"), result.getString("maTaiKhoan"),
                             result.getNString("chucNang"), result.getNString("hanhDong"),
                             result.getString("ketQua"), result.getString("doiTuong"),
                             result.getString("maDoiTuong")));
                 }
             }
-            return new Result(rows, truncated);
+            return new KetQuaNhatKy(rows, truncated);
         }
     }
 
