@@ -1,12 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
-
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
@@ -80,7 +74,7 @@ public final class InvoiceService {
                 Invoice invoice = dao.get(connection, id.trim());
                 if (invoice == null) throw new IllegalArgumentException("Hóa đơn không tồn tại.");
                 List<DongChiTietHoaDon> lines = dao.lines(connection, id.trim());
-                List<Payment> payments = dao.payments(connection, id.trim());
+                List<ThongTinThanhToan> payments = dao.payments(connection, id.trim());
                 var cancellationHistory = new CancellationDao().findForInvoice(connection, id.trim());
                 var prescriptions = dao.prescribedMedicines(connection, id.trim());
                 if (invoice.tongTien().compareTo(BillingCalculator.total(lines)) != 0

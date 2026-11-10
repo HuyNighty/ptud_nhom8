@@ -1,7 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.math.BigDecimal;
@@ -14,10 +13,10 @@ public final class BillingCalculator {
         for (DongChiTietHoaDon line : lines) total = total.add(line.thanhTien());
         return total;
     }
-    public static BigDecimal collected(List<Payment> payments) {
+    public static BigDecimal collected(List<ThongTinThanhToan> payments) {
         BigDecimal total = BigDecimal.ZERO;
-        for (Payment payment : payments) {
-            if (payment.trangThai() == Payment.TrangThai.THANH_CONG) total = total.add(payment.soTien());
+        for (ThongTinThanhToan payment : payments) {
+            if (payment.trangThai() == ThongTinThanhToan.TrangThai.THANH_CONG) total = total.add(payment.soTien());
         }
         return total;
     }

@@ -1,15 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
-
-
-
-
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.hethong.phanquyen.*;
@@ -32,8 +23,8 @@ public final class PaymentReversalService {
             try{
                 try(PreparedStatement s=statement(c,"SELECT maHoaDon FROM dbo.HoaDon WITH (UPDLOCK,HOLDLOCK) WHERE maHoaDon=?")){s.setString(1,invoiceId);try(ResultSet rows=s.executeQuery()){if(!rows.next())throw new IllegalArgumentException("Không có hóa đơn.");}}
                 if(PaymentAttemptService.pending(c,invoiceId)!=null)throw new IllegalArgumentException("Còn lần thu chưa đối soát. Giải quyết lần thu trước khi điều chỉnh.");
-                Payment payment=new PaymentDao().existing(c,paymentId);
-                if(payment==null||!invoiceId.equals(payment.maHoaDon())||payment.trangThai()!=Payment.TrangThai.THANH_CONG)throw new IllegalArgumentException("Khoản thu không thuộc hóa đơn hoặc đã được điều chỉnh. Tải lại để kiểm tra.");
+                ThongTinThanhToan payment=new PaymentDao().existing(c,paymentId);
+                if(payment==null||!invoiceId.equals(payment.maHoaDon())||payment.trangThai()!=ThongTinThanhToan.TrangThai.THANH_CONG)throw new IllegalArgumentException("Khoản thu không thuộc hóa đơn hoặc đã được điều chỉnh. Tải lại để kiểm tra.");
                 Invoice invoice=new InvoiceDao().getForPayment(c,invoiceId);
                 if(invoice.trangThai()==InvoiceStatus.DA_HUY)throw new IllegalArgumentException("Hóa đơn đã hủy; cần đối soát.");
                 Timestamp when;
