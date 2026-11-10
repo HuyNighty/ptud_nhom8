@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
@@ -40,38 +42,38 @@ public final class InvoiceService {
         this.connections = Objects.requireNonNull(connections);
         this.dao = Objects.requireNonNull(dao);
     }
-    public List<Invoice> find(String keyword, LocalDate from, LocalDate to, InvoiceStatus status) throws SQLException {
+    public List<ThongTinHoaDon> find(String keyword, LocalDate from, LocalDate to, InvoiceStatus status) throws SQLException {
         require();
         String text = keyword == null ? "" : keyword.trim();
         if (text.length() > 100) throw new IllegalArgumentException("Từ khóa tối đa 100 ký tự.");
         validateDates(from, to);
         try(Connection c=connections.open()){
             c.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-            List<Invoice> result=dao.find(c,text,from,to,status);require();return result;
+            List<ThongTinHoaDon> result=dao.find(c,text,from,to,status);require();return result;
         }
     }
-    public List<Invoice> findPage(String keyword,LocalDate from,LocalDate to,InvoiceStatus status,int page)throws SQLException {
+    public List<ThongTinHoaDon> findPage(String keyword,LocalDate from,LocalDate to,InvoiceStatus status,int page)throws SQLException {
         require();validateDates(from,to);String text=keyword==null?"":keyword.trim();
         if(text.length()>100||page<0||page>1000000)throw new IllegalArgumentException("Bộ lọc hoặc trang không hợp lệ.");
         try(Connection c=connections.open()){
             // A single READ COMMITTED statement avoids holding range locks across list rendering.
-            List<Invoice> result=dao.findPage(c,text,from,to,status,Math.multiplyExact(page,100),101);require();return result;
+            List<ThongTinHoaDon> result=dao.findPage(c,text,from,to,status,Math.multiplyExact(page,100),101);require();return result;
         }
     }
 
-    public List<Invoice> outstandingChoices(String keyword)throws SQLException {
+    public List<ThongTinHoaDon> outstandingChoices(String keyword)throws SQLException {
         require();String text=keyword==null?"":keyword.trim();if(text.length()>100)throw new IllegalArgumentException("Từ khóa tối đa 100 ký tự.");
-        try(Connection c=connections.open()){List<Invoice> rows=dao.findPage(c,text,null,null,null,0,101,true);require();return rows;}
+        try(Connection c=connections.open()){List<ThongTinHoaDon> rows=dao.findPage(c,text,null,null,null,0,101,true);require();return rows;}
     }
 
-    public InvoiceDetails detail(String id) throws SQLException {
+    public DuLieuChiTietHoaDon detail(String id) throws SQLException {
         require();
         if (id == null || id.isBlank() || id.trim().length() > 10) throw new IllegalArgumentException("Mã hóa đơn không hợp lệ.");
         try (Connection connection = connections.open()) {
             require();
             beginRead(connection);
             try {
-                Invoice invoice = dao.get(connection, id.trim());
+                ThongTinHoaDon invoice = dao.get(connection, id.trim());
                 if (invoice == null) throw new IllegalArgumentException("Hóa đơn không tồn tại.");
                 List<DongChiTietHoaDon> lines = dao.lines(connection, id.trim());
                 List<ThongTinThanhToan> payments = dao.payments(connection, id.trim());
@@ -82,7 +84,7 @@ public final class InvoiceService {
                     throw new SQLException("Kết quả đối soát hóa đơn không nhất quán.");
                 }
                 require(); connection.commit();
-                return new InvoiceDetails(invoice, lines, payments, cancellationHistory, prescriptions);
+                return new DuLieuChiTietHoaDon(invoice, lines, payments, cancellationHistory, prescriptions);
             } catch (SQLException | RuntimeException failure) { rollback(connection, failure); throw failure; }
         }
     }

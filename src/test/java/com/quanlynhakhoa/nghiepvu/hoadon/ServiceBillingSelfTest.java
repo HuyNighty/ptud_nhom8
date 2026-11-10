@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
@@ -31,8 +33,8 @@ public final class ServiceBillingSelfTest {
         return new ThongTinThanhToan(id, "H1", LocalDateTime.of(2026, 1, 1, 8, 0), money(amount), ThongTinThanhToan.PhuongThuc.TIEN_MAT,
                 null, money("999999"), cancelled ? ThongTinThanhToan.TrangThai.DA_HUY : ThongTinThanhToan.TrangThai.THANH_CONG, "NV1", null, null, null);
     }
-    private static Invoice invoice(String total, String collected, InvoiceStatus status) {
-        return new Invoice("H1", "NV1", "B1", "Synthetic", null, LocalDateTime.now(), status, money(total), money(collected), BigDecimal.ZERO);
+    private static ThongTinHoaDon invoice(String total, String collected, InvoiceStatus status) {
+        return new ThongTinHoaDon("H1", "NV1", "B1", "Synthetic", null, LocalDateTime.now(), status, money(total), money(collected), BigDecimal.ZERO);
     }
     public static void main(String[] args) throws Exception {
         calculations(); permissions(); validation(); writes(); reads();
@@ -50,7 +52,7 @@ public final class ServiceBillingSelfTest {
         check(invoice("300", "0", InvoiceStatus.CHUA_THANH_TOAN).conNo().intValueExact() == 300, "unpaid");
         check(invoice("300", "100", InvoiceStatus.THANH_TOAN_MOT_PHAN).conNo().intValueExact() == 200, "partial");
         check(invoice("300", "300", InvoiceStatus.DA_THANH_TOAN).conNo().signum() == 0, "paid");
-        Invoice overpaid = invoice("300", "400", InvoiceStatus.DA_THANH_TOAN);
+        ThongTinHoaDon overpaid = invoice("300", "400", InvoiceStatus.DA_THANH_TOAN);
         check(overpaid.conNo().intValueExact() == -100 && overpaid.canhBao().contains("vượt"), "overpayment not clamped");
         check(BillingCalculator.patientDebt(List.of(invoice("300", "100", InvoiceStatus.THANH_TOAN_MOT_PHAN),
                 invoice("1000", "0", InvoiceStatus.DA_HUY), overpaid)).intValueExact() == 100, "cancelled invoices excluded, negative debt visible");
@@ -148,7 +150,7 @@ public final class ServiceBillingSelfTest {
         jdbc.lineRows.get(0).put("tenHang","Synthetic service name");jdbc.lineRows.get(1).put("tenHang","Synthetic medicine name");jdbc.lineRows.get(2).put("tenHang","Synthetic material name");
         jdbc.paymentRows = List.of(paymentRow("P1", "60", "THANH_CONG", "TIEN_MAT"),
                 paymentRow("P2", "40", "THANH_CONG", "THE_POS"), paymentRow("P3", "900", "DA_HUY", "CHUYEN_KHOAN"));
-        InvoiceDetails detail = service.detail("H1");
+        DuLieuChiTietHoaDon detail = service.detail("H1");
         check(detail.chiTiet().size() == 3 && detail.thanhToan().size() == 3 && detail.hoaDon().conNo().intValueExact() == 200,
                 "real DAO maps mixed item types, multiple payments and cancellation");
         check(detail.hoaDon().congNoBenhNhan().intValueExact() == 700, "patient debt passed through unfiltered aggregate");

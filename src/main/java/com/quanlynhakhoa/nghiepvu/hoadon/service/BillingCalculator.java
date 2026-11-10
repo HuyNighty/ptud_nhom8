@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -20,9 +21,9 @@ public final class BillingCalculator {
         }
         return total;
     }
-    public static BigDecimal patientDebt(List<Invoice> invoices) {
+    public static BigDecimal patientDebt(List<ThongTinHoaDon> invoices) {
         BigDecimal total = BigDecimal.ZERO;
-        for (Invoice invoice : invoices) total = total.add(invoice.noTheoDoi());
+        for (ThongTinHoaDon invoice : invoices) total = total.add(invoice.noTheoDoi());
         return total;
     }
 }

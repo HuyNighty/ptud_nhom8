@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.InvoiceDetails;
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import java.awt.*;
@@ -117,7 +117,7 @@ public final class PaymentForm extends JPanel {
         updateControls();preview();
     }
     public void allowRetry(boolean allowed){retryAllowed=allowed;updateControls();}
-    public void showInvoice(InvoiceDetails detail){pnlHistory.showInvoice(detail);outstanding=detail.hoaDon().conNo();preview();}
+    public void showInvoice(DuLieuChiTietHoaDon detail){pnlHistory.showInvoice(detail);outstanding=detail.hoaDon().conNo();preview();}
     public void loading(){outstanding=null;pnlHistory.clear();preview();lblTrangThai.setText("Đang kiểm tra hóa đơn và lịch sử thanh toán…");}
     public void onClose(Runnable callback){closeAction=callback;}
     public void onStateChange(Runnable callback){stateListener=callback;}

@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
+import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThanhToanDangCho;
@@ -17,7 +18,7 @@ import javax.swing.JOptionPane;
 
 public final class PaymentController {
     private final PaymentForm view;private final DesktopSession session;private final InvoiceService invoices;private final PaymentService payments;
-    private final String invoiceId;private final Runnable saved;private InvoiceDetails detail;private boolean busy;private YeuCauThanhToan pending;
+    private final String invoiceId;private final Runnable saved;private DuLieuChiTietHoaDon detail;private boolean busy;private YeuCauThanhToan pending;
     private final PendingPaymentStore journal;
     private final PaymentAttemptService attempts;
     private final java.util.function.Predicate<YeuCauThanhToan> confirmation;
@@ -63,11 +64,11 @@ public final class PaymentController {
                 ThanhToanDangCho shared=attempts.pending(invoiceId);
                 if(local!=null&&shared!=null&&!local.equals(shared.request()))throw new java.io.IOException("Lần thu trên máy khác không khớp nhật ký cục bộ; cần quản lý đối soát.");
                 YeuCauThanhToan restored=shared==null?local:shared.request();
-                InvoiceDetails result=invoices.detail(invoiceId);
+                DuLieuChiTietHoaDon result=invoices.detail(invoiceId);
                 return new DuLieuThanhToanDaTai(result,restored,payments.pendingCancellation(invoiceId),shared==null?session.accountId():shared.owner());
             }
             protected void succeeded(DuLieuThanhToanDaTai loaded){
-                InvoiceDetails result=loaded.invoice();pending=loaded.pending();
+                DuLieuChiTietHoaDon result=loaded.invoice();pending=loaded.pending();
                 detail=result;pendingCancellation=loaded.cancellation();view.showInvoice(result);
                 if(pending!=null){
                     view.restoreRequest(pending);
