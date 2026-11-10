@@ -1,11 +1,10 @@
 package com.quanlynhakhoa.service.lichlamviec;
 import com.quanlynhakhoa.service.lichlamviec.PhanCongService;
 import com.quanlynhakhoa.view.lichlamviec.LichLamViecPanel;
-import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.enums.Module;
-import com.quanlynhakhoa.hethong.giaodien.MainFrame;
-import com.quanlynhakhoa.hethong.tinhnang.FeatureRegistry;
+import com.quanlynhakhoa.view.hethong.MainFrame;
+import com.quanlynhakhoa.config.tinhnang.FeatureRegistry;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.*;

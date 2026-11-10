@@ -2,7 +2,7 @@ package com.quanlynhakhoa.dao.vaitro;
 
 import com.quanlynhakhoa.entity.VaiTro;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,7 +48,7 @@ public final class RbacV9SqlContractSelfTest {
     public static void main(String[] args)throws Exception {
         Path root=args.length==0?Path.of(""):Path.of(args[0]);
         Path bootstrap=root.resolve("sql/bootstrap");
-        String sql=Files.readString(bootstrap.resolve("V9__create_dynamic_rbac.sql"));
+        String sql=Files.readString(bootstrap.resolve("V9__create_dynamic_rbac.sql")).replace("\r\n", "\n");
         String code=noComments(sql);
         List<List<String>> roles=rows(sql,"SEED ROLES","\\('([A-Z_]+)',N'([^']*)',N'([^']*)',([01]),([01]),([01])\\)",6);
         List<List<String>> permissions=rows(sql,"SEED PERMISSIONS","\\('([A-Z_]+)',N'([^']*)',([01])\\)",3);
@@ -133,7 +133,7 @@ public final class RbacV9SqlContractSelfTest {
         Matcher mutations=Pattern.compile("(?im)^\\s*(?:CREATE TABLE|INSERT dbo\\.)").matcher(code);
         while(mutations.find())check(mutations.start()>=begin&&mutations.start()<commit,"DDL/seed remains inside transaction");
         check(code.indexOf("THROW 51905")<ddl,"Existing/partial schema fails before DDL");
-        String setup=Files.readString(root.resolve("src/main/java/com/quanlynhakhoa/hatang/phattrien/DevSetup.java"));
+        String setup=Files.readString(root.resolve("src/main/java/com/quanlynhakhoa/config/phattrien/DevSetup.java"));
         check(!setup.contains("V9__"),"Not automatically bootstrapped");
         System.out.println("PASS: V9 static/domain contracts ("+checks+" checks;6 roles/26 permissions/63 exact grants;"+required.size()+" named prerequisite tables). NO SQL/JDBC EXECUTION; rollback enforcement NOT VERIFIED.");
     }

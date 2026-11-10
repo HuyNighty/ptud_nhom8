@@ -1,5 +1,8 @@
 package com.quanlynhakhoa.view.hoadon;
 
+import com.quanlynhakhoa.security.RolePermissionPolicy;
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
@@ -12,12 +15,11 @@ import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.controller.hoadon.HoaDonController;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.service.hoadon.HoaDonService;
 import com.quanlynhakhoa.service.hoadon.NguonTinhPhiLamSang;
-import com.quanlynhakhoa.service.hoadon.InvoiceIdGenerator;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.hethong.phanquyen.*;
+import com.quanlynhakhoa.service.hoadon.TaoMaHoaDon;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -25,7 +27,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
+public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.config.tinhnang.RefreshableFeature {
 
     public interface PaymentNavigation { void open(String invoiceId); }
     private final CheDoXemHoaDon mode;
@@ -72,12 +74,12 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.hetho
     }
     public HoaDonPanel(DesktopSession session, ConnectionProvider connections, CheDoXemHoaDon mode) {
         this(session, connections, new com.quanlynhakhoa.service.hoadon.JdbcNguonTinhPhiLamSang(),
-                new com.quanlynhakhoa.service.hoadon.RandomInvoiceIdGenerator(), mode);
+                new com.quanlynhakhoa.service.hoadon.TaoMaHoaDonNgauNhien(), mode);
     }
-    public HoaDonPanel(DesktopSession session, ConnectionProvider connections, NguonTinhPhiLamSang source, InvoiceIdGenerator ids) {
+    public HoaDonPanel(DesktopSession session, ConnectionProvider connections, NguonTinhPhiLamSang source, TaoMaHoaDon ids) {
         this(session,connections,source,ids,CheDoXemHoaDon.INVOICES);
     }
-    private HoaDonPanel(DesktopSession session, ConnectionProvider connections, NguonTinhPhiLamSang source, InvoiceIdGenerator ids, CheDoXemHoaDon mode) {
+    private HoaDonPanel(DesktopSession session, ConnectionProvider connections, NguonTinhPhiLamSang source, TaoMaHoaDon ids, CheDoXemHoaDon mode) {
         this.session=session;this.connections=connections;this.mode=mode;
         new AuthorizationService(new RolePermissionPolicy()).require(session, Quyen.BILLING_READ);
         canPay = new AuthorizationService(new RolePermissionPolicy()).can(session, Quyen.BILLING_MANAGE);

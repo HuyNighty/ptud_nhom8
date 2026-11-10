@@ -3,11 +3,11 @@ package com.quanlynhakhoa.service.benhnhan;
 import com.quanlynhakhoa.dao.benhnhan.BenhNhanDao;
 import com.quanlynhakhoa.dao.benhnhan.HoSoBenhAnDao;
 import com.quanlynhakhoa.entity.HoSoBenhAn;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.security.AuthorizationService;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import java.sql.SQLException;
 
 public class HoSoBenhAnService {

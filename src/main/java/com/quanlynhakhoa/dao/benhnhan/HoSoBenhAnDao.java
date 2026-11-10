@@ -2,7 +2,7 @@ package com.quanlynhakhoa.dao.benhnhan;
 
 import com.quanlynhakhoa.entity.HoSoBenhAn;
 import com.quanlynhakhoa.entity.LuotKham;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

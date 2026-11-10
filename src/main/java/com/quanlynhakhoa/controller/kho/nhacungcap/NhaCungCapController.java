@@ -4,7 +4,7 @@ import com.quanlynhakhoa.entity.NhaCungCap;
 import com.quanlynhakhoa.service.kho.nhacungcap.NhaCungCapService;
 import com.quanlynhakhoa.view.kho.nhacungcap.NhaCungCapDialog;
 import com.quanlynhakhoa.view.kho.nhacungcap.NhaCungCapPanel;
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.enums.Quyen;
 import java.awt.Color;
 import java.awt.Window;

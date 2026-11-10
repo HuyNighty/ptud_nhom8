@@ -3,7 +3,7 @@ package com.quanlynhakhoa.controller.dieutri;
 import com.quanlynhakhoa.view.dieutri.KeHoachDieuTriPanel;
 import com.quanlynhakhoa.service.dieutri.KeHoachDieuTriService;
 import com.quanlynhakhoa.service.dieutri.KeHoachDieuTriKhongKhaDungException;
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.Callable;

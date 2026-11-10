@@ -4,7 +4,7 @@ import com.quanlynhakhoa.view.hoadon.HoaDonPanel;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.view.dichvu.DanhMucDichVuPanel;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.List;
@@ -73,7 +73,7 @@ public final class ServiceBillingUiSelfTest {
         final FeatureJdbcDouble savedJdbc = new FeatureJdbcDouble();
         final DanhMucDichVuPanel[] savedPanel = new DanhMucDichVuPanel[1];
         edt(new Action() { public void run() throws Exception {
-            savedPanel[0] = new DanhMucDichVuPanel(session, new com.quanlynhakhoa.dao.hoadon.ConnectionProvider() {
+            savedPanel[0] = new DanhMucDichVuPanel(session, new com.quanlynhakhoa.config.ConnectionProvider() {
                 int calls;
                 public java.sql.Connection open() throws java.sql.SQLException {
                     if (++calls > 1) throw new java.sql.SQLException("reload", "08001", 0);
@@ -92,7 +92,7 @@ public final class ServiceBillingUiSelfTest {
         // Force a load/connection failure and verify honest UI, without a modal blocking the test.
         final DanhMucDichVuPanel[] errorPanel = new DanhMucDichVuPanel[1];
         edt(new Action() { public void run() throws Exception {
-            errorPanel[0] = new DanhMucDichVuPanel(session, new com.quanlynhakhoa.dao.hoadon.ConnectionProvider() {
+            errorPanel[0] = new DanhMucDichVuPanel(session, new com.quanlynhakhoa.config.ConnectionProvider() {
                 public java.sql.Connection open() throws java.sql.SQLException { throw new java.sql.SQLException("synthetic", "08001", 0); }
             });
             field(errorPanel[0], "btnTaiLai", JButton.class).doClick();
@@ -101,7 +101,7 @@ public final class ServiceBillingUiSelfTest {
         final com.quanlynhakhoa.view.hoadon.HuyHoaDonPanel[] cancellation=new com.quanlynhakhoa.view.hoadon.HuyHoaDonPanel[1];
         final java.util.concurrent.atomic.AtomicInteger retries=new java.util.concurrent.atomic.AtomicInteger();
         edt(new Action(){public void run(){
-            cancellation[0]=new com.quanlynhakhoa.view.hoadon.HuyHoaDonPanel(session,new com.quanlynhakhoa.dao.hoadon.ConnectionProvider(){public java.sql.Connection open()throws java.sql.SQLException{check(!SwingUtilities.isEventDispatchThread(),"SQL retry outside EDT");retries.incrementAndGet();throw new java.sql.SQLException("SENSITIVE SQL PARAMETERS", "S0005",229);}});
+            cancellation[0]=new com.quanlynhakhoa.view.hoadon.HuyHoaDonPanel(session,new com.quanlynhakhoa.config.ConnectionProvider(){public java.sql.Connection open()throws java.sql.SQLException{check(!SwingUtilities.isEventDispatchThread(),"SQL retry outside EDT");retries.incrementAndGet();throw new java.sql.SQLException("SENSITIVE SQL PARAMETERS", "S0005",229);}});
             cancellation[0].refreshData();
         }});
         waitFor(cancellation[0].lblTrangThai,"quyền");

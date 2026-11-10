@@ -1,12 +1,13 @@
 package com.quanlynhakhoa.service.baocao;
 
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.view.baocao.BaoCaoDoanhThuPanel;
 import com.quanlynhakhoa.model.baocao.DongBaoCaoDoanhThu;
 import com.quanlynhakhoa.model.baocao.BaoCaoDoanhThu;
-import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.enums.Module;
-import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
-import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
+import com.quanlynhakhoa.security.NavigationPolicy;
+import com.quanlynhakhoa.config.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import java.math.BigDecimal;

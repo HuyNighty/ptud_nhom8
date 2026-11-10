@@ -8,7 +8,7 @@ import com.quanlynhakhoa.entity.LichHen;
 import com.quanlynhakhoa.service.lichhen.LichHenService;
 import com.quanlynhakhoa.view.lichhen.LichHenDialog;
 import com.quanlynhakhoa.view.lichhen.LichHenPanel;
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.enums.Quyen;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

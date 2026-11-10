@@ -6,45 +6,45 @@ import java.time.LocalDate;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class DongBaoCaoDoanhThu {
-    private final LocalDate period;
-    private final int invoices;
-    private final BigDecimal revenue;
-    private final BigDecimal collected;
+    private final LocalDate kyBaoCao;
+    private final int hoaDon;
+    private final BigDecimal doanhThu;
+    private final BigDecimal daThu;
 
-    public DongBaoCaoDoanhThu(LocalDate period, int invoices, BigDecimal revenue, BigDecimal collected) {
-        this.period = period;
-        this.invoices = invoices;
-        this.revenue = revenue;
-        this.collected = collected;
+    public DongBaoCaoDoanhThu(LocalDate kyBaoCao, int hoaDon, BigDecimal doanhThu, BigDecimal daThu) {
+        this.kyBaoCao = kyBaoCao;
+        this.hoaDon = hoaDon;
+        this.doanhThu = doanhThu;
+        this.daThu = daThu;
     }
 
-    public LocalDate period() { return period; }
-    public int invoices() { return invoices; }
-    public BigDecimal revenue() { return revenue; }
-    public BigDecimal collected() { return collected; }
+    public LocalDate period() { return kyBaoCao; }
+    public int invoices() { return hoaDon; }
+    public BigDecimal revenue() { return doanhThu; }
+    public BigDecimal collected() { return daThu; }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof DongBaoCaoDoanhThu value)) return false;
-        return java.util.Objects.equals(period, value.period)
-                && invoices == value.invoices
-                && java.util.Objects.equals(revenue, value.revenue)
-                && java.util.Objects.equals(collected, value.collected);
+        return java.util.Objects.equals(kyBaoCao, value.kyBaoCao)
+                && hoaDon == value.hoaDon
+                && java.util.Objects.equals(doanhThu, value.doanhThu)
+                && java.util.Objects.equals(daThu, value.daThu);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(this.period);
-        result = 31 * result + Integer.hashCode(this.invoices);
-        result = 31 * result + java.util.Objects.hashCode(this.revenue);
-        result = 31 * result + java.util.Objects.hashCode(this.collected);
+        result = 31 * result + java.util.Objects.hashCode(this.kyBaoCao);
+        result = 31 * result + Integer.hashCode(this.hoaDon);
+        result = 31 * result + java.util.Objects.hashCode(this.doanhThu);
+        result = 31 * result + java.util.Objects.hashCode(this.daThu);
         return result;
     }
 
     @Override
     public String toString() {
-        return "Row[" + "period=" + period + ", " + "invoices=" + invoices + ", " + "revenue=" + revenue + ", " + "collected=" + collected + "]";
+        return "Row[" + "period=" + kyBaoCao + ", " + "invoices=" + hoaDon + ", " + "revenue=" + doanhThu + ", " + "collected=" + daThu + "]";
     }
 }

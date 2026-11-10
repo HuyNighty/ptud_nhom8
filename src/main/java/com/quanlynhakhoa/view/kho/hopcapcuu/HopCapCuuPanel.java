@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.view.kho.hopcapcuu;
 
 import com.quanlynhakhoa.controller.kho.hopcapcuu.HopCapCuuController;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.service.kho.hopcapcuu.HopCapCuuService;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;

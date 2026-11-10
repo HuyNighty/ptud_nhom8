@@ -6,7 +6,7 @@ import com.quanlynhakhoa.service.hoadon.TaoHoaDonService;
 import com.quanlynhakhoa.service.hoadon.HoaDonService;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.event.*;
 import java.util.List;
 import javax.swing.*;

@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.service.hoadon;
 
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.dao.hoadon.HuyHoaDonDao;
 import com.quanlynhakhoa.dao.hoadon.HoaDonDao;
 import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
@@ -12,7 +14,6 @@ import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.*;
@@ -37,7 +38,7 @@ public final class CancellationSelfTest {
     }
     public static void main(String[] args)throws Exception {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final Dao dao=new Dao();final Invoices invoices=new Invoices();
-        InvoiceIdGenerator ids=new InvoiceIdGenerator(){public String next(Connection c){return "Y1";}};
+        TaoMaHoaDon ids=new TaoMaHoaDon(){public String next(Connection c){return "Y1";}};
         final DesktopSession receptionist=session(VaiTroHeThong.RECEPTIONIST);
         final DesktopSession manager=DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true,"REVIEWER",VaiTroHeThong.CLINIC_MANAGER,false));
         final HuyHoaDonService requests=new HuyHoaDonService(receptionist,jdbc,dao,invoices,ids);

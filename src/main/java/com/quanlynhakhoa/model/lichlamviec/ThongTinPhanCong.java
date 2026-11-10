@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class ThongTinPhanCong {
-    private final String id;
+    private final String ma;
     private final String nhanVienId;
     private final String tenNhanVien;
     private final CaLamViec ca;
@@ -14,8 +14,8 @@ public final class ThongTinPhanCong {
     private final String trangThai;
     private final String lyDoHuy;
 
-    public ThongTinPhanCong(String id, String nhanVienId, String tenNhanVien, CaLamViec ca, LocalDate ngay, String nhiemVu, String trangThai, String lyDoHuy) {
-        this.id = id;
+    public ThongTinPhanCong(String ma, String nhanVienId, String tenNhanVien, CaLamViec ca, LocalDate ngay, String nhiemVu, String trangThai, String lyDoHuy) {
+        this.ma = ma;
         this.nhanVienId = nhanVienId;
         this.tenNhanVien = tenNhanVien;
         this.ca = ca;
@@ -25,7 +25,7 @@ public final class ThongTinPhanCong {
         this.lyDoHuy = lyDoHuy;
     }
 
-    public String id() { return id; }
+    public String id() { return ma; }
     public String nhanVienId() { return nhanVienId; }
     public String tenNhanVien() { return tenNhanVien; }
     public CaLamViec ca() { return ca; }
@@ -46,7 +46,7 @@ public final class ThongTinPhanCong {
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof ThongTinPhanCong value)) return false;
-        return java.util.Objects.equals(id, value.id)
+        return java.util.Objects.equals(ma, value.ma)
                 && java.util.Objects.equals(nhanVienId, value.nhanVienId)
                 && java.util.Objects.equals(tenNhanVien, value.tenNhanVien)
                 && java.util.Objects.equals(ca, value.ca)
@@ -59,7 +59,7 @@ public final class ThongTinPhanCong {
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(id);
+        result = 31 * result + java.util.Objects.hashCode(ma);
         result = 31 * result + java.util.Objects.hashCode(nhanVienId);
         result = 31 * result + java.util.Objects.hashCode(tenNhanVien);
         result = 31 * result + java.util.Objects.hashCode(ca);
@@ -72,6 +72,6 @@ public final class ThongTinPhanCong {
 
     @Override
     public String toString() {
-        return "PhanCong[" + "id=" + id + ", " + "nhanVienId=" + nhanVienId + ", " + "tenNhanVien=" + tenNhanVien + ", " + "ca=" + ca + ", " + "ngay=" + ngay + ", " + "nhiemVu=" + nhiemVu + ", " + "trangThai=" + trangThai + ", " + "lyDoHuy=" + lyDoHuy + "]";
+        return "PhanCong[" + "id=" + ma + ", " + "nhanVienId=" + nhanVienId + ", " + "tenNhanVien=" + tenNhanVien + ", " + "ca=" + ca + ", " + "ngay=" + ngay + ", " + "nhiemVu=" + nhiemVu + ", " + "trangThai=" + trangThai + ", " + "lyDoHuy=" + lyDoHuy + "]";
     }
 }

@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.service.baocao;
 
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.math.BigDecimal;
 import java.sql.*;

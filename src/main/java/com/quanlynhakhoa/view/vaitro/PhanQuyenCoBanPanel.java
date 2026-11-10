@@ -2,8 +2,8 @@ package com.quanlynhakhoa.view.vaitro;
 
 import com.quanlynhakhoa.model.vaitro.DongVaiTro;
 import com.quanlynhakhoa.model.vaitro.DongQuyen;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.service.vaitro.PhanQuyenCoBanService;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
@@ -237,7 +237,7 @@ public final class PhanQuyenCoBanPanel extends JPanel {
         while (cause instanceof java.util.concurrent.ExecutionException && cause.getCause() != null)
             cause = cause.getCause();
         if (cause instanceof IllegalArgumentException) return "Không hợp lệ: " + cause.getMessage();
-        if (cause instanceof com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException)
+        if (cause instanceof com.quanlynhakhoa.security.AccessDeniedException)
             return "Từ chối: phiên admin chưa được xác minh.";
         return "Không thể lưu/đọc RBAC V9: kiểm tra migration, SQL grants và kết nối.";
     }

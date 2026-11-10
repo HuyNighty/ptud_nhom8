@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.view.taikhoan;
 
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import java.sql.SQLTimeoutException;
 
 /** Never exposes JDBC messages, SQL text or connection details. */

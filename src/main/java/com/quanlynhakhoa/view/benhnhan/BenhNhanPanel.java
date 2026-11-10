@@ -3,7 +3,7 @@ package com.quanlynhakhoa.view.benhnhan;
 import com.quanlynhakhoa.controller.benhnhan.BenhNhanController;
 import com.quanlynhakhoa.entity.BenhNhan;
 import com.quanlynhakhoa.service.benhnhan.BenhNhanService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;

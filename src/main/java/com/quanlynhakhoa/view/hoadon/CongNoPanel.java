@@ -1,14 +1,16 @@
 package com.quanlynhakhoa.view.hoadon;
 
+import com.quanlynhakhoa.security.RolePermissionPolicy;
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.TongHopCongNoBenhNhan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.controller.hoadon.CongNoController;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
-import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
-import com.quanlynhakhoa.hethong.phanquyen.*;
+import com.quanlynhakhoa.config.ConnectionProvider;
+import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.util.List;

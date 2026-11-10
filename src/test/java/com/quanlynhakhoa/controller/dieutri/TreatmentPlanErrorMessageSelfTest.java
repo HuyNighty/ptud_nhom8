@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.controller.dieutri;
 
 import com.quanlynhakhoa.controller.dieutri.KeHoachDieuTriController;
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.service.dieutri.KeHoachDieuTriKhongKhaDungException;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;

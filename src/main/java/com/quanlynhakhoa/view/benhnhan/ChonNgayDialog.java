@@ -174,7 +174,7 @@ public class ChonNgayDialog extends JDialog implements ActionListener, ChangeLis
         btnThangTruoc.setEnabled(thangDangXem.isAfter(YearMonth.from(ngayNhoNhat)));
         btnThangSau.setEnabled(thangDangXem.isBefore(YearMonth.from(ngayLonNhat)));
 
-        com.quanlynhakhoa.hethong.giaodien.AppTheme.applyButtons(pnlCenter);
+        com.quanlynhakhoa.view.hethong.AppTheme.applyButtons(pnlCenter);
         pnlCenter.revalidate();
         pnlCenter.repaint();
     }

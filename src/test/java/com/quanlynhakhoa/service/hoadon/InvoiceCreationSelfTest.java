@@ -1,10 +1,11 @@
 package com.quanlynhakhoa.service.hoadon;
 
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.dao.hoadon.TaoHoaDonDao;
 import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.List;
@@ -29,7 +30,7 @@ public final class InvoiceCreationSelfTest {
     public static void main(String[] args)throws Exception {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final Dao dao=new Dao();final Source source=new Source();
         final DesktopSession session=session(VaiTroHeThong.RECEPTIONIST);
-        final TaoHoaDonService service=new TaoHoaDonService(session,jdbc,source,new InvoiceIdGenerator(){public String next(Connection c){return "HDTEST1";}},dao);
+        final TaoHoaDonService service=new TaoHoaDonService(session,jdbc,source,new TaoMaHoaDon(){public String next(Connection c){return "HDTEST1";}},dao);
         final BanNhapHoaDon reviewed=service.preview("BN1","PK1");
         check(service.create(reviewed).equals("HDTEST1"),"created id");
         check(jdbc.persisted.size()==4 && jdbc.audits.size()==1 && jdbc.commits==2,"header, all lines, final payment status and audit committed");
@@ -60,7 +61,7 @@ public final class InvoiceCreationSelfTest {
         }
         final HoaDonService defaultService=new HoaDonService(session,jdbc);
         int before=jdbc.opens;expect(IllegalStateException.class,new Action(){public void run()throws Exception{defaultService.createInvoice(reviewed);}});check(jdbc.opens==before,"unconfigured contract blocks before JDBC");
-        final TaoHoaDonService denied=new TaoHoaDonService(session(VaiTroHeThong.CLINIC_MANAGER),jdbc,source,new InvoiceIdGenerator(){public String next(Connection c){return "X";}},dao);
+        final TaoHoaDonService denied=new TaoHoaDonService(session(VaiTroHeThong.CLINIC_MANAGER),jdbc,source,new TaoMaHoaDon(){public String next(Connection c){return "X";}},dao);
         before=jdbc.opens;expect(AccessDeniedException.class,new Action(){public void run()throws Exception{denied.create(reviewed);}});check(jdbc.opens==before,"read role cannot create");
         session.logout();before=jdbc.opens;
         expect(AccessDeniedException.class,new Action(){public void run()throws Exception{service.create(reviewed);}});

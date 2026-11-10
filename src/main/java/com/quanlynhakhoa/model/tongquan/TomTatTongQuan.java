@@ -14,50 +14,50 @@ import java.util.*;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class TomTatTongQuan {
-    private final LocalDate date;
-    private final Long patients;
-    private final Long appointments;
-    private final Long inProgressExams;
-    private final BigDecimal collected;
+    private final LocalDate ngay;
+    private final Long benhNhan;
+    private final Long lichHen;
+    private final Long phieuKhamDangXuLy;
+    private final BigDecimal daThu;
 
-    public TomTatTongQuan(LocalDate date, Long patients, Long appointments, Long inProgressExams, BigDecimal collected) {
-        this.date = date;
-        this.patients = patients;
-        this.appointments = appointments;
-        this.inProgressExams = inProgressExams;
-        this.collected = collected;
+    public TomTatTongQuan(LocalDate ngay, Long benhNhan, Long lichHen, Long phieuKhamDangXuLy, BigDecimal daThu) {
+        this.ngay = ngay;
+        this.benhNhan = benhNhan;
+        this.lichHen = lichHen;
+        this.phieuKhamDangXuLy = phieuKhamDangXuLy;
+        this.daThu = daThu;
     }
 
-    public LocalDate date() { return date; }
-    public Long patients() { return patients; }
-    public Long appointments() { return appointments; }
-    public Long inProgressExams() { return inProgressExams; }
-    public BigDecimal collected() { return collected; }
+    public LocalDate date() { return ngay; }
+    public Long patients() { return benhNhan; }
+    public Long appointments() { return lichHen; }
+    public Long inProgressExams() { return phieuKhamDangXuLy; }
+    public BigDecimal collected() { return daThu; }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof TomTatTongQuan value)) return false;
-        return java.util.Objects.equals(date, value.date)
-                && java.util.Objects.equals(patients, value.patients)
-                && java.util.Objects.equals(appointments, value.appointments)
-                && java.util.Objects.equals(inProgressExams, value.inProgressExams)
-                && java.util.Objects.equals(collected, value.collected);
+        return java.util.Objects.equals(ngay, value.ngay)
+                && java.util.Objects.equals(benhNhan, value.benhNhan)
+                && java.util.Objects.equals(lichHen, value.lichHen)
+                && java.util.Objects.equals(phieuKhamDangXuLy, value.phieuKhamDangXuLy)
+                && java.util.Objects.equals(daThu, value.daThu);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(this.date);
-        result = 31 * result + java.util.Objects.hashCode(this.patients);
-        result = 31 * result + java.util.Objects.hashCode(this.appointments);
-        result = 31 * result + java.util.Objects.hashCode(this.inProgressExams);
-        result = 31 * result + java.util.Objects.hashCode(this.collected);
+        result = 31 * result + java.util.Objects.hashCode(this.ngay);
+        result = 31 * result + java.util.Objects.hashCode(this.benhNhan);
+        result = 31 * result + java.util.Objects.hashCode(this.lichHen);
+        result = 31 * result + java.util.Objects.hashCode(this.phieuKhamDangXuLy);
+        result = 31 * result + java.util.Objects.hashCode(this.daThu);
         return result;
     }
 
     @Override
     public String toString() {
-        return "Summary[" + "date=" + date + ", " + "patients=" + patients + ", " + "appointments=" + appointments + ", " + "inProgressExams=" + inProgressExams + ", " + "collected=" + collected + "]";
+        return "Summary[" + "date=" + ngay + ", " + "patients=" + benhNhan + ", " + "appointments=" + lichHen + ", " + "inProgressExams=" + phieuKhamDangXuLy + ", " + "collected=" + daThu + "]";
     }
 }

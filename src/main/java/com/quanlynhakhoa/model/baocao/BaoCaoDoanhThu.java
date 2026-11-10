@@ -6,35 +6,35 @@ import java.util.List;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class BaoCaoDoanhThu {
-    private final LocalDate from;
-    private final LocalDate to;
-    private final boolean monthly;
-    private final List<DongBaoCaoDoanhThu> rows;
-    private final BigDecimal revenue;
-    private final BigDecimal collected;
-    private final BigDecimal closingDebt;
-    private final int invoices;
+    private final LocalDate tuNgay;
+    private final LocalDate denNgay;
+    private final boolean theoThang;
+    private final List<DongBaoCaoDoanhThu> danhSach;
+    private final BigDecimal doanhThu;
+    private final BigDecimal daThu;
+    private final BigDecimal congNoCuoiKy;
+    private final int hoaDon;
 
-    public BaoCaoDoanhThu(LocalDate from, LocalDate to, boolean monthly, List<DongBaoCaoDoanhThu> rows, BigDecimal revenue, BigDecimal collected, BigDecimal closingDebt, int invoices) {
-        rows = List.copyOf(rows);
-        this.from = from;
-        this.to = to;
-        this.monthly = monthly;
-        this.rows = rows;
-        this.revenue = revenue;
-        this.collected = collected;
-        this.closingDebt = closingDebt;
-        this.invoices = invoices;
+    public BaoCaoDoanhThu(LocalDate tuNgay, LocalDate denNgay, boolean theoThang, List<DongBaoCaoDoanhThu> danhSach, BigDecimal doanhThu, BigDecimal daThu, BigDecimal congNoCuoiKy, int hoaDon) {
+        danhSach = List.copyOf(danhSach);
+        this.tuNgay = tuNgay;
+        this.denNgay = denNgay;
+        this.theoThang = theoThang;
+        this.danhSach = danhSach;
+        this.doanhThu = doanhThu;
+        this.daThu = daThu;
+        this.congNoCuoiKy = congNoCuoiKy;
+        this.hoaDon = hoaDon;
     }
 
-    public LocalDate from() { return from; }
-    public LocalDate to() { return to; }
-    public boolean monthly() { return monthly; }
-    public List<DongBaoCaoDoanhThu> rows() { return rows; }
-    public BigDecimal revenue() { return revenue; }
-    public BigDecimal collected() { return collected; }
-    public BigDecimal closingDebt() { return closingDebt; }
-    public int invoices() { return invoices; }
+    public LocalDate from() { return tuNgay; }
+    public LocalDate to() { return denNgay; }
+    public boolean monthly() { return theoThang; }
+    public List<DongBaoCaoDoanhThu> rows() { return danhSach; }
+    public BigDecimal revenue() { return doanhThu; }
+    public BigDecimal collected() { return daThu; }
+    public BigDecimal closingDebt() { return congNoCuoiKy; }
+    public int invoices() { return hoaDon; }
 
 
 
@@ -43,32 +43,32 @@ public final class BaoCaoDoanhThu {
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof BaoCaoDoanhThu value)) return false;
-        return java.util.Objects.equals(from, value.from)
-                && java.util.Objects.equals(to, value.to)
-                && monthly == value.monthly
-                && java.util.Objects.equals(rows, value.rows)
-                && java.util.Objects.equals(revenue, value.revenue)
-                && java.util.Objects.equals(collected, value.collected)
-                && java.util.Objects.equals(closingDebt, value.closingDebt)
-                && invoices == value.invoices;
+        return java.util.Objects.equals(tuNgay, value.tuNgay)
+                && java.util.Objects.equals(denNgay, value.denNgay)
+                && theoThang == value.theoThang
+                && java.util.Objects.equals(danhSach, value.danhSach)
+                && java.util.Objects.equals(doanhThu, value.doanhThu)
+                && java.util.Objects.equals(daThu, value.daThu)
+                && java.util.Objects.equals(congNoCuoiKy, value.congNoCuoiKy)
+                && hoaDon == value.hoaDon;
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(this.from);
-        result = 31 * result + java.util.Objects.hashCode(this.to);
-        result = 31 * result + Boolean.hashCode(this.monthly);
-        result = 31 * result + java.util.Objects.hashCode(this.rows);
-        result = 31 * result + java.util.Objects.hashCode(this.revenue);
-        result = 31 * result + java.util.Objects.hashCode(this.collected);
-        result = 31 * result + java.util.Objects.hashCode(this.closingDebt);
-        result = 31 * result + Integer.hashCode(this.invoices);
+        result = 31 * result + java.util.Objects.hashCode(this.tuNgay);
+        result = 31 * result + java.util.Objects.hashCode(this.denNgay);
+        result = 31 * result + Boolean.hashCode(this.theoThang);
+        result = 31 * result + java.util.Objects.hashCode(this.danhSach);
+        result = 31 * result + java.util.Objects.hashCode(this.doanhThu);
+        result = 31 * result + java.util.Objects.hashCode(this.daThu);
+        result = 31 * result + java.util.Objects.hashCode(this.congNoCuoiKy);
+        result = 31 * result + Integer.hashCode(this.hoaDon);
         return result;
     }
 
     @Override
     public String toString() {
-        return "RevenueReport[" + "from=" + from + ", " + "to=" + to + ", " + "monthly=" + monthly + ", " + "rows=" + rows + ", " + "revenue=" + revenue + ", " + "collected=" + collected + ", " + "closingDebt=" + closingDebt + ", " + "invoices=" + invoices + "]";
+        return "RevenueReport[" + "from=" + tuNgay + ", " + "to=" + denNgay + ", " + "monthly=" + theoThang + ", " + "rows=" + danhSach + ", " + "revenue=" + doanhThu + ", " + "collected=" + daThu + ", " + "closingDebt=" + congNoCuoiKy + ", " + "invoices=" + hoaDon + "]";
     }
 }

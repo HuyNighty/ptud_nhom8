@@ -1,13 +1,15 @@
 package com.quanlynhakhoa.service.hoadon;
 
+import com.quanlynhakhoa.security.LoginPolicy;
+import com.quanlynhakhoa.security.JdbcAuthService;
+import com.quanlynhakhoa.security.BCryptPasswordVerifier;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
-import com.quanlynhakhoa.hethong.xacthuc.*;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.service.hoadon.HoaDonService;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.service.dichvu.DanhMucDichVuService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.io.Console;
 import java.math.BigDecimal;
 import java.time.Clock;

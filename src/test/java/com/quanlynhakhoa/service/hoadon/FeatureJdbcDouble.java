@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.service.hoadon;
 
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import java.lang.reflect.*;
 import java.sql.*;
 import java.util.*;

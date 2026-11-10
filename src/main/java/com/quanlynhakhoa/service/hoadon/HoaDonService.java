@@ -1,8 +1,11 @@
 package com.quanlynhakhoa.service.hoadon;
 
+import com.quanlynhakhoa.security.RolePermissionPolicy;
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.dao.hoadon.HuyHoaDonDao;
 import com.quanlynhakhoa.dao.hoadon.HoaDonDao;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
@@ -11,7 +14,6 @@ import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
-import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -24,7 +26,7 @@ public final class HoaDonService {
     private final HoaDonDao dao;
     private TaoHoaDonService creation;
     public HoaDonService(DesktopSession session, ConnectionProvider connections,
-                         NguonTinhPhiLamSang source, InvoiceIdGenerator ids) {
+                         NguonTinhPhiLamSang source, TaoMaHoaDon ids) {
         this(session, connections);
         creation = new TaoHoaDonService(session, connections, source, ids);
     }

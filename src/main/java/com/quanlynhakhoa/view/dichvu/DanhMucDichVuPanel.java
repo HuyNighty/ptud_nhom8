@@ -1,14 +1,16 @@
 package com.quanlynhakhoa.view.dichvu;
 
+import com.quanlynhakhoa.security.RolePermissionPolicy;
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.enums.CheDoSuaDanhMucDichVu;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.config.ConnectionProvider;
 import com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.controller.dichvu.DanhMucDichVuController;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
 import com.quanlynhakhoa.service.dichvu.DanhMucDichVuService;
-import com.quanlynhakhoa.hethong.phanquyen.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -16,7 +18,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-public final class DanhMucDichVuPanel extends JPanel implements com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature {
+public final class DanhMucDichVuPanel extends JPanel implements com.quanlynhakhoa.config.tinhnang.RefreshableFeature {
 
     private final CheDoSuaDanhMucDichVu mode;
     private final JTextField txtTuKhoa = new JTextField(18);

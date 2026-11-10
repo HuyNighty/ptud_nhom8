@@ -1,11 +1,11 @@
 package com.quanlynhakhoa.view.vaitro;
 
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.model.vaitro.TongQuanVaiTro;
 import com.quanlynhakhoa.service.vaitro.TongQuanVaiTroService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
 import java.awt.BorderLayout;
 import java.awt.Color;

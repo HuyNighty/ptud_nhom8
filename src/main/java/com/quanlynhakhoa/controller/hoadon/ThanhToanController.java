@@ -4,7 +4,7 @@ import com.quanlynhakhoa.view.hoadon.ThanhToanForm;
 import com.quanlynhakhoa.view.hoadon.ThanhToanDialog;
 import com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon;
 import com.quanlynhakhoa.service.hoadon.ThanhToanService;
-import com.quanlynhakhoa.service.hoadon.RandomInvoiceIdGenerator;
+import com.quanlynhakhoa.service.hoadon.TaoMaHoaDonNgauNhien;
 import com.quanlynhakhoa.service.hoadon.LuuThanhToanDangCho;
 import com.quanlynhakhoa.service.hoadon.LanThanhToanService;
 import com.quanlynhakhoa.service.hoadon.HoaDonService;
@@ -17,8 +17,8 @@ import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThanhToanDangCho;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.model.hoadon.DuLieuThanhToanDaTai;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.config.ConnectionProvider;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.math.BigDecimal;
 import java.awt.event.*;
 import java.util.*;
@@ -108,7 +108,7 @@ public final class ThanhToanController {
         try {
             if(retrying){request=pending;}else{
             BigDecimal cash=view.cashAmount(),bank=view.bankAmount();
-            List<PhanThanhToan> parts=new ArrayList<>();RandomInvoiceIdGenerator ids=new RandomInvoiceIdGenerator();
+            List<PhanThanhToan> parts=new ArrayList<>();TaoMaHoaDonNgauNhien ids=new TaoMaHoaDonNgauNhien();
             if(cash.signum()>0)parts.add(new PhanThanhToan(ids.next(null),cash,PhuongThucThanhToan.TIEN_MAT,null,GiaoDienHoaDon.moneyInput(view.txtKhachDua.getText())));
             if(bank.signum()>0)parts.add(new PhanThanhToan(ids.next(null),bank,PhuongThucThanhToan.CHUYEN_KHOAN,view.txtMaGiaoDich.getText().trim(),null));
             request=new YeuCauThanhToan(invoiceId,GiaoDienHoaDon.moneyInput(view.txtSoTien.getText()),parts,view.chkDaNhanChuyenKhoan.isSelected());ThanhToanService.validate(request);

@@ -2,7 +2,7 @@ package com.quanlynhakhoa.service.hoadon;
 
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import java.io.*;
 import java.math.BigDecimal;

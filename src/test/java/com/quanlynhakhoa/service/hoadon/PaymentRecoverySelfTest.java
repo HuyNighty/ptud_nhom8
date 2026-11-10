@@ -60,7 +60,7 @@ public final class PaymentRecoverySelfTest {
         // Drive the actual submit path without a modal dialog. The failing connection sees the flushed journal.
         Files.delete(journal);final boolean[] disconnected={false};final YeuCauThanhToan[] sent={null};
         FeatureJdbcDouble submissionDb=fixture(null,0);final LuuThanhToanDangCho recoveryStore=new LuuThanhToanDangCho(folder);
-        com.quanlynhakhoa.dao.hoadon.ConnectionProvider connection=new com.quanlynhakhoa.dao.hoadon.ConnectionProvider(){
+        com.quanlynhakhoa.config.ConnectionProvider connection=new com.quanlynhakhoa.config.ConnectionProvider(){
             public java.sql.Connection open()throws java.sql.SQLException{
                 if(disconnected[0]){try{YeuCauThanhToan stored=recoveryStore.read("H1");check(stored!=null,"journal is durable before SQL opens");sent[0]=stored;}catch(java.io.IOException failure){throw new java.sql.SQLException(failure);}throw new java.sql.SQLException("Simulated lost connection");}
                 return submissionDb.open();

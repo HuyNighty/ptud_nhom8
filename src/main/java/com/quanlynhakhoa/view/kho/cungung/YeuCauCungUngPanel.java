@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.view.kho.cungung;
 
 import com.quanlynhakhoa.controller.kho.cungung.YeuCauCungUngController;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.service.kho.cungung.YeuCauCungUngService;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;

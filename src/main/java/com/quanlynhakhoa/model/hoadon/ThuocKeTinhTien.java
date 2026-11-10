@@ -4,54 +4,54 @@ import java.math.BigDecimal;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class ThuocKeTinhTien {
-    private final String medicineId;
-    private final String name;
-    private final String unit;
-    private final int quantity;
-    private final BigDecimal unitPrice;
+    private final String maThuoc;
+    private final String ten;
+    private final String donViTinh;
+    private final int soLuong;
+    private final BigDecimal donGia;
 
-    public ThuocKeTinhTien(String medicineId, String name, String unit, int quantity, BigDecimal unitPrice) {
-        this.medicineId = medicineId;
-        this.name = name;
-        this.unit = unit;
-        this.quantity = quantity;
-        this.unitPrice = unitPrice;
+    public ThuocKeTinhTien(String maThuoc, String ten, String donViTinh, int soLuong, BigDecimal donGia) {
+        this.maThuoc = maThuoc;
+        this.ten = ten;
+        this.donViTinh = donViTinh;
+        this.soLuong = soLuong;
+        this.donGia = donGia;
     }
 
-    public String medicineId() { return medicineId; }
-    public String name() { return name; }
-    public String unit() { return unit; }
-    public int quantity() { return quantity; }
-    public BigDecimal unitPrice() { return unitPrice; }
+    public String medicineId() { return maThuoc; }
+    public String name() { return ten; }
+    public String unit() { return donViTinh; }
+    public int quantity() { return soLuong; }
+    public BigDecimal unitPrice() { return donGia; }
 
     public BigDecimal total() {
-        return unitPrice == null ? null : unitPrice.multiply(BigDecimal.valueOf(quantity));
+        return donGia == null ? null : donGia.multiply(BigDecimal.valueOf(soLuong));
     }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof ThuocKeTinhTien value)) return false;
-        return java.util.Objects.equals(medicineId, value.medicineId)
-                && java.util.Objects.equals(name, value.name)
-                && java.util.Objects.equals(unit, value.unit)
-                && quantity == value.quantity
-                && java.util.Objects.equals(unitPrice, value.unitPrice);
+        return java.util.Objects.equals(maThuoc, value.maThuoc)
+                && java.util.Objects.equals(ten, value.ten)
+                && java.util.Objects.equals(donViTinh, value.donViTinh)
+                && soLuong == value.soLuong
+                && java.util.Objects.equals(donGia, value.donGia);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(medicineId);
-        result = 31 * result + java.util.Objects.hashCode(name);
-        result = 31 * result + java.util.Objects.hashCode(unit);
-        result = 31 * result + Integer.hashCode(quantity);
-        result = 31 * result + java.util.Objects.hashCode(unitPrice);
+        result = 31 * result + java.util.Objects.hashCode(maThuoc);
+        result = 31 * result + java.util.Objects.hashCode(ten);
+        result = 31 * result + java.util.Objects.hashCode(donViTinh);
+        result = 31 * result + Integer.hashCode(soLuong);
+        result = 31 * result + java.util.Objects.hashCode(donGia);
         return result;
     }
 
     @Override
     public String toString() {
-        return "PrescribedMedicine[" + "medicineId=" + medicineId + ", " + "name=" + name + ", " + "unit=" + unit + ", " + "quantity=" + quantity + ", " + "unitPrice=" + unitPrice + "]";
+        return "PrescribedMedicine[" + "medicineId=" + maThuoc + ", " + "name=" + ten + ", " + "unit=" + donViTinh + ", " + "quantity=" + soLuong + ", " + "unitPrice=" + donGia + "]";
     }
 }

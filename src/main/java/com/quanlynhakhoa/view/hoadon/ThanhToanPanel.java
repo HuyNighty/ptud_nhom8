@@ -1,12 +1,14 @@
 package com.quanlynhakhoa.view.hoadon;
 
+import com.quanlynhakhoa.security.RolePermissionPolicy;
+import com.quanlynhakhoa.security.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.controller.hoadon.ManHinhThanhToanController;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
-import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
-import com.quanlynhakhoa.hethong.phanquyen.*;
+import com.quanlynhakhoa.config.ConnectionProvider;
+import com.quanlynhakhoa.config.tinhnang.RefreshableFeature;
 import java.awt.*;
 import java.util.List;
 import javax.swing.*;
@@ -43,7 +45,7 @@ public final class ThanhToanPanel extends JPanel implements RefreshableFeature {
         for(ThongTinHoaDon h:invoices){LuaChonLapHoaDon item=new LuaChonLapHoaDon(h.maHoaDon(),h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Còn nợ "+GiaoDienHoaDon.vnd(h.conNo()));cmbHoaDon.addItem(item);if(h.maHoaDon().equals(selected))chosen=item;}
         cmbHoaDon.setSelectedItem(chosen); // Preserve current form/history even when a fully paid invoice leaves the picker.
     }
-    public void showForm(ThanhToanForm pnlForm){com.quanlynhakhoa.hethong.giaodien.AppTheme.applyButtons(pnlForm);pnlCollection.removeAll();pnlCollection.add(pnlForm,BorderLayout.CENTER);pnlCollection.revalidate();pnlCollection.repaint();}
+    public void showForm(ThanhToanForm pnlForm){com.quanlynhakhoa.view.hethong.AppTheme.applyButtons(pnlForm);pnlCollection.removeAll();pnlCollection.add(pnlForm,BorderLayout.CENTER);pnlCollection.revalidate();pnlCollection.repaint();}
     public void pickerEnabled(boolean enabled){txtTimHoaDon.setEnabled(enabled);btnTim.setEnabled(enabled);btnTaiLai.setEnabled(enabled);cmbHoaDon.setEnabled(enabled);}
     public void expired(){cmbHoaDon.removeAllItems();pnlCollection.removeAll();pickerEnabled(false);lblTrangThai.setText("Phiên đã đăng xuất.");pnlCollection.revalidate();pnlCollection.repaint();}
 }

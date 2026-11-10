@@ -5,50 +5,50 @@ import java.time.LocalDate;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class ThongTinNhanVien {
-    private final String id;
-    private final String fullName;
-    private final String jobTitle;
-    private final TrangThaiNhanVien status;
-    private final LocalDate departureDate;
+    private final String ma;
+    private final String hoTen;
+    private final String chucDanh;
+    private final TrangThaiNhanVien trangThai;
+    private final LocalDate ngayNghiViec;
 
-    public ThongTinNhanVien(String id, String fullName, String jobTitle, TrangThaiNhanVien status, LocalDate departureDate) {
-        this.id = id;
-        this.fullName = fullName;
-        this.jobTitle = jobTitle;
-        this.status = status;
-        this.departureDate = departureDate;
+    public ThongTinNhanVien(String ma, String hoTen, String chucDanh, TrangThaiNhanVien trangThai, LocalDate ngayNghiViec) {
+        this.ma = ma;
+        this.hoTen = hoTen;
+        this.chucDanh = chucDanh;
+        this.trangThai = trangThai;
+        this.ngayNghiViec = ngayNghiViec;
     }
 
-    public String id() { return id; }
-    public String fullName() { return fullName; }
-    public String jobTitle() { return jobTitle; }
-    public TrangThaiNhanVien status() { return status; }
-    public LocalDate departureDate() { return departureDate; }
+    public String id() { return ma; }
+    public String fullName() { return hoTen; }
+    public String jobTitle() { return chucDanh; }
+    public TrangThaiNhanVien status() { return trangThai; }
+    public LocalDate departureDate() { return ngayNghiViec; }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof ThongTinNhanVien value)) return false;
-        return java.util.Objects.equals(id, value.id)
-                && java.util.Objects.equals(fullName, value.fullName)
-                && java.util.Objects.equals(jobTitle, value.jobTitle)
-                && java.util.Objects.equals(status, value.status)
-                && java.util.Objects.equals(departureDate, value.departureDate);
+        return java.util.Objects.equals(ma, value.ma)
+                && java.util.Objects.equals(hoTen, value.hoTen)
+                && java.util.Objects.equals(chucDanh, value.chucDanh)
+                && java.util.Objects.equals(trangThai, value.trangThai)
+                && java.util.Objects.equals(ngayNghiViec, value.ngayNghiViec);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(id);
-        result = 31 * result + java.util.Objects.hashCode(fullName);
-        result = 31 * result + java.util.Objects.hashCode(jobTitle);
-        result = 31 * result + java.util.Objects.hashCode(status);
-        result = 31 * result + java.util.Objects.hashCode(departureDate);
+        result = 31 * result + java.util.Objects.hashCode(ma);
+        result = 31 * result + java.util.Objects.hashCode(hoTen);
+        result = 31 * result + java.util.Objects.hashCode(chucDanh);
+        result = 31 * result + java.util.Objects.hashCode(trangThai);
+        result = 31 * result + java.util.Objects.hashCode(ngayNghiViec);
         return result;
     }
 
     @Override
     public String toString() {
-        return "Employee[" + "id=" + id + ", " + "fullName=" + fullName + ", " + "jobTitle=" + jobTitle + ", " + "status=" + status + ", " + "departureDate=" + departureDate + "]";
+        return "Employee[" + "id=" + ma + ", " + "fullName=" + hoTen + ", " + "jobTitle=" + chucDanh + ", " + "status=" + trangThai + ", " + "departureDate=" + ngayNghiViec + "]";
     }
 }
