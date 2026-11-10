@@ -4,7 +4,7 @@ import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.controller.PhieuKhamController;
 import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKhamListItem;
+import com.quanlynhakhoa.model.phieukham.DongDanhSachPhieuKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.service.PhieuKhamService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
@@ -63,7 +63,7 @@ public final class PhieuKhamPanel extends JPanel {
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
 
     private final DesktopSession session;
-    private final List<PhieuKhamListItem> rows = new ArrayList<>();
+    private final List<DongDanhSachPhieuKham> rows = new ArrayList<>();
 
     private final JTextField txtNgayKham = new JTextField(10);
     private final JComboBox<BacSiChonKham> cmbBacSiLoc = new JComboBox<>();
@@ -752,11 +752,11 @@ public final class PhieuKhamPanel extends JPanel {
         }
     }
 
-    public void hienDanhSach(List<PhieuKhamListItem> values) {
+    public void hienDanhSach(List<DongDanhSachPhieuKham> values) {
         rows.clear();
         rows.addAll(values);
         tableModel.setRowCount(0);
-        for (PhieuKhamListItem row : rows) {
+        for (DongDanhSachPhieuKham row : rows) {
             LocalDateTime received = row.thoiGianTiepNhan();
             tableModel.addRow(new Object[]{
                     row.maPhieuKham(),

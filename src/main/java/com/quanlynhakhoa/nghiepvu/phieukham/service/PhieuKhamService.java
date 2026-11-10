@@ -5,7 +5,7 @@ import com.quanlynhakhoa.quantri.vaitro.entity.Role;
 import com.quanlynhakhoa.nghiepvu.phieukham.dao.PhieuKhamDao;
 import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
 import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKham;
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.PhieuKhamListItem;
+import com.quanlynhakhoa.model.phieukham.DongDanhSachPhieuKham;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import com.quanlynhakhoa.hethong.phanquyen.Permission;
@@ -34,7 +34,7 @@ public final class PhieuKhamService {
         this.dao = java.util.Objects.requireNonNull(dao, "dao");
     }
 
-    public List<PhieuKhamListItem> timKiem(LocalDate ngayKham, String maBacSi,
+    public List<DongDanhSachPhieuKham> timKiem(LocalDate ngayKham, String maBacSi,
                                             String trangThai, String tuKhoa) throws SQLException {
         authorization.require(session, Permission.MEDICAL_RECORD_READ);
         try (Connection connection = TeamDevConnection.open()) {

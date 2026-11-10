@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.phieukham.dao;
 
-import com.quanlynhakhoa.nghiepvu.phieukham.entity.ChiTietDonThuoc;
+import com.quanlynhakhoa.model.phieukham.DongChiTietDonThuoc;
 import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import java.sql.Connection;
 import java.sql.Date;
@@ -53,7 +53,7 @@ public final class DonThuocDao {
         }
     }
 
-    public List<ChiTietDonThuoc> danhSachChiTiet(
+    public List<DongChiTietDonThuoc> danhSachChiTiet(
             Connection connection, String maDonThuoc) throws SQLException {
         String sql = """
                 SELECT ct.maThuoc, t.tenThuoc, t.donViTinh, ct.soLuong,
@@ -64,13 +64,13 @@ public final class DonThuocDao {
                 WHERE ct.maDonThuoc = ?
                 ORDER BY t.tenThuoc, ct.maThuoc
                 """;
-        List<ChiTietDonThuoc> result = new ArrayList<>();
+        List<DongChiTietDonThuoc> result = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, maDonThuoc);
             statement.setQueryTimeout(10);
             try (ResultSet rows = statement.executeQuery()) {
                 while (rows.next()) {
-                    result.add(new ChiTietDonThuoc(
+                    result.add(new DongChiTietDonThuoc(
                             rows.getString("maThuoc"),
                             rows.getNString("tenThuoc"),
                             rows.getNString("donViTinh"),
@@ -109,7 +109,7 @@ public final class DonThuocDao {
     }
 
     public void taoChiTiet(Connection connection, String maDonThuoc,
-                           ChiTietDonThuoc item) throws SQLException {
+                           DongChiTietDonThuoc item) throws SQLException {
         String sql = """
                 INSERT INTO dbo.ChiTietDonThuoc
                     (maDonThuoc, maThuoc, soLuong, lieuDung, cachDung, soNgayDung)
