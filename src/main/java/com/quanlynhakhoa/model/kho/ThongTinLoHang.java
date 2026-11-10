@@ -1,10 +1,12 @@
 package com.quanlynhakhoa.model.kho;
 
 import java.time.LocalDate;
+import com.quanlynhakhoa.entity.LoHang;
 import java.time.temporal.ChronoUnit;
 
 /** Model chỉ đọc lô thuốc hoặc vật tư; số tồn chỉ thay đổi qua chứng từ kho. */
 public class ThongTinLoHang {
+    private final LoHang loHang;
     public static final String LOAI_TAT_CA = "ALL";
     public static final String LOAI_THUOC = "THUOC";
     public static final String LOAI_VAT_TU = "VATTU";
@@ -12,67 +14,59 @@ public class ThongTinLoHang {
     public static final String HAN_HET_HAN = "HET_HAN";
     public static final String HAN_CON_HAN = "CON_HAN";
 
-    private String maLo;
-    private String soLo;
-    private LocalDate ngaySanXuat;
-    private LocalDate hanSuDung;
-    private String maThuoc;
-    private String maVatTu;
     private String tenHang;
-    private String maNhaCungCap;
     private String tenNhaCungCap;
-    private int soLuongTon;
 
-    public ThongTinLoHang() { }
+    public ThongTinLoHang() { loHang = new LoHang(); }
 
     public ThongTinLoHang(String maLo, String soLo, LocalDate ngaySanXuat, LocalDate hanSuDung,
                   String maThuoc, String maVatTu, String tenHang,
                   String maNhaCungCap, String tenNhaCungCap, int soLuongTon) {
-        this.maLo = maLo;
-        this.soLo = soLo;
-        this.ngaySanXuat = ngaySanXuat;
-        this.hanSuDung = hanSuDung;
-        this.maThuoc = maThuoc;
-        this.maVatTu = maVatTu;
+        this.loHang = new LoHang(maLo, soLo, ngaySanXuat, hanSuDung, maThuoc, maVatTu, maNhaCungCap, soLuongTon);
+
+
+
+
+
         this.tenHang = tenHang;
-        this.maNhaCungCap = maNhaCungCap;
+
         this.tenNhaCungCap = tenNhaCungCap;
-        this.soLuongTon = soLuongTon;
+
     }
 
-    public String getMaLo() { return maLo; }
-    public void setMaLo(String maLo) { this.maLo = maLo; }
-    public String getSoLo() { return soLo; }
-    public void setSoLo(String soLo) { this.soLo = soLo; }
-    public LocalDate getNgaySanXuat() { return ngaySanXuat; }
-    public void setNgaySanXuat(LocalDate ngaySanXuat) { this.ngaySanXuat = ngaySanXuat; }
-    public LocalDate getHanSuDung() { return hanSuDung; }
-    public void setHanSuDung(LocalDate hanSuDung) { this.hanSuDung = hanSuDung; }
-    public String getMaThuoc() { return maThuoc; }
-    public void setMaThuoc(String maThuoc) { this.maThuoc = maThuoc; }
-    public String getMaVatTu() { return maVatTu; }
-    public void setMaVatTu(String maVatTu) { this.maVatTu = maVatTu; }
+    public String getMaLo() { return loHang.getMaLo(); }
+    public void setMaLo(String maLo) { loHang.setMaLo(maLo); }
+    public String getSoLo() { return loHang.getSoLo(); }
+    public void setSoLo(String soLo) { loHang.setSoLo(soLo); }
+    public LocalDate getNgaySanXuat() { return loHang.getNgaySanXuat(); }
+    public void setNgaySanXuat(LocalDate ngaySanXuat) { loHang.setNgaySanXuat(ngaySanXuat); }
+    public LocalDate getHanSuDung() { return loHang.getHanSuDung(); }
+    public void setHanSuDung(LocalDate hanSuDung) { loHang.setHanSuDung(hanSuDung); }
+    public String getMaThuoc() { return loHang.getMaThuoc(); }
+    public void setMaThuoc(String maThuoc) { loHang.setMaThuoc(maThuoc); }
+    public String getMaVatTu() { return loHang.getMaVatTu(); }
+    public void setMaVatTu(String maVatTu) { loHang.setMaVatTu(maVatTu); }
     public String getTenHang() { return tenHang; }
     public void setTenHang(String tenHang) { this.tenHang = tenHang; }
-    public String getMaNhaCungCap() { return maNhaCungCap; }
-    public void setMaNhaCungCap(String maNhaCungCap) { this.maNhaCungCap = maNhaCungCap; }
+    public String getMaNhaCungCap() { return loHang.getMaNhaCungCap(); }
+    public void setMaNhaCungCap(String maNhaCungCap) { loHang.setMaNhaCungCap(maNhaCungCap); }
     public String getTenNhaCungCap() { return tenNhaCungCap; }
     public void setTenNhaCungCap(String tenNhaCungCap) { this.tenNhaCungCap = tenNhaCungCap; }
-    public int getSoLuongTon() { return soLuongTon; }
-    public void setSoLuongTon(int soLuongTon) { this.soLuongTon = soLuongTon; }
+    public int getSoLuongTon() { return loHang.getSoLuongTon(); }
+    public void setSoLuongTon(int soLuongTon) { loHang.setSoLuongTon(soLuongTon); }
 
-    public String getLoaiHangHienThi() { return maThuoc != null ? "Thuốc" : "Vật tư"; }
+    public String getLoaiHangHienThi() { return loHang.getMaThuoc() != null ? "Thuốc" : "Vật tư"; }
 
     public boolean daHetHan(LocalDate ngay) {
-        return hanSuDung != null && hanSuDung.isBefore(ngay);
+        return loHang.getHanSuDung() != null && loHang.getHanSuDung().isBefore(ngay);
     }
 
     public String getTinhTrangHan() {
-        if (hanSuDung == null) return "Không có HSD";
+        if (loHang.getHanSuDung() == null) return "Không có HSD";
         return daHetHan(LocalDate.now()) ? "Đã hết hạn" : "Còn hạn";
     }
 
     public long getSoNgayConLai(LocalDate ngay) {
-        return hanSuDung == null ? Long.MAX_VALUE : ChronoUnit.DAYS.between(ngay, hanSuDung);
+        return loHang.getHanSuDung() == null ? Long.MAX_VALUE : ChronoUnit.DAYS.between(ngay, loHang.getHanSuDung());
     }
 }
