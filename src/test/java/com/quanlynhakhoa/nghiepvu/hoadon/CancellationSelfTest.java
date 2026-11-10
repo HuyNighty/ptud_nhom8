@@ -1,5 +1,14 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+
+
+
+
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -16,7 +25,7 @@ public final class CancellationSelfTest {
     private static class Invoices extends InvoiceDao {
         BigDecimal paid=BigDecimal.ZERO;InvoiceStatus status=InvoiceStatus.CHUA_THANH_TOAN;
         @Override public Invoice getForPayment(Connection c,String id){return new Invoice("H1","NV1","BN1","Synthetic",null,LocalDateTime.now(),status,new BigDecimal("300"),paid,BigDecimal.ZERO);}
-        @Override public List<InvoiceLine> lines(Connection c,String id){return List.of(new InvoiceLine(1,"H1","DV1",null,null,1,new BigDecimal("300")));}
+        @Override public List<DongChiTietHoaDon> lines(Connection c,String id){return List.of(new DongChiTietHoaDon(1,"H1","DV1",null,null,1,new BigDecimal("300")));}
         @Override public List<Payment> payments(Connection c,String id){return paid.signum()==0?List.of():List.of(new Payment("P1","H1",LocalDateTime.now(),paid,Payment.PhuongThuc.TIEN_MAT,null,paid,Payment.TrangThai.THANH_CONG,"NV1",null,null,null));}
     }
     private static class Dao extends CancellationDao {

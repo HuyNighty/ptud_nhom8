@@ -1,5 +1,12 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+
+
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
@@ -37,9 +44,9 @@ public final class ServiceBillingSelfTest {
         System.out.println("PASS: ServiceBillingSelfTest " + checks + " checks (synthetic JDBC; no SQL Server).");
     }
     private static void calculations() throws Exception {
-        List<InvoiceLine> lines = List.of(new InvoiceLine(1, "H1", "DV1", null, null, 2, money("100")),
-                new InvoiceLine(2, "H1", null, "TH1", null, 3, money("20")),
-                new InvoiceLine(3, "H1", null, null, "VT1", 1, money("40")));
+        List<DongChiTietHoaDon> lines = List.of(new DongChiTietHoaDon(1, "H1", "DV1", null, null, 2, money("100")),
+                new DongChiTietHoaDon(2, "H1", null, "TH1", null, 3, money("20")),
+                new DongChiTietHoaDon(3, "H1", null, null, "VT1", 1, money("40")));
         check(BillingCalculator.total(lines).compareTo(money("300")) == 0, "all item kinds included");
         check(BillingCalculator.total(List.of()).signum() == 0, "no lines = zero");
         check(BillingCalculator.collected(List.of()).signum() == 0, "no payments = zero");
@@ -53,10 +60,10 @@ public final class ServiceBillingSelfTest {
         check(BillingCalculator.patientDebt(List.of(invoice("300", "100", InvoiceStatus.THANH_TOAN_MOT_PHAN),
                 invoice("1000", "0", InvoiceStatus.DA_HUY), overpaid)).intValueExact() == 100, "cancelled invoices excluded, negative debt visible");
         check(invoice("300", "100", InvoiceStatus.DA_THANH_TOAN).canhBao().contains("BẤT NHẤT"), "status discrepancy");
-        BigDecimal big = new InvoiceLine(1, "H1", "DV1", null, null, Integer.MAX_VALUE, money("999999999999999999")).thanhTien();
+        BigDecimal big = new DongChiTietHoaDon(1, "H1", "DV1", null, null, Integer.MAX_VALUE, money("999999999999999999")).thanhTien();
         check(big.equals(money("2147483646999999997852516353")), "large exact decimal");
-        expect(IllegalArgumentException.class, new Action() { public void run() { new InvoiceLine(1, "H1", "D1", "T1", null, 1, money("1")); } });
-        expect(IllegalArgumentException.class, new Action() { public void run() { new InvoiceLine(1, "H1", "D1", null, null, 0, money("1")); } });
+        expect(IllegalArgumentException.class, new Action() { public void run() { new DongChiTietHoaDon(1, "H1", "D1", "T1", null, 1, money("1")); } });
+        expect(IllegalArgumentException.class, new Action() { public void run() { new DongChiTietHoaDon(1, "H1", "D1", null, null, 0, money("1")); } });
         // A price catalogue update cannot mutate immutable historical unit prices or rows.
         DentalService changed = value("9999");
         DentalService stopped = new DentalService(changed.maDichVu(), changed.tenDichVu(), changed.donGia(), null, false, false);

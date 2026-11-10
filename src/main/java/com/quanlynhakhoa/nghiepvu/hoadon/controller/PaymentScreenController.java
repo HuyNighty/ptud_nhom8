@@ -1,5 +1,11 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.controller;
 
+
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
@@ -23,7 +29,7 @@ public final class PaymentScreenController {
         view.btnTim.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){userSearch();}});
         view.txtTimHoaDon.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){userSearch();}});
         view.btnTaiLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(locked()||searching)return;view.txtTimHoaDon.setText("");userSearch();}});
-        view.cmbHoaDon.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(!updating&&view.cmbHoaDon.getSelectedItem() instanceof BillingChoice choice)openInvoice(choice.id());}});
+        view.cmbHoaDon.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(!updating&&view.cmbHoaDon.getSelectedItem() instanceof LuaChonLapHoaDon choice)openInvoice(choice.id());}});
         invalidated=new Runnable(){public void run(){refresh();}};BillingChangeBus.forSession(session).subscribe(invalidated);
     }
     private boolean locked(){return form!=null&&(form.isWorking()||form.hasUncertainResult());}

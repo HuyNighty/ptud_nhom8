@@ -1,5 +1,14 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+
+
+
+
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.hethong.phanquyen.*;
@@ -82,7 +91,7 @@ public final class CancellationService {
     }
     private InvoiceDetails readInvoice(Connection c,String id)throws SQLException {
         Invoice invoice=invoices.getForPayment(c,id);if(invoice==null)throw new IllegalArgumentException("Hóa đơn không tồn tại.");
-        List<InvoiceLine> lines=invoices.lines(c,id);List<Payment> payments=invoices.payments(c,id);
+        List<DongChiTietHoaDon> lines=invoices.lines(c,id);List<Payment> payments=invoices.payments(c,id);
         if(BillingCalculator.total(lines).compareTo(invoice.tongTien())!=0||BillingCalculator.collected(payments).compareTo(invoice.daThu())!=0)throw new SQLException("Kết quả hóa đơn không nhất quán.");
         return new InvoiceDetails(invoice,lines,payments);
     }

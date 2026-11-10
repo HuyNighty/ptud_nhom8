@@ -1,5 +1,10 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel;
 import com.quanlynhakhoa.nghiepvu.dichvu.entity.DentalService;
@@ -31,7 +36,7 @@ public final class ServiceBillingPreview {
                             LocalDateTime.of(2026, 10, 30, 9, 0), InvoiceStatus.THANH_TOAN_MOT_PHAN,
                             new BigDecimal("300000"), new BigDecimal("100000"), new BigDecimal("200000"));
                     pnlBilling.showRows(List.of(invoice));
-                    pnlBilling.showDetail(new InvoiceDetails(invoice, List.of(new InvoiceLine(1, "TSTHD001", "TST001", null, null, 2, new BigDecimal("150000"))), List.of()));
+                    pnlBilling.showDetail(new InvoiceDetails(invoice, List.of(new DongChiTietHoaDon(1, "TSTHD001", "TST001", null, null, 2, new BigDecimal("150000"))), List.of()));
                     pnlBilling.status("XEM BỐ CỤC HEADLESS · dữ liệu tổng hợp · chưa kiểm thử SQL thật");
                     render(pnlBilling, "target/billing-preview.png");
                     com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel pnlDebt=new com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel(ServiceBillingSelfTest.session(Role.RECEPTIONIST),jdbc);

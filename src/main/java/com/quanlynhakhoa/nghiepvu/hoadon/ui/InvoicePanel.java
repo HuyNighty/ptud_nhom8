@@ -1,5 +1,13 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
+import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
+import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.InvoiceController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -139,18 +147,18 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
         if(selectedDetail==null||!selectedDetail.maHoaDon().equals(selectedId())){
             BillingUi.result(this,"Chi tiết hóa đơn chưa tải xong. Chọn hóa đơn và chờ tải xong rồi thử lại.");return null;
         }
-        java.util.List<BillingChoice> choices=new java.util.ArrayList<>();
+        java.util.List<LuaChonLapHoaDon> choices=new java.util.ArrayList<>();
         for(int row=0;row<paymentModel.getRowCount();row++){
             if(paymentModel.getValueAt(row,6)==Payment.TrangThai.THANH_CONG){
                 String id=String.valueOf(paymentModel.getValueAt(row,0));
-                choices.add(new BillingChoice(id,BillingUi.vnd((java.math.BigDecimal)paymentModel.getValueAt(row,2))+" · "+paymentModel.getValueAt(row,3)));
+                choices.add(new LuaChonLapHoaDon(id,BillingUi.vnd((java.math.BigDecimal)paymentModel.getValueAt(row,2))+" · "+paymentModel.getValueAt(row,3)));
             }
         }
         if(choices.isEmpty()){BillingUi.result(this,"Hóa đơn này không có khoản thu thành công để điều chỉnh.");return null;}
-        BillingChoice initial=choices.getFirst();String selected=selectedPaymentId();
-        for(BillingChoice item:choices)if(item.id().equals(selected))initial=item;
+        LuaChonLapHoaDon initial=choices.getFirst();String selected=selectedPaymentId();
+        for(LuaChonLapHoaDon item:choices)if(item.id().equals(selected))initial=item;
         Object chosen=JOptionPane.showInputDialog(this,"Chọn khoản thu cần điều chỉnh:","Điều chỉnh khoản thu",JOptionPane.QUESTION_MESSAGE,null,choices.toArray(),initial);
-        return chosen instanceof BillingChoice item?item.id():null;
+        return chosen instanceof LuaChonLapHoaDon item?item.id():null;
     }
 
     public String selectedPaymentId(){
@@ -223,8 +231,8 @@ public final class InvoicePanel extends JPanel implements com.quanlynhakhoa.heth
     }
     public void showDetail(InvoiceDetails value) {
         clearDetail();
-        for (InvoiceLine line : value.chiTiet()) lineModel.addRow(new Object[]{line.loaiHang(), line.maHang(), line.tenHienThi(), line.soLuong(), line.donGiaApDung(), line.thanhTien()});
-        for (PrescribedMedicine medicine : value.prescribedMedicines()) {
+        for (DongChiTietHoaDon line : value.chiTiet()) lineModel.addRow(new Object[]{line.loaiHang(), line.maHang(), line.tenHienThi(), line.soLuong(), line.donGiaApDung(), line.thanhTien()});
+        for (ThuocKeTinhTien medicine : value.prescribedMedicines()) {
             prescriptionModel.addRow(new Object[]{medicine.medicineId(),medicine.name(),medicine.unit(),medicine.quantity(),
                     medicine.unitPrice()==null?"Chưa chốt":medicine.unitPrice(),medicine.total()});
         }

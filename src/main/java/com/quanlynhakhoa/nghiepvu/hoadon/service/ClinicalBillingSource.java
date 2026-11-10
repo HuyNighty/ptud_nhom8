@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.InvoiceDraft;
+import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -12,7 +12,7 @@ import java.sql.SQLException;
  * Uses caller's connection/transaction; no writes, commit or connection close.
  */
 public interface ClinicalBillingSource {
-    InvoiceDraft load(Connection connection, String patientId, String visitId, boolean lock) throws SQLException;
+    BanNhapHoaDon load(Connection connection, String patientId, String visitId, boolean lock) throws SQLException;
     /** Must apply the reviewed historical/inactive catalogue policy, or throw to reject. */
-    void validateServiceState(Connection connection, InvoiceDraft draft, String serviceId, boolean currentlyActive) throws SQLException;
+    void validateServiceState(Connection connection, BanNhapHoaDon draft, String serviceId, boolean currentlyActive) throws SQLException;
 }

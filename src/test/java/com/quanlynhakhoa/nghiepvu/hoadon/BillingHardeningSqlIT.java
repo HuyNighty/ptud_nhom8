@@ -1,5 +1,18 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+
+
+
+
+
+
+
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
+import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -51,8 +64,8 @@ public final class BillingHardeningSqlIT {
         var invoiceService=new InvoiceService(cashier,connections);
         var before=invoiceService.detail("H1");sql("UPDATE dbo.BenhNhan SET hoTen=N'Changed patient' WHERE maBenhNhan='B1'; UPDATE dbo.DichVu SET tenDichVu=N'Changed service' WHERE maDichVu='D1'");
         var after=invoiceService.detail("H1");check(before.hoaDon().tenBenhNhan().equals(after.hoaDon().tenBenhNhan()),"patient snapshot immutable after rename");check(before.chiTiet().getFirst().tenHienThi().equals(after.chiTiet().getFirst().tenHienThi()),"service snapshot immutable after rename");
-        var freeSource=new ClinicalBillingSource(){public void validateServiceState(Connection c,InvoiceDraft d,String id,boolean active){} public InvoiceDraft load(Connection c,String patient,String visit,boolean lock){return new InvoiceDraft(patient,visit,"free",List.of(new InvoiceDraft.Line("D1","Free",1,BigDecimal.ZERO)));}};
-        new InvoiceCreationService(cashier,connections,freeSource,c->"FREE").create(new InvoiceDraft("B1","V0","free",List.of(new InvoiceDraft.Line("D1","Free",1,BigDecimal.ZERO))));
+        var freeSource=new ClinicalBillingSource(){public void validateServiceState(Connection c,BanNhapHoaDon d,String id,boolean active){} public BanNhapHoaDon load(Connection c,String patient,String visit,boolean lock){return new BanNhapHoaDon(patient,visit,"free",List.of(new DongBanNhapHoaDon("D1","Free",1,BigDecimal.ZERO)));}};
+        new InvoiceCreationService(cashier,connections,freeSource,c->"FREE").create(new BanNhapHoaDon("B1","V0","free",List.of(new DongBanNhapHoaDon("D1","Free",1,BigDecimal.ZERO))));
         check(invoiceService.detail("FREE").hoaDon().trangThai()==InvoiceStatus.DA_THANH_TOAN,"free invoice finalized");check(invoiceService.detail("FREE").hoaDon().canhBao().isEmpty(),"free invoice consistent");
         var attempts=new PaymentAttemptService(cashier,connections);var request=cash("H1","P1",100);attempts.reserve(request);
         check(new PaymentAttemptService(second,connections).pending("H1")!=null,"second workstation sees reservation");
