@@ -8,7 +8,7 @@
 - Workspace gốc C:\Java\ptud_nhom8 vẫn giữ nhánh cũ và các thay đổi prototype chưa commit.
   Không reset, stash, ghi đè hoặc copy source Spring cũ sang tính năng JDBC.
 - Worktree triển khai: C:\Java\ptud_nhom8\.worktrees\service-billing-m1.
-- Nhánh tích hợp cục bộ: `codex/latest-shell-integration`.
+- Nhánh tích hợp cục bộ: `refactor/latest-shell-integration`.
 - Checkpoint bảo toàn toàn bộ code Billing/dịch vụ trước merge: `d7e3d3a`.
 - Merge main phát sinh ba xung đột ở MainFrame, FeatureBootstrap và FeatureRegistrySelfTest.
   MainFrame dùng bản sáu menu từ main mới; thêm lại factory/refresh/chuyển sang thu tiền.

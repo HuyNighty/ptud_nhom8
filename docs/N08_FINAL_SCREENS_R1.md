@@ -8,7 +8,7 @@
 
 Đã triển khai hai màn hình JDBC/Swing và tích hợp menu. Compile, smoke và 32 SelfTest PASS. **Chưa nghiệm thu end-to-end SQL Server: BLOCKED vì worktree không có cấu hình N08Dev cô lập/phiên tài khoản thật đã xác thực.** Không có thao tác DB thật trong đợt này. Không được đọc kết quả synthetic thành bằng chứng persistence thật.
 
-Worktree: C:\Dev\N08\ptud_nhom8-final-screens-r1. Branch: codex/n08-final-screens-r1-shifts. Base: 1f5ada23035f15d2b6f59cfa2e1d441a52e496eb, origin/main lúc fetch (PR #101). Không commit, push, deploy hoặc merge. Không sửa nội dung worktree khác hoặc OneDrive.
+Worktree: C:\Dev\N08\ptud_nhom8-final-screens-r1. Branch: refactor/n08-final-screens-r1-shifts. Base: 1f5ada23035f15d2b6f59cfa2e1d441a52e496eb, origin/main lúc fetch (PR #101). Không commit, push, deploy hoặc merge. Không sửa nội dung worktree khác hoặc OneDrive.
 
 ## Trước / sau
 

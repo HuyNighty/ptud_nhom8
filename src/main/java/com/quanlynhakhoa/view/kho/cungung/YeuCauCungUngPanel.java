@@ -18,30 +18,30 @@ import javax.swing.table.DefaultTableModel;
 
 /** Requester mode is registered for SUPPLY_REQUEST; manager mode is embedded in inventory workflow. */
 public final class YeuCauCungUngPanel extends JPanel {
-    private final boolean managerMode;
+    private final boolean cheDoQuanLy;
     private final JTabbedPane tabs = new JTabbedPane();
-    final JTextField requestId = new JTextField(), reason = new JTextField(), itemCode = new JTextField(), quantity = new JTextField("1");
-    final JComboBox<String> itemType = new JComboBox<>(new String[]{"THUOC", "VATTU"});
-    final JButton addLine = new JButton("Thêm dòng"), removeLine = new JButton("Bỏ dòng"), create = new JButton("Gửi yêu cầu"), refreshMine = new JButton("Làm mới");
-    final DefaultTableModel draftModel = readOnly("Loại", "Mã hàng", "Số lượng");
-    final DefaultTableModel mineModel = readOnly("Mã yêu cầu", "Thời gian", "Người tạo", "Trạng thái", "Lý do", "Số dòng");
-    final DefaultTableModel managerModel = readOnly("Mã yêu cầu", "Thời gian", "Người yêu cầu", "Trạng thái", "Lý do", "Số dòng");
-    final DefaultTableModel detailModel = new DefaultTableModel(new Object[]{"Dòng", "Loại", "Mã", "Tên hàng", "SL yêu cầu", "Mã lô cấp", "SL cấp"}, 0) {
+    final JTextField maYeuCau = new JTextField(), lyDo = new JTextField(), maHang = new JTextField(), soLuong = new JTextField("1");
+    final JComboBox<String> loaiHang = new JComboBox<>(new String[]{"THUOC", "VATTU"});
+    final JButton btnThemDong = new JButton("Thêm dòng"), btnBoDong = new JButton("Bỏ dòng"), btnTao = new JButton("Gửi yêu cầu"), btnLamMoiCuaToi = new JButton("Làm mới");
+    final DefaultTableModel modelBanNhap = readOnly("Loại", "Mã hàng", "Số lượng");
+    final DefaultTableModel modelCuaToi = readOnly("Mã yêu cầu", "Thời gian", "Người tạo", "Trạng thái", "Lý do", "Số dòng");
+    final DefaultTableModel modelQuanLy = readOnly("Mã yêu cầu", "Thời gian", "Người yêu cầu", "Trạng thái", "Lý do", "Số dòng");
+    final DefaultTableModel modelChiTiet = new DefaultTableModel(new Object[]{"Dòng", "Loại", "Mã", "Tên hàng", "SL yêu cầu", "Mã lô cấp", "SL cấp"}, 0) {
         @Override
         public boolean isCellEditable(int row, int column) {
             return column == 5;
         }
     };
-    final JTable draftTable = new JTable(draftModel), mineTable = new JTable(mineModel), managerTable = new JTable(managerModel), detailTable = new JTable(detailModel);
-    final JTextField voucherId = new JTextField(), department = new JTextField("Phòng khám"), receiver = new JTextField(), issueReason = new JTextField(), status = new JTextField();
-    final JButton approve = new JButton("Duyệt"), reject = new JButton("Từ chối"), issue = new JButton("Cấp phát + tạo phiếu xuất"), refreshManager = new JButton("Làm mới");
+    final JTable tblBanNhap = new JTable(modelBanNhap), tblCuaToi = new JTable(modelCuaToi), tblQuanLy = new JTable(modelQuanLy), tblChiTiet = new JTable(modelChiTiet);
+    final JTextField maPhieu = new JTextField(), boPhan = new JTextField("Phòng khám"), nguoiNhan = new JTextField(), lyDoXuat = new JTextField(), trangThai = new JTextField();
+    final JButton btnDuyet = new JButton("Duyệt"), btnTuChoi = new JButton("Từ chối"), phieuXuat = new JButton("Cấp phát + tạo phiếu xuất"), btnLamMoiQuanLy = new JButton("Làm mới");
 
     public YeuCauCungUngPanel(DesktopSession session) {
         this(session, false);
     }
 
     public YeuCauCungUngPanel(DesktopSession session, boolean managerMode) {
-        this.managerMode = managerMode;
+        this.cheDoQuanLy = managerMode;
         YeuCauCungUngService service = new YeuCauCungUngService(session);
         if (managerMode && !service.canManage()) throw new SecurityException("Màn hình xử lý yêu cầu chỉ dành cho quản lý kho.");
         setLayout(new BorderLayout());
@@ -58,24 +58,24 @@ public final class YeuCauCungUngPanel extends JPanel {
     private JPanel buildCreate() {
         JPanel page = new JPanel(new BorderLayout(8, 8));
         JPanel form = new JPanel(new GridLayout(0, 4, 7, 7));
-        addField(form, "Mã yêu cầu (≤10)", requestId);
-        addField(form, "Lý do", reason);
-        addField(form, "Loại mặt hàng", itemType);
-        addField(form, "Mã thuốc/vật tư", itemCode);
-        addField(form, "Số lượng", quantity);
-        form.add(addLine);
-        form.add(removeLine);
-        form.add(create);
+        addField(form, "Mã yêu cầu (≤10)", maYeuCau);
+        addField(form, "Lý do", lyDo);
+        addField(form, "Loại mặt hàng", loaiHang);
+        addField(form, "Mã thuốc/vật tư", maHang);
+        addField(form, "Số lượng", soLuong);
+        form.add(btnThemDong);
+        form.add(btnBoDong);
+        form.add(btnTao);
         page.add(form, BorderLayout.NORTH);
-        page.add(new JScrollPane(draftTable), BorderLayout.CENTER);
+        page.add(new JScrollPane(tblBanNhap), BorderLayout.CENTER);
         page.add(new JLabel("Thêm từng mặt hàng vào danh sách rồi gửi. Quản lý kho sẽ duyệt trước khi xuất tồn."), BorderLayout.SOUTH);
         return page;
     }
 
     private JPanel buildMine() {
         JPanel page = new JPanel(new BorderLayout(8, 8));
-        page.add(refreshMine, BorderLayout.NORTH);
-        page.add(new JScrollPane(mineTable), BorderLayout.CENTER);
+        page.add(btnLamMoiCuaToi, BorderLayout.NORTH);
+        page.add(new JScrollPane(tblCuaToi), BorderLayout.CENTER);
         page.add(new JLabel("Chỉ hiển thị yêu cầu do tài khoản hiện tại tạo."), BorderLayout.SOUTH);
         return page;
     }
@@ -83,18 +83,18 @@ public final class YeuCauCungUngPanel extends JPanel {
     private JPanel buildManager() {
         JPanel page = new JPanel(new BorderLayout(8, 8));
         JPanel actions = new JPanel(new GridLayout(0, 4, 7, 7));
-        addField(actions, "Mã phiếu xuất (≤10)", voucherId);
-        addField(actions, "Bộ phận nhận", department);
-        addField(actions, "Người nhận", receiver);
-        addField(actions, "Lý do xuất", issueReason);
-        actions.add(approve);
-        actions.add(reject);
-        actions.add(issue);
-        actions.add(refreshManager);
+        addField(actions, "Mã phiếu xuất (≤10)", maPhieu);
+        addField(actions, "Bộ phận nhận", boPhan);
+        addField(actions, "Người nhận", nguoiNhan);
+        addField(actions, "Lý do xuất", lyDoXuat);
+        actions.add(btnDuyet);
+        actions.add(btnTuChoi);
+        actions.add(phieuXuat);
+        actions.add(btnLamMoiQuanLy);
         JPanel bottom = new JPanel(new BorderLayout(8, 8));
-        bottom.add(new JScrollPane(detailTable), BorderLayout.CENTER);
+        bottom.add(new JScrollPane(tblChiTiet), BorderLayout.CENTER);
         bottom.add(actions, BorderLayout.SOUTH);
-        page.add(new JScrollPane(managerTable), BorderLayout.CENTER);
+        page.add(new JScrollPane(tblQuanLy), BorderLayout.CENTER);
         page.add(bottom, BorderLayout.SOUTH);
         page.add(new JLabel("Duyệt trước khi cấp. Nhập mã lô cho từng dòng; mỗi dòng phải được cấp đủ từ một lô."), BorderLayout.NORTH);
         return page;
@@ -115,7 +115,7 @@ public final class YeuCauCungUngPanel extends JPanel {
     }
 
     public boolean isManagerMode() {
-        return managerMode;
+        return cheDoQuanLy;
     }
 
     public JTabbedPane tabs() {
@@ -123,11 +123,11 @@ public final class YeuCauCungUngPanel extends JPanel {
     }
 
     public String selectedMineId() {
-        return selectedId(mineTable);
+        return selectedId(tblCuaToi);
     }
 
     public String selectedManagerId() {
-        return selectedId(managerTable);
+        return selectedId(tblQuanLy);
     }
 
     private static String selectedId(JTable table) {
@@ -142,27 +142,27 @@ public final class YeuCauCungUngPanel extends JPanel {
     }
 
     // Controller bindings; widgets remain owned by this view.
-    public JButton addLine() { return addLine; }
-    public JButton approve() { return approve; }
-    public JButton create() { return create; }
-    public JTextField department() { return department; }
-    public DefaultTableModel detailModel() { return detailModel; }
-    public DefaultTableModel draftModel() { return draftModel; }
-    public JTable draftTable() { return draftTable; }
-    public JButton issue() { return issue; }
-    public JTextField issueReason() { return issueReason; }
-    public JTextField itemCode() { return itemCode; }
-    public JComboBox<String> itemType() { return itemType; }
-    public DefaultTableModel managerModel() { return managerModel; }
-    public JTable managerTable() { return managerTable; }
-    public DefaultTableModel mineModel() { return mineModel; }
-    public JTextField quantity() { return quantity; }
-    public JTextField reason() { return reason; }
-    public JTextField receiver() { return receiver; }
-    public JButton refreshManager() { return refreshManager; }
-    public JButton refreshMine() { return refreshMine; }
-    public JButton reject() { return reject; }
-    public JButton removeLine() { return removeLine; }
-    public JTextField requestId() { return requestId; }
-    public JTextField voucherId() { return voucherId; }
+    public JButton addLine() { return btnThemDong; }
+    public JButton approve() { return btnDuyet; }
+    public JButton create() { return btnTao; }
+    public JTextField department() { return boPhan; }
+    public DefaultTableModel detailModel() { return modelChiTiet; }
+    public DefaultTableModel draftModel() { return modelBanNhap; }
+    public JTable draftTable() { return tblBanNhap; }
+    public JButton issue() { return phieuXuat; }
+    public JTextField issueReason() { return lyDoXuat; }
+    public JTextField itemCode() { return maHang; }
+    public JComboBox<String> itemType() { return loaiHang; }
+    public DefaultTableModel managerModel() { return modelQuanLy; }
+    public JTable managerTable() { return tblQuanLy; }
+    public DefaultTableModel mineModel() { return modelCuaToi; }
+    public JTextField quantity() { return soLuong; }
+    public JTextField reason() { return lyDo; }
+    public JTextField receiver() { return nguoiNhan; }
+    public JButton refreshManager() { return btnLamMoiQuanLy; }
+    public JButton refreshMine() { return btnLamMoiCuaToi; }
+    public JButton reject() { return btnTuChoi; }
+    public JButton removeLine() { return btnBoDong; }
+    public JTextField requestId() { return maYeuCau; }
+    public JTextField voucherId() { return maPhieu; }
 }

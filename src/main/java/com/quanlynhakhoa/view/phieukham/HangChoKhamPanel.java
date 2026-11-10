@@ -44,15 +44,15 @@ public final class HangChoKhamPanel extends JPanel implements RefreshableFeature
 
     private final DesktopSession session;
     private final HangChoKhamService service;
-    private final JTextField txtDay = new JTextField(DAY.format(LocalDate.now()), 11);
-    private final JTextField txtKeyword = new JTextField(20);
-    private final JButton btnRefresh = new JButton("Tải hàng chờ");
-    private final JLabel lblStatus = new JLabel("Chưa tải dữ liệu");
-    private final JLabel lblDetails = new JLabel("Chọn phiếu khám để xem thông tin.");
+    private final JTextField txtNgay = new JTextField(DAY.format(LocalDate.now()), 11);
+    private final JTextField txtTuKhoa = new JTextField(20);
+    private final JButton btnLamMoi = new JButton("Tải hàng chờ");
+    private final JLabel lblTrangThai = new JLabel("Chưa tải dữ liệu");
+    private final JLabel lblChiTiet = new JLabel("Chọn phiếu khám để xem thông tin.");
     private final Model model = new Model();
     private final JTable table = new JTable(model);
-    private List<DongHangChoKham> source = List.of();
-    private boolean truncated;
+    private List<DongHangChoKham> nguon = List.of();
+    private boolean biGioiHan;
     private boolean loading;
     private boolean reloadPending;
 
@@ -83,10 +83,10 @@ public final class HangChoKhamPanel extends JPanel implements RefreshableFeature
                 BorderFactory.createLineBorder(new Color(220, 231, 242)),
                 new EmptyBorder(8, 10, 8, 10)));
         filters.add(new JLabel("Ngày tiếp nhận (dd/MM/yyyy):"));
-        filters.add(com.quanlynhakhoa.view.hethong.DateInput.wrap(txtDay,"ngày tiếp nhận",DAY,LocalDate.of(1900,1,1),LocalDate.of(9999,12,31)));
+        filters.add(com.quanlynhakhoa.view.hethong.DateInput.wrap(txtNgay,"ngày tiếp nhận",DAY,LocalDate.of(1900,1,1),LocalDate.of(9999,12,31)));
         filters.add(new JLabel("Mã / tên bệnh nhân:"));
-        filters.add(txtKeyword);
-        filters.add(btnRefresh);
+        filters.add(txtTuKhoa);
+        filters.add(btnLamMoi);
         body.add(filters, BorderLayout.NORTH);
 
         table.setRowHeight(30);
@@ -101,16 +101,16 @@ public final class HangChoKhamPanel extends JPanel implements RefreshableFeature
 
         JPanel footer = new JPanel(new BorderLayout(0, 7));
         footer.setOpaque(false);
-        lblStatus.setForeground(MUTED);
-        lblDetails.setForeground(NAVY);
-        footer.add(lblDetails, BorderLayout.NORTH);
-        footer.add(lblStatus, BorderLayout.SOUTH);
+        lblTrangThai.setForeground(MUTED);
+        lblChiTiet.setForeground(NAVY);
+        footer.add(lblChiTiet, BorderLayout.NORTH);
+        footer.add(lblTrangThai, BorderLayout.SOUTH);
         body.add(footer, BorderLayout.SOUTH);
         add(body, BorderLayout.CENTER);
 
-        btnRefresh.addActionListener(e -> { txtKeyword.setText(""); reload(); });
-        txtDay.addActionListener(e -> reload());
-        txtKeyword.getDocument().addDocumentListener(new DocumentListener() {
+        btnLamMoi.addActionListener(e -> { txtTuKhoa.setText(""); reload(); });
+        txtNgay.addActionListener(e -> reload());
+        txtTuKhoa.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { applyLocalFilter(); }
             @Override public void removeUpdate(DocumentEvent e) { applyLocalFilter(); }
             @Override public void changedUpdate(DocumentEvent e) { applyLocalFilter(); }
@@ -134,23 +134,23 @@ public final class HangChoKhamPanel extends JPanel implements RefreshableFeature
         }
         final LocalDate day;
         try {
-            day = LocalDate.parse(txtDay.getText().trim(), DAY);
+            day = LocalDate.parse(txtNgay.getText().trim(), DAY);
         } catch (DateTimeParseException invalid) {
-            lblStatus.setText("Ngày không hợp lệ; nhập dd/MM/yyyy.");
+            lblTrangThai.setText("Ngày không hợp lệ; nhập dd/MM/yyyy.");
             return;
         }
         loading = true;
-        btnRefresh.setEnabled(false);
-        txtDay.setEnabled(false);
-        lblStatus.setText("Đang tải hàng chờ...");
+        btnLamMoi.setEnabled(false);
+        txtNgay.setEnabled(false);
+        lblTrangThai.setText("Đang tải hàng chờ...");
         new SwingWorker<KetQuaHangChoKham, Void>() {
             @Override protected KetQuaHangChoKham doInBackground() throws Exception {
                 return service.load(day);
             }
             @Override protected void done() {
                 loading = false;
-                txtDay.setEnabled(session.isActive());
-                btnRefresh.setEnabled(session.isActive());
+                txtNgay.setEnabled(session.isActive());
+                btnLamMoi.setEnabled(session.isActive());
                 if (!session.isActive()) {
                     reloadPending = false;
                     clear("Phiên đăng nhập đã kết thúc.");
@@ -159,8 +159,8 @@ public final class HangChoKhamPanel extends JPanel implements RefreshableFeature
                 try {
                     KetQuaHangChoKham result = get();
                     if (!reloadPending) {
-                        source = result.rows();
-                        truncated = result.truncated();
+                        nguon = result.rows();
+                        biGioiHan = result.truncated();
                         applyLocalFilter();
                     }
                 } catch (InterruptedException interrupted) {
@@ -183,27 +183,27 @@ public final class HangChoKhamPanel extends JPanel implements RefreshableFeature
             clear("Phiên đăng nhập đã kết thúc.");
             return;
         }
-        String keyword = txtKeyword.getText().trim().toLowerCase(Locale.ROOT);
-        List<DongHangChoKham> filtered = source.stream().filter(row -> keyword.isEmpty()
+        String keyword = txtTuKhoa.getText().trim().toLowerCase(Locale.ROOT);
+        List<DongHangChoKham> filtered = nguon.stream().filter(row -> keyword.isEmpty()
                 || row.patientName().toLowerCase(Locale.ROOT).contains(keyword)
                 || row.patientId().toLowerCase(Locale.ROOT).contains(keyword)
                 || row.examinationId().toLowerCase(Locale.ROOT).contains(keyword)).toList();
         model.setRows(filtered);
-        lblDetails.setText("Chọn phiếu khám để xem thông tin.");
-        lblStatus.setText(filtered.size() + " phiếu (ngày đã chọn)"
-                + (truncated ? " · Chỉ hiển thị 200 phiếu đầu, hãy chọn ngày phù hợp" : "")
+        lblChiTiet.setText("Chọn phiếu khám để xem thông tin.");
+        lblTrangThai.setText(filtered.size() + " phiếu (ngày đã chọn)"
+                + (biGioiHan ? " · Chỉ hiển thị 200 phiếu đầu, hãy chọn ngày phù hợp" : "")
                 + " · Dữ liệu chỉ đọc");
     }
 
     private void clear(String text) {
-        source = List.of();
-        truncated = false;
+        nguon = List.of();
+        biGioiHan = false;
         model.setRows(List.of());
-        lblDetails.setText("—");
-        lblStatus.setText(text);
+        lblChiTiet.setText("—");
+        lblTrangThai.setText(text);
         if (!session.isActive()) {
-            btnRefresh.setEnabled(false);
-            txtDay.setEnabled(false);
+            btnLamMoi.setEnabled(false);
+            txtNgay.setEnabled(false);
         }
     }
 
@@ -211,7 +211,7 @@ public final class HangChoKhamPanel extends JPanel implements RefreshableFeature
         int selected = table.getSelectedRow();
         if (selected < 0 || !session.isActive()) return;
         DongHangChoKham row = model.get(table.convertRowIndexToModel(selected));
-        lblDetails.setText("Phiếu " + row.examinationId() + " · Bác sĩ "
+        lblChiTiet.setText("Phiếu " + row.examinationId() + " · Bác sĩ "
                 + Objects.toString(row.doctorName(), row.doctorId())
                 + " · Lịch hẹn " + Objects.toString(row.appointmentId(), "Không có"));
     }
@@ -220,17 +220,17 @@ public final class HangChoKhamPanel extends JPanel implements RefreshableFeature
         private static final String[] COLUMNS = {
                 "Mã phiếu", "Mã bệnh nhân", "Bệnh nhân", "Bác sĩ", "Tiếp nhận lúc", "Trạng thái"
         };
-        private List<DongHangChoKham> rows = List.of();
+        private List<DongHangChoKham> danhSach = List.of();
         void setRows(List<DongHangChoKham> value) {
-            rows = List.copyOf(value);
+            danhSach = List.copyOf(value);
             fireTableDataChanged();
         }
-        DongHangChoKham get(int index) { return rows.get(index); }
-        @Override public int getRowCount() { return rows.size(); }
+        DongHangChoKham get(int index) { return danhSach.get(index); }
+        @Override public int getRowCount() { return danhSach.size(); }
         @Override public int getColumnCount() { return COLUMNS.length; }
         @Override public String getColumnName(int index) { return COLUMNS[index]; }
         @Override public Object getValueAt(int row, int column) {
-            DongHangChoKham item = rows.get(row);
+            DongHangChoKham item = danhSach.get(row);
             return switch (column) {
                 case 0 -> item.examinationId();
                 case 1 -> item.patientId();

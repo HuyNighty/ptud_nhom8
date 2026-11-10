@@ -24,11 +24,11 @@ public final class HuyHoaDonPanel extends JPanel implements RefreshableFeature {
     public final JTextArea txaThongTin=new JTextArea(4,50),txaLyDoDuyet=new JTextArea(3,45);
     public final JLabel lblTrangThai=new JLabel("Lọc yêu cầu hủy theo ngày gửi và trạng thái.");
     private final JLabel lblSoKyTu=new JLabel("0/500 ký tự · Bắt buộc khi từ chối");
-    private final DefaultTableModel requestModel=GiaoDienHoaDon.model("Mã yêu cầu","Hóa đơn","Bệnh nhân","Tổng tiền","Đã thu","Người gửi","Thời điểm gửi","Trạng thái","Lý do yêu cầu");
-    private final DefaultTableModel lineModel=GiaoDienHoaDon.model("Loại","Mã hàng","Tên dịch vụ / hàng","Số lượng","Đơn giá đã chốt","Thành tiền");
-    private final DefaultTableModel paymentModel=GiaoDienHoaDon.model("Mã thu","Thời gian","Số tiền","Phương thức","Tham chiếu","Trạng thái");
-    public final JTable tblYeuCau=GiaoDienHoaDon.table(requestModel);
-    private final HuyHoaDonController controller;private List<ThongTinYeuCauHuyHoaDon> rows=List.of();private boolean loaded;
+    private final DefaultTableModel modelYeuCau=GiaoDienHoaDon.model("Mã yêu cầu","Hóa đơn","Bệnh nhân","Tổng tiền","Đã thu","Người gửi","Thời điểm gửi","Trạng thái","Lý do yêu cầu");
+    private final DefaultTableModel modelDong=GiaoDienHoaDon.model("Loại","Mã hàng","Tên dịch vụ / hàng","Số lượng","Đơn giá đã chốt","Thành tiền");
+    private final DefaultTableModel modelThanhToan=GiaoDienHoaDon.model("Mã thu","Thời gian","Số tiền","Phương thức","Tham chiếu","Trạng thái");
+    public final JTable tblYeuCau=GiaoDienHoaDon.table(modelYeuCau);
+    private final HuyHoaDonController controller;private List<ThongTinYeuCauHuyHoaDon> danhSach=List.of();private boolean loaded;
     public HuyHoaDonPanel(DesktopSession session,ConnectionProvider connections){
         new AuthorizationService(new RolePermissionPolicy()).require(session,Quyen.INVOICE_CANCEL_APPROVE);
         setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
@@ -42,7 +42,7 @@ public final class HuyHoaDonPanel extends JPanel implements RefreshableFeature {
         JPanel pnlTexts=new JPanel(new GridLayout(1,2,8,0));JScrollPane scrInfo=new JScrollPane(txaThongTin),scrReason=new JScrollPane(txaLyDoDuyet);scrInfo.setBorder(BorderFactory.createTitledBorder("Thông tin và lý do yêu cầu"));scrReason.setBorder(BorderFactory.createTitledBorder("Ý kiến xét duyệt"));scrInfo.setPreferredSize(new Dimension(400,140));scrReason.setPreferredSize(new Dimension(400,120));scrInfo.setMinimumSize(new Dimension(100,80));scrReason.setMinimumSize(new Dimension(100,60));
         JPanel pnlOpinion=new JPanel(new BorderLayout(0,4));pnlOpinion.add(scrReason);pnlOpinion.add(lblSoKyTu,BorderLayout.SOUTH);pnlTexts.add(scrInfo);pnlTexts.add(pnlOpinion);
         txaLyDoDuyet.getDocument().addDocumentListener(new javax.swing.event.DocumentListener(){private void update(){int count=txaLyDoDuyet.getDocument().getLength();lblSoKyTu.setText(count+"/500 ký tự · Bắt buộc khi từ chối");lblSoKyTu.setForeground(count>500?new Color(161,38,45):GiaoDienHoaDon.NAVY);}public void insertUpdate(javax.swing.event.DocumentEvent e){update();}public void removeUpdate(javax.swing.event.DocumentEvent e){update();}public void changedUpdate(javax.swing.event.DocumentEvent e){update();}});
-        tabDetails.addTab("Thông tin & xét duyệt",GiaoDienHoaDon.topAligned(pnlTexts));tabDetails.addTab("Chi tiết hóa đơn",GiaoDienHoaDon.scroll(GiaoDienHoaDon.table(lineModel)));tabDetails.addTab("Lịch sử thanh toán",GiaoDienHoaDon.scroll(GiaoDienHoaDon.table(paymentModel)));tabDetails.setPreferredSize(new Dimension(1000,185));
+        tabDetails.addTab("Thông tin & xét duyệt",GiaoDienHoaDon.topAligned(pnlTexts));tabDetails.addTab("Chi tiết hóa đơn",GiaoDienHoaDon.scroll(GiaoDienHoaDon.table(modelDong)));tabDetails.addTab("Lịch sử thanh toán",GiaoDienHoaDon.scroll(GiaoDienHoaDon.table(modelThanhToan)));tabDetails.setPreferredSize(new Dimension(1000,185));
         tabDetails.putClientProperty("billing.initialDetailHeight",185);add(GiaoDienHoaDon.split(JSplitPane.VERTICAL_SPLIT,scrRequests,tabDetails,1.0),BorderLayout.CENTER);
         JPanel pnlActions=new JPanel(new FlowLayout(FlowLayout.RIGHT,8,0));pnlActions.add(GiaoDienHoaDon.danger(btnTuChoi));pnlActions.add(GiaoDienHoaDon.primary(btnDuyet));
         JPanel pnlStatus=new JPanel(new BorderLayout(8,0));pnlStatus.add(lblTrangThai);pnlStatus.add(btnThuLai,BorderLayout.EAST);btnThuLai.setVisible(false);
@@ -54,15 +54,15 @@ public final class HuyHoaDonPanel extends JPanel implements RefreshableFeature {
     }
     @Override public void addNotify(){super.addNotify();if(!loaded){loaded=true;SwingUtilities.invokeLater(new Runnable(){public void run(){refreshData();}});}}
     @Override public void refreshData(){controller.load();}
-    public String selectedId(){int index=tblYeuCau.getSelectedRow();if(index<0)return null;index=tblYeuCau.convertRowIndexToModel(index);return index<rows.size()?rows.get(index).maYeuCau():null;}
-    public void showRows(List<ThongTinYeuCauHuyHoaDon> values){rows=List.of();requestModel.setRowCount(0);rows=List.copyOf(values);for(var y:rows)requestModel.addRow(new Object[]{y.maYeuCau(),y.maHoaDon(),y.maBenhNhan()+" · "+y.tenBenhNhan(),y.tongTien(),y.daThu(),y.maTaiKhoanTao(),y.thoiGianTao(),y.trangThai(),y.lyDo()});clearDetail();}
-    public void clearDetail(){lineModel.setRowCount(0);paymentModel.setRowCount(0);txaThongTin.setText("Chọn yêu cầu để xem và xét duyệt");txaLyDoDuyet.setText("");buttons(false,false);}
+    public String selectedId(){int index=tblYeuCau.getSelectedRow();if(index<0)return null;index=tblYeuCau.convertRowIndexToModel(index);return index<danhSach.size()?danhSach.get(index).maYeuCau():null;}
+    public void showRows(List<ThongTinYeuCauHuyHoaDon> values){danhSach=List.of();modelYeuCau.setRowCount(0);danhSach=List.copyOf(values);for(var y:danhSach)modelYeuCau.addRow(new Object[]{y.maYeuCau(),y.maHoaDon(),y.maBenhNhan()+" · "+y.tenBenhNhan(),y.tongTien(),y.daThu(),y.maTaiKhoanTao(),y.thoiGianTao(),y.trangThai(),y.lyDo()});clearDetail();}
+    public void clearDetail(){modelDong.setRowCount(0);modelThanhToan.setRowCount(0);txaThongTin.setText("Chọn yêu cầu để xem và xét duyệt");txaLyDoDuyet.setText("");buttons(false,false);}
     public void showDetail(ChiTietYeuCauHuy detail){
         clearDetail();var y=detail.request();var h=detail.invoice().hoaDon();
         txaThongTin.setText("Yêu cầu "+y.maYeuCau()+" · Hóa đơn "+h.maHoaDon()+" · "+h.trangThai()+"\nBệnh nhân: "+h.maBenhNhan()+" · "+h.tenBenhNhan()+"\nTổng: "+GiaoDienHoaDon.vnd(h.tongTien())+" · Đã thu: "+GiaoDienHoaDon.vnd(h.daThu())+" · Còn nợ: "+GiaoDienHoaDon.vnd(h.conNo())+"\nNgười gửi: "+y.maTaiKhoanTao()+" · "+GiaoDienHoaDon.time(y.thoiGianTao())+"\nLý do: "+y.lyDo()+"\nKết quả: "+y.trangThai()+" · Người xử lý: "+(y.maTaiKhoanDuyet()==null?"—":y.maTaiKhoanDuyet())+" · "+GiaoDienHoaDon.time(y.thoiGianDuyet())+"\nÝ kiến: "+(y.lyDoDuyet()==null?"":y.lyDoDuyet()));
         txaThongTin.setCaretPosition(0);
-        for(var line:detail.invoice().chiTiet())lineModel.addRow(new Object[]{line.loaiHang(),line.maHang(),line.tenHienThi(),line.soLuong(),line.donGiaApDung(),line.thanhTien()});
-        for(var payment:detail.invoice().thanhToan())paymentModel.addRow(new Object[]{payment.maThanhToan(),payment.thoiGian(),payment.soTien(),payment.phuongThuc(),payment.maGiaoDich(),payment.trangThai()});
+        for(var line:detail.invoice().chiTiet())modelDong.addRow(new Object[]{line.loaiHang(),line.maHang(),line.tenHienThi(),line.soLuong(),line.donGiaApDung(),line.thanhTien()});
+        for(var payment:detail.invoice().thanhToan())modelThanhToan.addRow(new Object[]{payment.maThanhToan(),payment.thoiGian(),payment.soTien(),payment.phuongThuc(),payment.maGiaoDich(),payment.trangThai()});
     }
     public void buttons(boolean approve,boolean reject){btnDuyet.setEnabled(approve);btnTuChoi.setEnabled(reject);txaLyDoDuyet.setEnabled(reject);txaLyDoDuyet.setEditable(reject);}
     public void tableStatus(String message){GiaoDienHoaDon.tableState(tblYeuCau,message);}

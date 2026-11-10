@@ -1,77 +1,75 @@
 package com.quanlynhakhoa.model.lichlamviec;
 
+import com.quanlynhakhoa.entity.PhanCong;
+
 import com.quanlynhakhoa.entity.CaLamViec;
 import java.time.LocalDate;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class ThongTinPhanCong {
-    private final String ma;
-    private final String nhanVienId;
+    private final PhanCong phanCong;
     private final String tenNhanVien;
-    private final CaLamViec ca;
-    private final LocalDate ngay;
-    private final String nhiemVu;
-    private final String trangThai;
-    private final String lyDoHuy;
 
     public ThongTinPhanCong(String ma, String nhanVienId, String tenNhanVien, CaLamViec ca, LocalDate ngay, String nhiemVu, String trangThai, String lyDoHuy) {
-        this.ma = ma;
-        this.nhanVienId = nhanVienId;
+        this.phanCong = new PhanCong(ma, nhanVienId, ca, ngay, nhiemVu, trangThai, lyDoHuy);
+
         this.tenNhanVien = tenNhanVien;
-        this.ca = ca;
-        this.ngay = ngay;
-        this.nhiemVu = nhiemVu;
-        this.trangThai = trangThai;
-        this.lyDoHuy = lyDoHuy;
+
+
+
+
+
     }
 
-    public String id() { return ma; }
-    public String nhanVienId() { return nhanVienId; }
+    public String id() { return phanCong.getMaPhanCong(); }
+    public String nhanVienId() { return phanCong.getMaNhanVien(); }
     public String tenNhanVien() { return tenNhanVien; }
-    public CaLamViec ca() { return ca; }
-    public LocalDate ngay() { return ngay; }
-    public String nhiemVu() { return nhiemVu; }
-    public String trangThai() { return trangThai; }
-    public String lyDoHuy() { return lyDoHuy; }
+    public CaLamViec ca() { return phanCong.getCa(); }
+    public LocalDate ngay() { return phanCong.getNgayLam(); }
+    public String nhiemVu() { return phanCong.getNhiemVu(); }
+    public String trangThai() { return phanCong.getTrangThai(); }
+    public String lyDoHuy() { return phanCong.getLyDoHuy(); }
 
-    public String trangThaiHienThi() { return switch (trangThai) {
+    public String trangThaiHienThi() { return switch (phanCong.getTrangThai()) {
         case "CHO_HIEU_LUC" -> "Chờ hiệu lực";
         case "DANG_THUC_HIEN" -> "Đang thực hiện";
         case "HOAN_THANH" -> "Hoàn thành";
         case "DA_HUY" -> "Đã hủy";
-        default -> trangThai;
+        default -> phanCong.getTrangThai();
     }; }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof ThongTinPhanCong value)) return false;
-        return java.util.Objects.equals(ma, value.ma)
-                && java.util.Objects.equals(nhanVienId, value.nhanVienId)
+        return java.util.Objects.equals(phanCong.getMaPhanCong(), value.phanCong.getMaPhanCong())
+                && java.util.Objects.equals(phanCong.getMaNhanVien(), value.phanCong.getMaNhanVien())
                 && java.util.Objects.equals(tenNhanVien, value.tenNhanVien)
-                && java.util.Objects.equals(ca, value.ca)
-                && java.util.Objects.equals(ngay, value.ngay)
-                && java.util.Objects.equals(nhiemVu, value.nhiemVu)
-                && java.util.Objects.equals(trangThai, value.trangThai)
-                && java.util.Objects.equals(lyDoHuy, value.lyDoHuy);
+                && java.util.Objects.equals(phanCong.getCa(), value.phanCong.getCa())
+                && java.util.Objects.equals(phanCong.getNgayLam(), value.phanCong.getNgayLam())
+                && java.util.Objects.equals(phanCong.getNhiemVu(), value.phanCong.getNhiemVu())
+                && java.util.Objects.equals(phanCong.getTrangThai(), value.phanCong.getTrangThai())
+                && java.util.Objects.equals(phanCong.getLyDoHuy(), value.phanCong.getLyDoHuy());
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(ma);
-        result = 31 * result + java.util.Objects.hashCode(nhanVienId);
+        result = 31 * result + java.util.Objects.hashCode(phanCong.getMaPhanCong());
+        result = 31 * result + java.util.Objects.hashCode(phanCong.getMaNhanVien());
         result = 31 * result + java.util.Objects.hashCode(tenNhanVien);
-        result = 31 * result + java.util.Objects.hashCode(ca);
-        result = 31 * result + java.util.Objects.hashCode(ngay);
-        result = 31 * result + java.util.Objects.hashCode(nhiemVu);
-        result = 31 * result + java.util.Objects.hashCode(trangThai);
-        result = 31 * result + java.util.Objects.hashCode(lyDoHuy);
+        result = 31 * result + java.util.Objects.hashCode(phanCong.getCa());
+        result = 31 * result + java.util.Objects.hashCode(phanCong.getNgayLam());
+        result = 31 * result + java.util.Objects.hashCode(phanCong.getNhiemVu());
+        result = 31 * result + java.util.Objects.hashCode(phanCong.getTrangThai());
+        result = 31 * result + java.util.Objects.hashCode(phanCong.getLyDoHuy());
         return result;
     }
 
     @Override
     public String toString() {
-        return "PhanCong[" + "id=" + ma + ", " + "nhanVienId=" + nhanVienId + ", " + "tenNhanVien=" + tenNhanVien + ", " + "ca=" + ca + ", " + "ngay=" + ngay + ", " + "nhiemVu=" + nhiemVu + ", " + "trangThai=" + trangThai + ", " + "lyDoHuy=" + lyDoHuy + "]";
+        return "PhanCong[" + "id=" + phanCong.getMaPhanCong() + ", " + "nhanVienId=" + phanCong.getMaNhanVien() + ", " + "tenNhanVien=" + tenNhanVien + ", " + "ca=" + phanCong.getCa() + ", " + "ngay=" + phanCong.getNgayLam() + ", " + "nhiemVu=" + phanCong.getNhiemVu() + ", " + "trangThai=" + phanCong.getTrangThai() + ", " + "lyDoHuy=" + phanCong.getLyDoHuy() + "]";
     }
+
+    public PhanCong getPhanCong() { return phanCong; }
 }

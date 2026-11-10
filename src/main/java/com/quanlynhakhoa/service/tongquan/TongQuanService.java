@@ -71,7 +71,7 @@ public final class TongQuanService {
             if (canExams) {
                 requireActive();
                 exams = session.role()==VaiTroHeThong.DOCTOR
-                        ? new ChiTietTongQuanDao().count(connection,"SELECT COUNT_BIG(*) FROM dbo.PhieuKham p JOIN dbo.TaiKhoan a ON a.maNhanVien=p.maNhanVien JOIN dbo.NhanVien n ON n.maNhanVien=a.maNhanVien WHERE p.trangThai='DANG_KHAM' AND a.maTaiKhoan=? AND a.vaiTro='DOCTOR' AND a.trangThai='HOAT_DONG' AND n.chucDanh='BS' AND n.trangThai='DANG_LAM_VIEC'",session.accountId())
+                        ? new ChiTietTongQuanDao().demPhieuKhamDangXuLyCuaBacSi(connection,session.accountId())
                         : dao.countInProgress(connection);
             }
             if (canBilling) {
@@ -104,16 +104,16 @@ public final class TongQuanService {
                 try{appointments=details.appointments(c,today);}catch(SQLException e){warnings.add("Chưa tải được lịch hẹn");}
             }
             if(can(Quyen.INVOICE_CANCEL_APPROVE)) {
-                try{work.add(new CongViecTongQuan("Hủy hóa đơn chờ bạn duyệt",details.count(c,"SELECT COUNT_BIG(*) FROM dbo.YeuCauHuyHoaDon WHERE trangThai='CHO_DUYET' AND maTaiKhoanTao<>?",session.accountId()),Module.INVOICE_CANCELLATIONS,""));}
+                try{work.add(new CongViecTongQuan("Hủy hóa đơn chờ bạn duyệt",details.demYeuCauHuyCanDuyet(c,session.accountId()),Module.INVOICE_CANCELLATIONS,""));}
                 catch(SQLException e){warnings.add("Chưa tải được yêu cầu hủy");}
             }
             if(can(Quyen.INVENTORY_MANAGE)) {
-                try{work.add(new CongViecTongQuan("Cấp phát chờ duyệt",details.count(c,"SELECT COUNT_BIG(*) FROM dbo.YeuCauCapPhat WHERE trangThai='CHO_DUYET'",null),Module.INVENTORY,"supply"));}
+                try{work.add(new CongViecTongQuan("Cấp phát chờ duyệt",details.demYeuCauCapPhatChoDuyet(c),Module.INVENTORY,"supply"));}
                 catch(SQLException e){warnings.add("Chưa tải được yêu cầu cấp phát");}
-                try{work.add(new CongViecTongQuan("Kiểm kê chờ bạn duyệt",details.count(c,"SELECT COUNT_BIG(*) FROM dbo.PhieuDieuChinhKho WHERE loai='KIEM_KE' AND trangThai='CHO_DUYET' AND maTaiKhoanTao<>?",session.accountId()),Module.INVENTORY,"stocktake"));}
+                try{work.add(new CongViecTongQuan("Kiểm kê chờ bạn duyệt",details.demKiemKeCanDuyet(c,session.accountId()),Module.INVENTORY,"stocktake"));}
                 catch(SQLException e){warnings.add("Chưa tải được kiểm kê");}
             } else if(can(Quyen.SUPPLY_REQUEST)) {
-                try{work.add(new CongViecTongQuan("Yêu cầu cấp phát của bạn đang chờ",details.count(c,"SELECT COUNT_BIG(*) FROM dbo.YeuCauCapPhat y JOIN dbo.TaiKhoan a ON a.maNhanVien=y.maNhanVienYeuCau WHERE a.maTaiKhoan=? AND y.trangThai IN ('CHO_DUYET','DA_DUYET')",session.accountId()),Module.SUPPLY_REQUESTS,""));}
+                try{work.add(new CongViecTongQuan("Yêu cầu cấp phát của bạn đang chờ",details.demYeuCauCapPhatCuaTaiKhoan(c,session.accountId()),Module.SUPPLY_REQUESTS,""));}
                 catch(SQLException e){warnings.add("Chưa tải được yêu cầu của bạn");}
             }
             if(can(Quyen.INVENTORY_READ)) {

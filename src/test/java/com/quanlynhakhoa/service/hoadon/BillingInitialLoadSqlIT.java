@@ -148,7 +148,7 @@ public final class BillingInitialLoadSqlIT {
                             "cancellation request column displays current request status");
                     DuLieuChiTietHoaDon detail = histories.get(invoice.maHoaDon());
                     invoices[0].showDetail(detail);
-                    JTable historyTable = field(invoices[0], "tblCancellationHistory", JTable.class);
+                    JTable historyTable = field(invoices[0], "tblLichSuHuy", JTable.class);
                     check(historyTable.getRowCount() == detail.cancellationHistory().size(), "history tab row count");
                     for (int index = 0; index < detail.cancellationHistory().size(); index++) {
                         var request = detail.cancellationHistory().get(index);

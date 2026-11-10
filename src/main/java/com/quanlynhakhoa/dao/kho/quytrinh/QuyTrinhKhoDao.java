@@ -2,6 +2,11 @@ package com.quanlynhakhoa.dao.kho.quytrinh;
 
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import java.sql.Connection;
+import com.quanlynhakhoa.entity.PhieuNhapKho;
+import com.quanlynhakhoa.entity.PhieuXuatKho;
+import com.quanlynhakhoa.entity.ChiTietPhieuNhap;
+import com.quanlynhakhoa.entity.ChiTietPhieuXuat;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,11 +44,13 @@ public final class QuyTrinhKhoDao {
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.PhieuNhapKho "
                 + "(maPhieuNhap,ngayNhap,trangThai,loaiNhap,maNhaCungCap,maPhieuXuatGoc,maNhanVien,ghiChu) "
                 + "VALUES (?,?,'HOAN_TAT','NHAP_NCC',?,NULL,?,?)")) {
-            stmt.setString(1, maPhieu);
-            stmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-            stmt.setString(3, maNcc);
-            stmt.setString(4, employeeId);
-            stmt.setNString(5, ghiChu);
+            PhieuNhapKho phieu = new PhieuNhapKho(maPhieu, LocalDateTime.now(), "HOAN_TAT",
+                    "NHAP_NCC", maNcc, null, employeeId, ghiChu);
+            stmt.setString(1, phieu.getMaPhieuNhap());
+            stmt.setTimestamp(2, Timestamp.valueOf(phieu.getNgayNhap()));
+            stmt.setString(3, phieu.getMaNhaCungCap());
+            stmt.setString(4, phieu.getMaNhanVien());
+            stmt.setNString(5, phieu.getGhiChu());
             stmt.executeUpdate();
         }
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.LoHang "
@@ -59,10 +66,11 @@ public final class QuyTrinhKhoDao {
         }
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.ChiTietPhieuNhap "
                 + "(maPhieuNhap,maLo,soLuong,donGiaNhap) VALUES (?,?,?,?)")) {
-            stmt.setString(1, maPhieu);
-            stmt.setString(2, maLo);
-            stmt.setInt(3, soLuong);
-            stmt.setLong(4, donGia);
+            ChiTietPhieuNhap chiTiet = new ChiTietPhieuNhap(maPhieu, maLo, soLuong, BigDecimal.valueOf(donGia));
+            stmt.setString(1, chiTiet.getMaPhieuNhap());
+            stmt.setString(2, chiTiet.getMaLo());
+            stmt.setInt(3, chiTiet.getSoLuong());
+            stmt.setLong(4, chiTiet.getDonGiaNhap().longValueExact());
             stmt.executeUpdate();
         }
         try (PreparedStatement stmt = con.prepareStatement("UPDATE dbo.LoHang SET soLuongTon=? WHERE maLo=? AND soLuongTon=0")) {
@@ -78,12 +86,14 @@ public final class QuyTrinhKhoDao {
         String employeeId = layMaNhanVien(con, accountId);
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.PhieuXuatKho "
                 + "(maPhieuXuat,ngayXuat,boPhanNhan,nguoiNhan,lyDo,trangThai,maNhanVien) VALUES (?,?,?,?,?,'HOAN_TAT',?)")) {
-            stmt.setString(1, maPhieu);
-            stmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-            stmt.setNString(3, boPhanNhan);
-            stmt.setNString(4, nguoiNhan);
-            stmt.setNString(5, lyDo);
-            stmt.setString(6, employeeId);
+            PhieuXuatKho phieu = new PhieuXuatKho(maPhieu, LocalDateTime.now(), boPhanNhan,
+                    nguoiNhan, lyDo, "HOAN_TAT", employeeId);
+            stmt.setString(1, phieu.getMaPhieuXuat());
+            stmt.setTimestamp(2, Timestamp.valueOf(phieu.getNgayXuat()));
+            stmt.setNString(3, phieu.getBoPhanNhan());
+            stmt.setNString(4, phieu.getNguoiNhan());
+            stmt.setNString(5, phieu.getLyDo());
+            stmt.setString(6, phieu.getMaNhanVien());
             stmt.executeUpdate();
         }
         try (PreparedStatement stmt = con.prepareStatement("UPDATE dbo.LoHang SET soLuongTon=soLuongTon-? WHERE maLo=? AND soLuongTon>=? AND (hanSuDung IS NULL OR hanSuDung>=CONVERT(date, SYSDATETIME()))")) {
@@ -93,9 +103,10 @@ public final class QuyTrinhKhoDao {
             if (stmt.executeUpdate() != 1) throw new IllegalArgumentException("Lô không tồn tại hoặc không đủ tồn kho.");
         }
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.ChiTietPhieuXuat (maPhieuXuat,maLo,soLuong) VALUES (?,?,?)")) {
-            stmt.setString(1, maPhieu);
-            stmt.setString(2, maLo);
-            stmt.setInt(3, soLuong);
+            ChiTietPhieuXuat chiTiet = new ChiTietPhieuXuat(maPhieu, maLo, soLuong);
+            stmt.setString(1, chiTiet.getMaPhieuXuat());
+            stmt.setString(2, chiTiet.getMaLo());
+            stmt.setInt(3, chiTiet.getSoLuong());
             stmt.executeUpdate();
         }
         ghiNhatKy(con, accountId, "Tạo phiếu xuất kho", "PhieuXuatKho", maPhieu);

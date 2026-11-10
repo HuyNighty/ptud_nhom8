@@ -44,7 +44,7 @@ public final class ShiftAssignmentSqlIT {
         long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(20);
         while (!ready[0] && System.nanoTime() < deadline) {
             SwingUtilities.invokeAndWait(() -> {
-                try { ready[0] = field(panel[0], "create", JButton.class).isEnabled(); }
+                try { ready[0] = field(panel[0], "btnTao", JButton.class).isEnabled(); }
                 catch (Exception e) { throw new RuntimeException(e); }
             });
             if (!ready[0]) Thread.sleep(30);

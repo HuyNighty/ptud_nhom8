@@ -4,6 +4,7 @@ import com.quanlynhakhoa.security.SandboxLoginConnection;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -23,8 +24,33 @@ public final class TeamDevConnection {
     private TeamDevConnection() { }
 
     public static Path configPath() {
-        return Path.of(System.getProperty("user.dir"), ".n08-dev.local.properties")
-                .toAbsolutePath().normalize();
+        return resolveConfigPath(Path.of(System.getProperty("user.dir")));
+    }
+
+    /** Prefer this checkout's config, then the verified main checkout of a linked worktree. */
+    static Path resolveConfigPath(Path workingDirectory) {
+        Path root = workingDirectory.toAbsolutePath().normalize();
+        Path local = root.resolve(".n08-dev.local.properties");
+        if (Files.isRegularFile(local)) return local;
+        Path link = root.resolve(".git");
+        if (!Files.isRegularFile(link)) return local;
+        try {
+            String pointer = Files.readString(link, StandardCharsets.UTF_8).strip();
+            if (!pointer.startsWith("gitdir:")) return local;
+            Path gitDirectory = root.resolve(pointer.substring("gitdir:".length()).strip()).normalize();
+            String commonPointer = Files.readString(gitDirectory.resolve("commondir"), StandardCharsets.UTF_8).strip();
+            if (commonPointer.isEmpty()) return local;
+            Path common = gitDirectory.resolve(commonPointer).normalize();
+            if (common.getFileName() == null || !common.getFileName().toString().equalsIgnoreCase(".git")
+                    || !common.resolve("worktrees").equals(gitDirectory.getParent())) return local;
+            String checkoutPointer = Files.readString(gitDirectory.resolve("gitdir"), StandardCharsets.UTF_8).strip();
+            if (checkoutPointer.isEmpty()
+                    || !gitDirectory.resolve(checkoutPointer).normalize().equals(link)) return local;
+            Path shared = common.getParent().resolve(".n08-dev.local.properties");
+            return Files.isRegularFile(shared) ? shared : local;
+        } catch (IOException | InvalidPathException invalidMetadata) {
+            return local;
+        }
     }
 
     public static boolean hasLocalConfig() {

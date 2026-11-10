@@ -14,10 +14,10 @@ import java.util.List;
 import javax.swing.event.*;
 
 public final class CongNoController {
-    private final CongNoPanel view;private final DesktopSession session;private final HoaDonService invoices;private boolean busy,reloadPending;
+    private final CongNoPanel view;private final DesktopSession session;private final HoaDonService hoaDon;private boolean busy,reloadPending;
     private final Runnable invalidated;
     public CongNoController(CongNoPanel view,DesktopSession session,ConnectionProvider connections){
-        this.view=view;this.session=session;invoices=new HoaDonService(session,connections);
+        this.view=view;this.session=session;hoaDon=new HoaDonService(session,connections);
         view.btnTim.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});view.btnTaiLai.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(busy)return;view.txtTuKhoa.setText("");view.txtTuNgay.setText("");view.txtDenNgay.setText("");load();}});view.txtTuKhoa.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});view.btnThuNo.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){if(!busy)view.paySelected();}});
         view.tblBenhNhan.getSelectionModel().addListSelectionListener(new ListSelectionListener(){public void valueChanged(ListSelectionEvent e){if(!busy&&!e.getValueIsAdjusting()){busy=true;view.selectPatient();busy=false;}}});
         view.tblHoaDon.getSelectionModel().addListSelectionListener(new ListSelectionListener(){public void valueChanged(ListSelectionEvent e){if(!busy&&!e.getValueIsAdjusting())detail();}});
@@ -36,12 +36,12 @@ public final class CongNoController {
         try{from=date(view.txtTuNgay.getText());to=date(view.txtDenNgay.getText());}catch(RuntimeException e){view.lblTrangThai.setText("Ngày phải có dạng dd/MM/yyyy và tồn tại.");return;}
         busy=true;view.busy(true);view.loading();
         new Task<List<TongHopCongNoBenhNhan>>(){
-            protected List<TongHopCongNoBenhNhan> doInBackground()throws Exception{return CongNoService.byPatient(invoices.find(keyword,from,to,null));}
+            protected List<TongHopCongNoBenhNhan> doInBackground()throws Exception{return CongNoService.byPatient(hoaDon.find(keyword,from,to,null));}
             protected void succeeded(List<TongHopCongNoBenhNhan> rows){busy=true;view.showPatients(rows);busy=false;view.lblTrangThai.setText(rows.isEmpty()?"Tổng hợp theo bộ lọc ngày lập hóa đơn hiện tại.":" ");next();}
         }.execute();
     }
     private void detail(){final String id=view.selectedInvoice();if(id==null)return;busy=true;view.busy(true);new Task<DuLieuChiTietHoaDon>(){
-        protected DuLieuChiTietHoaDon doInBackground()throws Exception{return invoices.detail(id);}
+        protected DuLieuChiTietHoaDon doInBackground()throws Exception{return hoaDon.detail(id);}
         protected void succeeded(DuLieuChiTietHoaDon value){if(id.equals(view.selectedInvoice()))view.showDetail(value);next();}
     }.execute();}
     private static LocalDate date(String text){return GiaoDienHoaDon.parseDate(text);}
