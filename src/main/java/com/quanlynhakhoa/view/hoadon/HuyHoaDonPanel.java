@@ -1,0 +1,70 @@
+package com.quanlynhakhoa.view.hoadon;
+
+import com.quanlynhakhoa.enums.Quyen;
+import com.quanlynhakhoa.enums.TrangThaiYeuCauHuyHoaDon;
+import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
+import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
+import com.quanlynhakhoa.controller.hoadon.HuyHoaDonController;
+import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
+import com.quanlynhakhoa.service.hoadon.HuyHoaDonService;
+import com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature;
+import com.quanlynhakhoa.hethong.phanquyen.*;
+import java.awt.*;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+public final class HuyHoaDonPanel extends JPanel implements RefreshableFeature {
+    public final JTextField txtTuKhoa=new JTextField(14),txtTuNgay=new JTextField(10),txtDenNgay=new JTextField(10);
+    public final JComboBox<Object> cmbTrangThai=new JComboBox<>();
+    public final JButton btnTim=new JButton("Tìm"),btnTaiLai=new JButton("Làm mới"),btnDuyet=new JButton("Duyệt hủy"),btnTuChoi=new JButton("Từ chối");
+    public final JButton btnThuLai=new JButton("Thử lại");
+    public final JTextArea txaThongTin=new JTextArea(4,50),txaLyDoDuyet=new JTextArea(3,45);
+    public final JLabel lblTrangThai=new JLabel("Lọc yêu cầu hủy theo ngày gửi và trạng thái.");
+    private final JLabel lblSoKyTu=new JLabel("0/500 ký tự · Bắt buộc khi từ chối");
+    private final DefaultTableModel requestModel=GiaoDienHoaDon.model("Mã yêu cầu","Hóa đơn","Bệnh nhân","Tổng tiền","Đã thu","Người gửi","Thời điểm gửi","Trạng thái","Lý do yêu cầu");
+    private final DefaultTableModel lineModel=GiaoDienHoaDon.model("Loại","Mã hàng","Tên dịch vụ / hàng","Số lượng","Đơn giá đã chốt","Thành tiền");
+    private final DefaultTableModel paymentModel=GiaoDienHoaDon.model("Mã thu","Thời gian","Số tiền","Phương thức","Tham chiếu","Trạng thái");
+    public final JTable tblYeuCau=GiaoDienHoaDon.table(requestModel);
+    private final HuyHoaDonController controller;private List<ThongTinYeuCauHuyHoaDon> rows=List.of();private boolean loaded;
+    public HuyHoaDonPanel(DesktopSession session,ConnectionProvider connections){
+        new AuthorizationService(new RolePermissionPolicy()).require(session,Quyen.INVOICE_CANCEL_APPROVE);
+        setLayout(new BorderLayout(10,10));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
+        JLabel lblTitle=new JLabel("Duyệt hủy hóa đơn");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
+        JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);
+        cmbTrangThai.addItem("Tất cả");for(TrangThaiYeuCauHuyHoaDon status:TrangThaiYeuCauHuyHoaDon.values())cmbTrangThai.addItem(status);
+        JPanel pnlFilter=GiaoDienHoaDon.filters(GiaoDienHoaDon.field("Yêu cầu / hóa đơn / người gửi",txtTuKhoa),GiaoDienHoaDon.dateField(txtTuNgay,"Ngày gửi từ"),GiaoDienHoaDon.dateField(txtDenNgay,"Đến ngày"),GiaoDienHoaDon.field("Trạng thái yêu cầu",cmbTrangThai),GiaoDienHoaDon.field(" ",GiaoDienHoaDon.actions(btnTim,btnTaiLai)));pnlTop.add(pnlFilter,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
+        JScrollPane scrRequests=GiaoDienHoaDon.scroll(tblYeuCau);
+        JTabbedPane tabDetails=new JTabbedPane();
+        txaThongTin.setEditable(false);txaThongTin.setLineWrap(true);txaThongTin.setWrapStyleWord(true);txaLyDoDuyet.setLineWrap(true);txaLyDoDuyet.setWrapStyleWord(true);
+        JPanel pnlTexts=new JPanel(new GridLayout(1,2,8,0));JScrollPane scrInfo=new JScrollPane(txaThongTin),scrReason=new JScrollPane(txaLyDoDuyet);scrInfo.setBorder(BorderFactory.createTitledBorder("Thông tin và lý do yêu cầu"));scrReason.setBorder(BorderFactory.createTitledBorder("Ý kiến xét duyệt"));scrInfo.setPreferredSize(new Dimension(400,140));scrReason.setPreferredSize(new Dimension(400,120));scrInfo.setMinimumSize(new Dimension(100,80));scrReason.setMinimumSize(new Dimension(100,60));
+        JPanel pnlOpinion=new JPanel(new BorderLayout(0,4));pnlOpinion.add(scrReason);pnlOpinion.add(lblSoKyTu,BorderLayout.SOUTH);pnlTexts.add(scrInfo);pnlTexts.add(pnlOpinion);
+        txaLyDoDuyet.getDocument().addDocumentListener(new javax.swing.event.DocumentListener(){private void update(){int count=txaLyDoDuyet.getDocument().getLength();lblSoKyTu.setText(count+"/500 ký tự · Bắt buộc khi từ chối");lblSoKyTu.setForeground(count>500?new Color(161,38,45):GiaoDienHoaDon.NAVY);}public void insertUpdate(javax.swing.event.DocumentEvent e){update();}public void removeUpdate(javax.swing.event.DocumentEvent e){update();}public void changedUpdate(javax.swing.event.DocumentEvent e){update();}});
+        tabDetails.addTab("Thông tin & xét duyệt",GiaoDienHoaDon.topAligned(pnlTexts));tabDetails.addTab("Chi tiết hóa đơn",GiaoDienHoaDon.scroll(GiaoDienHoaDon.table(lineModel)));tabDetails.addTab("Lịch sử thanh toán",GiaoDienHoaDon.scroll(GiaoDienHoaDon.table(paymentModel)));tabDetails.setPreferredSize(new Dimension(1000,185));
+        tabDetails.putClientProperty("billing.initialDetailHeight",185);add(GiaoDienHoaDon.split(JSplitPane.VERTICAL_SPLIT,scrRequests,tabDetails,1.0),BorderLayout.CENTER);
+        JPanel pnlActions=new JPanel(new FlowLayout(FlowLayout.RIGHT,8,0));pnlActions.add(GiaoDienHoaDon.danger(btnTuChoi));pnlActions.add(GiaoDienHoaDon.primary(btnDuyet));
+        JPanel pnlStatus=new JPanel(new BorderLayout(8,0));pnlStatus.add(lblTrangThai);pnlStatus.add(btnThuLai,BorderLayout.EAST);btnThuLai.setVisible(false);
+        JPanel pnlBottom=new JPanel(new BorderLayout(0,8));pnlBottom.add(pnlStatus,BorderLayout.NORTH);pnlBottom.add(pnlActions,BorderLayout.SOUTH);add(pnlBottom,BorderLayout.SOUTH);
+        controller=new HuyHoaDonController(this,session,new HuyHoaDonService(session,connections));buttons(false,false);
+        GiaoDienHoaDon.style(this);
+        GiaoDienHoaDon.columns(tblYeuCau,110,110,200,140,140,120,175,125,250);
+        clearDetail();
+    }
+    @Override public void addNotify(){super.addNotify();if(!loaded){loaded=true;SwingUtilities.invokeLater(new Runnable(){public void run(){refreshData();}});}}
+    @Override public void refreshData(){controller.load();}
+    public String selectedId(){int index=tblYeuCau.getSelectedRow();if(index<0)return null;index=tblYeuCau.convertRowIndexToModel(index);return index<rows.size()?rows.get(index).maYeuCau():null;}
+    public void showRows(List<ThongTinYeuCauHuyHoaDon> values){rows=List.of();requestModel.setRowCount(0);rows=List.copyOf(values);for(var y:rows)requestModel.addRow(new Object[]{y.maYeuCau(),y.maHoaDon(),y.maBenhNhan()+" · "+y.tenBenhNhan(),y.tongTien(),y.daThu(),y.maTaiKhoanTao(),y.thoiGianTao(),y.trangThai(),y.lyDo()});clearDetail();}
+    public void clearDetail(){lineModel.setRowCount(0);paymentModel.setRowCount(0);txaThongTin.setText("Chọn yêu cầu để xem và xét duyệt");txaLyDoDuyet.setText("");buttons(false,false);}
+    public void showDetail(ChiTietYeuCauHuy detail){
+        clearDetail();var y=detail.request();var h=detail.invoice().hoaDon();
+        txaThongTin.setText("Yêu cầu "+y.maYeuCau()+" · Hóa đơn "+h.maHoaDon()+" · "+h.trangThai()+"\nBệnh nhân: "+h.maBenhNhan()+" · "+h.tenBenhNhan()+"\nTổng: "+GiaoDienHoaDon.vnd(h.tongTien())+" · Đã thu: "+GiaoDienHoaDon.vnd(h.daThu())+" · Còn nợ: "+GiaoDienHoaDon.vnd(h.conNo())+"\nNgười gửi: "+y.maTaiKhoanTao()+" · "+GiaoDienHoaDon.time(y.thoiGianTao())+"\nLý do: "+y.lyDo()+"\nKết quả: "+y.trangThai()+" · Người xử lý: "+(y.maTaiKhoanDuyet()==null?"—":y.maTaiKhoanDuyet())+" · "+GiaoDienHoaDon.time(y.thoiGianDuyet())+"\nÝ kiến: "+(y.lyDoDuyet()==null?"":y.lyDoDuyet()));
+        txaThongTin.setCaretPosition(0);
+        for(var line:detail.invoice().chiTiet())lineModel.addRow(new Object[]{line.loaiHang(),line.maHang(),line.tenHienThi(),line.soLuong(),line.donGiaApDung(),line.thanhTien()});
+        for(var payment:detail.invoice().thanhToan())paymentModel.addRow(new Object[]{payment.maThanhToan(),payment.thoiGian(),payment.soTien(),payment.phuongThuc(),payment.maGiaoDich(),payment.trangThai()});
+    }
+    public void buttons(boolean approve,boolean reject){btnDuyet.setEnabled(approve);btnTuChoi.setEnabled(reject);txaLyDoDuyet.setEnabled(reject);txaLyDoDuyet.setEditable(reject);}
+    public void tableStatus(String message){GiaoDienHoaDon.tableState(tblYeuCau,message);}
+    public void loadFailed(String message){lblTrangThai.setText(message);tableStatus("Chưa tải được yêu cầu. Bấm Thử lại để tải dữ liệu.");btnThuLai.setVisible(true);}
+    public void busy(boolean busy){for(Component control:new Component[]{txtTuKhoa,txtTuNgay,txtDenNgay,cmbTrangThai,btnTim,btnTaiLai,btnThuLai,tblYeuCau,txaLyDoDuyet})control.setEnabled(!busy);if(busy){buttons(false,false);btnThuLai.setVisible(false);}}
+    public void expired(){showRows(List.of());busy(true);lblTrangThai.setText("Phiên đã đăng xuất.");}
+}

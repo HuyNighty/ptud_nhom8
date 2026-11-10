@@ -1,8 +1,6 @@
 package com.quanlynhakhoa.hethong.tongquan;
 
-
-
-
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
@@ -26,11 +24,11 @@ public final class DashboardOverviewSqlIT {
             check(overview.warnings().isEmpty(),role+" incomplete sections: "+overview.warnings());
             check(overview.days().size()==7,"seven calendar days");
             check(overview.days().get(0).date().plusDays(6).equals(overview.summary().date()),"continuous date range");
-            if(!service.can(Permission.APPOINTMENT_READ))check(overview.appointments().isEmpty(),"appointment data hidden");
-            if(!service.can(Permission.INVENTORY_READ))check(overview.alerts().isEmpty(),"inventory data hidden");
+            if(!service.can(Quyen.APPOINTMENT_READ))check(overview.appointments().isEmpty(),"appointment data hidden");
+            if(!service.can(Quyen.INVENTORY_READ))check(overview.alerts().isEmpty(),"inventory data hidden");
             for(var day:overview.days()){
-                check((day.collected()!=null)==service.can(Permission.REVENUE_REPORT_READ),"money permission");
-                check((day.visits()!=null)==service.can(Permission.MEDICAL_RECORD_READ),"visit permission");
+                check((day.collected()!=null)==service.can(Quyen.REVENUE_REPORT_READ),"money permission");
+                check((day.visits()!=null)==service.can(Quyen.MEDICAL_RECORD_READ),"visit permission");
             }
             if(role==VaiTroHeThong.SYSTEM_ADMIN){
                 BigDecimal sum=BigDecimal.ZERO;for(var day:overview.days())sum=sum.add(day.collected());

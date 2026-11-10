@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 
@@ -16,13 +17,13 @@ public final class HandoverPermissionContractSelfTest {
         for (VaiTroHeThong role : VaiTroHeThong.values()) {
             DesktopSession current = DesktopSession.fromSuccessfulLogin(
                     new KetQuaDangNhap(true, "SYNTHETIC", role, false));
-            check(policy.isAllowed(role, Permission.SHIFT_HANDOVER_MANAGE), "proposed six-role grant: " + role);
-            check(auth.can(current, Permission.SHIFT_HANDOVER_MANAGE), "active session grant: " + role);
+            check(policy.isAllowed(role, Quyen.SHIFT_HANDOVER_MANAGE), "proposed six-role grant: " + role);
+            check(auth.can(current, Quyen.SHIFT_HANDOVER_MANAGE), "active session grant: " + role);
             current.logout();
-            check(!auth.can(current, Permission.SHIFT_HANDOVER_MANAGE), "logout revoked: " + role);
+            check(!auth.can(current, Quyen.SHIFT_HANDOVER_MANAGE), "logout revoked: " + role);
         }
-        check(!auth.can(null, Permission.SHIFT_HANDOVER_MANAGE), "anonymous denied");
-        check(!policy.isAllowed(null, Permission.SHIFT_HANDOVER_MANAGE), "null role denied");
+        check(!auth.can(null, Quyen.SHIFT_HANDOVER_MANAGE), "anonymous denied");
+        check(!policy.isAllowed(null, Quyen.SHIFT_HANDOVER_MANAGE), "null role denied");
         System.out.println("PASS: HANDOVER PERMISSION CONTRACT (" + checks + " synthetic checks; no DB)");
     }
 }

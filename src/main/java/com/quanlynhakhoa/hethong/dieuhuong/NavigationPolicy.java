@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.hethong.dieuhuong;
 
+import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;

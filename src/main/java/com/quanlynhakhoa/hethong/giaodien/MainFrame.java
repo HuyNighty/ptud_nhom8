@@ -2,7 +2,7 @@ package com.quanlynhakhoa.hethong.giaodien;
 
 import com.quanlynhakhoa.hethong.tinhnang.FeatureBootstrap;
 import com.quanlynhakhoa.hethong.tinhnang.FeatureRegistry;
-import com.quanlynhakhoa.hethong.dieuhuong.Module;
+import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -254,14 +254,14 @@ public final class MainFrame extends JFrame {
         try {
             JPanel pnlPage = registry.create(session, module);
             featurePages.put(module,pnlPage);
-            com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel.PaymentNavigation paymentNavigation=new com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel.PaymentNavigation(){
+            com.quanlynhakhoa.view.hoadon.HoaDonPanel.PaymentNavigation paymentNavigation=new com.quanlynhakhoa.view.hoadon.HoaDonPanel.PaymentNavigation(){
                 public void open(String invoiceId){
                     navigate(Module.PAYMENTS);
-                    if(featurePages.get(Module.PAYMENTS) instanceof com.quanlynhakhoa.nghiepvu.hoadon.ui.PaymentPanel payments)payments.openInvoice(invoiceId);
+                    if(featurePages.get(Module.PAYMENTS) instanceof com.quanlynhakhoa.view.hoadon.ThanhToanPanel payments)payments.openInvoice(invoiceId);
                 }
             };
-            if(pnlPage instanceof com.quanlynhakhoa.nghiepvu.hoadon.ui.InvoicePanel invoices)invoices.setPaymentNavigation(paymentNavigation);
-            if(pnlPage instanceof com.quanlynhakhoa.nghiepvu.hoadon.ui.DebtPanel debts)debts.setPaymentNavigation(paymentNavigation);
+            if(pnlPage instanceof com.quanlynhakhoa.view.hoadon.HoaDonPanel invoices)invoices.setPaymentNavigation(paymentNavigation);
+            if(pnlPage instanceof com.quanlynhakhoa.view.hoadon.CongNoPanel debts)debts.setPaymentNavigation(paymentNavigation);
             JPanel pnlSlot = slots.get(module);
             pnlSlot.removeAll();
             // Responsive business pages own their table/long-content scrolling.
@@ -279,8 +279,8 @@ public final class MainFrame extends JFrame {
     private void openFromDashboard(Module module,String context) {
         navigate(module);
         JPanel page=featurePages.get(module);
-        if(page instanceof com.quanlynhakhoa.nghiepvu.kho.InventoryPanel inventory)inventory.openOverviewSection(context);
-        if(page instanceof com.quanlynhakhoa.nghiepvu.lichhen.view.LichHenPanel appointments && !context.isBlank()){
+        if(page instanceof com.quanlynhakhoa.view.kho.KhoPanel inventory)inventory.openOverviewSection(context);
+        if(page instanceof com.quanlynhakhoa.view.lichhen.LichHenPanel appointments && !context.isBlank()){
             appointments.openDashboardAppointment(context);
         }
     }

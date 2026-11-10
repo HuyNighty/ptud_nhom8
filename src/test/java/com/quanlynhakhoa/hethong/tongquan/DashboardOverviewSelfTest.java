@@ -1,8 +1,6 @@
 package com.quanlynhakhoa.hethong.tongquan;
 
-
-
-
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.*;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
@@ -50,12 +48,12 @@ public final class DashboardOverviewSelfTest {
             List<String> queries=new ArrayList<>();DashboardService service=new DashboardService(session,()->connection(queries,false));
             var result=service.loadOverview();check(result.warnings().isEmpty(),"no synthetic failures");check(result.days().size()==7,"seven zero-filled days");
             for(var day:result.days()){
-                check((day.visits()!=null)==service.can(Permission.MEDICAL_RECORD_READ),"visit permission");
-                check((day.collected()!=null)==service.can(Permission.REVENUE_REPORT_READ),"collection permission");
+                check((day.visits()!=null)==service.can(Quyen.MEDICAL_RECORD_READ),"visit permission");
+                check((day.collected()!=null)==service.can(Quyen.REVENUE_REPORT_READ),"collection permission");
             }
-            check(queries.stream().anyMatch(q->q.contains("dbo.LoHang"))==service.can(Permission.INVENTORY_READ),"no unauthorized inventory query");
-            check(queries.stream().anyMatch(q->q.contains("SELECT TOP (8) l.maLichHen"))==service.can(Permission.APPOINTMENT_READ),"no unauthorized appointment query");
-            check(queries.stream().anyMatch(q->q.contains("GROUP BY CAST(thoiGian"))==service.can(Permission.REVENUE_REPORT_READ),"no unauthorized money trend query");
+            check(queries.stream().anyMatch(q->q.contains("dbo.LoHang"))==service.can(Quyen.INVENTORY_READ),"no unauthorized inventory query");
+            check(queries.stream().anyMatch(q->q.contains("SELECT TOP (8) l.maLichHen"))==service.can(Quyen.APPOINTMENT_READ),"no unauthorized appointment query");
+            check(queries.stream().anyMatch(q->q.contains("GROUP BY CAST(thoiGian"))==service.can(Quyen.REVENUE_REPORT_READ),"no unauthorized money trend query");
             if(role==VaiTroHeThong.DOCTOR)for(String sql:queries)if(sql.contains("dbo.PhieuKham"))check(sql.contains("maTaiKhoan=?"),"doctor aggregate scoped by account");
             int before=queries.size();session.logout();boolean denied=false;try{service.loadOverview();}catch(AccessDeniedException expected){denied=true;}check(denied&&before==queries.size(),"logout rejects before SQL");
         }

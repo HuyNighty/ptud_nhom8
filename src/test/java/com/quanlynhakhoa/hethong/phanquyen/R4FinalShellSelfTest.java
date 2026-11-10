@@ -1,8 +1,9 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.dieuhuong.Module;
+import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
 import com.quanlynhakhoa.hethong.giaodien.MainFrame;
 import com.quanlynhakhoa.hethong.giaodien.MainNavigationModel;
@@ -28,45 +29,45 @@ public final class R4FinalShellSelfTest {
         return DesktopSession.fromSuccessfulLogin(
                 new KetQuaDangNhap(true, "SYNTH-R4A4", role, false));
     }
-    private static boolean granted(VaiTroHeThong role, Permission p) {
+    private static boolean granted(VaiTroHeThong role, Quyen p) {
         return switch (role) {
             case SYSTEM_ADMIN -> true;
             case RECEPTIONIST -> Set.of(
-                    Permission.PATIENT_READ, Permission.PATIENT_CREATE, Permission.PATIENT_UPDATE,
-                    Permission.PATIENT_CHECK_IN, Permission.APPOINTMENT_READ, Permission.APPOINTMENT_MANAGE,
-                    Permission.BILLING_READ, Permission.BILLING_MANAGE, Permission.INVOICE_CANCEL_REQUEST,
-                    Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE).contains(p);
+                    Quyen.PATIENT_READ, Quyen.PATIENT_CREATE, Quyen.PATIENT_UPDATE,
+                    Quyen.PATIENT_CHECK_IN, Quyen.APPOINTMENT_READ, Quyen.APPOINTMENT_MANAGE,
+                    Quyen.BILLING_READ, Quyen.BILLING_MANAGE, Quyen.INVOICE_CANCEL_REQUEST,
+                    Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE).contains(p);
             case DOCTOR -> Set.of(
-                    Permission.PATIENT_READ, Permission.MEDICAL_RECORD_READ, Permission.MEDICAL_RECORD_UPDATE,
-                    Permission.REEXAM_SCHEDULE, Permission.SUPPLY_REQUEST, Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE).contains(p);
+                    Quyen.PATIENT_READ, Quyen.MEDICAL_RECORD_READ, Quyen.MEDICAL_RECORD_UPDATE,
+                    Quyen.REEXAM_SCHEDULE, Quyen.SUPPLY_REQUEST, Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE).contains(p);
             case NURSE -> Set.of(
-                    Permission.SUPPLY_REQUEST, Permission.EMERGENCY_KIT_CHECK, Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE).contains(p);
+                    Quyen.SUPPLY_REQUEST, Quyen.EMERGENCY_KIT_CHECK, Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE).contains(p);
             case CLINIC_MANAGER -> Set.of(
-                    Permission.REVENUE_REPORT_READ, Permission.BILLING_READ, Permission.WORKFORCE_READ, Permission.WORKFORCE_MANAGE,
-                    Permission.ACCOUNT_MANAGE, Permission.ROLE_MANAGE, Permission.AUDIT_READ,
-                    Permission.SERVICE_CATALOG_MANAGE, Permission.INVOICE_CANCEL_APPROVE,
-                    Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE).contains(p);
+                    Quyen.REVENUE_REPORT_READ, Quyen.BILLING_READ, Quyen.WORKFORCE_READ, Quyen.WORKFORCE_MANAGE,
+                    Quyen.ACCOUNT_MANAGE, Quyen.ROLE_MANAGE, Quyen.AUDIT_READ,
+                    Quyen.SERVICE_CATALOG_MANAGE, Quyen.INVOICE_CANCEL_APPROVE,
+                    Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE).contains(p);
             case INVENTORY_MANAGER -> Set.of(
-                    Permission.INVENTORY_READ, Permission.INVENTORY_MANAGE, Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE).contains(p);
+                    Quyen.INVENTORY_READ, Quyen.INVENTORY_MANAGE, Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE).contains(p);
         };
     }
     public static void main(String[] args) {
         check(VaiTroHeThong.values().length == 6, "unreviewed role added");
-        check(Permission.values().length == 26, "unreviewed permission added");
+        check(Quyen.values().length == 26, "unreviewed permission added");
         check(Module.values().length == 23, "unreviewed navigation destination added");
-        check(Module.TREATMENT_PLANS.openPermission() == Permission.MEDICAL_RECORD_READ,
+        check(Module.TREATMENT_PLANS.openPermission() == Quyen.MEDICAL_RECORD_READ,
                 "treatment plan navigation requires medical record read permission");
-        check(Module.RECEPTION.openPermission() == Permission.PATIENT_CHECK_IN,
+        check(Module.RECEPTION.openPermission() == Quyen.PATIENT_CHECK_IN,
                 "reception requires patient check-in permission");
         check(FeatureBootstrap.createRegistry().contains(Module.RECEPTION),
                 "reception feature remains registered");
         AuthorizationService auth = new AuthorizationService(new RolePermissionPolicy());
         AuthorizedActionGate actions = new AuthorizedActionGate(auth);
         NavigationPolicy nav = new NavigationPolicy(auth);
-        check(!auth.can(null, Permission.PATIENT_READ), "anonymous denied");
+        check(!auth.can(null, Quyen.PATIENT_READ), "anonymous denied");
         check(!auth.can(user(VaiTroHeThong.SYSTEM_ADMIN), null), "missing permission denied");
-        denied(() -> actions.run(null, Permission.PATIENT_READ, () -> {}), "null principal blocked");
-        denied(() -> actions.query(null, Permission.PATIENT_READ, () -> "never"), "null query blocked");
+        denied(() -> actions.run(null, Quyen.PATIENT_READ, () -> {}), "null principal blocked");
+        denied(() -> actions.query(null, Quyen.PATIENT_READ, () -> "never"), "null query blocked");
         denied(() -> actions.run(user(VaiTroHeThong.SYSTEM_ADMIN), null, () -> {}), "null privilege blocked");
         denied(() -> actions.query(user(VaiTroHeThong.SYSTEM_ADMIN), null, () -> "never"), "null query privilege blocked");
 
@@ -77,7 +78,7 @@ public final class R4FinalShellSelfTest {
             MainNavigationModel model = new MainNavigationModel(session);
             // Explicit business expectation, independent of Module.openPermission().
             boolean receptionAllowed = role == VaiTroHeThong.RECEPTIONIST || role == VaiTroHeThong.SYSTEM_ADMIN;
-            check(auth.can(session, Permission.PATIENT_CHECK_IN) == receptionAllowed,
+            check(auth.can(session, Quyen.PATIENT_CHECK_IN) == receptionAllowed,
                     "check-in role matrix: " + role);
             check(nav.canOpen(session, Module.RECEPTION) == receptionAllowed,
                     "reception route role matrix: " + role);
@@ -85,7 +86,7 @@ public final class R4FinalShellSelfTest {
                     "reception visibility role matrix: " + role);
             check(session.isActive(), "session starts active: " + role);
             check(nav.canOpen(session, Module.HOME), "home is allowed only with session");
-            for (Permission p : Permission.values()) {
+            for (Quyen p : Quyen.values()) {
                 final boolean expected = granted(role, p);
                 check(auth.can(session, p) == expected, "service mapping: " + role + "/" + p);
                 AtomicInteger count = new AtomicInteger();
@@ -123,10 +124,10 @@ public final class R4FinalShellSelfTest {
             }
             session.logout();
             check(!session.isActive(), "logout deactivates session");
-            check(!auth.can(session, Permission.PATIENT_CHECK_IN), "logout check-in denied: " + role);
+            check(!auth.can(session, Quyen.PATIENT_CHECK_IN), "logout check-in denied: " + role);
             check(!nav.canOpen(session, Module.RECEPTION), "logout reception denied: " + role);
             check(nav.visibleModules(session).isEmpty(), "logout hides all navigation");
-            for (Permission p : Permission.values()) {
+            for (Quyen p : Quyen.values()) {
                 AtomicInteger count = new AtomicInteger();
                 denied(() -> actions.run(session, p, count::incrementAndGet), "logout action denied");
                 check(count.get() == 0, "logout action not executed");
@@ -145,8 +146,8 @@ public final class R4FinalShellSelfTest {
         old.logout();
         DesktopSession fresh = user(VaiTroHeThong.SYSTEM_ADMIN);
         check(old != fresh, "new authentication creates new object");
-        denied(() -> actions.run(old, Permission.ACCOUNT_MANAGE, () -> {}), "old session remains denied");
-        check(auth.can(fresh, Permission.ACCOUNT_MANAGE), "new session can be authorized");
+        denied(() -> actions.run(old, Quyen.ACCOUNT_MANAGE, () -> {}), "old session remains denied");
+        check(auth.can(fresh, Quyen.ACCOUNT_MANAGE), "new session can be authorized");
         fresh.logout();
 
         // Reflection validates the public shell entry point without opening a JFrame.

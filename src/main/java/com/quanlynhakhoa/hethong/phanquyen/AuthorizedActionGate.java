@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
+import com.quanlynhakhoa.enums.Quyen;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -16,13 +17,13 @@ public final class AuthorizedActionGate {
         this.authorization = Objects.requireNonNull(authorization, "authorization");
     }
 
-    public void run(DesktopSession session, Permission permission, Runnable action) {
+    public void run(DesktopSession session, Quyen permission, Runnable action) {
         Objects.requireNonNull(action, "action");
         authorization.require(session, permission);
         action.run();
     }
 
-    public <T> T query(DesktopSession session, Permission permission, Supplier<T> action) {
+    public <T> T query(DesktopSession session, Quyen permission, Supplier<T> action) {
         Objects.requireNonNull(action, "action");
         authorization.require(session, permission);
         return action.get();
