@@ -1,8 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
-
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.sql.*;
 import java.util.List;
@@ -25,7 +24,7 @@ public class PaymentDao {
         }
     }
     /** Returns existing row data including cancelled rows: a cancelled ID cannot be used to collect again. */
-    public Payment existing(Connection c,String id)throws SQLException {
+    public ThongTinThanhToan existing(Connection c,String id)throws SQLException {
         try(PreparedStatement s=c.prepareStatement("""
                 SELECT maThanhToan,maHoaDon,thoiGian,soTien,phuongThuc,maGiaoDich,tienKhachDua,
                        trangThai,maNhanVien,maTaiKhoanHuy,thoiGianHuy,lyDoHuy
@@ -35,9 +34,9 @@ public class PaymentDao {
             try(ResultSet r=s.executeQuery()) {
                 if(!r.next())return null;
                 Timestamp cancelled=r.getTimestamp("thoiGianHuy");
-                return new Payment(r.getString("maThanhToan"),r.getString("maHoaDon"),r.getTimestamp("thoiGian").toLocalDateTime(),
-                        r.getBigDecimal("soTien"),Payment.PhuongThuc.valueOf(r.getString("phuongThuc")),r.getString("maGiaoDich"),r.getBigDecimal("tienKhachDua"),
-                        Payment.TrangThai.valueOf(r.getString("trangThai")),r.getString("maNhanVien"),r.getString("maTaiKhoanHuy"),
+                return new ThongTinThanhToan(r.getString("maThanhToan"),r.getString("maHoaDon"),r.getTimestamp("thoiGian").toLocalDateTime(),
+                        r.getBigDecimal("soTien"),ThongTinThanhToan.PhuongThuc.valueOf(r.getString("phuongThuc")),r.getString("maGiaoDich"),r.getBigDecimal("tienKhachDua"),
+                        ThongTinThanhToan.TrangThai.valueOf(r.getString("trangThai")),r.getString("maNhanVien"),r.getString("maTaiKhoanHuy"),
                         cancelled==null?null:cancelled.toLocalDateTime(),r.getNString("lyDoHuy"));
             }
         }
@@ -57,7 +56,7 @@ public class PaymentDao {
             try(ResultSet r=s.executeQuery()){return r.next();}
         }
     }
-    public void insert(Connection c,String invoice,String employee,PaymentRequest.Part part)throws SQLException {
+    public void insert(Connection c,String invoice,String employee,PhanThanhToan part)throws SQLException {
         try(PreparedStatement s=c.prepareStatement("""
                 INSERT INTO dbo.ThanhToan
                 (maThanhToan,maHoaDon,thoiGian,soTien,phuongThuc,maGiaoDich,tienKhachDua,trangThai,maNhanVien)

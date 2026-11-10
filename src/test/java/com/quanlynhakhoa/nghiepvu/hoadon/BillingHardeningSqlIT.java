@@ -1,16 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
-
-
-
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
@@ -37,7 +29,7 @@ public final class BillingHardeningSqlIT {
     private static void sql(String text)throws Exception{try(Connection c=connections.open();Statement s=c.createStatement()){s.executeUpdate(text);}}
     private static BigDecimal scalar(String text)throws Exception{try(Connection c=connections.open();Statement s=c.createStatement();ResultSet r=s.executeQuery(text)){r.next();return r.getBigDecimal(1);}}
     private static DesktopSession session(String account,Role role){var s=DesktopSession.fromSuccessfulLogin(new AuthDecision(true,account,role,false));s.bindCurrentAccountCheck(new JdbcSessionVerifier(connections::open));return s;}
-    private static PaymentRequest cash(String invoice,String id,int amount){var m=BigDecimal.valueOf(amount);return new PaymentRequest(invoice,m,List.of(new PaymentRequest.Part(id,m,Payment.PhuongThuc.TIEN_MAT,null,m)),false);}
+    private static YeuCauThanhToan cash(String invoice,String id,int amount){var m=BigDecimal.valueOf(amount);return new YeuCauThanhToan(invoice,m,List.of(new PhanThanhToan(id,m,ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,m)),false);}
     private static void header(String id,String visit,int total)throws Exception{
         sql("INSERT dbo.HoaDon(maHoaDon,maNhanVien,maBenhNhan,maPhieuKham,ngayLap,trangThai) VALUES('"+id+"','N1','B1',"+(visit==null?"NULL":"'"+visit+"'")+",CURRENT_TIMESTAMP,'CHUA_THANH_TOAN')");
         sql("INSERT dbo.ChiTietHoaDon(maHoaDon,maDichVu,soLuong,donGiaApDung) VALUES('"+id+"','D1',1,"+total+")");
@@ -75,7 +67,7 @@ public final class BillingHardeningSqlIT {
         denied(()->new PaymentReversalService(cashier,connections).reverse("H1","P1",PaymentReversalService.Kind.HOAN_TIEN,"reason","receipt"),"cashier cannot refund");
         sql("UPDATE dbo.ThanhToan SET thoiGian=DATEADD(day,-1,CURRENT_TIMESTAMP) WHERE maThanhToan='P1'");
         new PaymentReversalService(manager,connections).reverse("H1","P1",PaymentReversalService.Kind.HOAN_TIEN,"Synthetic refund","receipt-test");
-        check(invoiceService.detail("H1").hoaDon().daThu().signum()==0,"refund reopens debt");check(invoiceService.detail("H1").thanhToan().getFirst().trangThai()==Payment.TrangThai.DA_HOAN_TIEN,"refund preserves original row");
+        check(invoiceService.detail("H1").hoaDon().daThu().signum()==0,"refund reopens debt");check(invoiceService.detail("H1").thanhToan().getFirst().trangThai()==ThongTinThanhToan.TrangThai.DA_HOAN_TIEN,"refund preserves original row");
         denied(()->new PaymentReversalService(manager,connections).reverse("H1","P1",PaymentReversalService.Kind.HOAN_TIEN,"again","receipt"),"double refund rejected");
         new PaymentService(cashier,connections).collect(cash("H1","P2",50));new PaymentReversalService(manager,connections).reverse("H1","P2",PaymentReversalService.Kind.HUY_GHI_NHAN,"Synthetic wrong entry","proof-test");
         check(scalar("SELECT SUM(soTien) FROM dbo.DongTienHoaDon WHERE maHoaDon='H1'").signum()==0,"signed movements reconcile refund and correction");

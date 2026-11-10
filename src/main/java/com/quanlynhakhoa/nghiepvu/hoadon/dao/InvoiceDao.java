@@ -1,9 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -151,19 +148,19 @@ public class InvoiceDao {
             return List.copyOf(result);
         }
     }
-    public List<Payment> payments(Connection connection, String id) throws SQLException {
+    public List<ThongTinThanhToan> payments(Connection connection, String id) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT maThanhToan, maHoaDon, thoiGian, soTien, phuongThuc, maGiaoDich, tienKhachDua,
                        trangThai, maNhanVien, maTaiKhoanHuy, thoiGianHuy, lyDoHuy
                 FROM dbo.ThanhToan WHERE maHoaDon=? ORDER BY thoiGian, maThanhToan
                 """)) {
             statement.setQueryTimeout(15); statement.setString(1, id);
-            List<Payment> result = new ArrayList<>();
+            List<ThongTinThanhToan> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) {
-                while (rows.next()) result.add(new Payment(rows.getString("maThanhToan"), rows.getString("maHoaDon"),
+                while (rows.next()) result.add(new ThongTinThanhToan(rows.getString("maThanhToan"), rows.getString("maHoaDon"),
                         time(rows, "thoiGian"), rows.getBigDecimal("soTien"),
-                        Payment.PhuongThuc.valueOf(rows.getString("phuongThuc")), rows.getString("maGiaoDich"),
-                        rows.getBigDecimal("tienKhachDua"), Payment.TrangThai.valueOf(rows.getString("trangThai")),
+                        ThongTinThanhToan.PhuongThuc.valueOf(rows.getString("phuongThuc")), rows.getString("maGiaoDich"),
+                        rows.getBigDecimal("tienKhachDua"), ThongTinThanhToan.TrangThai.valueOf(rows.getString("trangThai")),
                         rows.getString("maNhanVien"), rows.getString("maTaiKhoanHuy"), time(rows, "thoiGianHuy"),
                         rows.getNString("lyDoHuy")));
             }

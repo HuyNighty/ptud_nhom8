@@ -1,17 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
-
-
-
-
-
-
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.model.hoadon.ThanhToanDangCho;
+import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.hethong.phanquyen.*;
@@ -20,26 +12,26 @@ import java.util.*;
 
 /** A durable, server-side reservation survives a lost response and is visible on every workstation. */
 public final class PaymentAttemptService {
-    public record Pending(PaymentRequest request,String owner) { }
+
     private final DesktopSession session;private final ConnectionProvider connections;
     private final AuthorizationService auth=new AuthorizationService(new RolePermissionPolicy());
     public PaymentAttemptService(DesktopSession session,ConnectionProvider connections){this.session=session;this.connections=connections;}
     private static PreparedStatement statement(Connection c,String sql)throws SQLException{PreparedStatement s=c.prepareStatement(sql);s.setQueryTimeout(15);return s;}
-    public Pending pending(String invoice)throws SQLException {
+    public ThanhToanDangCho pending(String invoice)throws SQLException {
         auth.require(session,Permission.BILLING_READ);
         try(Connection c=connections.open()){return pending(c,invoice);}
     }
-    static Pending pending(Connection c,String invoice)throws SQLException {
+    static ThanhToanDangCho pending(Connection c,String invoice)throws SQLException {
         try(PreparedStatement s=statement(c,"SELECT maLanThu,maHoaDon,maTaiKhoan,soTien,phuongThuc,maGiaoDich,tienKhachDua FROM dbo.LanThuHoaDon WHERE maHoaDon=? AND trangThai='CHO_XU_LY'")){
             s.setString(1,invoice);try(ResultSet r=s.executeQuery()){
                 if(!r.next())return null;
-                var method=Payment.PhuongThuc.valueOf(r.getString("phuongThuc"));
-                var part=new PaymentRequest.Part(r.getString("maLanThu"),r.getBigDecimal("soTien"),method,r.getString("maGiaoDich"),r.getBigDecimal("tienKhachDua"));
-                return new Pending(new PaymentRequest(invoice,part.amount(),List.of(part),method==Payment.PhuongThuc.CHUYEN_KHOAN),r.getString("maTaiKhoan"));
+                var method=ThongTinThanhToan.PhuongThuc.valueOf(r.getString("phuongThuc"));
+                var part=new PhanThanhToan(r.getString("maLanThu"),r.getBigDecimal("soTien"),method,r.getString("maGiaoDich"),r.getBigDecimal("tienKhachDua"));
+                return new ThanhToanDangCho(new YeuCauThanhToan(invoice,part.amount(),List.of(part),method==ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN),r.getString("maTaiKhoan"));
             }
         }
     }
-    public void reserve(PaymentRequest request)throws SQLException {
+    public void reserve(YeuCauThanhToan request)throws SQLException {
         auth.require(session,Permission.BILLING_MANAGE);PaymentService.validate(request);
         try(Connection c=connections.open()){
             c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);c.setAutoCommit(false);
@@ -70,19 +62,19 @@ public final class PaymentAttemptService {
             }catch(SQLException|RuntimeException e){try{c.rollback();}catch(SQLException rollback){e.addSuppressed(rollback);}throw e;}
         }
     }
-    static void requireAndComplete(Connection c,PaymentRequest request,String account)throws SQLException {
+    static void requireAndComplete(Connection c,YeuCauThanhToan request,String account)throws SQLException {
         // Keep the reservation until the client has received the commit response.
         try(PreparedStatement s=statement(c,"SELECT maLanThu FROM dbo.LanThuHoaDon WITH (UPDLOCK,HOLDLOCK) WHERE maLanThu=? AND maHoaDon=? AND maTaiKhoan=? AND trangThai IN ('CHO_XU_LY','THANH_CONG')")){
             s.setString(1,request.parts().getFirst().id());s.setString(2,request.invoiceId());s.setString(3,account);
             try(ResultSet rows=s.executeQuery()){if(!rows.next())throw new IllegalArgumentException("Lần thu đã bị giải quyết; không được gửi lại.");}
         }
     }
-    public void acknowledge(PaymentRequest request)throws SQLException {
+    public void acknowledge(YeuCauThanhToan request)throws SQLException {
         auth.require(session,Permission.BILLING_MANAGE);
         try(Connection c=connections.open()){
             c.setAutoCommit(false);
             try{
-                Payment payment=new PaymentDao().existing(c,request.parts().getFirst().id());
+                ThongTinThanhToan payment=new PaymentDao().existing(c,request.parts().getFirst().id());
                 if(payment==null||!PaymentService.matches(payment,request.invoiceId(),new InvoiceCreateDao().employee(c,session.accountId()),request.parts().getFirst()))throw new IllegalArgumentException("Chưa có giao dịch khớp để kết thúc đối soát.");
                 try(PreparedStatement s=statement(c,"UPDATE dbo.LanThuHoaDon SET trangThai='THANH_CONG' WHERE maLanThu=? AND maHoaDon=? AND maTaiKhoan=? AND trangThai IN ('CHO_XU_LY','THANH_CONG')")){
                     s.setString(1,request.parts().getFirst().id());s.setString(2,request.invoiceId());s.setString(3,session.accountId());
@@ -100,12 +92,12 @@ public final class PaymentAttemptService {
             try{
                 // Managers may lack payment write permissions, so take the same invoice lock directly.
                 try(PreparedStatement lock=statement(c,"SELECT maHoaDon FROM dbo.HoaDon WITH (UPDLOCK,HOLDLOCK) WHERE maHoaDon=?")){lock.setString(1,invoice);try(ResultSet r=lock.executeQuery()){if(!r.next())throw new IllegalArgumentException("Không có hóa đơn.");}}
-                Payment recorded=new PaymentDao().existing(c,attempt);
-                Pending pending=pending(c,invoice);
+                ThongTinThanhToan recorded=new PaymentDao().existing(c,attempt);
+                ThanhToanDangCho pending=pending(c,invoice);
                 if(pending==null||!pending.request().parts().getFirst().id().equals(attempt))throw new IllegalArgumentException("Lần thu đã được xử lý.");
                 if(recorded!=null){
                     var part=pending.request().parts().getFirst();
-                    if(!invoice.equals(recorded.maHoaDon())||recorded.trangThai()!=Payment.TrangThai.THANH_CONG||recorded.soTien().compareTo(part.amount())!=0||recorded.phuongThuc()!=part.method()||!Objects.equals(recorded.maGiaoDich(),part.reference())||!equal(recorded.tienKhachDua(),part.customerTender()))throw new IllegalArgumentException("Giao dịch không khớp lần thu; cần kiểm tra thủ công.");
+                    if(!invoice.equals(recorded.maHoaDon())||recorded.trangThai()!=ThongTinThanhToan.TrangThai.THANH_CONG||recorded.soTien().compareTo(part.amount())!=0||recorded.phuongThuc()!=part.method()||!Objects.equals(recorded.maGiaoDich(),part.reference())||!equal(recorded.tienKhachDua(),part.customerTender()))throw new IllegalArgumentException("Giao dịch không khớp lần thu; cần kiểm tra thủ công.");
                 }
                 try(PreparedStatement s=statement(c,"UPDATE dbo.LanThuHoaDon SET trangThai=?,maTaiKhoanXuLy=?,lyDoXuLy=? WHERE maLanThu=? AND maHoaDon=? AND trangThai='CHO_XU_LY'")){
                     s.setString(1,recorded==null?"DA_HUY":"THANH_CONG");s.setString(2,session.accountId());s.setNString(3,reason.trim());s.setString(4,attempt);s.setString(5,invoice);if(s.executeUpdate()!=1)throw new IllegalArgumentException("Lần thu đã được xử lý.");

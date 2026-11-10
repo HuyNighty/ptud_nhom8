@@ -1,8 +1,9 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.service;
 
+import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.Payment;
-import com.quanlynhakhoa.nghiepvu.hoadon.entity.PaymentRequest;
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
 import java.io.*;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
@@ -45,10 +46,10 @@ public final class PendingPaymentStore {
                     java.nio.channels.FileLock lock=channel.lock()) { return operation.run(); }
         }
     }
-    public PaymentRequest read(final String invoice) throws IOException {
-        return locked(invoice,new Operation<PaymentRequest>(){public PaymentRequest run()throws IOException{return readUnlocked(invoice);}});
+    public YeuCauThanhToan read(final String invoice) throws IOException {
+        return locked(invoice,new Operation<YeuCauThanhToan>(){public YeuCauThanhToan run()throws IOException{return readUnlocked(invoice);}});
     }
-    private PaymentRequest readUnlocked(String invoice) throws IOException {
+    private YeuCauThanhToan readUnlocked(String invoice) throws IOException {
         Path file = path(invoice);
         if (!Files.exists(file)) return null;
         try {
@@ -57,23 +58,23 @@ public final class PendingPaymentStore {
             if (!"1".equals(data.getProperty("version")) || !invoice.equals(data.getProperty("invoice"))) throw new IOException("Invalid journal");
             int count = Integer.parseInt(data.getProperty("count"));
             if (count < 1 || count > 2) throw new IOException("Invalid journal parts");
-            List<PaymentRequest.Part> parts = new ArrayList<>();
+            List<PhanThanhToan> parts = new ArrayList<>();
             for (int i = 0; i < count; i++) {
                 String prefix = "part." + i + ".";
                 String tender = data.getProperty(prefix + "tender");
-                parts.add(new PaymentRequest.Part(data.getProperty(prefix + "id"), new BigDecimal(data.getProperty(prefix + "amount")),
-                        Payment.PhuongThuc.valueOf(data.getProperty(prefix + "method")), data.getProperty(prefix + "reference"),
+                parts.add(new PhanThanhToan(data.getProperty(prefix + "id"), new BigDecimal(data.getProperty(prefix + "amount")),
+                        ThongTinThanhToan.PhuongThuc.valueOf(data.getProperty(prefix + "method")), data.getProperty(prefix + "reference"),
                         tender == null ? null : new BigDecimal(tender)));
             }
-            PaymentRequest request=new PaymentRequest(invoice, new BigDecimal(data.getProperty("amount")), parts, Boolean.parseBoolean(data.getProperty("confirmed")));
+            YeuCauThanhToan request=new YeuCauThanhToan(invoice, new BigDecimal(data.getProperty("amount")), parts, Boolean.parseBoolean(data.getProperty("confirmed")));
             PaymentService.validate(request);return request;
         } catch (RuntimeException failure) { throw new IOException("Nhật ký thanh toán không đọc được; cần đối soát trước khi thu tiếp.", failure); }
     }
 
-    public void create(final PaymentRequest request) throws IOException {
+    public void create(final YeuCauThanhToan request) throws IOException {
         locked(request.invoiceId(),new Operation<Void>(){public Void run()throws IOException{createUnlocked(request);return null;}});
     }
-    private void createUnlocked(PaymentRequest request) throws IOException {
+    private void createUnlocked(YeuCauThanhToan request) throws IOException {
         PaymentService.validate(request);
         Properties data = new Properties();
         data.setProperty("version", "1"); data.setProperty("invoice", request.invoiceId());
@@ -96,11 +97,11 @@ public final class PendingPaymentStore {
         }
     }
 
-    public void clear(final PaymentRequest expected) throws IOException {
+    public void clear(final YeuCauThanhToan expected) throws IOException {
         locked(expected.invoiceId(),new Operation<Void>(){public Void run()throws IOException{clearUnlocked(expected);return null;}});
     }
-    private void clearUnlocked(PaymentRequest expected) throws IOException {
-        PaymentRequest current = readUnlocked(expected.invoiceId());
+    private void clearUnlocked(YeuCauThanhToan expected) throws IOException {
+        YeuCauThanhToan current = readUnlocked(expected.invoiceId());
         if (current == null) return;
         if (!current.equals(expected)) throw new IOException("Lần thu đang đối soát đã thay đổi; không được ghi đè.");
         Files.delete(path(expected.invoiceId()));

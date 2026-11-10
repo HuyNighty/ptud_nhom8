@@ -1,16 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
-
-
-
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.*;
@@ -26,7 +18,7 @@ import static com.quanlynhakhoa.nghiepvu.hoadon.ServiceBillingSelfTest.*;
 public final class PaymentSelfTest {
     private static BigDecimal m(String n){return new BigDecimal(n);}
     private static Invoice invoice(String total,String paid,InvoiceStatus status){return new Invoice("H1","NV1","BN1","Synthetic",null,LocalDateTime.now(),status,m(total),m(paid),BigDecimal.ZERO);}
-    private static PaymentRequest cash(String id,String amount){return new PaymentRequest("H1",m(amount),List.of(new PaymentRequest.Part(id,m(amount),Payment.PhuongThuc.TIEN_MAT,null,m(amount))),false);}
+    private static YeuCauThanhToan cash(String id,String amount){return new YeuCauThanhToan("H1",m(amount),List.of(new PhanThanhToan(id,m(amount),ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,m(amount))),false);}
     private static class Invoices extends InvoiceDao {
         Invoice current=invoice("300","0",InvoiceStatus.CHUA_THANH_TOAN);
         @Override public Invoice getForPayment(Connection c,String id){return current;}
@@ -35,23 +27,23 @@ public final class PaymentSelfTest {
         @Override public String employee(Connection c,String account){check("TST_ACC".equals(account),"authenticated account used");return "NV1";}
     }
     private static class Dao extends PaymentDao {
-        Map<String,Payment> existing=new HashMap<>();boolean failInsert,duplicateReference,pendingCancellation;int inserts;InvoiceStatus nextStatus;
+        Map<String,ThongTinThanhToan> existing=new HashMap<>();boolean failInsert,duplicateReference,pendingCancellation;int inserts;InvoiceStatus nextStatus;
         @Override public void requirePermissions(Connection c){ }
         @Override public void lockInvoice(Connection c,String id){check("H1".equals(id),"locks selected invoice");}
-        @Override public Payment existing(Connection c,String id){return existing.get(id);}
+        @Override public ThongTinThanhToan existing(Connection c,String id){return existing.get(id);}
         @Override public void requireNoPendingCancellation(Connection c,String id){if(pendingCancellation)throw new IllegalArgumentException("pending cancellation");}
         @Override public void requireNewTransferReference(Connection c,String reference){if(duplicateReference)throw new IllegalArgumentException("duplicate reference");}
-        @Override public void insert(Connection c,String invoice,String employee,PaymentRequest.Part part)throws SQLException {
+        @Override public void insert(Connection c,String invoice,String employee,PhanThanhToan part)throws SQLException {
             if(failInsert&&++inserts==1)throw new SQLException("second part failed");super.insert(c,invoice,employee,part);
         }
         @Override public void updateStatus(Connection c,String id,InvoiceStatus status)throws SQLException{nextStatus=status;super.updateStatus(c,id,status);}
     }
     public static void main(String[] args)throws Exception {
         final FeatureJdbcDouble jdbc=new FeatureJdbcDouble();final Dao dao=new Dao();final Invoices invoices=new Invoices();final DesktopSession principal=session(Role.RECEPTIONIST);
-        final PaymentService service=new PaymentService(principal,jdbc,dao,invoices,new Accounts(),new PaymentService.Attempts(){public void reserve(PaymentRequest request){} public void complete(Connection c,PaymentRequest request,String account){}});
+        final PaymentService service=new PaymentService(principal,jdbc,dao,invoices,new Accounts(),new PaymentService.Attempts(){public void reserve(YeuCauThanhToan request){} public void complete(Connection c,YeuCauThanhToan request,String account){}});
         check(!service.pendingCancellation("H1"),"read-only pending cancellation check available to cashier");
-        final PaymentRequest mixed=new PaymentRequest("H1",m("100"),List.of(new PaymentRequest.Part("P2",m("100"),Payment.PhuongThuc.CHUYEN_KHOAN,"BANK001",null)),true);
-        final PaymentRequest combined=new PaymentRequest("H1",m("100"),List.of(new PaymentRequest.Part("P1",m("40"),Payment.PhuongThuc.TIEN_MAT,null,m("50")),new PaymentRequest.Part("P2",m("60"),Payment.PhuongThuc.CHUYEN_KHOAN,"BANK001",null)),true);
+        final YeuCauThanhToan mixed=new YeuCauThanhToan("H1",m("100"),List.of(new PhanThanhToan("P2",m("100"),ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN,"BANK001",null)),true);
+        final YeuCauThanhToan combined=new YeuCauThanhToan("H1",m("100"),List.of(new PhanThanhToan("P1",m("40"),ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,m("50")),new PhanThanhToan("P2",m("60"),ThongTinThanhToan.PhuongThuc.CHUYEN_KHOAN,"BANK001",null)),true);
         int initialOpens=jdbc.opens;
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{service.collect(combined);}});
         check(jdbc.opens==initialOpens,"combined method rejected before opening connection");
@@ -60,7 +52,7 @@ public final class PaymentSelfTest {
         check(dao.nextStatus==InvoiceStatus.THANH_TOAN_MOT_PHAN,"partial payment retains debt");
         check(jdbc.persisted.get(0).get(3).equals(m("100")),"single bank amount stored");
         check(jdbc.persisted.get(0).get(7).equals("NV1"),"cashier derived from account");
-        for(PaymentRequest.Part part:mixed.parts())dao.existing.put(part.id(),new Payment(part.id(),"H1",LocalDateTime.now(),part.amount(),part.method(),part.reference(),part.customerTender(),Payment.TrangThai.THANH_CONG,"NV1",null,null,null));
+        for(PhanThanhToan part:mixed.parts())dao.existing.put(part.id(),new ThongTinThanhToan(part.id(),"H1",LocalDateTime.now(),part.amount(),part.method(),part.reference(),part.customerTender(),ThongTinThanhToan.TrangThai.THANH_CONG,"NV1",null,null,null));
         int written=jdbc.updates;service.collect(mixed);check(jdbc.updates==written,"same confirmed request is idempotent");dao.existing.clear();
         invoices.current=invoice("300","100",InvoiceStatus.THANH_TOAN_MOT_PHAN);service.collect(cash("P3","200"));
         check(dao.nextStatus==InvoiceStatus.DA_THANH_TOAN,"full collection marks invoice paid");
@@ -80,9 +72,9 @@ public final class PaymentSelfTest {
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{service.collect(cash("PENDING","100"));}});dao.pendingCancellation=false;
         dao.duplicateReference=true;
         expect(IllegalArgumentException.class,new Action(){public void run()throws Exception{service.collect(mixed);}});dao.duplicateReference=false;
-        final PaymentRequest[] bad={cash("ZERO","0"),cash("NEG","-1"),cash("FRACTION","0.5"),new PaymentRequest("H1",m("101"),mixed.parts(),true),new PaymentRequest("H1",m("100"),mixed.parts(),false),cash("BIG","1000000000000000000")};
-        for(final PaymentRequest request:bad)expect(IllegalArgumentException.class,new Action(){public void run(){PaymentService.validate(request);}});
-        final PaymentService denied=new PaymentService(session(Role.CLINIC_MANAGER),jdbc,dao,invoices,new Accounts(),new PaymentService.Attempts(){public void reserve(PaymentRequest request){} public void complete(Connection c,PaymentRequest request,String account){}});int before=jdbc.opens;
+        final YeuCauThanhToan[] bad={cash("ZERO","0"),cash("NEG","-1"),cash("FRACTION","0.5"),new YeuCauThanhToan("H1",m("101"),mixed.parts(),true),new YeuCauThanhToan("H1",m("100"),mixed.parts(),false),cash("BIG","1000000000000000000")};
+        for(final YeuCauThanhToan request:bad)expect(IllegalArgumentException.class,new Action(){public void run(){PaymentService.validate(request);}});
+        final PaymentService denied=new PaymentService(session(Role.CLINIC_MANAGER),jdbc,dao,invoices,new Accounts(),new PaymentService.Attempts(){public void reserve(YeuCauThanhToan request){} public void complete(Connection c,YeuCauThanhToan request,String account){}});int before=jdbc.opens;
         expect(AccessDeniedException.class,new Action(){public void run()throws Exception{denied.collect(mixed);}});check(jdbc.opens==before,"manager read permission does not authorize collection");
         expect(AccessDeniedException.class,new Action(){public void run()throws Exception{denied.pendingCancellation("H1");}});check(jdbc.opens==before,"cashier pending check requires billing manage");
         principal.logout();before=jdbc.opens;

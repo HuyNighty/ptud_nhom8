@@ -1,7 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
+import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.PaymentController;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import com.quanlynhakhoa.nghiepvu.hoadon.service.PendingPaymentStore;
@@ -18,8 +19,8 @@ import javax.swing.SwingUtilities;
 /** File recovery + real Swing controller with synthetic JDBC. Never connects to a database. */
 public final class PaymentRecoverySelfTest {
     private static void check(boolean value,String message){if(!value)throw new AssertionError(message);}
-    private static PaymentRequest request(String id){return new PaymentRequest("H1",new BigDecimal("100"),List.of(
-            new PaymentRequest.Part(id,new BigDecimal("100"),Payment.PhuongThuc.TIEN_MAT,null,new BigDecimal("200"))),false);}
+    private static YeuCauThanhToan request(String id){return new YeuCauThanhToan("H1",new BigDecimal("100"),List.of(
+            new PhanThanhToan(id,new BigDecimal("100"),ThongTinThanhToan.PhuongThuc.TIEN_MAT,null,new BigDecimal("200"))),false);}
     private static FeatureJdbcDouble fixture(String paymentId,int paid){
         FeatureJdbcDouble db=new FeatureJdbcDouble();Map<String,Object> header=new HashMap<>();
         header.put("maHoaDon","H1");header.put("maNhanVien","NV1");header.put("maBenhNhan","BN1");header.put("tenBenhNhan","Fixture");
@@ -39,7 +40,7 @@ public final class PaymentRecoverySelfTest {
     }
     public static void main(String[] args)throws Exception{
         Path folder=Files.createTempDirectory("n08-payment-recovery-");PendingPaymentStore store=new PendingPaymentStore(folder);
-        PaymentRequest pending=request("PENDING1");store.create(pending);
+        YeuCauThanhToan pending=request("PENDING1");store.create(pending);
         check(new PendingPaymentStore(folder).read("H1").equals(pending),"new store instance recovers exact ID, amount and tender from disk");
         try{new PendingPaymentStore(folder).create(request("OTHER"));throw new AssertionError("Overwrote unresolved attempt");}catch(java.nio.file.FileAlreadyExistsException expected){}
         try{store.clear(request("OTHER"));throw new AssertionError("Cleared another request");}catch(java.io.IOException expected){}
@@ -58,20 +59,20 @@ public final class PaymentRecoverySelfTest {
         store.create(pending);Path journal;try(var files=Files.list(folder)){journal=files.filter(path->path.toString().endsWith(".properties")).findFirst().orElseThrow();}Files.writeString(journal,"broken=true");
         try{store.read("H1");throw new AssertionError("Corrupt journal accepted");}catch(java.io.IOException expected){}
         // Drive the actual submit path without a modal dialog. The failing connection sees the flushed journal.
-        Files.delete(journal);final boolean[] disconnected={false};final PaymentRequest[] sent={null};
+        Files.delete(journal);final boolean[] disconnected={false};final YeuCauThanhToan[] sent={null};
         FeatureJdbcDouble submissionDb=fixture(null,0);final PendingPaymentStore recoveryStore=new PendingPaymentStore(folder);
         com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider connection=new com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider(){
             public java.sql.Connection open()throws java.sql.SQLException{
-                if(disconnected[0]){try{PaymentRequest stored=recoveryStore.read("H1");check(stored!=null,"journal is durable before SQL opens");sent[0]=stored;}catch(java.io.IOException failure){throw new java.sql.SQLException(failure);}throw new java.sql.SQLException("Simulated lost connection");}
+                if(disconnected[0]){try{YeuCauThanhToan stored=recoveryStore.read("H1");check(stored!=null,"journal is durable before SQL opens");sent[0]=stored;}catch(java.io.IOException failure){throw new java.sql.SQLException(failure);}throw new java.sql.SQLException("Simulated lost connection");}
                 return submissionDb.open();
             }
         };
         final PaymentForm[] submit={null};
-        edt(new Runnable(){public void run(){submit[0]=new PaymentForm();new PaymentController(submit[0],session,connection,"H1",new Runnable(){public void run(){}},recoveryStore,new java.util.function.Predicate<PaymentRequest>(){public boolean test(PaymentRequest request){return true;}});}});await(submit[0]);
+        edt(new Runnable(){public void run(){submit[0]=new PaymentForm();new PaymentController(submit[0],session,connection,"H1",new Runnable(){public void run(){}},recoveryStore,new java.util.function.Predicate<YeuCauThanhToan>(){public boolean test(YeuCauThanhToan request){return true;}});}});await(submit[0]);
         edt(new Runnable(){public void run(){submit[0].txtSoTien.setText("100");submit[0].txtKhachDua.setText("200");disconnected[0]=true;submit[0].btnThuTien.doClick();}});await(submit[0]);
         check(sent[0]!=null&&recoveryStore.read("H1").equals(sent[0]),"connection failure preserves exact submitted request");
         edt(new Runnable(){public void run(){check(submit[0].hasUncertainResult()&&!submit[0].btnThuTien.isEnabled(),"failed submit locks new collection");disconnected[0]=false;submit[0].btnKiemTra.doClick();}});await(submit[0]);
-        PaymentRequest original=sent[0];
+        YeuCauThanhToan original=sent[0];
         edt(new Runnable(){public void run(){disconnected[0]=true;submit[0].btnThuLai.doClick();}});await(submit[0]);
         check(original.equals(sent[0])&&recoveryStore.read("H1").equals(original),"retry reuses original ID and amount instead of creating another attempt");
         recoveryStore.clear(original);

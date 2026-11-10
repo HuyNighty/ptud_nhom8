@@ -1,11 +1,6 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
-
-
-
-
-
-
+import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.hethong.xacthuc.AuthDecision;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -32,9 +27,9 @@ public final class ServiceBillingSelfTest {
     public static DesktopSession session(Role role) { return DesktopSession.fromSuccessfulLogin(new AuthDecision(true, "TST_ACC", role, false)); }
     private static BigDecimal money(String value) { return new BigDecimal(value); }
     private static DentalService value(String price) { return new DentalService(" TST1 ", " Dịch vụ kiểm thử ", money(price), " ", false, true); }
-    private static Payment payment(String id, String amount, boolean cancelled) {
-        return new Payment(id, "H1", LocalDateTime.of(2026, 1, 1, 8, 0), money(amount), Payment.PhuongThuc.TIEN_MAT,
-                null, money("999999"), cancelled ? Payment.TrangThai.DA_HUY : Payment.TrangThai.THANH_CONG, "NV1", null, null, null);
+    private static ThongTinThanhToan payment(String id, String amount, boolean cancelled) {
+        return new ThongTinThanhToan(id, "H1", LocalDateTime.of(2026, 1, 1, 8, 0), money(amount), ThongTinThanhToan.PhuongThuc.TIEN_MAT,
+                null, money("999999"), cancelled ? ThongTinThanhToan.TrangThai.DA_HUY : ThongTinThanhToan.TrangThai.THANH_CONG, "NV1", null, null, null);
     }
     private static Invoice invoice(String total, String collected, InvoiceStatus status) {
         return new Invoice("H1", "NV1", "B1", "Synthetic", null, LocalDateTime.now(), status, money(total), money(collected), BigDecimal.ZERO);
@@ -50,7 +45,7 @@ public final class ServiceBillingSelfTest {
         check(BillingCalculator.total(lines).compareTo(money("300")) == 0, "all item kinds included");
         check(BillingCalculator.total(List.of()).signum() == 0, "no lines = zero");
         check(BillingCalculator.collected(List.of()).signum() == 0, "no payments = zero");
-        List<Payment> payments = List.of(payment("T1", "60", false), payment("T2", "40", false), payment("T3", "900", true));
+        List<ThongTinThanhToan> payments = List.of(payment("T1", "60", false), payment("T2", "40", false), payment("T3", "900", true));
         check(BillingCalculator.collected(payments).compareTo(money("100")) == 0, "2 lines of successful collection, cancelled ignored, customer tender ignored");
         check(invoice("300", "0", InvoiceStatus.CHUA_THANH_TOAN).conNo().intValueExact() == 300, "unpaid");
         check(invoice("300", "100", InvoiceStatus.THANH_TOAN_MOT_PHAN).conNo().intValueExact() == 200, "partial");
