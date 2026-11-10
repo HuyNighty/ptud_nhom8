@@ -4,6 +4,8 @@ import com.quanlynhakhoa.model.phieukham.ThongTinDauDonThuoc;
 import com.quanlynhakhoa.model.phieukham.DongChiTietDonThuoc;
 import com.quanlynhakhoa.model.phieukham.ThuocChonKeDon;
 import java.sql.Connection;
+import com.quanlynhakhoa.entity.DonThuoc;
+import com.quanlynhakhoa.entity.ChiTietDonThuoc;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,8 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 public final class DonThuocDao {
-
-
 
     public List<ThuocChonKeDon> danhSachThuoc(Connection connection) throws SQLException {
         String sql = """
@@ -71,7 +71,7 @@ public final class DonThuocDao {
             statement.setQueryTimeout(10);
             try (ResultSet rows = statement.executeQuery()) {
                 while (rows.next()) {
-                    result.add(new DongChiTietDonThuoc(
+                    result.add(new DongChiTietDonThuoc(maDonThuoc,
                             rows.getString("maThuoc"),
                             rows.getNString("tenThuoc"),
                             rows.getNString("donViTinh"),
@@ -96,12 +96,14 @@ public final class DonThuocDao {
                 VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, maDonThuoc);
-            statement.setString(2, maPhieuKham);
-            statement.setString(3, maBenhNhan);
-            statement.setString(4, maBacSi);
-            statement.setDate(5, Date.valueOf(java.time.LocalDate.now()));
-            statement.setNString(6, loiDan == null || loiDan.isBlank() ? null : loiDan);
+            DonThuoc donThuoc = new DonThuoc(maDonThuoc, maPhieuKham, maBenhNhan, maBacSi,
+                    java.time.LocalDate.now(), loiDan == null || loiDan.isBlank() ? null : loiDan);
+            statement.setString(1, donThuoc.getMaDonThuoc());
+            statement.setString(2, donThuoc.getMaPhieuKham());
+            statement.setString(3, donThuoc.getMaBenhNhan());
+            statement.setString(4, donThuoc.getMaNhanVien());
+            statement.setDate(5, Date.valueOf(donThuoc.getNgayKe()));
+            statement.setNString(6, donThuoc.getLoiDan());
             statement.setQueryTimeout(10);
             if (statement.executeUpdate() != 1) {
                 throw new SQLException("Không tạo được đơn thuốc.");
@@ -117,12 +119,14 @@ public final class DonThuocDao {
                 VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, maDonThuoc);
-            statement.setString(2, item.maThuoc());
-            statement.setInt(3, item.soLuong());
-            statement.setNString(4, item.lieuDung());
-            statement.setNString(5, item.cachDung());
-            statement.setInt(6, item.soNgayDung());
+            ChiTietDonThuoc chiTiet = new ChiTietDonThuoc(maDonThuoc, item.maThuoc(),
+                    item.soLuong(), item.lieuDung(), item.cachDung(), item.soNgayDung());
+            statement.setString(1, chiTiet.getMaDonThuoc());
+            statement.setString(2, chiTiet.getMaThuoc());
+            statement.setInt(3, chiTiet.getSoLuong());
+            statement.setNString(4, chiTiet.getLieuDung());
+            statement.setNString(5, chiTiet.getCachDung());
+            statement.setInt(6, chiTiet.getSoNgayDung());
             statement.setQueryTimeout(10);
             if (statement.executeUpdate() != 1) {
                 throw new SQLException("Không lưu được thuốc " + item.maThuoc() + ".");
