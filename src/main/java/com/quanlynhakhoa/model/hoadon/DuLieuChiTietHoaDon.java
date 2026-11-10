@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.model.hoadon;
 
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import java.util.List;
@@ -9,11 +9,11 @@ import java.util.List;
 public final class DuLieuChiTietHoaDon {
     private final ThongTinHoaDon hoaDon;
     private final List<DongChiTietHoaDon> chiTiet;
-    private final List<ThongTinThanhToan> thanhToan;
+    private final List<ThanhToan> thanhToan;
     private final List<ThongTinYeuCauHuyHoaDon> lichSuYeuCauHuy;
     private final List<ThuocKeTinhTien> thuocDaKe;
 
-    public DuLieuChiTietHoaDon(ThongTinHoaDon hoaDon, List<DongChiTietHoaDon> chiTiet, List<ThongTinThanhToan> thanhToan, List<ThongTinYeuCauHuyHoaDon> lichSuYeuCauHuy, List<ThuocKeTinhTien> thuocDaKe) {
+    public DuLieuChiTietHoaDon(ThongTinHoaDon hoaDon, List<DongChiTietHoaDon> chiTiet, List<ThanhToan> thanhToan, List<ThongTinYeuCauHuyHoaDon> lichSuYeuCauHuy, List<ThuocKeTinhTien> thuocDaKe) {
         chiTiet = List.copyOf(chiTiet); thanhToan = List.copyOf(thanhToan); lichSuYeuCauHuy = List.copyOf(lichSuYeuCauHuy); thuocDaKe = List.copyOf(thuocDaKe);
         this.hoaDon = hoaDon;
         this.chiTiet = chiTiet;
@@ -24,14 +24,14 @@ public final class DuLieuChiTietHoaDon {
 
     public ThongTinHoaDon hoaDon() { return hoaDon; }
     public List<DongChiTietHoaDon> chiTiet() { return chiTiet; }
-    public List<ThongTinThanhToan> thanhToan() { return thanhToan; }
+    public List<ThanhToan> thanhToan() { return thanhToan; }
     public List<ThongTinYeuCauHuyHoaDon> cancellationHistory() { return lichSuYeuCauHuy; }
     public List<ThuocKeTinhTien> prescribedMedicines() { return thuocDaKe; }
 
-    public DuLieuChiTietHoaDon(ThongTinHoaDon hoaDon, List<DongChiTietHoaDon> chiTiet, List<ThongTinThanhToan> thanhToan) {
+    public DuLieuChiTietHoaDon(ThongTinHoaDon hoaDon, List<DongChiTietHoaDon> chiTiet, List<ThanhToan> thanhToan) {
         this(hoaDon, chiTiet, thanhToan, List.of());
     }
-    public DuLieuChiTietHoaDon(ThongTinHoaDon hoaDon, List<DongChiTietHoaDon> chiTiet, List<ThongTinThanhToan> thanhToan,
+    public DuLieuChiTietHoaDon(ThongTinHoaDon hoaDon, List<DongChiTietHoaDon> chiTiet, List<ThanhToan> thanhToan,
                           List<ThongTinYeuCauHuyHoaDon> lichSuYeuCauHuy) {
         this(hoaDon, chiTiet, thanhToan, lichSuYeuCauHuy, List.of());
     }

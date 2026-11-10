@@ -13,7 +13,7 @@ import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -56,7 +56,7 @@ public final class ThanhToanService {
                 String employee=taiKhoan.employee(c,session.accountId());
                 int existing=0;
                 for(PhanThanhToan part:request.parts()) {
-                    ThongTinThanhToan prior=dao.existing(c,part.id());
+                    ThanhToan prior=dao.existing(c,part.id());
                     if(prior!=null){
                         if(!matches(prior,request.invoiceId(),employee,part))throw new IllegalArgumentException("Mã lần thu đã tồn tại với dữ liệu khác hoặc đã hủy.");
                         existing++;
@@ -91,7 +91,7 @@ public final class ThanhToanService {
     }
     private void require(){authorization.require(session,Quyen.BILLING_MANAGE);}
     private static boolean equalMoney(BigDecimal a,BigDecimal b){return a==null?b==null:b!=null&&a.compareTo(b)==0;}
-    static boolean matches(ThongTinThanhToan prior,String invoice,String employee,PhanThanhToan part) {
+    static boolean matches(ThanhToan prior,String invoice,String employee,PhanThanhToan part) {
         return invoice.equals(prior.maHoaDon())&&employee.equals(prior.maNhanVien())&&prior.trangThai()==TrangThaiThanhToan.THANH_CONG
                 &&prior.phuongThuc()==part.method()&&equalMoney(prior.soTien(),part.amount())
                 &&Objects.equals(prior.maGiaoDich(),part.reference())&&equalMoney(prior.tienKhachDua(),part.customerTender());

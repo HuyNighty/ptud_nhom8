@@ -11,7 +11,7 @@ import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.LoaiDaoThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.dao.hoadon.DaoThanhToanDao;
 import java.sql.*;
 import java.math.BigDecimal;
@@ -32,7 +32,7 @@ public final class DaoThanhToanService {
             try{
                 dao.khoaHoaDon(c,invoiceId);
                 if(LanThanhToanService.pending(c,invoiceId)!=null)throw new IllegalArgumentException("Còn lần thu chưa đối soát. Giải quyết lần thu trước khi điều chỉnh.");
-                ThongTinThanhToan payment=new ThanhToanDao().existing(c,paymentId);
+                ThanhToan payment=new ThanhToanDao().existing(c,paymentId);
                 if(payment==null||!invoiceId.equals(payment.maHoaDon())||payment.trangThai()!=TrangThaiThanhToan.THANH_CONG)throw new IllegalArgumentException("Khoản thu không thuộc hóa đơn hoặc đã được điều chỉnh. Tải lại để kiểm tra.");
                 ThongTinHoaDon invoice=new HoaDonDao().getForPayment(c,invoiceId);
                 if(invoice.trangThai()==TrangThaiHoaDon.DA_HUY)throw new IllegalArgumentException("Hóa đơn đã hủy; cần đối soát.");

@@ -13,7 +13,7 @@ import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThanhToanDangCho;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.model.hoadon.DuLieuThanhToanDaTai;
@@ -81,7 +81,7 @@ public final class ThanhToanController {
                 if(dangCho!=null){
                     view.restoreRequest(dangCho);
                     int found=0;boolean mismatch=false;
-                    for(PhanThanhToan part:dangCho.parts())for(ThongTinThanhToan prior:result.thanhToan())if(part.id().equals(prior.maThanhToan())){
+                    for(PhanThanhToan part:dangCho.parts())for(ThanhToan prior:result.thanhToan())if(part.id().equals(prior.maThanhToan())){
                         found++;
                         if(prior.trangThai()!=TrangThaiThanhToan.THANH_CONG||prior.phuongThuc()!=part.method()
                                 ||prior.soTien().compareTo(part.amount())!=0||!Objects.equals(prior.maGiaoDich(),part.reference())

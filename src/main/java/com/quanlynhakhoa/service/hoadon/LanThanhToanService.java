@@ -13,7 +13,7 @@ import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThanhToanDangCho;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.dao.hoadon.LanThanhToanDao;
@@ -73,7 +73,7 @@ public final class LanThanhToanService {
         try(Connection c=connections.open()){
             c.setAutoCommit(false);
             try{
-                ThongTinThanhToan payment=new ThanhToanDao().existing(c,request.parts().getFirst().id());
+                ThanhToan payment=new ThanhToanDao().existing(c,request.parts().getFirst().id());
                 if(payment==null||!ThanhToanService.matches(payment,request.invoiceId(),new TaoHoaDonDao().employee(c,session.accountId()),request.parts().getFirst()))throw new IllegalArgumentException("Chưa có giao dịch khớp để kết thúc đối soát.");
                 dao.xacNhanHoanTat(c,request,session.accountId());
                 auth.requireCurrent(session,Quyen.BILLING_MANAGE,c);c.commit();
@@ -88,7 +88,7 @@ public final class LanThanhToanService {
             try{
                 // Managers may lack payment write permissions, so take the same invoice lock directly.
                 dao.khoaHoaDon(c,invoice);
-                ThongTinThanhToan recorded=new ThanhToanDao().existing(c,attempt);
+                ThanhToan recorded=new ThanhToanDao().existing(c,attempt);
                 ThanhToanDangCho pending=pending(c,invoice);
                 if(pending==null||!pending.request().parts().getFirst().id().equals(attempt))throw new IllegalArgumentException("Lần thu đã được xử lý.");
                 if(recorded!=null){

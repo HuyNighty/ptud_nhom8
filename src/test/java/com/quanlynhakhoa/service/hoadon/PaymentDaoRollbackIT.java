@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.service.hoadon;
 
+import com.quanlynhakhoa.entity.ThanhToan;
+
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.dao.hoadon.*;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
@@ -32,7 +34,7 @@ public final class PaymentDaoRollbackIT {
     public static void main(String[] args)throws Exception {
         if(args.length!=1||!args[0].equals("--rollback-check")||!TeamDevConnection.hasLocalConfig())
             throw new IllegalArgumentException("Requires approved isolated local DB and --rollback-check");
-        String first=key(),second=key(),payment;ThongTinThanhToan before;long auditBefore;
+        String first=key(),second=key(),payment;ThanhToan before;long auditBefore;
         String auditSql="SELECT COUNT(*) FROM dbo.NhatKyThaoTac WHERE doiTuong='ThanhToan' AND maDoiTuong=?";
         String attemptSql="SELECT COUNT(*) FROM dbo.LanThuHoaDon WHERE maLanThu=?";
         String adjustmentSql="SELECT COUNT(*) FROM dbo.DieuChinhThanhToan WHERE maThanhToan=?";

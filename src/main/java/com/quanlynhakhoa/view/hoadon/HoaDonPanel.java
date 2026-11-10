@@ -10,7 +10,7 @@ import com.quanlynhakhoa.enums.CheDoXemHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
@@ -241,7 +241,7 @@ public final class HoaDonPanel extends JPanel implements com.quanlynhakhoa.confi
                     medicine.unitPrice()==null?"Chưa chốt":medicine.unitPrice(),medicine.total()});
         }
         GiaoDienHoaDon.tableState(tblThuocDaKe,"Lượt khám của hóa đơn chưa có thuốc được kê.");
-        for (ThongTinThanhToan payment : value.thanhToan()) modelThanhToan.addRow(new Object[]{payment.maThanhToan(), payment.thoiGian(),
+        for (ThanhToan payment : value.thanhToan()) modelThanhToan.addRow(new Object[]{payment.maThanhToan(), payment.thoiGian(),
                 payment.soTien(), payment.phuongThuc(), payment.maGiaoDich(), payment.tienKhachDua(), payment.trangThai(),
                 payment.maNhanVien(), payment.maTaiKhoanHuy(), GiaoDienHoaDon.time(payment.thoiGianHuy()), payment.lyDoHuy()});
         for (ThongTinYeuCauHuyHoaDon request : value.cancellationHistory()) {

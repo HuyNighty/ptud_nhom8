@@ -14,7 +14,7 @@ import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import java.sql.*;
 import java.time.LocalDate;
@@ -95,7 +95,7 @@ public final class HuyHoaDonService {
     }
     private DuLieuChiTietHoaDon readInvoice(Connection c,String id)throws SQLException {
         ThongTinHoaDon invoice=hoaDon.getForPayment(c,id);if(invoice==null)throw new IllegalArgumentException("Hóa đơn không tồn tại.");
-        List<DongChiTietHoaDon> lines=hoaDon.lines(c,id);List<ThongTinThanhToan> payments=hoaDon.payments(c,id);
+        List<DongChiTietHoaDon> lines=hoaDon.lines(c,id);List<ThanhToan> payments=hoaDon.payments(c,id);
         if(TinhTienHoaDon.total(lines).compareTo(invoice.tongTien())!=0||TinhTienHoaDon.collected(payments).compareTo(invoice.daThu())!=0)throw new SQLException("Kết quả hóa đơn không nhất quán.");
         return new DuLieuChiTietHoaDon(invoice,lines,payments);
     }

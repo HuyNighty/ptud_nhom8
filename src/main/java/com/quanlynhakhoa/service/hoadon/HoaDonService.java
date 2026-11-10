@@ -10,7 +10,7 @@ import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
@@ -81,7 +81,7 @@ public final class HoaDonService {
                 ThongTinHoaDon invoice = dao.get(connection, id.trim());
                 if (invoice == null) throw new IllegalArgumentException("Hóa đơn không tồn tại.");
                 List<DongChiTietHoaDon> lines = dao.lines(connection, id.trim());
-                List<ThongTinThanhToan> payments = dao.payments(connection, id.trim());
+                List<ThanhToan> payments = dao.payments(connection, id.trim());
                 var cancellationHistory = new HuyHoaDonDao().findForInvoice(connection, id.trim());
                 var prescriptions = dao.prescribedMedicines(connection, id.trim());
                 if (invoice.tongTien().compareTo(TinhTienHoaDon.total(lines)) != 0

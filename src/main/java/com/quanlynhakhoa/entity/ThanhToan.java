@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.model.hoadon;
+package com.quanlynhakhoa.entity;
 
 import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
-public final class ThongTinThanhToan {
+public final class ThanhToan {
     private final String maThanhToan;
     private final String maHoaDon;
     private final LocalDateTime thoiGian;
@@ -20,7 +20,7 @@ public final class ThongTinThanhToan {
     private final LocalDateTime thoiGianHuy;
     private final String lyDoHuy;
 
-    public ThongTinThanhToan(String maThanhToan, String maHoaDon, LocalDateTime thoiGian, BigDecimal soTien, PhuongThucThanhToan phuongThuc, String maGiaoDich, BigDecimal tienKhachDua, TrangThaiThanhToan trangThai, String maNhanVien, String maTaiKhoanHuy, LocalDateTime thoiGianHuy, String lyDoHuy) {
+    public ThanhToan(String maThanhToan, String maHoaDon, LocalDateTime thoiGian, BigDecimal soTien, PhuongThucThanhToan phuongThuc, String maGiaoDich, BigDecimal tienKhachDua, TrangThaiThanhToan trangThai, String maNhanVien, String maTaiKhoanHuy, LocalDateTime thoiGianHuy, String lyDoHuy) {
         if (soTien == null || soTien.signum() <= 0 || soTien.stripTrailingZeros().scale() > 0
         || trangThai == null || phuongThuc == null) throw new IllegalArgumentException("Lần thu bất nhất.");
         this.maThanhToan = maThanhToan;
@@ -57,7 +57,7 @@ public final class ThongTinThanhToan {
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
-        if (!(other instanceof ThongTinThanhToan value)) return false;
+        if (!(other instanceof ThanhToan value)) return false;
         return java.util.Objects.equals(maThanhToan, value.maThanhToan)
                 && java.util.Objects.equals(maHoaDon, value.maHoaDon)
                 && java.util.Objects.equals(thoiGian, value.thoiGian)
@@ -94,4 +94,17 @@ public final class ThongTinThanhToan {
     public String toString() {
         return "Payment[" + "maThanhToan=" + maThanhToan + ", " + "maHoaDon=" + maHoaDon + ", " + "thoiGian=" + thoiGian + ", " + "soTien=" + soTien + ", " + "phuongThuc=" + phuongThuc + ", " + "maGiaoDich=" + maGiaoDich + ", " + "tienKhachDua=" + tienKhachDua + ", " + "trangThai=" + trangThai + ", " + "maNhanVien=" + maNhanVien + ", " + "maTaiKhoanHuy=" + maTaiKhoanHuy + ", " + "thoiGianHuy=" + thoiGianHuy + ", " + "lyDoHuy=" + lyDoHuy + "]";
     }
+
+    public String getMaThanhToan() { return maThanhToan; }
+    public String getMaHoaDon() { return maHoaDon; }
+    public LocalDateTime getThoiGian() { return thoiGian; }
+    public BigDecimal getSoTien() { return soTien; }
+    public PhuongThucThanhToan getPhuongThuc() { return phuongThuc; }
+    public String getMaGiaoDich() { return maGiaoDich; }
+    public BigDecimal getTienKhachDua() { return tienKhachDua; }
+    public TrangThaiThanhToan getTrangThai() { return trangThai; }
+    public String getMaNhanVien() { return maNhanVien; }
+    public String getMaTaiKhoanHuy() { return maTaiKhoanHuy; }
+    public LocalDateTime getThoiGianHuy() { return thoiGianHuy; }
+    public String getLyDoHuy() { return lyDoHuy; }
 }
