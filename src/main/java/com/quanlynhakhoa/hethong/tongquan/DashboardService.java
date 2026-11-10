@@ -9,7 +9,7 @@ import com.quanlynhakhoa.model.tongquan.CanhBaoTonKho;
 import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
 import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
 import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -19,7 +19,7 @@ import java.time.ZoneId;
 import java.util.Objects;
 import java.util.*;
 import java.time.LocalDateTime;
-import com.quanlynhakhoa.hethong.dieuhuong.Module;
+import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 
 public final class DashboardService {
@@ -45,10 +45,10 @@ public final class DashboardService {
     public TomTatTongQuan load() throws SQLException {
         requireActive();
         LocalDate today = LocalDate.now(CLINIC_ZONE);
-        boolean canPatients = authorization.can(session, Permission.PATIENT_READ);
-        boolean canAppointments = authorization.can(session, Permission.APPOINTMENT_READ);
-        boolean canExams = authorization.can(session, Permission.MEDICAL_RECORD_READ);
-        boolean canBilling = authorization.can(session, Permission.BILLING_READ);
+        boolean canPatients = authorization.can(session, Quyen.PATIENT_READ);
+        boolean canAppointments = authorization.can(session, Quyen.APPOINTMENT_READ);
+        boolean canExams = authorization.can(session, Quyen.MEDICAL_RECORD_READ);
+        boolean canBilling = authorization.can(session, Quyen.BILLING_READ);
 
         if (!canPatients && !canAppointments && !canExams && !canBilling) {
             return new TomTatTongQuan(today, null, null, null, null);
@@ -87,7 +87,7 @@ public final class DashboardService {
 
 
 
-    public boolean can(Permission permission) { return authorization.can(session,permission); }
+    public boolean can(Quyen permission) { return authorization.can(session,permission); }
 
     public DuLieuTongQuan loadOverview() throws SQLException {
         requireActive();
@@ -96,26 +96,26 @@ public final class DashboardService {
         DashboardDetailsDao details=new DashboardDetailsDao();
         List<LichHenTongQuan> appointments=List.of();List<CongViecTongQuan> work=new ArrayList<>();
         List<CanhBaoTonKho> alerts=List.of();List<SoLieuNgay> days=new ArrayList<>();List<String> warnings=new ArrayList<>();
-        boolean visitAccess=can(Permission.MEDICAL_RECORD_READ), moneyAccess=can(Permission.REVENUE_REPORT_READ);
+        boolean visitAccess=can(Quyen.MEDICAL_RECORD_READ), moneyAccess=can(Quyen.REVENUE_REPORT_READ);
         Map<LocalDate,Long> visits=null;Map<LocalDate,BigDecimal> money=null;
         try(Connection c=connections.open()) {
-            if(can(Permission.APPOINTMENT_READ)) {
+            if(can(Quyen.APPOINTMENT_READ)) {
                 try{appointments=details.appointments(c,today);}catch(SQLException e){warnings.add("Chưa tải được lịch hẹn");}
             }
-            if(can(Permission.INVOICE_CANCEL_APPROVE)) {
+            if(can(Quyen.INVOICE_CANCEL_APPROVE)) {
                 try{work.add(new CongViecTongQuan("Hủy hóa đơn chờ bạn duyệt",details.count(c,"SELECT COUNT_BIG(*) FROM dbo.YeuCauHuyHoaDon WHERE trangThai='CHO_DUYET' AND maTaiKhoanTao<>?",session.accountId()),Module.INVOICE_CANCELLATIONS,""));}
                 catch(SQLException e){warnings.add("Chưa tải được yêu cầu hủy");}
             }
-            if(can(Permission.INVENTORY_MANAGE)) {
+            if(can(Quyen.INVENTORY_MANAGE)) {
                 try{work.add(new CongViecTongQuan("Cấp phát chờ duyệt",details.count(c,"SELECT COUNT_BIG(*) FROM dbo.YeuCauCapPhat WHERE trangThai='CHO_DUYET'",null),Module.INVENTORY,"supply"));}
                 catch(SQLException e){warnings.add("Chưa tải được yêu cầu cấp phát");}
                 try{work.add(new CongViecTongQuan("Kiểm kê chờ bạn duyệt",details.count(c,"SELECT COUNT_BIG(*) FROM dbo.PhieuDieuChinhKho WHERE loai='KIEM_KE' AND trangThai='CHO_DUYET' AND maTaiKhoanTao<>?",session.accountId()),Module.INVENTORY,"stocktake"));}
                 catch(SQLException e){warnings.add("Chưa tải được kiểm kê");}
-            } else if(can(Permission.SUPPLY_REQUEST)) {
+            } else if(can(Quyen.SUPPLY_REQUEST)) {
                 try{work.add(new CongViecTongQuan("Yêu cầu cấp phát của bạn đang chờ",details.count(c,"SELECT COUNT_BIG(*) FROM dbo.YeuCauCapPhat y JOIN dbo.TaiKhoan a ON a.maNhanVien=y.maNhanVienYeuCau WHERE a.maTaiKhoan=? AND y.trangThai IN ('CHO_DUYET','DA_DUYET')",session.accountId()),Module.SUPPLY_REQUESTS,""));}
                 catch(SQLException e){warnings.add("Chưa tải được yêu cầu của bạn");}
             }
-            if(can(Permission.INVENTORY_READ)) {
+            if(can(Quyen.INVENTORY_READ)) {
                 try{alerts=details.stock(c,today);}catch(SQLException e){warnings.add("Chưa tải được cảnh báo kho");}
             }
             if(visitAccess) {

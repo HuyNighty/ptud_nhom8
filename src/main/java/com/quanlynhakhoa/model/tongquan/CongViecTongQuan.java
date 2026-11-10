@@ -12,7 +12,7 @@ package com.quanlynhakhoa.model.tongquan;
 
 
 import java.util.*;
-import com.quanlynhakhoa.hethong.dieuhuong.Module;
+import com.quanlynhakhoa.enums.Module;
 
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */

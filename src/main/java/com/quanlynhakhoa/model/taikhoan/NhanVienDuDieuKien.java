@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.model.taikhoan;
 
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.quantri.nhanvien.JobTitleLabels;
+import com.quanlynhakhoa.model.nhanvien.NhanChucDanh;
 
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
@@ -47,7 +47,7 @@ public final class NhanVienDuDieuKien {
     }
 
     public String displayLabel() {
-        return employeeId + " — " + fullName + " (" + JobTitleLabels.label(jobTitle) + ")";
+        return employeeId + " — " + fullName + " (" + NhanChucDanh.label(jobTitle) + ")";
     }
 
     @Override

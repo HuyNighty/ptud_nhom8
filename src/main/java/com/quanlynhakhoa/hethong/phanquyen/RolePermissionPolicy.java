@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -8,66 +9,66 @@ import java.util.Map;
 import java.util.Set;
 
 public final class RolePermissionPolicy {
-    private final Map<VaiTroHeThong, Set<Permission>> grants;
+    private final Map<VaiTroHeThong, Set<Quyen>> grants;
 
     public RolePermissionPolicy() {
-        EnumMap<VaiTroHeThong, Set<Permission>> mapping = new EnumMap<>(VaiTroHeThong.class);
+        EnumMap<VaiTroHeThong, Set<Quyen>> mapping = new EnumMap<>(VaiTroHeThong.class);
         for (VaiTroHeThong role : VaiTroHeThong.values()) mapping.put(role, Set.of());
 
         mapping.put(VaiTroHeThong.RECEPTIONIST, Set.of(
-                Permission.PATIENT_READ,
-                Permission.PATIENT_CREATE,
-                Permission.PATIENT_UPDATE,
-                Permission.PATIENT_CHECK_IN,
-                Permission.APPOINTMENT_READ,
-                Permission.APPOINTMENT_MANAGE,
-                Permission.BILLING_READ,
-                Permission.BILLING_MANAGE,
-                Permission.INVOICE_CANCEL_REQUEST,
-                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE));
+                Quyen.PATIENT_READ,
+                Quyen.PATIENT_CREATE,
+                Quyen.PATIENT_UPDATE,
+                Quyen.PATIENT_CHECK_IN,
+                Quyen.APPOINTMENT_READ,
+                Quyen.APPOINTMENT_MANAGE,
+                Quyen.BILLING_READ,
+                Quyen.BILLING_MANAGE,
+                Quyen.INVOICE_CANCEL_REQUEST,
+                Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE));
 
         mapping.put(VaiTroHeThong.DOCTOR, Set.of(
-                Permission.PATIENT_READ,
-                Permission.MEDICAL_RECORD_READ,
-                Permission.MEDICAL_RECORD_UPDATE,
-                Permission.REEXAM_SCHEDULE,
-                Permission.SUPPLY_REQUEST,
-                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE));
+                Quyen.PATIENT_READ,
+                Quyen.MEDICAL_RECORD_READ,
+                Quyen.MEDICAL_RECORD_UPDATE,
+                Quyen.REEXAM_SCHEDULE,
+                Quyen.SUPPLY_REQUEST,
+                Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE));
 
         mapping.put(VaiTroHeThong.NURSE, Set.of(
-                Permission.SUPPLY_REQUEST,
-                Permission.EMERGENCY_KIT_CHECK,
-                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE));
+                Quyen.SUPPLY_REQUEST,
+                Quyen.EMERGENCY_KIT_CHECK,
+                Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE));
 
         mapping.put(VaiTroHeThong.CLINIC_MANAGER, Set.of(
-                Permission.REVENUE_REPORT_READ,
-                Permission.BILLING_READ,
-                Permission.WORKFORCE_READ,
-                Permission.WORKFORCE_MANAGE,
-                Permission.ACCOUNT_MANAGE,
-                Permission.ROLE_MANAGE,
-                Permission.AUDIT_READ,
-                Permission.SERVICE_CATALOG_MANAGE,
-                Permission.INVOICE_CANCEL_APPROVE,
-                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE));
+                Quyen.REVENUE_REPORT_READ,
+                Quyen.BILLING_READ,
+                Quyen.WORKFORCE_READ,
+                Quyen.WORKFORCE_MANAGE,
+                Quyen.ACCOUNT_MANAGE,
+                Quyen.ROLE_MANAGE,
+                Quyen.AUDIT_READ,
+                Quyen.SERVICE_CATALOG_MANAGE,
+                Quyen.INVOICE_CANCEL_APPROVE,
+                Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE));
 
         mapping.put(VaiTroHeThong.INVENTORY_MANAGER, Set.of(
-                Permission.INVENTORY_READ,
-                Permission.INVENTORY_MANAGE,
-                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE));
+                Quyen.INVENTORY_READ,
+                Quyen.INVENTORY_MANAGE,
+                Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE));
 
         mapping.put(VaiTroHeThong.SYSTEM_ADMIN,
-                Collections.unmodifiableSet(EnumSet.allOf(Permission.class)));
+                Collections.unmodifiableSet(EnumSet.allOf(Quyen.class)));
 
         grants = Collections.unmodifiableMap(mapping);
     }
 
-    public Set<Permission> permissionsFor(VaiTroHeThong role) {
+    public Set<Quyen> permissionsFor(VaiTroHeThong role) {
         if (role == null) return Set.of();
         return grants.getOrDefault(role, Set.of());
     }
 
-    public boolean isAllowed(VaiTroHeThong role, Permission permission) {
+    public boolean isAllowed(VaiTroHeThong role, Quyen permission) {
         return permission != null && permissionsFor(role).contains(permission);
     }
 }

@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.hethong.giaodien;
 
-import com.quanlynhakhoa.nghiepvu.benhnhan.view.ChonNgayDialog;
+import com.quanlynhakhoa.view.benhnhan.ChonNgayDialog;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
