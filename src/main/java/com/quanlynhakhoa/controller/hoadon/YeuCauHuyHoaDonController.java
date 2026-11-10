@@ -6,7 +6,7 @@ import com.quanlynhakhoa.model.hoadon.XemTruocHuyHoaDon;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.service.hoadon.HuyHoaDonService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.event.*;
 import javax.swing.JOptionPane;
 

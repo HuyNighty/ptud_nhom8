@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.controller.hoadon;
 
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.util.concurrent.ExecutionException;
 import javax.swing.SwingWorker;
 

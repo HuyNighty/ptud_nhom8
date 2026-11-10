@@ -2,40 +2,40 @@ package com.quanlynhakhoa.model.kho;
 
 /** Immutable snapshot; retains the original record API and value semantics. */
 public final class DongYeuCauCungUng {
-    private final String itemType;
-    private final String itemCode;
-    private final int quantity;
+    private final String loaiHang;
+    private final String maHang;
+    private final int soLuong;
 
-    public DongYeuCauCungUng(String itemType, String itemCode, int quantity) {
-        this.itemType = itemType;
-        this.itemCode = itemCode;
-        this.quantity = quantity;
+    public DongYeuCauCungUng(String loaiHang, String maHang, int soLuong) {
+        this.loaiHang = loaiHang;
+        this.maHang = maHang;
+        this.soLuong = soLuong;
     }
 
-    public String itemType() { return itemType; }
-    public String itemCode() { return itemCode; }
-    public int quantity() { return quantity; }
+    public String itemType() { return loaiHang; }
+    public String itemCode() { return maHang; }
+    public int quantity() { return soLuong; }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof DongYeuCauCungUng value)) return false;
-        return java.util.Objects.equals(itemType, value.itemType)
-                && java.util.Objects.equals(itemCode, value.itemCode)
-                && quantity == value.quantity;
+        return java.util.Objects.equals(loaiHang, value.loaiHang)
+                && java.util.Objects.equals(maHang, value.maHang)
+                && soLuong == value.soLuong;
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(itemType);
-        result = 31 * result + java.util.Objects.hashCode(itemCode);
-        result = 31 * result + Integer.hashCode(quantity);
+        result = 31 * result + java.util.Objects.hashCode(loaiHang);
+        result = 31 * result + java.util.Objects.hashCode(maHang);
+        result = 31 * result + Integer.hashCode(soLuong);
         return result;
     }
 
     @Override
     public String toString() {
-        return "RequestLine[" + "itemType=" + itemType + ", " + "itemCode=" + itemCode + ", " + "quantity=" + quantity + "]";
+        return "RequestLine[" + "itemType=" + loaiHang + ", " + "itemCode=" + maHang + ", " + "quantity=" + soLuong + "]";
     }
 }

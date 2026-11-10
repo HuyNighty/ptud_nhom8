@@ -4,7 +4,7 @@ import com.quanlynhakhoa.entity.Thuoc;
 import com.quanlynhakhoa.service.kho.thuoc.ThuocService;
 import com.quanlynhakhoa.view.kho.thuoc.ThuocDialog;
 import com.quanlynhakhoa.view.kho.thuoc.ThuocPanel;
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.enums.Quyen;
 import java.awt.Window;
 import java.awt.event.ActionEvent;

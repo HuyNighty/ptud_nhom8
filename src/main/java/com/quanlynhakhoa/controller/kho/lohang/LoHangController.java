@@ -3,7 +3,7 @@ package com.quanlynhakhoa.controller.kho.lohang;
 import com.quanlynhakhoa.model.kho.ThongTinLoHang;
 import com.quanlynhakhoa.service.kho.lohang.LoHangService;
 import com.quanlynhakhoa.view.kho.lohang.LoHangPanel;
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;

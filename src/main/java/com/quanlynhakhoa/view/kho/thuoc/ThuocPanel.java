@@ -3,7 +3,7 @@ package com.quanlynhakhoa.view.kho.thuoc;
 import com.quanlynhakhoa.controller.kho.thuoc.ThuocController;
 import com.quanlynhakhoa.entity.Thuoc;
 import com.quanlynhakhoa.service.kho.thuoc.ThuocService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;

@@ -2,10 +2,10 @@ package com.quanlynhakhoa.service.taikhoan;
 
 import com.quanlynhakhoa.dao.taikhoan.TaoTaiKhoanDao;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.sql.Connection;

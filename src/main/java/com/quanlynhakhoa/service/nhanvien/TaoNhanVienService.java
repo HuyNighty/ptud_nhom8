@@ -2,10 +2,10 @@ package com.quanlynhakhoa.service.nhanvien;
 
 import com.quanlynhakhoa.dao.nhanvien.TaoNhanVienDao;
 import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
-import com.quanlynhakhoa.hethong.phanquyen.AuthorizationService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.AuthorizationService;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.Quyen;
-import com.quanlynhakhoa.hethong.phanquyen.RolePermissionPolicy;
+import com.quanlynhakhoa.security.RolePermissionPolicy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;

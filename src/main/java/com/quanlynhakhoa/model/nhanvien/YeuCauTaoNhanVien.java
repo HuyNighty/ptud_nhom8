@@ -4,70 +4,70 @@ import java.time.LocalDate;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class YeuCauTaoNhanVien {
-    private final String employeeId;
-    private final String fullName;
-    private final String phone;
-    private final String jobTitle;
-    private final LocalDate birthDate;
-    private final String gender;
+    private final String maNhanVien;
+    private final String hoTen;
+    private final String soDienThoai;
+    private final String chucDanh;
+    private final LocalDate ngaySinh;
+    private final String gioiTinh;
     private final String email;
-    private final LocalDate joinedAt;
-    private final String specialty;
+    private final LocalDate ngayVaoLam;
+    private final String chuyenMon;
 
-    public YeuCauTaoNhanVien(String employeeId, String fullName, String phone, String jobTitle, LocalDate birthDate, String gender, String email, LocalDate joinedAt, String specialty) {
-        this.employeeId = employeeId;
-        this.fullName = fullName;
-        this.phone = phone;
-        this.jobTitle = jobTitle;
-        this.birthDate = birthDate;
-        this.gender = gender;
+    public YeuCauTaoNhanVien(String maNhanVien, String hoTen, String soDienThoai, String chucDanh, LocalDate ngaySinh, String gioiTinh, String email, LocalDate ngayVaoLam, String chuyenMon) {
+        this.maNhanVien = maNhanVien;
+        this.hoTen = hoTen;
+        this.soDienThoai = soDienThoai;
+        this.chucDanh = chucDanh;
+        this.ngaySinh = ngaySinh;
+        this.gioiTinh = gioiTinh;
         this.email = email;
-        this.joinedAt = joinedAt;
-        this.specialty = specialty;
+        this.ngayVaoLam = ngayVaoLam;
+        this.chuyenMon = chuyenMon;
     }
 
-    public String employeeId() { return employeeId; }
-    public String fullName() { return fullName; }
-    public String phone() { return phone; }
-    public String jobTitle() { return jobTitle; }
-    public LocalDate birthDate() { return birthDate; }
-    public String gender() { return gender; }
+    public String employeeId() { return maNhanVien; }
+    public String fullName() { return hoTen; }
+    public String phone() { return soDienThoai; }
+    public String jobTitle() { return chucDanh; }
+    public LocalDate birthDate() { return ngaySinh; }
+    public String gender() { return gioiTinh; }
     public String email() { return email; }
-    public LocalDate joinedAt() { return joinedAt; }
-    public String specialty() { return specialty; }
+    public LocalDate joinedAt() { return ngayVaoLam; }
+    public String specialty() { return chuyenMon; }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof YeuCauTaoNhanVien value)) return false;
-        return java.util.Objects.equals(employeeId, value.employeeId)
-                && java.util.Objects.equals(fullName, value.fullName)
-                && java.util.Objects.equals(phone, value.phone)
-                && java.util.Objects.equals(jobTitle, value.jobTitle)
-                && java.util.Objects.equals(birthDate, value.birthDate)
-                && java.util.Objects.equals(gender, value.gender)
+        return java.util.Objects.equals(maNhanVien, value.maNhanVien)
+                && java.util.Objects.equals(hoTen, value.hoTen)
+                && java.util.Objects.equals(soDienThoai, value.soDienThoai)
+                && java.util.Objects.equals(chucDanh, value.chucDanh)
+                && java.util.Objects.equals(ngaySinh, value.ngaySinh)
+                && java.util.Objects.equals(gioiTinh, value.gioiTinh)
                 && java.util.Objects.equals(email, value.email)
-                && java.util.Objects.equals(joinedAt, value.joinedAt)
-                && java.util.Objects.equals(specialty, value.specialty);
+                && java.util.Objects.equals(ngayVaoLam, value.ngayVaoLam)
+                && java.util.Objects.equals(chuyenMon, value.chuyenMon);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(employeeId);
-        result = 31 * result + java.util.Objects.hashCode(fullName);
-        result = 31 * result + java.util.Objects.hashCode(phone);
-        result = 31 * result + java.util.Objects.hashCode(jobTitle);
-        result = 31 * result + java.util.Objects.hashCode(birthDate);
-        result = 31 * result + java.util.Objects.hashCode(gender);
+        result = 31 * result + java.util.Objects.hashCode(maNhanVien);
+        result = 31 * result + java.util.Objects.hashCode(hoTen);
+        result = 31 * result + java.util.Objects.hashCode(soDienThoai);
+        result = 31 * result + java.util.Objects.hashCode(chucDanh);
+        result = 31 * result + java.util.Objects.hashCode(ngaySinh);
+        result = 31 * result + java.util.Objects.hashCode(gioiTinh);
         result = 31 * result + java.util.Objects.hashCode(email);
-        result = 31 * result + java.util.Objects.hashCode(joinedAt);
-        result = 31 * result + java.util.Objects.hashCode(specialty);
+        result = 31 * result + java.util.Objects.hashCode(ngayVaoLam);
+        result = 31 * result + java.util.Objects.hashCode(chuyenMon);
         return result;
     }
 
     @Override
     public String toString() {
-        return "EmployeeCreateRequest[" + "employeeId=" + employeeId + ", " + "fullName=" + fullName + ", " + "phone=" + phone + ", " + "jobTitle=" + jobTitle + ", " + "birthDate=" + birthDate + ", " + "gender=" + gender + ", " + "email=" + email + ", " + "joinedAt=" + joinedAt + ", " + "specialty=" + specialty + "]";
+        return "EmployeeCreateRequest[" + "employeeId=" + maNhanVien + ", " + "fullName=" + hoTen + ", " + "phone=" + soDienThoai + ", " + "jobTitle=" + chucDanh + ", " + "birthDate=" + ngaySinh + ", " + "gender=" + gioiTinh + ", " + "email=" + email + ", " + "joinedAt=" + ngayVaoLam + ", " + "specialty=" + chuyenMon + "]";
     }
 }

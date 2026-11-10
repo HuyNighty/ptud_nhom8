@@ -5,23 +5,23 @@ import java.util.List;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class YeuCauThanhToan {
-    private final String invoiceId;
-    private final BigDecimal amount;
-    private final List<PhanThanhToan> parts;
-    private final boolean transferConfirmed;
+    private final String maHoaDon;
+    private final BigDecimal soTien;
+    private final List<PhanThanhToan> cacPhanThanhToan;
+    private final boolean daXacNhanChuyenKhoan;
 
-    public YeuCauThanhToan(String invoiceId, BigDecimal amount, List<PhanThanhToan> parts, boolean transferConfirmed) {
-        parts = List.copyOf(parts);
-        this.invoiceId = invoiceId;
-        this.amount = amount;
-        this.parts = parts;
-        this.transferConfirmed = transferConfirmed;
+    public YeuCauThanhToan(String maHoaDon, BigDecimal soTien, List<PhanThanhToan> cacPhanThanhToan, boolean daXacNhanChuyenKhoan) {
+        cacPhanThanhToan = List.copyOf(cacPhanThanhToan);
+        this.maHoaDon = maHoaDon;
+        this.soTien = soTien;
+        this.cacPhanThanhToan = cacPhanThanhToan;
+        this.daXacNhanChuyenKhoan = daXacNhanChuyenKhoan;
     }
 
-    public String invoiceId() { return invoiceId; }
-    public BigDecimal amount() { return amount; }
-    public List<PhanThanhToan> parts() { return parts; }
-    public boolean transferConfirmed() { return transferConfirmed; }
+    public String invoiceId() { return maHoaDon; }
+    public BigDecimal amount() { return soTien; }
+    public List<PhanThanhToan> parts() { return cacPhanThanhToan; }
+    public boolean transferConfirmed() { return daXacNhanChuyenKhoan; }
 
 
 
@@ -30,24 +30,24 @@ public final class YeuCauThanhToan {
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof YeuCauThanhToan value)) return false;
-        return java.util.Objects.equals(invoiceId, value.invoiceId)
-                && java.util.Objects.equals(amount, value.amount)
-                && java.util.Objects.equals(parts, value.parts)
-                && transferConfirmed == value.transferConfirmed;
+        return java.util.Objects.equals(maHoaDon, value.maHoaDon)
+                && java.util.Objects.equals(soTien, value.soTien)
+                && java.util.Objects.equals(cacPhanThanhToan, value.cacPhanThanhToan)
+                && daXacNhanChuyenKhoan == value.daXacNhanChuyenKhoan;
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(invoiceId);
-        result = 31 * result + java.util.Objects.hashCode(amount);
-        result = 31 * result + java.util.Objects.hashCode(parts);
-        result = 31 * result + Boolean.hashCode(transferConfirmed);
+        result = 31 * result + java.util.Objects.hashCode(maHoaDon);
+        result = 31 * result + java.util.Objects.hashCode(soTien);
+        result = 31 * result + java.util.Objects.hashCode(cacPhanThanhToan);
+        result = 31 * result + Boolean.hashCode(daXacNhanChuyenKhoan);
         return result;
     }
 
     @Override
     public String toString() {
-        return "PaymentRequest[" + "invoiceId=" + invoiceId + ", " + "amount=" + amount + ", " + "parts=" + parts + ", " + "transferConfirmed=" + transferConfirmed + "]";
+        return "PaymentRequest[" + "invoiceId=" + maHoaDon + ", " + "amount=" + soTien + ", " + "parts=" + cacPhanThanhToan + ", " + "transferConfirmed=" + daXacNhanChuyenKhoan + "]";
     }
 }

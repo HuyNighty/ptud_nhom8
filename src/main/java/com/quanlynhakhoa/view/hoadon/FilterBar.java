@@ -15,7 +15,7 @@ public final class FilterBar extends JPanel {
         @Override public Dimension preferredLayoutSize(Container target){
             synchronized(target.getTreeLock()){
                 Insets insets=target.getInsets();
-                Container page=target.getParent();while(page!=null&&!(page instanceof com.quanlynhakhoa.hethong.tinhnang.RefreshableFeature))page=page.getParent();
+                Container page=target.getParent();while(page!=null&&!(page instanceof com.quanlynhakhoa.config.tinhnang.RefreshableFeature))page=page.getParent();
                 Container parent=page!=null?page:target.getParent();
                 int available=parent==null?target.getWidth():parent.getWidth()-parent.getInsets().left-parent.getInsets().right;
                 if(available<=0)available=1200;

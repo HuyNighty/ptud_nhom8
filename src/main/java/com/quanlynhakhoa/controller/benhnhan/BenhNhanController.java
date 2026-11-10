@@ -6,7 +6,7 @@ import com.quanlynhakhoa.service.benhnhan.DuLieuDaThayDoiException;
 import com.quanlynhakhoa.service.benhnhan.LoiNhapLieuException;
 import com.quanlynhakhoa.view.benhnhan.BenhNhanDialog;
 import com.quanlynhakhoa.view.benhnhan.BenhNhanPanel;
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.enums.Quyen;
 import java.awt.BorderLayout;
 import java.awt.Dimension;

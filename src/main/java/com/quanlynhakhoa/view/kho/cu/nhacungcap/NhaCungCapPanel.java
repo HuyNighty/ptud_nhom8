@@ -3,7 +3,7 @@ package com.quanlynhakhoa.view.kho.cu.nhacungcap;
 import com.quanlynhakhoa.controller.kho.cu.nhacungcap.NhaCungCapController;
 import com.quanlynhakhoa.entity.NhaCungCap;
 import com.quanlynhakhoa.service.kho.cu.nhacungcap.NhaCungCapService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;

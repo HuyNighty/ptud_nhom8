@@ -21,7 +21,7 @@ public final class ClinicalBillingSourceSelfTest {
         for(final List<BangChungTinhPhi> invalid:List.of(List.<BangChungTinhPhi>of(),List.of(rows.get(0),rows.get(0)),List.of(rows.get(0),row("DIEU_TRI","2","DV1","100",true)),List.of(row("CLS","C1","DV1","-1",true)),List.of(row("CLS","C1","DV1","1.5",true)))) {
             expect(IllegalArgumentException.class,new Action(){public void run(){JdbcNguonTinhPhiLamSang.build("BN1","PK1",invalid);}});
         }
-        RandomInvoiceIdGenerator ids=new RandomInvoiceIdGenerator();Set<String> seen=new HashSet<>();
+        TaoMaHoaDonNgauNhien ids=new TaoMaHoaDonNgauNhien();Set<String> seen=new HashSet<>();
         for(int i=0;i<10000;i++){String id=ids.next(null);check(id.length()==10&&seen.add(id),"random ID format and sample collision check");}
         System.out.println("PASS: ClinicalBillingSourceSelfTest (contract rules and ID sampling; real clinical SQL acceptance pending).");
     }

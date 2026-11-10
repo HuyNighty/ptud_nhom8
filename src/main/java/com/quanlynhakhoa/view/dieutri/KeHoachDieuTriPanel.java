@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.view.dieutri;
 
 import com.quanlynhakhoa.controller.dieutri.KeHoachDieuTriController;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import com.quanlynhakhoa.service.dieutri.KeHoachDieuTriService;
 import java.awt.BorderLayout;
@@ -32,13 +32,13 @@ public final class KeHoachDieuTriPanel extends JPanel {
         field(create,"Mã kế hoạch (≤10)",planId);
         field(create,"Mã hồ sơ bệnh án",chartId);
         field(create,"Mã phiếu khám (tùy chọn)",visitId);
-        field(create,"Ngày lập yyyy-MM-dd",com.quanlynhakhoa.hethong.giaodien.DateInput.iso(planDate,"ngày lập kế hoạch"));
+        field(create,"Ngày lập yyyy-MM-dd",com.quanlynhakhoa.view.hethong.DateInput.iso(planDate,"ngày lập kế hoạch"));
         field(create,"Mục tiêu",goal);create.add(createPlan);create.add(refresh);
         JPanel step=new JPanel(new GridLayout(0,4,7,7));
         field(step,"Mã kế hoạch đang chọn",new JLabel("Chọn ở bảng trên"));
         field(step,"Mã dịch vụ",serviceId);
         field(step,"Vị trí răng",tooth);
-        field(step,"Ngày dự kiến yyyy-MM-dd",com.quanlynhakhoa.hethong.giaodien.DateInput.iso(dueDate,"ngày dự kiến điều trị"));
+        field(step,"Ngày dự kiến yyyy-MM-dd",com.quanlynhakhoa.view.hethong.DateInput.iso(dueDate,"ngày dự kiến điều trị"));
         field(step,"Ghi chú",stepNote);
         step.add(addStep);
         step.add(completeStep);

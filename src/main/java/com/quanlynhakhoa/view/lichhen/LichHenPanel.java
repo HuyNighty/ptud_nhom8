@@ -5,7 +5,7 @@ import com.quanlynhakhoa.view.benhnhan.MauNut;
 import com.quanlynhakhoa.controller.lichhen.LichHenController;
 import com.quanlynhakhoa.entity.LichHen;
 import com.quanlynhakhoa.service.lichhen.LichHenService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;

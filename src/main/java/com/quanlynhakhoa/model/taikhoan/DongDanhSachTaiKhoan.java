@@ -7,75 +7,75 @@ import java.time.LocalDateTime;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class DongDanhSachTaiKhoan {
-    private final String accountId;
-    private final String username;
-    private final String displayName;
-    private final String employeeId;
-    private final String employeeName;
-    private final VaiTroHeThong role;
-    private final TrangThaiTaiKhoan status;
-    private final boolean passwordChangeRequired;
-    private final LocalDateTime lastLoginUtc;
-    private final NguonKhoaTaiKhoan lockSource;
+    private final String maTaiKhoan;
+    private final String tenDangNhap;
+    private final String tenHienThi;
+    private final String maNhanVien;
+    private final String tenNhanVien;
+    private final VaiTroHeThong vaiTro;
+    private final TrangThaiTaiKhoan trangThai;
+    private final boolean canDoiMatKhau;
+    private final LocalDateTime thoiGianDangNhapCuoiUtc;
+    private final NguonKhoaTaiKhoan nguonKhoa;
 
-    public DongDanhSachTaiKhoan(String accountId, String username, String displayName, String employeeId, String employeeName, VaiTroHeThong role, TrangThaiTaiKhoan status, boolean passwordChangeRequired, LocalDateTime lastLoginUtc, NguonKhoaTaiKhoan lockSource) {
-        this.accountId = accountId;
-        this.username = username;
-        this.displayName = displayName;
-        this.employeeId = employeeId;
-        this.employeeName = employeeName;
-        this.role = role;
-        this.status = status;
-        this.passwordChangeRequired = passwordChangeRequired;
-        this.lastLoginUtc = lastLoginUtc;
-        this.lockSource = lockSource;
+    public DongDanhSachTaiKhoan(String maTaiKhoan, String tenDangNhap, String tenHienThi, String maNhanVien, String tenNhanVien, VaiTroHeThong vaiTro, TrangThaiTaiKhoan trangThai, boolean canDoiMatKhau, LocalDateTime thoiGianDangNhapCuoiUtc, NguonKhoaTaiKhoan nguonKhoa) {
+        this.maTaiKhoan = maTaiKhoan;
+        this.tenDangNhap = tenDangNhap;
+        this.tenHienThi = tenHienThi;
+        this.maNhanVien = maNhanVien;
+        this.tenNhanVien = tenNhanVien;
+        this.vaiTro = vaiTro;
+        this.trangThai = trangThai;
+        this.canDoiMatKhau = canDoiMatKhau;
+        this.thoiGianDangNhapCuoiUtc = thoiGianDangNhapCuoiUtc;
+        this.nguonKhoa = nguonKhoa;
     }
 
-    public String accountId() { return accountId; }
-    public String username() { return username; }
-    public String displayName() { return displayName; }
-    public String employeeId() { return employeeId; }
-    public String employeeName() { return employeeName; }
-    public VaiTroHeThong role() { return role; }
-    public TrangThaiTaiKhoan status() { return status; }
-    public boolean passwordChangeRequired() { return passwordChangeRequired; }
-    public LocalDateTime lastLoginUtc() { return lastLoginUtc; }
-    public NguonKhoaTaiKhoan lockSource() { return lockSource; }
+    public String accountId() { return maTaiKhoan; }
+    public String username() { return tenDangNhap; }
+    public String displayName() { return tenHienThi; }
+    public String employeeId() { return maNhanVien; }
+    public String employeeName() { return tenNhanVien; }
+    public VaiTroHeThong role() { return vaiTro; }
+    public TrangThaiTaiKhoan status() { return trangThai; }
+    public boolean passwordChangeRequired() { return canDoiMatKhau; }
+    public LocalDateTime lastLoginUtc() { return thoiGianDangNhapCuoiUtc; }
+    public NguonKhoaTaiKhoan lockSource() { return nguonKhoa; }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof DongDanhSachTaiKhoan value)) return false;
-        return java.util.Objects.equals(accountId, value.accountId)
-                && java.util.Objects.equals(username, value.username)
-                && java.util.Objects.equals(displayName, value.displayName)
-                && java.util.Objects.equals(employeeId, value.employeeId)
-                && java.util.Objects.equals(employeeName, value.employeeName)
-                && java.util.Objects.equals(role, value.role)
-                && java.util.Objects.equals(status, value.status)
-                && passwordChangeRequired == value.passwordChangeRequired
-                && java.util.Objects.equals(lastLoginUtc, value.lastLoginUtc)
-                && java.util.Objects.equals(lockSource, value.lockSource);
+        return java.util.Objects.equals(maTaiKhoan, value.maTaiKhoan)
+                && java.util.Objects.equals(tenDangNhap, value.tenDangNhap)
+                && java.util.Objects.equals(tenHienThi, value.tenHienThi)
+                && java.util.Objects.equals(maNhanVien, value.maNhanVien)
+                && java.util.Objects.equals(tenNhanVien, value.tenNhanVien)
+                && java.util.Objects.equals(vaiTro, value.vaiTro)
+                && java.util.Objects.equals(trangThai, value.trangThai)
+                && canDoiMatKhau == value.canDoiMatKhau
+                && java.util.Objects.equals(thoiGianDangNhapCuoiUtc, value.thoiGianDangNhapCuoiUtc)
+                && java.util.Objects.equals(nguonKhoa, value.nguonKhoa);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(accountId);
-        result = 31 * result + java.util.Objects.hashCode(username);
-        result = 31 * result + java.util.Objects.hashCode(displayName);
-        result = 31 * result + java.util.Objects.hashCode(employeeId);
-        result = 31 * result + java.util.Objects.hashCode(employeeName);
-        result = 31 * result + java.util.Objects.hashCode(role);
-        result = 31 * result + java.util.Objects.hashCode(status);
-        result = 31 * result + Boolean.hashCode(passwordChangeRequired);
-        result = 31 * result + java.util.Objects.hashCode(lastLoginUtc);
-        result = 31 * result + java.util.Objects.hashCode(lockSource);
+        result = 31 * result + java.util.Objects.hashCode(maTaiKhoan);
+        result = 31 * result + java.util.Objects.hashCode(tenDangNhap);
+        result = 31 * result + java.util.Objects.hashCode(tenHienThi);
+        result = 31 * result + java.util.Objects.hashCode(maNhanVien);
+        result = 31 * result + java.util.Objects.hashCode(tenNhanVien);
+        result = 31 * result + java.util.Objects.hashCode(vaiTro);
+        result = 31 * result + java.util.Objects.hashCode(trangThai);
+        result = 31 * result + Boolean.hashCode(canDoiMatKhau);
+        result = 31 * result + java.util.Objects.hashCode(thoiGianDangNhapCuoiUtc);
+        result = 31 * result + java.util.Objects.hashCode(nguonKhoa);
         return result;
     }
 
     @Override
     public String toString() {
-        return "AccountDirectoryRow[" + "accountId=" + accountId + ", " + "username=" + username + ", " + "displayName=" + displayName + ", " + "employeeId=" + employeeId + ", " + "employeeName=" + employeeName + ", " + "role=" + role + ", " + "status=" + status + ", " + "passwordChangeRequired=" + passwordChangeRequired + ", " + "lastLoginUtc=" + lastLoginUtc + ", " + "lockSource=" + lockSource + "]";
+        return "AccountDirectoryRow[" + "accountId=" + maTaiKhoan + ", " + "username=" + tenDangNhap + ", " + "displayName=" + tenHienThi + ", " + "employeeId=" + maNhanVien + ", " + "employeeName=" + tenNhanVien + ", " + "role=" + vaiTro + ", " + "status=" + trangThai + ", " + "passwordChangeRequired=" + canDoiMatKhau + ", " + "lastLoginUtc=" + thoiGianDangNhapCuoiUtc + ", " + "lockSource=" + nguonKhoa + "]";
     }
 }

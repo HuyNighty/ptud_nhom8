@@ -4,8 +4,8 @@ import com.quanlynhakhoa.view.hoadon.HoaDonPanel;
 import com.quanlynhakhoa.view.hoadon.GiaoDienHoaDon;
 import com.quanlynhakhoa.service.hoadon.DaoThanhToanService;
 import com.quanlynhakhoa.enums.LoaiDaoThanhToan;
-import com.quanlynhakhoa.dao.hoadon.ConnectionProvider;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.config.ConnectionProvider;
+import com.quanlynhakhoa.security.DesktopSession;
 import javax.swing.*;
 import java.awt.GridLayout;
 

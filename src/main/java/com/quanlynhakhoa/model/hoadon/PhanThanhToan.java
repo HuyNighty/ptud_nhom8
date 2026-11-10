@@ -6,50 +6,50 @@ import java.math.BigDecimal;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class PhanThanhToan {
-    private final String id;
-    private final BigDecimal amount;
-    private final PhuongThucThanhToan method;
-    private final String reference;
-    private final BigDecimal customerTender;
+    private final String ma;
+    private final BigDecimal soTien;
+    private final PhuongThucThanhToan phuongThuc;
+    private final String maThamChieu;
+    private final BigDecimal tienKhachDua;
 
-    public PhanThanhToan(String id, BigDecimal amount, PhuongThucThanhToan method, String reference, BigDecimal customerTender) {
-        this.id = id;
-        this.amount = amount;
-        this.method = method;
-        this.reference = reference;
-        this.customerTender = customerTender;
+    public PhanThanhToan(String ma, BigDecimal soTien, PhuongThucThanhToan phuongThuc, String maThamChieu, BigDecimal tienKhachDua) {
+        this.ma = ma;
+        this.soTien = soTien;
+        this.phuongThuc = phuongThuc;
+        this.maThamChieu = maThamChieu;
+        this.tienKhachDua = tienKhachDua;
     }
 
-    public String id() { return id; }
-    public BigDecimal amount() { return amount; }
-    public PhuongThucThanhToan method() { return method; }
-    public String reference() { return reference; }
-    public BigDecimal customerTender() { return customerTender; }
+    public String id() { return ma; }
+    public BigDecimal amount() { return soTien; }
+    public PhuongThucThanhToan method() { return phuongThuc; }
+    public String reference() { return maThamChieu; }
+    public BigDecimal customerTender() { return tienKhachDua; }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof PhanThanhToan value)) return false;
-        return java.util.Objects.equals(id, value.id)
-                && java.util.Objects.equals(amount, value.amount)
-                && java.util.Objects.equals(method, value.method)
-                && java.util.Objects.equals(reference, value.reference)
-                && java.util.Objects.equals(customerTender, value.customerTender);
+        return java.util.Objects.equals(ma, value.ma)
+                && java.util.Objects.equals(soTien, value.soTien)
+                && java.util.Objects.equals(phuongThuc, value.phuongThuc)
+                && java.util.Objects.equals(maThamChieu, value.maThamChieu)
+                && java.util.Objects.equals(tienKhachDua, value.tienKhachDua);
     }
 
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(id);
-        result = 31 * result + java.util.Objects.hashCode(amount);
-        result = 31 * result + java.util.Objects.hashCode(method);
-        result = 31 * result + java.util.Objects.hashCode(reference);
-        result = 31 * result + java.util.Objects.hashCode(customerTender);
+        result = 31 * result + java.util.Objects.hashCode(ma);
+        result = 31 * result + java.util.Objects.hashCode(soTien);
+        result = 31 * result + java.util.Objects.hashCode(phuongThuc);
+        result = 31 * result + java.util.Objects.hashCode(maThamChieu);
+        result = 31 * result + java.util.Objects.hashCode(tienKhachDua);
         return result;
     }
 
     @Override
     public String toString() {
-        return "Part[" + "id=" + id + ", " + "amount=" + amount + ", " + "method=" + method + ", " + "reference=" + reference + ", " + "customerTender=" + customerTender + "]";
+        return "Part[" + "id=" + ma + ", " + "amount=" + soTien + ", " + "method=" + phuongThuc + ", " + "reference=" + maThamChieu + ", " + "customerTender=" + tienKhachDua + "]";
     }
 }

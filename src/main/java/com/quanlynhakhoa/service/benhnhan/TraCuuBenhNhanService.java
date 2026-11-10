@@ -3,7 +3,7 @@ package com.quanlynhakhoa.service.benhnhan;
 import com.quanlynhakhoa.model.benhnhan.BenhNhanTomTat;
 import com.quanlynhakhoa.entity.BenhNhan;
 import com.quanlynhakhoa.service.benhnhan.BenhNhanService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.sql.SQLException;
 import java.util.ArrayList;
 

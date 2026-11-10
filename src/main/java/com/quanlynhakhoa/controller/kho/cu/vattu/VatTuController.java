@@ -4,7 +4,7 @@ import com.quanlynhakhoa.entity.VatTu;
 import com.quanlynhakhoa.service.kho.cu.vattu.VatTuService;
 import com.quanlynhakhoa.view.kho.cu.vattu.VatTuDialog;
 import com.quanlynhakhoa.view.kho.cu.vattu.VatTuPanel;
-import com.quanlynhakhoa.hethong.phanquyen.AccessDeniedException;
+import com.quanlynhakhoa.security.AccessDeniedException;
 import com.quanlynhakhoa.enums.Quyen;
 import java.awt.Window;
 import java.sql.SQLException;

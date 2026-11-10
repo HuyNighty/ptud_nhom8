@@ -6,7 +6,7 @@ import com.quanlynhakhoa.model.phieukham.BacSiChonKham;
 import com.quanlynhakhoa.model.phieukham.ThongTinPhieuKham;
 import com.quanlynhakhoa.model.phieukham.DongDanhSachPhieuKham;
 import com.quanlynhakhoa.service.phieukham.PhieuKhamService;
-import com.quanlynhakhoa.hethong.phanquyen.DesktopSession;
+import com.quanlynhakhoa.security.DesktopSession;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -422,7 +422,7 @@ public final class PhieuKhamPanel extends JPanel {
                 });
                 pnlCacNgay.add(btnNgay);
             }
-            com.quanlynhakhoa.hethong.giaodien.AppTheme.applyButtons(pnlCacNgay);
+            com.quanlynhakhoa.view.hethong.AppTheme.applyButtons(pnlCacNgay);
             pnlCacNgay.revalidate();
             pnlCacNgay.repaint();
         };

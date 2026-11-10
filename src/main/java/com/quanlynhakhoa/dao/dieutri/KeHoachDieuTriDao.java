@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.dao.dieutri;
 
-import com.quanlynhakhoa.hatang.phattrien.TeamDevConnection;
+import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
