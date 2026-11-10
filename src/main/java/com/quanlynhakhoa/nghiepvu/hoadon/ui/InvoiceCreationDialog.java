@@ -1,5 +1,8 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
+import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
+import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.awt.*;
 import javax.swing.*;
@@ -9,7 +12,7 @@ import javax.swing.table.DefaultTableModel;
 public final class InvoiceCreationDialog extends JDialog {
     public final JTextField txtBenhNhan = new JTextField(18);
     public final JButton btnTimBenhNhan = new JButton("Tìm bệnh nhân"), btnTaiDichVu = new JButton("Tải dịch vụ và thuốc"), btnLuuHoaDon = new JButton("Lưu hóa đơn");
-    public final JComboBox<BillingChoice> cmbBenhNhan = new JComboBox<>(), cmbPhieuKham = new JComboBox<>();
+    public final JComboBox<LuaChonLapHoaDon> cmbBenhNhan = new JComboBox<>(), cmbPhieuKham = new JComboBox<>();
     public final JLabel lblTongTien = new JLabel("Tổng tiền: —"), lblTrangThai = new JLabel("Tìm bệnh nhân để bắt đầu");
     public final JButton btnHuy=new JButton("Hủy");
     private final DefaultTableModel tableModel=BillingUi.model("Loại","Mã hàng","Tên dịch vụ / thuốc","Số lượng","Đơn giá áp dụng","Thành tiền");
@@ -30,9 +33,9 @@ public final class InvoiceCreationDialog extends JDialog {
         BillingUi.tableState(tblChiTietHoaDon,"Dịch vụ và thuốc được kê sẽ hiển thị tại đây.");
         busy(false,false);
     }
-    public void showDraft(InvoiceDraft draft) {
+    public void showDraft(BanNhapHoaDon draft) {
         tableModel.setRowCount(0);
-        if(draft!=null)for(InvoiceDraft.Line line:draft.lines())tableModel.addRow(new Object[]{line.medicine()?"Thuốc":"Dịch vụ",line.serviceId(),line.serviceName(),line.quantity(),line.unitPrice(),line.amount()});
+        if(draft!=null)for(DongBanNhapHoaDon line:draft.lines())tableModel.addRow(new Object[]{line.medicine()?"Thuốc":"Dịch vụ",line.serviceId(),line.serviceName(),line.quantity(),line.unitPrice(),line.amount()});
         lblTongTien.setText(draft==null?"Tổng tiền: —":"Tổng tiền: "+BillingUi.vnd(draft.total()));
     }
     public void guide(String text){lblTrangThai.setText(text);lblTrangThai.setToolTipText(text);if(tableModel.getRowCount()==0)BillingUi.tableState(tblChiTietHoaDon,"Dịch vụ và thuốc được kê sẽ hiển thị tại đây.");}

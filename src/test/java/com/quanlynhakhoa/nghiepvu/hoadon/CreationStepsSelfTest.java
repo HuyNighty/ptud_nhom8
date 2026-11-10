@@ -1,5 +1,12 @@
 package com.quanlynhakhoa.nghiepvu.hoadon;
 
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
+import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
+import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.InvoiceCreationController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.InvoiceCreateDao;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -21,15 +28,15 @@ public final class CreationStepsSelfTest {
     public static void main(String[] args)throws Exception{
         var session=ServiceBillingSelfTest.session(Role.RECEPTIONIST);var jdbc=new FeatureJdbcDouble();
         InvoiceCreateDao dao=new InvoiceCreateDao(){
-            @Override public List<BillingChoice> patients(Connection c,String text){return noPatients?List.of():List.of(new BillingChoice("BN1","Logic fixture"));}
-            @Override public List<BillingChoice> visits(Connection c,String patient){return noVisits?List.of():List.of(new BillingChoice("PK1","Logic fixture"),new BillingChoice("PK2","Logic fixture"));}
+            @Override public List<LuaChonLapHoaDon> patients(Connection c,String text){return noPatients?List.of():List.of(new LuaChonLapHoaDon("BN1","Logic fixture"));}
+            @Override public List<LuaChonLapHoaDon> visits(Connection c,String patient){return noVisits?List.of():List.of(new LuaChonLapHoaDon("PK1","Logic fixture"),new LuaChonLapHoaDon("PK2","Logic fixture"));}
             @Override public void validateVisit(Connection c,String patient,String visit){}
             @Override public String employee(Connection c,String account){return "NV1";}
             @Override public boolean serviceActive(Connection c,String id){return true;}
         };
         ClinicalBillingSource source=new ClinicalBillingSource(){
-            public InvoiceDraft load(Connection c,String patient,String visit,boolean lock){if(noCharges)throw new IllegalArgumentException("Lượt khám không có dịch vụ đã thực hiện được phép tính phí.");return new InvoiceDraft(patient,visit,"logic",List.of(new InvoiceDraft.Line("DV1","Logic fixture",1,new BigDecimal("100000"))));}
-            public void validateServiceState(Connection c,InvoiceDraft draft,String id,boolean active){}
+            public BanNhapHoaDon load(Connection c,String patient,String visit,boolean lock){if(noCharges)throw new IllegalArgumentException("Lượt khám không có dịch vụ đã thực hiện được phép tính phí.");return new BanNhapHoaDon(patient,visit,"logic",List.of(new DongBanNhapHoaDon("DV1","Logic fixture",1,new BigDecimal("100000"))));}
+            public void validateServiceState(Connection c,BanNhapHoaDon draft,String id,boolean active){}
         };
         InvoiceService service=new InvoiceService(session,jdbc);var field=InvoiceService.class.getDeclaredField("creation");field.setAccessible(true);field.set(service,new InvoiceCreationService(session,jdbc,source,new RandomInvoiceIdGenerator(),dao));
         InvoiceCreationDialog[] view={null};

@@ -1,5 +1,7 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.ui;
 
+
+import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.controller.PaymentScreenController;
 import com.quanlynhakhoa.nghiepvu.hoadon.dao.ConnectionProvider;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
@@ -13,7 +15,7 @@ import javax.swing.*;
 public final class PaymentPanel extends JPanel implements RefreshableFeature {
     public final JTextField txtTimHoaDon=new JTextField(22);
     public final JButton btnTim=new JButton("Tìm hóa đơn"),btnTaiLai=new JButton("Làm mới");
-    public final JComboBox<BillingChoice> cmbHoaDon=new JComboBox<>();
+    public final JComboBox<LuaChonLapHoaDon> cmbHoaDon=new JComboBox<>();
     public final JLabel lblTrangThai=new JLabel("Tìm mã hóa đơn, mã/tên/số điện thoại bệnh nhân; chọn chứng từ để thu tiền.");
     private final JPanel pnlCollection=new JPanel(new BorderLayout());
     private final PaymentScreenController controller;
@@ -21,7 +23,7 @@ public final class PaymentPanel extends JPanel implements RefreshableFeature {
         new AuthorizationService(new RolePermissionPolicy()).require(session,Permission.BILLING_MANAGE);
         setLayout(new BorderLayout(12,12));setBorder(BorderFactory.createEmptyBorder(24,26,24,26));
         JLabel lblTitle=new JLabel("Thanh toán");lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD,22f));
-        cmbHoaDon.setPrototypeDisplayValue(new BillingChoice("HD00000000","Bệnh nhân · Còn nợ 999.999.999 ₫"));
+        cmbHoaDon.setPrototypeDisplayValue(new LuaChonLapHoaDon("HD00000000","Bệnh nhân · Còn nợ 999.999.999 ₫"));
         JPanel pnlSearch=BillingUi.filters(BillingUi.field("Mã hóa đơn / bệnh nhân / SĐT",txtTimHoaDon),BillingUi.field(" ",BillingUi.actions(btnTim,btnTaiLai)),BillingUi.field("Chọn hóa đơn còn nợ",cmbHoaDon));
         JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);pnlTop.add(pnlSearch,BorderLayout.CENTER);pnlTop.add(lblTrangThai,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
         pnlCollection.add(new PaymentForm());add(pnlCollection,BorderLayout.CENTER);
@@ -37,8 +39,8 @@ public final class PaymentPanel extends JPanel implements RefreshableFeature {
     @Override public void refreshData(){controller.refresh();}
     public void openInvoice(String id){controller.openInvoice(id);}
     public void showChoices(List<Invoice> invoices,String selected){
-        cmbHoaDon.removeAllItems();BillingChoice chosen=null;
-        for(Invoice h:invoices){BillingChoice item=new BillingChoice(h.maHoaDon(),h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Còn nợ "+BillingUi.vnd(h.conNo()));cmbHoaDon.addItem(item);if(h.maHoaDon().equals(selected))chosen=item;}
+        cmbHoaDon.removeAllItems();LuaChonLapHoaDon chosen=null;
+        for(Invoice h:invoices){LuaChonLapHoaDon item=new LuaChonLapHoaDon(h.maHoaDon(),h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Còn nợ "+BillingUi.vnd(h.conNo()));cmbHoaDon.addItem(item);if(h.maHoaDon().equals(selected))chosen=item;}
         cmbHoaDon.setSelectedItem(chosen); // Preserve current form/history even when a fully paid invoice leaves the picker.
     }
     public void showForm(PaymentForm pnlForm){com.quanlynhakhoa.hethong.giaodien.AppTheme.applyButtons(pnlForm);pnlCollection.removeAll();pnlCollection.add(pnlForm,BorderLayout.CENTER);pnlCollection.revalidate();pnlCollection.repaint();}

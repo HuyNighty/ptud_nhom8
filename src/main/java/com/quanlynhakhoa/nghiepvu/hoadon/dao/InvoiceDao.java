@@ -1,5 +1,11 @@
 package com.quanlynhakhoa.nghiepvu.hoadon.dao;
 
+
+
+
+
+import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
+import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.nghiepvu.hoadon.entity.*;
 import java.sql.*;
 import java.time.LocalDate;
@@ -103,7 +109,7 @@ public class InvoiceDao {
         }
     }
 
-    public List<InvoiceLine> lines(Connection connection, String id) throws SQLException {
+    public List<DongChiTietHoaDon> lines(Connection connection, String id) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT ct.maChiTiet, ct.maHoaDon, ct.maDichVu, ct.maThuoc, ct.maVatTu, ct.soLuong, ct.donGiaApDung,
                        COALESCE(ct.tenHangChot,d.tenDichVu,t.tenThuoc,v.tenVatTu) AS tenHang
@@ -114,9 +120,9 @@ public class InvoiceDao {
                 WHERE ct.maHoaDon=? ORDER BY ct.maChiTiet
                 """)) {
             statement.setQueryTimeout(15); statement.setString(1, id);
-            List<InvoiceLine> result = new ArrayList<>();
+            List<DongChiTietHoaDon> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) {
-                while (rows.next()) result.add(new InvoiceLine(rows.getInt("maChiTiet"), rows.getString("maHoaDon"),
+                while (rows.next()) result.add(new DongChiTietHoaDon(rows.getInt("maChiTiet"), rows.getString("maHoaDon"),
                         rows.getString("maDichVu"), rows.getString("maThuoc"), rows.getString("maVatTu"),
                         rows.getInt("soLuong"), rows.getBigDecimal("donGiaApDung"),rows.getNString("tenHang")));
             }
@@ -124,7 +130,7 @@ public class InvoiceDao {
         }
     }
 
-    public List<PrescribedMedicine> prescribedMedicines(Connection connection, String invoiceId) throws SQLException {
+    public List<ThuocKeTinhTien> prescribedMedicines(Connection connection, String invoiceId) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT t.maThuoc,COALESCE(b.tenHangChot,t.tenThuoc) AS tenThuoc,t.donViTinh,
                        COALESCE(b.soLuong,ct.soLuong) AS soLuong,b.donGiaApDung
@@ -136,9 +142,9 @@ public class InvoiceDao {
                 WHERE h.maHoaDon=? ORDER BY t.tenThuoc,t.maThuoc,b.maChiTiet
                 """)) {
             statement.setQueryTimeout(15); statement.setString(1, invoiceId);
-            List<PrescribedMedicine> result = new ArrayList<>();
+            List<ThuocKeTinhTien> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) {
-                while (rows.next()) result.add(new PrescribedMedicine(rows.getString("maThuoc"),
+                while (rows.next()) result.add(new ThuocKeTinhTien(rows.getString("maThuoc"),
                         rows.getNString("tenThuoc"), rows.getNString("donViTinh"), rows.getInt("soLuong"),
                         rows.getBigDecimal("donGiaApDung")));
             }
