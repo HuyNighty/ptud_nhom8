@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.security;
 
 import com.quanlynhakhoa.security.KeHoachDangNhap;
-import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
+import com.quanlynhakhoa.entity.TaiKhoan;
 import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
 import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
 import com.quanlynhakhoa.enums.TrangThaiNhanVien;
@@ -24,7 +24,7 @@ public final class LoginPolicy {
         this.verifier = Objects.requireNonNull(verifier, "verifier");
     }
 
-    public KeHoachDangNhap evaluate(ThongTinTaiKhoan account, ThongTinNhanVien employee,
+    public KeHoachDangNhap evaluate(TaiKhoan account, ThongTinNhanVien employee,
                               String rawPassword, LocalDateTime utcNow) {
         Objects.requireNonNull(utcNow, "utcNow");
         if (account == null) return KeHoachDangNhap.rejectedUnknown();
@@ -66,7 +66,7 @@ public final class LoginPolicy {
                 account.lastLoginAt(), utcNow);
     }
 
-    private static boolean employeeEligible(ThongTinTaiKhoan account, ThongTinNhanVien employee) {
+    private static boolean employeeEligible(TaiKhoan account, ThongTinNhanVien employee) {
         if (account.employeeId() == null) return account.role() == VaiTroHeThong.SYSTEM_ADMIN;
         return employee != null && account.employeeId().equals(employee.id()) &&
                 employee.status() == TrangThaiNhanVien.DANG_LAM_VIEC;

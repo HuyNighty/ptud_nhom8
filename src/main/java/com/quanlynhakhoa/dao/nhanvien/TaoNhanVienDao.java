@@ -1,6 +1,8 @@
 package com.quanlynhakhoa.dao.nhanvien;
 
 import com.quanlynhakhoa.model.nhanvien.YeuCauTaoNhanVien;
+import com.quanlynhakhoa.entity.NhanVien;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -46,21 +48,24 @@ public final class TaoNhanVienDao {
     }
 
     public void insert(Connection connection, YeuCauTaoNhanVien request) throws SQLException {
+        NhanVien nhanVien = new NhanVien(request.employeeId(), request.fullName(), request.phone(),
+                request.jobTitle(), TrangThaiNhanVien.DANG_LAM_VIEC, request.birthDate(),
+                request.gender(), request.email(), request.joinedAt(), request.specialty(), null);
         try (PreparedStatement statement = connection.prepareStatement(INSERT_SQL)) {
             statement.setQueryTimeout(12);
-            statement.setString(1, request.employeeId());
-            statement.setNString(2, request.fullName());
-            statement.setString(3, request.phone());
-            statement.setString(4, request.jobTitle());
-            if (request.birthDate() == null) statement.setNull(5, Types.DATE);
-            else statement.setDate(5, java.sql.Date.valueOf(request.birthDate()));
-            if (request.gender() == null) statement.setNull(6, Types.VARCHAR);
-            else statement.setString(6, request.gender());
-            if (request.email() == null) statement.setNull(7, Types.VARCHAR);
-            else statement.setString(7, request.email());
-            statement.setDate(8, java.sql.Date.valueOf(request.joinedAt()));
-            if (request.specialty() == null) statement.setNull(9, Types.NVARCHAR);
-            else statement.setNString(9, request.specialty());
+            statement.setString(1, nhanVien.getMaNhanVien());
+            statement.setNString(2, nhanVien.getHoTen());
+            statement.setString(3, nhanVien.getSoDienThoai());
+            statement.setString(4, nhanVien.getChucDanh());
+            if (nhanVien.getNgaySinh() == null) statement.setNull(5, Types.DATE);
+            else statement.setDate(5, java.sql.Date.valueOf(nhanVien.getNgaySinh()));
+            if (nhanVien.getGioiTinh() == null) statement.setNull(6, Types.VARCHAR);
+            else statement.setString(6, nhanVien.getGioiTinh());
+            if (nhanVien.getEmail() == null) statement.setNull(7, Types.VARCHAR);
+            else statement.setString(7, nhanVien.getEmail());
+            statement.setDate(8, java.sql.Date.valueOf(nhanVien.getNgayVaoLam()));
+            if (nhanVien.getChuyenMon() == null) statement.setNull(9, Types.NVARCHAR);
+            else statement.setNString(9, nhanVien.getChuyenMon());
             if (statement.executeUpdate() != 1) {
                 throw new SQLException("Expected exactly one employee insert");
             }

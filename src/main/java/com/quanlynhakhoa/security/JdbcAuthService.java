@@ -4,7 +4,7 @@ import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.security.KeHoachDangNhap;
 import com.quanlynhakhoa.dao.taikhoan.TaiKhoanDao;
 import com.quanlynhakhoa.dao.nhanvien.NhanVienDao;
-import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
+import com.quanlynhakhoa.entity.TaiKhoan;
 import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -86,11 +86,11 @@ public final class JdbcAuthService {
                     connection.commit();
                     return KetQuaDangNhap.rejected();
                 }
-                Optional<ThongTinTaiKhoan> found = taiKhoan.findByUsername(connection, username);
+                Optional<TaiKhoan> found = taiKhoan.findByUsername(connection, username);
                 if (found.isEmpty()) {
                     throw new SQLException("Locked account was not visible in the same transaction");
                 }
-                ThongTinTaiKhoan account = found.get();
+                TaiKhoan account = found.get();
                 ThongTinNhanVien employee = null;
                 if (account.employeeId() != null) {
                     if (lockExistingRow(connection, LOCK_EMPLOYEE_SQL, account.employeeId())) {

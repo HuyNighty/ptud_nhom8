@@ -4,7 +4,7 @@ import com.quanlynhakhoa.security.KeHoachDangNhap;
 import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
 import com.quanlynhakhoa.enums.TrangThaiNhanVien;
 import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
-import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
+import com.quanlynhakhoa.entity.TaiKhoan;
 import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.time.LocalDateTime;
@@ -17,10 +17,10 @@ public final class AuthPolicySelfTest {
         checks++;
         if (!ok) throw new AssertionError(reason);
     }
-    private static ThongTinTaiKhoan account(VaiTroHeThong role, String employeeId, TrangThaiTaiKhoan state,
+    private static TaiKhoan account(VaiTroHeThong role, String employeeId, TrangThaiTaiKhoan state,
             int attempts, LocalDateTime first, LocalDateTime until, NguonKhoaTaiKhoan source,
             boolean forceChange) {
-        return new ThongTinTaiKhoan("TEST0001", employeeId, "synthetic-user", "Synthetic User",
+        return new TaiKhoan("TEST0001", employeeId, "synthetic-user", "Synthetic User",
                 "synthetic-not-a-stored-hash", role, state, attempts, first,
                 until == null ? null : until.minusMinutes(15), until, source,
                 source == null ? null : "Synthetic reason", forceChange,
@@ -28,7 +28,7 @@ public final class AuthPolicySelfTest {
     }
     private static final LoginPolicy SYNTH = new LoginPolicy((raw, hash) -> "correct".equals(raw));
     public static void main(String[] args) {
-        ThongTinTaiKhoan admin = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.HOAT_DONG,
+        TaiKhoan admin = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.HOAT_DONG,
                 0, null, null, null, true);
         KeHoachDangNhap good = SYNTH.evaluate(admin, null, "correct", NOW);
         check(good.authenticated() && good.forcePasswordChange(), "valid admin + force-change");
@@ -41,22 +41,22 @@ public final class AuthPolicySelfTest {
         KeHoachDangNhap wrong = SYNTH.evaluate(admin, null, "bad", NOW);
         check(!wrong.authenticated() && wrong.nextFailedAttempts() == 1 &&
                 wrong.nextFirstFailureAt().equals(NOW), "first failure");
-        ThongTinTaiKhoan four = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.HOAT_DONG, 4,
+        TaiKhoan four = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.HOAT_DONG, 4,
                 NOW.minusMinutes(4), null, null, false);
         KeHoachDangNhap fifth = SYNTH.evaluate(four, null, "bad", NOW);
         check(fifth.nextStatus() == TrangThaiTaiKhoan.BI_KHOA &&
                 fifth.nextFailedAttempts() == 5 &&
                 fifth.nextLockSource() == NguonKhoaTaiKhoan.FAILED_LOGIN &&
                 fifth.nextLockedUntil().equals(NOW.plusMinutes(15)), "fifth attempt locks");
-        ThongTinTaiKhoan oldWindow = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.HOAT_DONG, 4,
+        TaiKhoan oldWindow = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.HOAT_DONG, 4,
                 NOW.minusMinutes(15), null, null, false);
         check(SYNTH.evaluate(oldWindow, null, "bad", NOW).nextFailedAttempts() == 1,
                 "boundary resets failure window");
-        ThongTinTaiKhoan autoLock = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.BI_KHOA, 5,
+        TaiKhoan autoLock = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.BI_KHOA, 5,
                 NOW.minusMinutes(15), NOW.plusMinutes(1), NguonKhoaTaiKhoan.FAILED_LOGIN, false);
         check(!SYNTH.evaluate(autoLock, null, "correct", NOW).stateChanged(),
                 "locked before expiry");
-        ThongTinTaiKhoan expired = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.BI_KHOA, 5,
+        TaiKhoan expired = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.BI_KHOA, 5,
                 NOW.minusMinutes(40), NOW, NguonKhoaTaiKhoan.FAILED_LOGIN, false);
         KeHoachDangNhap expiredGood = SYNTH.evaluate(expired, null, "correct", NOW);
         check(expiredGood.authenticated() && expiredGood.nextStatus() == TrangThaiTaiKhoan.HOAT_DONG &&
@@ -64,15 +64,15 @@ public final class AuthPolicySelfTest {
         KeHoachDangNhap expiredBad = SYNTH.evaluate(expired, null, "bad", NOW);
         check(!expiredBad.authenticated() && expiredBad.nextStatus() == TrangThaiTaiKhoan.HOAT_DONG &&
                 expiredBad.nextFailedAttempts() == 1, "expired reset + new failed login");
-        ThongTinTaiKhoan adminLock = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.BI_KHOA, 0,
+        TaiKhoan adminLock = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.BI_KHOA, 0,
                 null, null, NguonKhoaTaiKhoan.ADMIN_ACTION, false);
         check(!SYNTH.evaluate(adminLock, null, "correct", NOW).stateChanged(),
                 "admin lock never auto unlocks");
-        ThongTinTaiKhoan disabled = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.VO_HIEU, 0,
+        TaiKhoan disabled = account(VaiTroHeThong.SYSTEM_ADMIN, null, TrangThaiTaiKhoan.VO_HIEU, 0,
                 null, null, null, false);
         check(!SYNTH.evaluate(disabled, null, "correct", NOW).authenticated(),
                 "disabled account");
-        ThongTinTaiKhoan worker = account(VaiTroHeThong.RECEPTIONIST, "NV0001", TrangThaiTaiKhoan.HOAT_DONG,
+        TaiKhoan worker = account(VaiTroHeThong.RECEPTIONIST, "NV0001", TrangThaiTaiKhoan.HOAT_DONG,
                 0, null, null, null, false);
         check(!SYNTH.evaluate(worker, null, "correct", NOW).authenticated(),
                 "missing employee rejected");
