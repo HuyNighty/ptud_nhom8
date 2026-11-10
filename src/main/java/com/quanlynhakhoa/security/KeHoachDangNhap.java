@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.security;
 
-import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
+import com.quanlynhakhoa.entity.TaiKhoan;
 import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
 import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import java.time.LocalDateTime;
@@ -53,7 +53,7 @@ public final class KeHoachDangNhap {
                 null, null, null, null, null, null, null);
     }
 
-    public static KeHoachDangNhap unchanged(ThongTinTaiKhoan account) {
+    public static KeHoachDangNhap unchanged(TaiKhoan account) {
         return new KeHoachDangNhap(false, false, false,
                 account.status(), account.failedAttempts(), account.firstFailureAt(),
                 account.lockedAt(), account.lockedUntil(), account.lockSource(),

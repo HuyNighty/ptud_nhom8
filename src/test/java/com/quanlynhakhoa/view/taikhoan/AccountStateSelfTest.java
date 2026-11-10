@@ -250,7 +250,7 @@ public final class AccountStateSelfTest {
         TaiKhoanPanel panel = edt(() -> new TaiKhoanPanel(actor,
                 new DanhSachTaiKhoanService(actor, jdbc::open), service(jdbc, actor)));
         await(() -> !busy(panel));
-        edt(() -> { ((JTable) field(panel, "tblAccounts")).setRowSelectionInterval(0, 0); return null; });
+        edt(() -> { ((JTable) field(panel, "tblTaiKhoan")).setRowSelectionInterval(0, 0); return null; });
         return panel;
     }
     private static void uiFlow() throws Exception {
@@ -261,33 +261,33 @@ public final class AccountStateSelfTest {
             if (ineligible.equals("SELF")) jdbc.row.put("maTaiKhoan", "ACTOR");
             if (ineligible.equals("VO_HIEU")) jdbc.row.put("trangThai", "VO_HIEU");
             TaiKhoanPanel panel = panel(jdbc, session(VaiTroHeThong.CLINIC_MANAGER));
-            check(edt(() -> !button(panel, "btnLock").isEnabled() && !button(panel, "btnUnlock").isEnabled()),
+            check(edt(() -> !button(panel, "btnKhoa").isEnabled() && !button(panel, "btnMoKhoa").isEnabled()),
                     "UI blocks " + ineligible);
         }
         FakeJdbc jdbc = new FakeJdbc();
         DesktopSession actor = session(VaiTroHeThong.CLINIC_MANAGER);
         TaiKhoanPanel panel = panel(jdbc, actor);
-        check(edt(() -> button(panel, "btnLock").isEnabled() && !button(panel, "btnUnlock").isEnabled()), "UI active target eligibility");
+        check(edt(() -> button(panel, "btnKhoa").isEnabled() && !button(panel, "btnMoKhoa").isEnabled()), "UI active target eligibility");
         jdbc.failAt = 2;
         jdbc.updateStarted = new CountDownLatch(1);
         jdbc.releaseUpdate = new CountDownLatch(1);
         apply(panel, true);
         check(jdbc.updateStarted.await(8, TimeUnit.SECONDS), "state worker reached JDBC");
-        check(edt(() -> !button(panel, "btnLock").isEnabled() && !button(panel, "btnCreate").isEnabled()
-                && !button(panel, "btnRefresh").isEnabled()), "busy UI guarded; EDT responsive");
+        check(edt(() -> !button(panel, "btnKhoa").isEnabled() && !button(panel, "btnTao").isEnabled()
+                && !button(panel, "btnLamMoi").isEnabled()), "busy UI guarded; EDT responsive");
         int opens = jdbc.opens;
         apply(panel, true);
         check(jdbc.opens == opens, "double state submission rejected");
         jdbc.releaseUpdate.countDown();
         await(() -> !busy(panel));
-        check(edt(() -> button(panel, "btnLock").isEnabled()), "timeout releases busy UI");
-        check(edt(() -> ((JLabel) field(panel, "lblStatus")).getText().contains("phản hồi quá lâu")), "UI shows friendly timeout");
+        check(edt(() -> button(panel, "btnKhoa").isEnabled()), "timeout releases busy UI");
+        check(edt(() -> ((JLabel) field(panel, "lblTrangThai")).getText().contains("phản hồi quá lâu")), "UI shows friendly timeout");
         jdbc.failAt = 0;
         jdbc.steps = 0;
         apply(panel, true);
         await(() -> !busy(panel));
-        edt(() -> { ((JTable) field(panel, "tblAccounts")).setRowSelectionInterval(0, 0); return null; });
-        check(edt(() -> !button(panel, "btnLock").isEnabled() && button(panel, "btnUnlock").isEnabled()), "successful lock reloads source/status");
+        edt(() -> { ((JTable) field(panel, "tblTaiKhoan")).setRowSelectionInterval(0, 0); return null; });
+        check(edt(() -> !button(panel, "btnKhoa").isEnabled() && button(panel, "btnMoKhoa").isEnabled()), "successful lock reloads source/status");
         apply(panel, false);
         await(() -> !busy(panel));
         check("HOAT_DONG".equals(jdbc.row.get("trangThai")) && jdbc.audits == 2, "UI unlock completes with audit");

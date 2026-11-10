@@ -1,5 +1,8 @@
 package com.quanlynhakhoa.dao.kho.cungung;
 
+import com.quanlynhakhoa.entity.PhieuXuatKho;
+import com.quanlynhakhoa.entity.ChiTietPhieuXuat;
+
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.dao.kho.quytrinh.QuyTrinhKhoDao;
 import com.quanlynhakhoa.model.kho.PhanBoLo;
@@ -174,19 +177,22 @@ public final class YeuCauCungUngDao {
             qtyByLot.merge(lotId, qty, Integer::sum);
         }
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.PhieuXuatKho (maPhieuXuat,ngayXuat,boPhanNhan,nguoiNhan,lyDo,trangThai,maNhanVien) VALUES (?,?,?,?,?,'HOAN_TAT',?)")) {
-            stmt.setString(1, voucherId);
-            stmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-            stmt.setNString(3, department);
-            stmt.setNString(4, receiver);
-            stmt.setNString(5, reason);
-            stmt.setString(6, employeeId);
+            PhieuXuatKho phieu = new PhieuXuatKho(voucherId, LocalDateTime.now(), department,
+                    receiver, reason, "HOAN_TAT", employeeId);
+            stmt.setString(1, phieu.getMaPhieuXuat());
+            stmt.setTimestamp(2, Timestamp.valueOf(phieu.getNgayXuat()));
+            stmt.setNString(3, phieu.getBoPhanNhan());
+            stmt.setNString(4, phieu.getNguoiNhan());
+            stmt.setNString(5, phieu.getLyDo());
+            stmt.setString(6, phieu.getMaNhanVien());
             stmt.executeUpdate();
         }
         try (PreparedStatement stmt = con.prepareStatement("INSERT INTO dbo.ChiTietPhieuXuat (maPhieuXuat,maLo,soLuong) VALUES (?,?,?)")) {
             for (Map.Entry<String, Integer> entry : qtyByLot.entrySet()) {
-                stmt.setString(1, voucherId);
-                stmt.setString(2, entry.getKey());
-                stmt.setInt(3, entry.getValue());
+                ChiTietPhieuXuat chiTiet = new ChiTietPhieuXuat(voucherId, entry.getKey(), entry.getValue());
+                stmt.setString(1, chiTiet.getMaPhieuXuat());
+                stmt.setString(2, chiTiet.getMaLo());
+                stmt.setInt(3, chiTiet.getSoLuong());
                 stmt.addBatch();
             }
             stmt.executeBatch();

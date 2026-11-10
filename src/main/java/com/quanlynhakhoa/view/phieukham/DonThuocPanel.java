@@ -56,13 +56,13 @@ public final class DonThuocPanel extends JPanel {
         @Override public boolean isCellEditable(int row, int column) { return false; }
     };
     private final JTable tblChiTiet = new JTable(tableModel);
-    private final List<DongChiTietDonThuoc> cart = new ArrayList<>();
+    private final List<DongChiTietDonThuoc> gioThuoc = new ArrayList<>();
     private final DonThuocController controller;
 
-    private ThongTinPhieuKham current;
-    private String selectedDoctorId = "";
+    private ThongTinPhieuKham phieuKhamHienTai;
+    private String maBacSiDaChon = "";
     private boolean loading;
-    private boolean alreadyPrescribed;
+    private boolean daKeDon;
 
     public DonThuocPanel(DesktopSession session) {
         this.session = java.util.Objects.requireNonNull(session, "session");
@@ -193,12 +193,12 @@ public final class DonThuocPanel extends JPanel {
     }
 
     public void setContext(ThongTinPhieuKham visit, String doctorId) {
-        current = visit;
-        selectedDoctorId = doctorId == null ? "" : doctorId.trim();
+        phieuKhamHienTai = visit;
+        maBacSiDaChon = doctorId == null ? "" : doctorId.trim();
         if (visit == null) {
             controller.invalidateLoads();
             loading = false;
-            alreadyPrescribed = false;
+            daKeDon = false;
             lblPhieu.setText("Phiếu khám: —");
             clearData();
             lblTrangThai.setText("Chọn phiếu khám để tải danh mục thuốc.");
@@ -212,29 +212,29 @@ public final class DonThuocPanel extends JPanel {
     }
 
     public void setMaBacSiPhuTrach(String doctorId) {
-        selectedDoctorId = doctorId == null ? "" : doctorId.trim();
+        maBacSiDaChon = doctorId == null ? "" : doctorId.trim();
         updateControls();
     }
 
     private void clearData() {
         cmbThuoc.removeAllItems();
-        cart.clear();
+        gioThuoc.clear();
         tableModel.setRowCount(0);
         txaLoiDan.setText("");
-        alreadyPrescribed = false;
+        daKeDon = false;
         updateControls();
     }
 
     public void hienDuLieu(DuLieuDonThuoc data) {
         cmbThuoc.removeAllItems();
         for (ThuocChonKeDon medicine : data.danhSachThuoc()) cmbThuoc.addItem(medicine);
-        cart.clear();
-        cart.addAll(data.chiTiet());
+        gioThuoc.clear();
+        gioThuoc.addAll(data.chiTiet());
         tableModel.setRowCount(0);
-        for (DongChiTietDonThuoc item : cart) addTableRow(item);
+        for (DongChiTietDonThuoc item : gioThuoc) addTableRow(item);
         txaLoiDan.setText(data.loiDan());
-        alreadyPrescribed = data.daKeDon();
-        if (alreadyPrescribed) {
+        daKeDon = data.daKeDon();
+        if (daKeDon) {
             lblTrangThai.setText("Phiếu khám đã có đơn thuốc. Đơn hiện tại chỉ được xem.");
         } else if (data.danhSachThuoc().isEmpty()) {
             lblTrangThai.setText("Danh mục thuốc hiện chưa có dữ liệu.");
@@ -263,12 +263,12 @@ public final class DonThuocPanel extends JPanel {
     }
 
     public void themVaoDanhSach(DongChiTietDonThuoc item) {
-        for (DongChiTietDonThuoc old : cart) {
+        for (DongChiTietDonThuoc old : gioThuoc) {
             if (old.maThuoc().equals(item.maThuoc())) {
                 throw new IllegalArgumentException("Thuốc này đã có trong đơn. Hãy xóa dòng cũ nếu muốn thay đổi.");
             }
         }
-        cart.add(item);
+        gioThuoc.add(item);
         addTableRow(item);
         txtLieuDung.setText("");
         txtCachDung.setText("");
@@ -279,18 +279,18 @@ public final class DonThuocPanel extends JPanel {
 
     private void xoaThuocDangChon() {
         int selected = tblChiTiet.getSelectedRow();
-        if (selected < 0 || selected >= cart.size()) return;
-        cart.remove(selected);
+        if (selected < 0 || selected >= gioThuoc.size()) return;
+        gioThuoc.remove(selected);
         tableModel.removeRow(selected);
         updateControls();
     }
 
     public List<DongChiTietDonThuoc> layChiTietNhap() {
-        return List.copyOf(cart);
+        return List.copyOf(gioThuoc);
     }
 
-    public String getMaPhieuKham() { return current == null ? "" : current.maPhieuKham(); }
-    public String getMaBacSiPhuTrach() { return selectedDoctorId; }
+    public String getMaPhieuKham() { return phieuKhamHienTai == null ? "" : phieuKhamHienTai.maPhieuKham(); }
+    public String getMaBacSiPhuTrach() { return maBacSiDaChon; }
     public String getLoiDan() { return txaLoiDan.getText(); }
 
     public void setLoading(boolean value, String message) {
@@ -312,12 +312,12 @@ public final class DonThuocPanel extends JPanel {
     }
 
     private void updateControls() {
-        boolean open = current != null && ("CHO_KHAM".equals(current.trangThai())
-                || "DANG_KHAM".equals(current.trangThai()));
+        boolean open = phieuKhamHienTai != null && ("CHO_KHAM".equals(phieuKhamHienTai.trangThai())
+                || "DANG_KHAM".equals(phieuKhamHienTai.trangThai()));
         boolean roleAllowed = session.isActive() && (session.role() == VaiTroHeThong.DOCTOR
-                || (session.role() == VaiTroHeThong.SYSTEM_ADMIN && current != null
-                && selectedDoctorId.equals(current.maNhanVien())));
-        boolean editable = open && roleAllowed && !loading && !alreadyPrescribed;
+                || (session.role() == VaiTroHeThong.SYSTEM_ADMIN && phieuKhamHienTai != null
+                && maBacSiDaChon.equals(phieuKhamHienTai.maNhanVien())));
+        boolean editable = open && roleAllowed && !loading && !daKeDon;
         cmbThuoc.setEnabled(editable && cmbThuoc.getItemCount() > 0);
         spnSoLuong.setEnabled(editable);
         txtLieuDung.setEnabled(editable);
@@ -326,7 +326,7 @@ public final class DonThuocPanel extends JPanel {
         txaLoiDan.setEditable(editable);
         btnThem.setEnabled(editable && cmbThuoc.getItemCount() > 0);
         btnXoa.setEnabled(editable && tblChiTiet.getSelectedRow() >= 0);
-        btnLuu.setEnabled(editable && !cart.isEmpty());
+        btnLuu.setEnabled(editable && !gioThuoc.isEmpty());
     }
 
     private JPanel card(java.awt.LayoutManager layout) {

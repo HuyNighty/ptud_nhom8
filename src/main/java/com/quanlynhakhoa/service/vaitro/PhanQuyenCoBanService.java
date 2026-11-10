@@ -1,5 +1,6 @@
 package com.quanlynhakhoa.service.vaitro;
 
+import com.quanlynhakhoa.dao.vaitro.PhanQuyenCoBanDao;
 import com.quanlynhakhoa.model.vaitro.DongVaiTro;
 import com.quanlynhakhoa.model.vaitro.DongQuyen;
 import com.quanlynhakhoa.entity.VaiTro;
@@ -10,10 +11,7 @@ import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.awt.EventQueue;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -30,6 +28,7 @@ public final class PhanQuyenCoBanService {
 
 
     private static final Pattern PERMISSION_CODE = Pattern.compile("[A-Z][A-Z0-9_]{0,63}");
+    private final PhanQuyenCoBanDao dao = new PhanQuyenCoBanDao();
     private final DesktopSession session;
     private final Connections connections;
 
@@ -52,35 +51,17 @@ public final class PhanQuyenCoBanService {
         JdbcSessionVerifier.verify(connection, session, true);
         requireAdmin();
     }
-    private static PreparedStatement statement(Connection c, String sql) throws SQLException {
-        PreparedStatement ps = c.prepareStatement(sql);
-        ps.setQueryTimeout(10);
-        return ps;
-    }
-    private static long epoch(Connection c) throws SQLException {
-        try (PreparedStatement ps = statement(c, "SELECT epoch FROM dbo.RbacEpoch WHERE singletonId=1");
-             ResultSet rows = ps.executeQuery()) {
-            if (!rows.next()) throw new SQLException("RBAC V9 chưa sẵn sàng: thiếu epoch.");
-            long value = rows.getLong(1);
-            if (rows.wasNull() || value < 1 || rows.next()) throw new SQLException("RBAC epoch không hợp lệ.");
-            return value;
-        }
-    }
+
+
     public List<DongVaiTro> listRoles() throws SQLException {
         requireAdmin();
         requireWorker();
         try (Connection c = connections.open()) {
             verify(c);
-            epoch(c);
-            List<DongVaiTro> result = new ArrayList<>();
-            try (PreparedStatement ps = statement(c,
-                    "SELECT roleCode,roleName,isSystem,enabled FROM dbo.VaiTro ORDER BY roleCode");
-                 ResultSet rows = ps.executeQuery()) {
-                while (rows.next()) result.add(new DongVaiTro(rows.getString(1), rows.getNString(2),
-                        rows.getBoolean(3), rows.getBoolean(4)));
-            }
+            dao.epoch(c);
+            List<DongVaiTro> result=dao.listRoles(c);
             verify(c);
-            return List.copyOf(result);
+            return result;
         }
     }
     public List<DongQuyen> listPermissions() throws SQLException {
@@ -88,22 +69,10 @@ public final class PhanQuyenCoBanService {
         requireWorker();
         try (Connection c = connections.open()) {
             verify(c);
-            epoch(c);
-            List<DongQuyen> result = new ArrayList<>();
-            try (PreparedStatement ps = statement(c,
-                    "SELECT permissionCode,permissionName FROM dbo.Quyen ORDER BY permissionCode");
-                 ResultSet rows = ps.executeQuery()) {
-                while (rows.next()) {
-                    String code = rows.getString(1);
-                    if (code == null || !PERMISSION_CODE.matcher(code).matches())
-                        throw new SQLException("RBAC permission code không hợp lệ.");
-                    boolean builtIn = false;
-                    for (Quyen p : Quyen.values()) if (p.name().equals(code)) builtIn = true;
-                    result.add(new DongQuyen(code, rows.getNString(2), builtIn));
-                }
-            }
+            dao.epoch(c);
+            List<DongQuyen> result=dao.listPermissions(c);
             verify(c);
-            return List.copyOf(result);
+            return result;
         }
     }
     public void createRole(String code, String name, String description, Set<Quyen> permissions)
@@ -119,26 +88,11 @@ public final class PhanQuyenCoBanService {
         EnumSet<Quyen> selected = EnumSet.noneOf(Quyen.class);
         selected.addAll(permissions);
         transaction(c -> {
-            long before = epoch(c);
-            try (PreparedStatement ps = statement(c,
-                    "INSERT INTO dbo.VaiTro(roleCode,roleName,description,enabled,isSystem,isProtected) " +
-                            "VALUES(?,?,?,1,0,0)")) {
-                ps.setString(1, code);
-                ps.setNString(2, cleanName);
-                ps.setNString(3, cleanDescription);
-                exactlyOne(ps.executeUpdate());
-            }
-            try (PreparedStatement grant = statement(c,
-                    "INSERT INTO dbo.VaiTroQuyen(roleCode,permissionCode) " +
-                            "SELECT ?,permissionCode FROM dbo.Quyen WHERE permissionCode=?")) {
-                for (Quyen permission : selected) {
-                    grant.setString(1, code);
-                    grant.setString(2, permission.name());
-                    exactlyOne(grant.executeUpdate());
-                }
-            }
+            long before = dao.epoch(c);
+            dao.taoVaiTro(c,code,cleanName,cleanDescription);
+            dao.ganQuyenBanDau(c,code,selected);
             // V9 triggers increment epoch in the SAME transaction; no manual epoch update.
-            if (epoch(c) <= before) throw new SQLException("RBAC epoch không được cập nhật; rollback.");
+            if (dao.epoch(c) <= before) throw new SQLException("RBAC epoch không được cập nhật; rollback.");
         });
     }
     /**
@@ -155,14 +109,9 @@ public final class PhanQuyenCoBanService {
         }
         String cleanName = label(name, 100, "Tên quyền");
         transaction(c -> {
-            long before = epoch(c);
-            try (PreparedStatement ps = statement(c,
-                    "INSERT INTO dbo.Quyen(permissionCode,permissionName) VALUES(?,?)")) {
-                ps.setString(1, code);
-                ps.setNString(2, cleanName);
-                exactlyOne(ps.executeUpdate());
-            }
-            if (epoch(c) <= before) throw new SQLException("RBAC epoch không được cập nhật; rollback.");
+            long before = dao.epoch(c);
+            dao.khaiBaoQuyen(c,code,cleanName);
+            if (dao.epoch(c) <= before) throw new SQLException("RBAC epoch không được cập nhật; rollback.");
         });
     }
     private void transaction(SqlAction action) throws SQLException {
@@ -190,8 +139,6 @@ public final class PhanQuyenCoBanService {
         for (VaiTroHeThong role : VaiTroHeThong.values()) if (role.name().equals(code)) return true;
         return false;
     }
-    private static void exactlyOne(int n) throws SQLException {
-        if (n != 1) throw new SQLException("Không thể ghi danh mục RBAC hợp lệ.");
-    }
+
     @FunctionalInterface private interface SqlAction { void run(Connection c) throws SQLException; }
 }

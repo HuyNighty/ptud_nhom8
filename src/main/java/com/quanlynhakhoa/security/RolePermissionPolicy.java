@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 public final class RolePermissionPolicy {
-    private final Map<VaiTroHeThong, Set<Quyen>> grants;
+    private final Map<VaiTroHeThong, Set<Quyen>> quyenTheoVaiTro;
 
     public RolePermissionPolicy() {
         EnumMap<VaiTroHeThong, Set<Quyen>> mapping = new EnumMap<>(VaiTroHeThong.class);
@@ -60,12 +60,12 @@ public final class RolePermissionPolicy {
         mapping.put(VaiTroHeThong.SYSTEM_ADMIN,
                 Collections.unmodifiableSet(EnumSet.allOf(Quyen.class)));
 
-        grants = Collections.unmodifiableMap(mapping);
+        quyenTheoVaiTro = Collections.unmodifiableMap(mapping);
     }
 
     public Set<Quyen> permissionsFor(VaiTroHeThong role) {
         if (role == null) return Set.of();
-        return grants.getOrDefault(role, Set.of());
+        return quyenTheoVaiTro.getOrDefault(role, Set.of());
     }
 
     public boolean isAllowed(VaiTroHeThong role, Quyen permission) {

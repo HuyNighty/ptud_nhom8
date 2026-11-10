@@ -1,36 +1,35 @@
 package com.quanlynhakhoa.model.phieukham;
 
+import com.quanlynhakhoa.entity.ChiTietDonThuoc;
+
 /** Immutable snapshot; retains the original record API and value semantics. */
 public final class DongChiTietDonThuoc {
-    private final String maThuoc;
+    private final ChiTietDonThuoc chiTietDonThuoc;
     private final String tenThuoc;
     private final String donViTinh;
-    private final int soLuong;
-    private final String lieuDung;
-    private final String cachDung;
-    private final int soNgayDung;
     private final boolean kiemSoatDacBiet;
     private final String hoatChat;
 
     public DongChiTietDonThuoc(String maThuoc, String tenThuoc, String donViTinh, int soLuong, String lieuDung, String cachDung, int soNgayDung, boolean kiemSoatDacBiet, String hoatChat) {
-        this.maThuoc = maThuoc;
+        this(null, maThuoc, tenThuoc, donViTinh, soLuong, lieuDung, cachDung, soNgayDung, kiemSoatDacBiet, hoatChat);
+    }
+
+    public DongChiTietDonThuoc(String maDonThuoc, String maThuoc, String tenThuoc, String donViTinh, int soLuong, String lieuDung, String cachDung, int soNgayDung, boolean kiemSoatDacBiet, String hoatChat) {
+        this.chiTietDonThuoc = new ChiTietDonThuoc(maDonThuoc, maThuoc, soLuong, lieuDung, cachDung, soNgayDung);
         this.tenThuoc = tenThuoc;
         this.donViTinh = donViTinh;
-        this.soLuong = soLuong;
-        this.lieuDung = lieuDung;
-        this.cachDung = cachDung;
-        this.soNgayDung = soNgayDung;
+
         this.kiemSoatDacBiet = kiemSoatDacBiet;
         this.hoatChat = hoatChat;
     }
 
-    public String maThuoc() { return maThuoc; }
+    public String maThuoc() { return chiTietDonThuoc.getMaThuoc(); }
     public String tenThuoc() { return tenThuoc; }
     public String donViTinh() { return donViTinh; }
-    public int soLuong() { return soLuong; }
-    public String lieuDung() { return lieuDung; }
-    public String cachDung() { return cachDung; }
-    public int soNgayDung() { return soNgayDung; }
+    public int soLuong() { return chiTietDonThuoc.getSoLuong(); }
+    public String lieuDung() { return chiTietDonThuoc.getLieuDung(); }
+    public String cachDung() { return chiTietDonThuoc.getCachDung(); }
+    public int soNgayDung() { return chiTietDonThuoc.getSoNgayDung(); }
     public boolean kiemSoatDacBiet() { return kiemSoatDacBiet; }
     public String hoatChat() { return hoatChat; }
 
@@ -38,13 +37,13 @@ public final class DongChiTietDonThuoc {
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof DongChiTietDonThuoc value)) return false;
-        return java.util.Objects.equals(maThuoc, value.maThuoc)
+        return java.util.Objects.equals(chiTietDonThuoc.getMaThuoc(), value.chiTietDonThuoc.getMaThuoc())
                 && java.util.Objects.equals(tenThuoc, value.tenThuoc)
                 && java.util.Objects.equals(donViTinh, value.donViTinh)
-                && soLuong == value.soLuong
-                && java.util.Objects.equals(lieuDung, value.lieuDung)
-                && java.util.Objects.equals(cachDung, value.cachDung)
-                && soNgayDung == value.soNgayDung
+                && chiTietDonThuoc.getSoLuong() == value.chiTietDonThuoc.getSoLuong()
+                && java.util.Objects.equals(chiTietDonThuoc.getLieuDung(), value.chiTietDonThuoc.getLieuDung())
+                && java.util.Objects.equals(chiTietDonThuoc.getCachDung(), value.chiTietDonThuoc.getCachDung())
+                && chiTietDonThuoc.getSoNgayDung() == value.chiTietDonThuoc.getSoNgayDung()
                 && kiemSoatDacBiet == value.kiemSoatDacBiet
                 && java.util.Objects.equals(hoatChat, value.hoatChat);
     }
@@ -52,13 +51,13 @@ public final class DongChiTietDonThuoc {
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(maThuoc);
+        result = 31 * result + java.util.Objects.hashCode(chiTietDonThuoc.getMaThuoc());
         result = 31 * result + java.util.Objects.hashCode(tenThuoc);
         result = 31 * result + java.util.Objects.hashCode(donViTinh);
-        result = 31 * result + Integer.hashCode(soLuong);
-        result = 31 * result + java.util.Objects.hashCode(lieuDung);
-        result = 31 * result + java.util.Objects.hashCode(cachDung);
-        result = 31 * result + Integer.hashCode(soNgayDung);
+        result = 31 * result + Integer.hashCode(chiTietDonThuoc.getSoLuong());
+        result = 31 * result + java.util.Objects.hashCode(chiTietDonThuoc.getLieuDung());
+        result = 31 * result + java.util.Objects.hashCode(chiTietDonThuoc.getCachDung());
+        result = 31 * result + Integer.hashCode(chiTietDonThuoc.getSoNgayDung());
         result = 31 * result + Boolean.hashCode(kiemSoatDacBiet);
         result = 31 * result + java.util.Objects.hashCode(hoatChat);
         return result;
@@ -66,6 +65,8 @@ public final class DongChiTietDonThuoc {
 
     @Override
     public String toString() {
-        return "ChiTietDonThuoc[" + "maThuoc=" + maThuoc + ", " + "tenThuoc=" + tenThuoc + ", " + "donViTinh=" + donViTinh + ", " + "soLuong=" + soLuong + ", " + "lieuDung=" + lieuDung + ", " + "cachDung=" + cachDung + ", " + "soNgayDung=" + soNgayDung + ", " + "kiemSoatDacBiet=" + kiemSoatDacBiet + ", " + "hoatChat=" + hoatChat + "]";
+        return "ChiTietDonThuoc[" + "maThuoc=" + chiTietDonThuoc.getMaThuoc() + ", " + "tenThuoc=" + tenThuoc + ", " + "donViTinh=" + donViTinh + ", " + "soLuong=" + chiTietDonThuoc.getSoLuong() + ", " + "lieuDung=" + chiTietDonThuoc.getLieuDung() + ", " + "cachDung=" + chiTietDonThuoc.getCachDung() + ", " + "soNgayDung=" + chiTietDonThuoc.getSoNgayDung() + ", " + "kiemSoatDacBiet=" + kiemSoatDacBiet + ", " + "hoatChat=" + hoatChat + "]";
     }
+
+    public ChiTietDonThuoc getChiTietDonThuoc() { return chiTietDonThuoc; }
 }

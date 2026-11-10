@@ -19,7 +19,7 @@ public final class ThanhToanPanel extends JPanel implements RefreshableFeature {
     public final JButton btnTim=new JButton("Tìm hóa đơn"),btnTaiLai=new JButton("Làm mới");
     public final JComboBox<LuaChonLapHoaDon> cmbHoaDon=new JComboBox<>();
     public final JLabel lblTrangThai=new JLabel("Tìm mã hóa đơn, mã/tên/số điện thoại bệnh nhân; chọn chứng từ để thu tiền.");
-    private final JPanel pnlCollection=new JPanel(new BorderLayout());
+    private final JPanel pnlThuTien=new JPanel(new BorderLayout());
     private final ManHinhThanhToanController controller;
     public ThanhToanPanel(DesktopSession session,ConnectionProvider connections){
         new AuthorizationService(new RolePermissionPolicy()).require(session,Quyen.BILLING_MANAGE);
@@ -28,7 +28,7 @@ public final class ThanhToanPanel extends JPanel implements RefreshableFeature {
         cmbHoaDon.setPrototypeDisplayValue(new LuaChonLapHoaDon("HD00000000","Bệnh nhân · Còn nợ 999.999.999 ₫"));
         JPanel pnlSearch=GiaoDienHoaDon.filters(GiaoDienHoaDon.field("Mã hóa đơn / bệnh nhân / SĐT",txtTimHoaDon),GiaoDienHoaDon.field(" ",GiaoDienHoaDon.actions(btnTim,btnTaiLai)),GiaoDienHoaDon.field("Chọn hóa đơn còn nợ",cmbHoaDon));
         JPanel pnlTop=new JPanel(new BorderLayout(0,8));pnlTop.add(lblTitle,BorderLayout.NORTH);pnlTop.add(pnlSearch,BorderLayout.CENTER);pnlTop.add(lblTrangThai,BorderLayout.SOUTH);add(pnlTop,BorderLayout.NORTH);
-        pnlCollection.add(new ThanhToanForm());add(pnlCollection,BorderLayout.CENTER);
+        pnlThuTien.add(new ThanhToanForm());add(pnlThuTien,BorderLayout.CENTER);
         lblTrangThai.addPropertyChangeListener("text", new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent event) {
                 lblTrangThai.setVisible(!lblTrangThai.getText().isBlank());
@@ -45,7 +45,7 @@ public final class ThanhToanPanel extends JPanel implements RefreshableFeature {
         for(ThongTinHoaDon h:invoices){LuaChonLapHoaDon item=new LuaChonLapHoaDon(h.maHoaDon(),h.maBenhNhan()+" · "+h.tenBenhNhan()+" · Còn nợ "+GiaoDienHoaDon.vnd(h.conNo()));cmbHoaDon.addItem(item);if(h.maHoaDon().equals(selected))chosen=item;}
         cmbHoaDon.setSelectedItem(chosen); // Preserve current form/history even when a fully paid invoice leaves the picker.
     }
-    public void showForm(ThanhToanForm pnlForm){com.quanlynhakhoa.view.hethong.AppTheme.applyButtons(pnlForm);pnlCollection.removeAll();pnlCollection.add(pnlForm,BorderLayout.CENTER);pnlCollection.revalidate();pnlCollection.repaint();}
+    public void showForm(ThanhToanForm pnlForm){com.quanlynhakhoa.view.hethong.AppTheme.applyButtons(pnlForm);pnlThuTien.removeAll();pnlThuTien.add(pnlForm,BorderLayout.CENTER);pnlThuTien.revalidate();pnlThuTien.repaint();}
     public void pickerEnabled(boolean enabled){txtTimHoaDon.setEnabled(enabled);btnTim.setEnabled(enabled);btnTaiLai.setEnabled(enabled);cmbHoaDon.setEnabled(enabled);}
-    public void expired(){cmbHoaDon.removeAllItems();pnlCollection.removeAll();pickerEnabled(false);lblTrangThai.setText("Phiên đã đăng xuất.");pnlCollection.revalidate();pnlCollection.repaint();}
+    public void expired(){cmbHoaDon.removeAllItems();pnlThuTien.removeAll();pickerEnabled(false);lblTrangThai.setText("Phiên đã đăng xuất.");pnlThuTien.revalidate();pnlThuTien.repaint();}
 }

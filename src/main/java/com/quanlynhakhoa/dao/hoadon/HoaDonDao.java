@@ -5,7 +5,7 @@ import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThuocKeTinhTien;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import java.sql.*;
@@ -152,16 +152,16 @@ public class HoaDonDao {
             return List.copyOf(result);
         }
     }
-    public List<ThongTinThanhToan> payments(Connection connection, String id) throws SQLException {
+    public List<ThanhToan> payments(Connection connection, String id) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT maThanhToan, maHoaDon, thoiGian, soTien, phuongThuc, maGiaoDich, tienKhachDua,
                        trangThai, maNhanVien, maTaiKhoanHuy, thoiGianHuy, lyDoHuy
                 FROM dbo.ThanhToan WHERE maHoaDon=? ORDER BY thoiGian, maThanhToan
                 """)) {
             statement.setQueryTimeout(15); statement.setString(1, id);
-            List<ThongTinThanhToan> result = new ArrayList<>();
+            List<ThanhToan> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) {
-                while (rows.next()) result.add(new ThongTinThanhToan(rows.getString("maThanhToan"), rows.getString("maHoaDon"),
+                while (rows.next()) result.add(new ThanhToan(rows.getString("maThanhToan"), rows.getString("maHoaDon"),
                         time(rows, "thoiGian"), rows.getBigDecimal("soTien"),
                         PhuongThucThanhToan.valueOf(rows.getString("phuongThuc")), rows.getString("maGiaoDich"),
                         rows.getBigDecimal("tienKhachDua"), TrangThaiThanhToan.valueOf(rows.getString("trangThai")),

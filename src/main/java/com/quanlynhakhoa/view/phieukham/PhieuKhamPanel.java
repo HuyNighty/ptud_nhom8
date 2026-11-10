@@ -62,7 +62,7 @@ public final class PhieuKhamPanel extends JPanel {
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
 
     private final DesktopSession session;
-    private final List<DongDanhSachPhieuKham> rows = new ArrayList<>();
+    private final List<DongDanhSachPhieuKham> danhSach = new ArrayList<>();
 
     private final JTextField txtNgayKham = new JTextField(10);
     private final JComboBox<BacSiChonKham> cmbBacSiLoc = new JComboBox<>();
@@ -101,7 +101,7 @@ public final class PhieuKhamPanel extends JPanel {
 
     private final JLabel lblBacSiCaption = label("Bác sĩ chịu trách nhiệm:", 11, MUTED, true);
     private boolean loading;
-    private ThongTinPhieuKham current;
+    private ThongTinPhieuKham phieuKhamHienTai;
 
     public PhieuKhamPanel(DesktopSession session) {
         this.session = java.util.Objects.requireNonNull(session, "session");
@@ -114,7 +114,7 @@ public final class PhieuKhamPanel extends JPanel {
         add(buildFooter(), BorderLayout.SOUTH);
 
         cmbBacSiPhuTrach.addActionListener(event -> {
-            if (current != null) {
+            if (phieuKhamHienTai != null) {
                 String doctorId = layMaBacSiPhuTrach();
 
                 if (pnlCanLamSang != null) {
@@ -752,10 +752,10 @@ public final class PhieuKhamPanel extends JPanel {
     }
 
     public void hienDanhSach(List<DongDanhSachPhieuKham> values) {
-        rows.clear();
-        rows.addAll(values);
+        danhSach.clear();
+        danhSach.addAll(values);
         tableModel.setRowCount(0);
-        for (DongDanhSachPhieuKham row : rows) {
+        for (DongDanhSachPhieuKham row : danhSach) {
             LocalDateTime received = row.thoiGianTiepNhan();
             tableModel.addRow(new Object[]{
                     row.maPhieuKham(),
@@ -764,13 +764,13 @@ public final class PhieuKhamPanel extends JPanel {
                     tenTrangThai(row.trangThai())
             });
         }
-        lblSoLuong.setText(rows.size() + " phiếu");
+        lblSoLuong.setText(danhSach.size() + " phiếu");
         xoaChiTiet();
-        if (!rows.isEmpty()) tblPhieuKham.setRowSelectionInterval(0, 0);
+        if (!danhSach.isEmpty()) tblPhieuKham.setRowSelectionInterval(0, 0);
     }
 
     public void hienChiTiet(ThongTinPhieuKham value) {
-        current = value;
+        phieuKhamHienTai = value;
         if (value == null) {
             xoaChiTiet();
             return;
@@ -797,7 +797,7 @@ public final class PhieuKhamPanel extends JPanel {
     }
 
     public void xoaChiTiet() {
-        current = null;
+        phieuKhamHienTai = null;
         lblTenBenhNhan.setText("Chưa chọn phiếu khám");
         lblThongTinBenhNhan.setText("Chọn một phiếu ở danh sách bên trái");
         lblTrangThai.setText("");
@@ -820,7 +820,7 @@ public final class PhieuKhamPanel extends JPanel {
         boolean canEditNow = editable
                 && !loading
                 && !detailBusy
-                && current != null;
+                && phieuKhamHienTai != null;
 
         btnLuuNhap.setEnabled(canEditNow);
         btnKetLuan.setEnabled(canEditNow);
@@ -881,7 +881,7 @@ public final class PhieuKhamPanel extends JPanel {
         int selected = tblPhieuKham.getSelectedRow();
         if (selected < 0) return "";
         int modelRow = tblPhieuKham.convertRowIndexToModel(selected);
-        return modelRow >= 0 && modelRow < rows.size() ? rows.get(modelRow).maPhieuKham() : "";
+        return modelRow >= 0 && modelRow < danhSach.size() ? danhSach.get(modelRow).maPhieuKham() : "";
     }
 
     public String layMaBacSiPhuTrach() {
@@ -903,17 +903,17 @@ public final class PhieuKhamPanel extends JPanel {
         cmbTrangThai.setEnabled(!busy);
         txtTimKiem.setEnabled(!busy);
         lblTrangThaiHeThong.setText(message);
-        if (current != null) capNhatTrangThaiNut(current.trangThai());
+        if (phieuKhamHienTai != null) capNhatTrangThaiNut(phieuKhamHienTai.trangThai());
     }
 
     public void setDangTaiChiTiet(boolean busy) {
         detailBusy = busy;
 
-        if (current == null) {
+        if (phieuKhamHienTai == null) {
             btnLuuNhap.setEnabled(false);
             btnKetLuan.setEnabled(false);
         } else {
-            capNhatTrangThaiNut(current.trangThai());
+            capNhatTrangThaiNut(phieuKhamHienTai.trangThai());
         }
     }
 

@@ -2,7 +2,7 @@
 
 **PO APPROVED — 01/11/2026. Đã triển khai quyết định.**
 
-Workspace: C:\Dev\N08\ptud_nhom8-final-screens-r1. Branch: codex/n08-final-screens-r1-shifts. HEAD: 1f5ada23035f15d2b6f59cfa2e1d441a52e496eb, giữ nguyên. Working tree đã có R1/R1-B/R1-C chưa commit trước khi bắt đầu; snapshot và status được lưu ngoài repo, không reset/clean/ghi đè công việc khác. Chưa commit/push/merge hoặc tạo PR.
+Workspace: C:\Dev\N08\ptud_nhom8-final-screens-r1. Branch: refactor/n08-final-screens-r1-shifts. HEAD: 1f5ada23035f15d2b6f59cfa2e1d441a52e496eb, giữ nguyên. Working tree đã có R1/R1-B/R1-C chưa commit trước khi bắt đầu; snapshot và status được lưu ngoài repo, không reset/clean/ghi đè công việc khác. Chưa commit/push/merge hoặc tạo PR.
 
 ## Quyết định chính thức
 

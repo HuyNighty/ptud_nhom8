@@ -7,7 +7,7 @@ import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.entity.DichVuNhaKhoa;
@@ -31,8 +31,8 @@ public final class ServiceBillingSelfTest {
     public static DesktopSession session(VaiTroHeThong role) { return DesktopSession.fromSuccessfulLogin(new KetQuaDangNhap(true, "TST_ACC", role, false)); }
     private static BigDecimal money(String value) { return new BigDecimal(value); }
     private static DichVuNhaKhoa value(String price) { return new DichVuNhaKhoa(" TST1 ", " Dịch vụ kiểm thử ", money(price), " ", false, true); }
-    private static ThongTinThanhToan payment(String id, String amount, boolean cancelled) {
-        return new ThongTinThanhToan(id, "H1", LocalDateTime.of(2026, 1, 1, 8, 0), money(amount), PhuongThucThanhToan.TIEN_MAT,
+    private static ThanhToan payment(String id, String amount, boolean cancelled) {
+        return new ThanhToan(id, "H1", LocalDateTime.of(2026, 1, 1, 8, 0), money(amount), PhuongThucThanhToan.TIEN_MAT,
                 null, money("999999"), cancelled ? TrangThaiThanhToan.DA_HUY : TrangThaiThanhToan.THANH_CONG, "NV1", null, null, null);
     }
     private static ThongTinHoaDon invoice(String total, String collected, TrangThaiHoaDon status) {
@@ -49,7 +49,7 @@ public final class ServiceBillingSelfTest {
         check(TinhTienHoaDon.total(lines).compareTo(money("300")) == 0, "all item kinds included");
         check(TinhTienHoaDon.total(List.of()).signum() == 0, "no lines = zero");
         check(TinhTienHoaDon.collected(List.of()).signum() == 0, "no payments = zero");
-        List<ThongTinThanhToan> payments = List.of(payment("T1", "60", false), payment("T2", "40", false), payment("T3", "900", true));
+        List<ThanhToan> payments = List.of(payment("T1", "60", false), payment("T2", "40", false), payment("T3", "900", true));
         check(TinhTienHoaDon.collected(payments).compareTo(money("100")) == 0, "2 lines of successful collection, cancelled ignored, customer tender ignored");
         check(invoice("300", "0", TrangThaiHoaDon.CHUA_THANH_TOAN).conNo().intValueExact() == 300, "unpaid");
         check(invoice("300", "100", TrangThaiHoaDon.THANH_TOAN_MOT_PHAN).conNo().intValueExact() == 200, "partial");

@@ -16,7 +16,7 @@ import javax.swing.event.*;
 
 public final class HuyHoaDonController {
     private final HuyHoaDonPanel view;private final DesktopSession session;private final HuyHoaDonService service;
-    private boolean busy,reloadPending;private ChiTietYeuCauHuy selected;private String writeMessage="";
+    private boolean busy,reloadPending;private ChiTietYeuCauHuy mucDaChon;private String thongBaoGhi="";
     private final Runnable invalidated;
     public HuyHoaDonController(HuyHoaDonPanel view,DesktopSession session,HuyHoaDonService service){
         this.view=view;this.session=session;this.service=service;
@@ -31,47 +31,47 @@ public final class HuyHoaDonController {
         invalidated=new Runnable(){public void run(){load();}};ThongBaoThayDoiHoaDon.forSession(session).subscribe(invalidated);
     }
     private boolean start(){if(busy)return false;if(!session.isActive()){view.expired();return false;}busy=true;view.busy(true);return true;}
-    private boolean mayReject(){return selected!=null&&selected.request().trangThai()==TrangThaiYeuCauHuyHoaDon.CHO_DUYET&&!session.accountId().equals(selected.request().maTaiKhoanTao())&&selected.invoice().hoaDon().trangThai()!=TrangThaiHoaDon.DA_HUY;}
-    private void buttons(){view.buttons(mayReject()&&selected.invoice().hoaDon().daThu().signum()==0,mayReject());}
+    private boolean mayReject(){return mucDaChon!=null&&mucDaChon.request().trangThai()==TrangThaiYeuCauHuyHoaDon.CHO_DUYET&&!session.accountId().equals(mucDaChon.request().maTaiKhoanTao())&&mucDaChon.invoice().hoaDon().trangThai()!=TrangThaiHoaDon.DA_HUY;}
+    private void buttons(){view.buttons(mayReject()&&mucDaChon.invoice().hoaDon().daThu().signum()==0,mayReject());}
     private abstract class Task<T> extends SessionWorker<T>{
         Task(){super(HuyHoaDonController.this.session);}
         protected void finished(){busy=false;view.busy(false);buttons();}
-        protected void expired(){selected=null;view.expired();}
-        protected void failed(Throwable failure){view.loadFailed(writeMessage+GiaoDienHoaDon.error(failure));if(reloadPending){reloadPending=false;load();}}
+        protected void expired(){mucDaChon=null;view.expired();}
+        protected void failed(Throwable failure){view.loadFailed(thongBaoGhi+GiaoDienHoaDon.error(failure));if(reloadPending){reloadPending=false;load();}}
     }
     public void load(){
         if(busy){reloadPending=true;return;}final String keyword=view.txtTuKhoa.getText();final LocalDate from,to;
         try{from=date(view.txtTuNgay.getText());to=date(view.txtDenNgay.getText());}catch(IllegalArgumentException e){view.lblTrangThai.setText(e.getMessage());return;}
         final TrangThaiYeuCauHuyHoaDon status=view.cmbTrangThai.getSelectedItem() instanceof TrangThaiYeuCauHuyHoaDon value?value:null;
-        if(!start())return;selected=null;view.clearDetail();view.lblTrangThai.setText("Đang tải yêu cầu hủy…");view.tableStatus("Đang tải yêu cầu hủy…");
+        if(!start())return;mucDaChon=null;view.clearDetail();view.lblTrangThai.setText("Đang tải yêu cầu hủy…");view.tableStatus("Đang tải yêu cầu hủy…");
         new Task<List<ThongTinYeuCauHuyHoaDon>>(){
             protected List<ThongTinYeuCauHuyHoaDon> doInBackground()throws Exception{return service.find(keyword,from,to,status);}
-            protected void succeeded(List<ThongTinYeuCauHuyHoaDon> rows){busy=true;view.showRows(rows);busy=false;view.tableStatus(rows.isEmpty()?"Không có yêu cầu hủy phù hợp.":"");view.lblTrangThai.setText(writeMessage+(rows.isEmpty()?"Lọc theo ngày gửi và trạng thái yêu cầu.":rows.size()+" yêu cầu."));writeMessage="";if(reloadPending){reloadPending=false;load();}}
+            protected void succeeded(List<ThongTinYeuCauHuyHoaDon> rows){busy=true;view.showRows(rows);busy=false;view.tableStatus(rows.isEmpty()?"Không có yêu cầu hủy phù hợp.":"");view.lblTrangThai.setText(thongBaoGhi+(rows.isEmpty()?"Lọc theo ngày gửi và trạng thái yêu cầu.":rows.size()+" yêu cầu."));thongBaoGhi="";if(reloadPending){reloadPending=false;load();}}
         }.execute();
     }
     private void detail(){
-        selected=null;view.clearDetail();final String id=view.selectedId();if(id==null||!start())return;
+        mucDaChon=null;view.clearDetail();final String id=view.selectedId();if(id==null||!start())return;
         new Task<ChiTietYeuCauHuy>(){
             protected ChiTietYeuCauHuy doInBackground()throws Exception{return service.detail(id);}
             protected void succeeded(ChiTietYeuCauHuy result){
-                if(!id.equals(view.selectedId())){detail();return;}selected=result;view.showDetail(result);buttons();
+                if(!id.equals(view.selectedId())){detail();return;}mucDaChon=result;view.showDetail(result);buttons();
                 view.lblTrangThai.setText(result.request().trangThai()!=TrangThaiYeuCauHuyHoaDon.CHO_DUYET?"Yêu cầu đã được xử lý, chỉ xem lịch sử.":session.accountId().equals(result.request().maTaiKhoanTao())?"Không được tự xét duyệt yêu cầu của mình.":result.invoice().hoaDon().daThu().signum()>0?"Chặn duyệt hủy: có khoản thu hợp lệ, chưa có quy trình hoàn tiền. Có thể từ chối và ghi lý do.":"Kiểm tra thông tin và lịch sử thu trước khi quyết định.");
                 if(reloadPending){reloadPending=false;load();}
             }
         }.execute();
     }
     private void decide(final boolean approve){
-        if(busy||!mayReject()||(approve&&selected.invoice().hoaDon().daThu().signum()!=0))return;
+        if(busy||!mayReject()||(approve&&mucDaChon.invoice().hoaDon().daThu().signum()!=0))return;
         final String reason=view.txaLyDoDuyet.getText().trim();if((!approve&&reason.isEmpty())||reason.length()>500){view.lblTrangThai.setText("Lý do từ chối bắt buộc; ý kiến tối đa 500 ký tự.");return;}
-        final String id=selected.request().maYeuCau();
+        final String id=mucDaChon.request().maYeuCau();
         if(JOptionPane.showConfirmDialog(view,(approve?"Duyệt hủy":"Từ chối")+" yêu cầu "+id+"?","Xác nhận xét duyệt",JOptionPane.YES_NO_OPTION)!=JOptionPane.YES_OPTION)return;
         if(!start())return;
         new Task<Void>(){
             protected Void doInBackground()throws Exception{service.decide(id,approve,reason);return null;}
-            protected void succeeded(Void ignored){GiaoDienHoaDon.result(view,approve?"Duyệt hủy hóa đơn thành công.":"Đã từ chối yêu cầu hủy. Hóa đơn vẫn hoạt động.","Kết quả xét duyệt",JOptionPane.INFORMATION_MESSAGE);selected=null;writeMessage=approve?"Đã duyệt hủy hóa đơn. ":"Đã từ chối; hóa đơn vẫn hoạt động. ";load();ThongBaoThayDoiHoaDon.forSession(session).publishExcept(invalidated);}
+            protected void succeeded(Void ignored){GiaoDienHoaDon.result(view,approve?"Duyệt hủy hóa đơn thành công.":"Đã từ chối yêu cầu hủy. Hóa đơn vẫn hoạt động.","Kết quả xét duyệt",JOptionPane.INFORMATION_MESSAGE);mucDaChon=null;thongBaoGhi=approve?"Đã duyệt hủy hóa đơn. ":"Đã từ chối; hóa đơn vẫn hoạt động. ";load();ThongBaoThayDoiHoaDon.forSession(session).publishExcept(invalidated);}
             protected void failed(Throwable failure){
                 if(failure instanceof HuyHoaDonService.CommittedCancellationException){succeeded(null);return;}
-                GiaoDienHoaDon.result(view,GiaoDienHoaDon.error(failure)+" Chưa xác nhận kết quả; tải lại để kiểm tra trước khi thử lại.","Chưa xác nhận kết quả xét duyệt",JOptionPane.ERROR_MESSAGE);selected=null;view.buttons(false,false);writeMessage=GiaoDienHoaDon.error(failure)+" Chưa xác nhận kết quả; tải lại để kiểm tra trước khi thử lại. ";load();
+                GiaoDienHoaDon.result(view,GiaoDienHoaDon.error(failure)+" Chưa xác nhận kết quả; tải lại để kiểm tra trước khi thử lại.","Chưa xác nhận kết quả xét duyệt",JOptionPane.ERROR_MESSAGE);mucDaChon=null;view.buttons(false,false);thongBaoGhi=GiaoDienHoaDon.error(failure)+" Chưa xác nhận kết quả; tải lại để kiểm tra trước khi thử lại. ";load();
             }
         }.execute();
     }

@@ -51,15 +51,15 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
 
     private final DesktopSession session;
     private final DanhSachNhanVienService service;
-    private final TaoNhanVienService creator;
+    private final TaoNhanVienService boTao;
     private final AuthorizationService authorization = new AuthorizationService(new RolePermissionPolicy());
-    private final JTextField txtKeyword = new JTextField(20);
+    private final JTextField txtTuKhoa = new JTextField(20);
     private final JComboBox<TrangThaiNhanVien> cmbStatus = new JComboBox<>();
-    private final JButton btnSearch = new JButton("Tìm kiếm");
-    private final JButton btnRefresh = new JButton("Làm mới");
-    private final JButton btnCreate = new JButton("Thêm nhân viên");
-    private final JLabel lblStatus = new JLabel("Chưa tải dữ liệu");
-    private final JLabel lblDetail = new JLabel("Chọn một nhân viên để xem thông tin.");
+    private final JButton btnTimKiem = new JButton("Tìm kiếm");
+    private final JButton btnLamMoi = new JButton("Làm mới");
+    private final JButton btnTao = new JButton("Thêm nhân viên");
+    private final JLabel lblTrangThai = new JLabel("Chưa tải dữ liệu");
+    private final JLabel lblChiTiet = new JLabel("Chọn một nhân viên để xem thông tin.");
     private final EmployeeTableModel tableModel = new EmployeeTableModel();
     private final JTable table = new JTable(tableModel);
     private boolean loading;
@@ -73,7 +73,7 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
     NhanVienPanel(DesktopSession session, DanhSachNhanVienService service, boolean autoLoad) {
         this.session = Objects.requireNonNull(session, "session");
         this.service = Objects.requireNonNull(service, "service");
-        this.creator = new TaoNhanVienService(session, TeamDevConnection::open);
+        this.boTao = new TaoNhanVienService(session, TeamDevConnection::open);
         setLayout(new BorderLayout(0, 16));
         setBackground(new Color(245, 248, 252));
         setBorder(new EmptyBorder(24, 26, 24, 26));
@@ -94,7 +94,7 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
                 BorderFactory.createLineBorder(new Color(220, 231, 242)),
                 new EmptyBorder(7, 10, 7, 10)));
         filters.add(new JLabel("Mã / tên nhân viên:"));
-        filters.add(txtKeyword);
+        filters.add(txtTuKhoa);
         cmbStatus.addItem(null);
         for (TrangThaiNhanVien status : TrangThaiNhanVien.values()) cmbStatus.addItem(status);
         cmbStatus.setRenderer(new DefaultListCellRenderer() {
@@ -107,9 +107,9 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
             }
         });
         filters.add(cmbStatus);
-        filters.add(btnSearch);
-        filters.add(btnRefresh);
-        filters.add(btnCreate);
+        filters.add(btnTimKiem);
+        filters.add(btnLamMoi);
+        filters.add(btnTao);
         body.add(filters, BorderLayout.NORTH);
 
         table.setRowHeight(30);
@@ -126,17 +126,17 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
 
         JPanel footer = new JPanel(new BorderLayout(0, 7));
         footer.setOpaque(false);
-        lblDetail.setForeground(NAVY);
-        lblStatus.setForeground(MUTED);
-        footer.add(lblDetail, BorderLayout.NORTH);
-        footer.add(lblStatus, BorderLayout.SOUTH);
+        lblChiTiet.setForeground(NAVY);
+        lblTrangThai.setForeground(MUTED);
+        footer.add(lblChiTiet, BorderLayout.NORTH);
+        footer.add(lblTrangThai, BorderLayout.SOUTH);
         body.add(footer, BorderLayout.SOUTH);
         add(body, BorderLayout.CENTER);
 
-        btnCreate.addActionListener(event -> createEmployee());
-        btnSearch.addActionListener(event -> load());
-        btnRefresh.addActionListener(event -> { txtKeyword.setText(""); cmbStatus.setSelectedIndex(0); load(); });
-        txtKeyword.addActionListener(event -> load());
+        btnTao.addActionListener(event -> createEmployee());
+        btnTimKiem.addActionListener(event -> load());
+        btnLamMoi.addActionListener(event -> { txtTuKhoa.setText(""); cmbStatus.setSelectedIndex(0); load(); });
+        txtTuKhoa.addActionListener(event -> load());
         cmbStatus.addActionListener(event -> load());
         if (autoLoad) load();
     }
@@ -152,7 +152,7 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
     private void load() {
         if (!session.isActive()) {
             tableModel.setRows(List.of());
-            lblStatus.setText("Phiên đăng nhập đã kết thúc.");
+            lblTrangThai.setText("Phiên đăng nhập đã kết thúc.");
             updateControls();
             return;
         }
@@ -160,15 +160,15 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
             reloadPending = true;
             return;
         }
-        String keyword = txtKeyword.getText().trim();
+        String keyword = txtTuKhoa.getText().trim();
         if (keyword.length() > 80) {
-            lblStatus.setText("Từ khóa tìm kiếm tối đa 80 ký tự.");
+            lblTrangThai.setText("Từ khóa tìm kiếm tối đa 80 ký tự.");
             return;
         }
         TrangThaiNhanVien status = (TrangThaiNhanVien) cmbStatus.getSelectedItem();
         loading = true;
         updateControls();
-        lblStatus.setText("Đang tải nhân viên...");
+        lblTrangThai.setText("Đang tải nhân viên...");
         new SwingWorker<KetQuaDanhSachNhanVien, Void>() {
             @Override protected KetQuaDanhSachNhanVien doInBackground() throws Exception {
                 return service.search(keyword, status);
@@ -178,7 +178,7 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
                 if (!session.isActive()) {
                     reloadPending = false;
                     tableModel.setRows(List.of());
-                    lblStatus.setText("Phiên đăng nhập đã kết thúc.");
+                    lblTrangThai.setText("Phiên đăng nhập đã kết thúc.");
                     updateControls();
                     return;
                 }
@@ -186,18 +186,18 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
                     KetQuaDanhSachNhanVien result = get();
                     if (!reloadPending) {
                         tableModel.setRows(result.rows());
-                        lblDetail.setText("Chọn một nhân viên để xem thông tin.");
-                        lblStatus.setText(result.rows().size() + " nhân viên"
+                        lblChiTiet.setText("Chọn một nhân viên để xem thông tin.");
+                        lblTrangThai.setText(result.rows().size() + " nhân viên"
                                 + (result.truncated() ? " (giới hạn 200, hãy lọc thêm)" : ""));
                     }
                 } catch (InterruptedException failure) {
                     Thread.currentThread().interrupt();
-                    if (!reloadPending) lblStatus.setText("Tải dữ liệu bị gián đoạn.");
+                    if (!reloadPending) lblTrangThai.setText("Tải dữ liệu bị gián đoạn.");
                 } catch (ExecutionException | CancellationException failure) {
                     if (!reloadPending) {
                         tableModel.setRows(List.of());
-                        lblDetail.setText("Không có dữ liệu hiển thị.");
-                        lblStatus.setText("Không thể tải nhân viên. Kiểm tra kết nối hoặc liên hệ quản trị viên.");
+                        lblChiTiet.setText("Không có dữ liệu hiển thị.");
+                        lblTrangThai.setText("Không thể tải nhân viên. Kiểm tra kết nối hoặc liên hệ quản trị viên.");
                     }
                 } finally {
                     if (reloadPending) {
@@ -213,11 +213,11 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
 
     private void updateControls() {
         boolean ready = session.isActive() && !loading && !creating;
-        btnSearch.setEnabled(ready);
-        btnRefresh.setEnabled(ready);
-        txtKeyword.setEnabled(ready);
+        btnTimKiem.setEnabled(ready);
+        btnLamMoi.setEnabled(ready);
+        txtTuKhoa.setEnabled(ready);
         cmbStatus.setEnabled(ready);
-        btnCreate.setEnabled(ready && authorization.can(session, Quyen.WORKFORCE_MANAGE));
+        btnTao.setEnabled(ready && authorization.can(session, Quyen.WORKFORCE_MANAGE));
     }
 
     private void createEmployee() {
@@ -264,17 +264,17 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
 
         creating = true;
         updateControls();
-        lblStatus.setText("Đang tạo nhân viên...");
+        lblTrangThai.setText("Đang tạo nhân viên...");
         new SwingWorker<String, Void>() {
             @Override protected String doInBackground() throws Exception {
-                return creator.create(request);
+                return boTao.create(request);
             }
 
             @Override protected void done() {
                 creating = false;
                 updateControls();
                 if (!session.isActive()) {
-                    lblStatus.setText("Phiên đăng nhập đã kết thúc. Hãy tải lại ở phiên mới.");
+                    lblTrangThai.setText("Phiên đăng nhập đã kết thúc. Hãy tải lại ở phiên mới.");
                     return;
                 }
                 try {
@@ -287,15 +287,15 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
                     load();
                 } catch (InterruptedException failure) {
                     Thread.currentThread().interrupt();
-                    lblStatus.setText("Thao tác bị gián đoạn; hãy làm mới để xác minh.");
+                    lblTrangThai.setText("Thao tác bị gián đoạn; hãy làm mới để xác minh.");
                 } catch (CancellationException failure) {
-                    lblStatus.setText("Thao tác bị gián đoạn; hãy làm mới để xác minh.");
+                    lblTrangThai.setText("Thao tác bị gián đoạn; hãy làm mới để xác minh.");
                 } catch (ExecutionException failure) {
                     Throwable cause = failure.getCause();
                     String message = cause instanceof IllegalArgumentException
                             ? cause.getMessage()
                             : "Không thể tạo nhân viên. Kiểm tra quyền INSERT, kết nối SQL và thử lại.";
-                    lblStatus.setText(message);
+                    lblTrangThai.setText(message);
                     JOptionPane.showMessageDialog(NhanVienPanel.this, message,
                             "Tạo nhân viên thất bại", JOptionPane.WARNING_MESSAGE);
                 } finally {
@@ -321,7 +321,7 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
         int viewIndex = table.getSelectedRow();
         if (viewIndex < 0) return;
         DongDanhSachNhanVien row = tableModel.rowAt(table.convertRowIndexToModel(viewIndex));
-        lblDetail.setText("Nhân viên " + row.employeeId() + " · " + row.fullName()
+        lblChiTiet.setText("Nhân viên " + row.employeeId() + " · " + row.fullName()
                 + " · " + (row.hasAccount() ? "Tài khoản " + row.accountId() : "Chưa có tài khoản"));
     }
 
@@ -362,22 +362,22 @@ public final class NhanVienPanel extends JPanel implements RefreshableFeature {
         private static final String[] COLUMNS = {
                 "Mã NV", "Họ tên", "Chức danh", "Trạng thái", "Ngày vào làm", "Tài khoản", "Vai trò"
         };
-        private List<DongDanhSachNhanVien> rows = new ArrayList<>();
+        private List<DongDanhSachNhanVien> danhSach = new ArrayList<>();
 
         void setRows(List<DongDanhSachNhanVien> values) {
-            rows = List.copyOf(values);
+            danhSach = List.copyOf(values);
             fireTableDataChanged();
         }
 
         DongDanhSachNhanVien rowAt(int index) {
-            return rows.get(index);
+            return danhSach.get(index);
         }
 
-        @Override public int getRowCount() { return rows.size(); }
+        @Override public int getRowCount() { return danhSach.size(); }
         @Override public int getColumnCount() { return COLUMNS.length; }
         @Override public String getColumnName(int column) { return COLUMNS[column]; }
         @Override public Object getValueAt(int rowIndex, int columnIndex) {
-            DongDanhSachNhanVien row = rows.get(rowIndex);
+            DongDanhSachNhanVien row = danhSach.get(rowIndex);
             return switch (columnIndex) {
                 case 0 -> row.employeeId();
                 case 1 -> row.fullName();

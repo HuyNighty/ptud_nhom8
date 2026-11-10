@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.controller.benhnhan;
 
 import com.quanlynhakhoa.entity.BenhNhan;
-import com.quanlynhakhoa.entity.HoSoBenhAn;
+import com.quanlynhakhoa.model.benhnhan.ThongTinHoSoBenhAn;
 import com.quanlynhakhoa.service.benhnhan.BenhNhanService;
 import com.quanlynhakhoa.service.benhnhan.HoSoBenhAnService;
 import com.quanlynhakhoa.view.benhnhan.HoSoBenhAnPanel;
@@ -111,9 +111,9 @@ public class HoSoBenhAnController implements ActionListener, MouseListener {
         view.hienHoSo(null, null);
         view.datDangTai(true);
 
-        new SwingWorker<HoSoBenhAn, Void>() {
+        new SwingWorker<ThongTinHoSoBenhAn, Void>() {
             @Override
-            protected HoSoBenhAn doInBackground() throws Exception {
+            protected ThongTinHoSoBenhAn doInBackground() throws Exception {
                 return hoSoBenhAnService.moHoSo(benhNhan.getMaBenhNhan());
             }
 

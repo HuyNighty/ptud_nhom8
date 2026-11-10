@@ -3,7 +3,7 @@ package com.quanlynhakhoa.dao.hoadon;
 import com.quanlynhakhoa.enums.TrangThaiThanhToan;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import java.sql.*;
 
@@ -26,7 +26,7 @@ public class ThanhToanDao {
         }
     }
     /** Returns existing row data including cancelled rows: a cancelled ID cannot be used to collect again. */
-    public ThongTinThanhToan existing(Connection c,String id)throws SQLException {
+    public ThanhToan existing(Connection c,String id)throws SQLException {
         try(PreparedStatement s=c.prepareStatement("""
                 SELECT maThanhToan,maHoaDon,thoiGian,soTien,phuongThuc,maGiaoDich,tienKhachDua,
                        trangThai,maNhanVien,maTaiKhoanHuy,thoiGianHuy,lyDoHuy
@@ -36,7 +36,7 @@ public class ThanhToanDao {
             try(ResultSet r=s.executeQuery()) {
                 if(!r.next())return null;
                 Timestamp cancelled=r.getTimestamp("thoiGianHuy");
-                return new ThongTinThanhToan(r.getString("maThanhToan"),r.getString("maHoaDon"),r.getTimestamp("thoiGian").toLocalDateTime(),
+                return new ThanhToan(r.getString("maThanhToan"),r.getString("maHoaDon"),r.getTimestamp("thoiGian").toLocalDateTime(),
                         r.getBigDecimal("soTien"),PhuongThucThanhToan.valueOf(r.getString("phuongThuc")),r.getString("maGiaoDich"),r.getBigDecimal("tienKhachDua"),
                         TrangThaiThanhToan.valueOf(r.getString("trangThai")),r.getString("maNhanVien"),r.getString("maTaiKhoanHuy"),
                         cancelled==null?null:cancelled.toLocalDateTime(),r.getNString("lyDoHuy"));

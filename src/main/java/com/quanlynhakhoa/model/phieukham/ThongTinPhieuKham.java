@@ -1,56 +1,43 @@
 package com.quanlynhakhoa.model.phieukham;
 
+import com.quanlynhakhoa.entity.PhieuKham;
+
 import java.time.LocalDateTime;
 
 /** Immutable snapshot; retains the original record API and value semantics. */
 public final class ThongTinPhieuKham {
-    private final String maPhieuKham;
-    private final String maBenhNhan;
+    private final PhieuKham phieuKham;
     private final String tenBenhNhan;
     private final String soDienThoai;
-    private final String maHoSo;
-    private final String maLichHen;
-    private final LocalDateTime thoiGianTiepNhan;
-    private final String maNhanVien;
     private final String tenBacSi;
-    private final String trieuChung;
-    private final String chanDoan;
-    private final String ketLuan;
-    private final String trangThai;
     private final String tienSuBenh;
     private final String diUng;
 
     public ThongTinPhieuKham(String maPhieuKham, String maBenhNhan, String tenBenhNhan, String soDienThoai, String maHoSo, String maLichHen, LocalDateTime thoiGianTiepNhan, String maNhanVien, String tenBacSi, String trieuChung, String chanDoan, String ketLuan, String trangThai, String tienSuBenh, String diUng) {
-        this.maPhieuKham = maPhieuKham;
-        this.maBenhNhan = maBenhNhan;
+        this.phieuKham = new PhieuKham(maPhieuKham, maBenhNhan, maHoSo, maLichHen, thoiGianTiepNhan, maNhanVien, trieuChung, chanDoan, ketLuan, trangThai);
+
         this.tenBenhNhan = tenBenhNhan;
         this.soDienThoai = soDienThoai;
-        this.maHoSo = maHoSo;
-        this.maLichHen = maLichHen;
-        this.thoiGianTiepNhan = thoiGianTiepNhan;
-        this.maNhanVien = maNhanVien;
+
         this.tenBacSi = tenBacSi;
-        this.trieuChung = trieuChung;
-        this.chanDoan = chanDoan;
-        this.ketLuan = ketLuan;
-        this.trangThai = trangThai;
+
         this.tienSuBenh = tienSuBenh;
         this.diUng = diUng;
     }
 
-    public String maPhieuKham() { return maPhieuKham; }
-    public String maBenhNhan() { return maBenhNhan; }
+    public String maPhieuKham() { return phieuKham.getMaPhieuKham(); }
+    public String maBenhNhan() { return phieuKham.getMaBenhNhan(); }
     public String tenBenhNhan() { return tenBenhNhan; }
     public String soDienThoai() { return soDienThoai; }
-    public String maHoSo() { return maHoSo; }
-    public String maLichHen() { return maLichHen; }
-    public LocalDateTime thoiGianTiepNhan() { return thoiGianTiepNhan; }
-    public String maNhanVien() { return maNhanVien; }
+    public String maHoSo() { return phieuKham.getMaHoSo(); }
+    public String maLichHen() { return phieuKham.getMaLichHen(); }
+    public LocalDateTime thoiGianTiepNhan() { return phieuKham.getThoiGianTiepNhan(); }
+    public String maNhanVien() { return phieuKham.getMaNhanVien(); }
     public String tenBacSi() { return tenBacSi; }
-    public String trieuChung() { return trieuChung; }
-    public String chanDoan() { return chanDoan; }
-    public String ketLuan() { return ketLuan; }
-    public String trangThai() { return trangThai; }
+    public String trieuChung() { return phieuKham.getTrieuChung(); }
+    public String chanDoan() { return phieuKham.getChanDoan(); }
+    public String ketLuan() { return phieuKham.getKetLuan(); }
+    public String trangThai() { return phieuKham.getTrangThai(); }
     public String tienSuBenh() { return tienSuBenh; }
     public String diUng() { return diUng; }
 
@@ -58,19 +45,19 @@ public final class ThongTinPhieuKham {
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof ThongTinPhieuKham value)) return false;
-        return java.util.Objects.equals(maPhieuKham, value.maPhieuKham)
-                && java.util.Objects.equals(maBenhNhan, value.maBenhNhan)
+        return java.util.Objects.equals(phieuKham.getMaPhieuKham(), value.phieuKham.getMaPhieuKham())
+                && java.util.Objects.equals(phieuKham.getMaBenhNhan(), value.phieuKham.getMaBenhNhan())
                 && java.util.Objects.equals(tenBenhNhan, value.tenBenhNhan)
                 && java.util.Objects.equals(soDienThoai, value.soDienThoai)
-                && java.util.Objects.equals(maHoSo, value.maHoSo)
-                && java.util.Objects.equals(maLichHen, value.maLichHen)
-                && java.util.Objects.equals(thoiGianTiepNhan, value.thoiGianTiepNhan)
-                && java.util.Objects.equals(maNhanVien, value.maNhanVien)
+                && java.util.Objects.equals(phieuKham.getMaHoSo(), value.phieuKham.getMaHoSo())
+                && java.util.Objects.equals(phieuKham.getMaLichHen(), value.phieuKham.getMaLichHen())
+                && java.util.Objects.equals(phieuKham.getThoiGianTiepNhan(), value.phieuKham.getThoiGianTiepNhan())
+                && java.util.Objects.equals(phieuKham.getMaNhanVien(), value.phieuKham.getMaNhanVien())
                 && java.util.Objects.equals(tenBacSi, value.tenBacSi)
-                && java.util.Objects.equals(trieuChung, value.trieuChung)
-                && java.util.Objects.equals(chanDoan, value.chanDoan)
-                && java.util.Objects.equals(ketLuan, value.ketLuan)
-                && java.util.Objects.equals(trangThai, value.trangThai)
+                && java.util.Objects.equals(phieuKham.getTrieuChung(), value.phieuKham.getTrieuChung())
+                && java.util.Objects.equals(phieuKham.getChanDoan(), value.phieuKham.getChanDoan())
+                && java.util.Objects.equals(phieuKham.getKetLuan(), value.phieuKham.getKetLuan())
+                && java.util.Objects.equals(phieuKham.getTrangThai(), value.phieuKham.getTrangThai())
                 && java.util.Objects.equals(tienSuBenh, value.tienSuBenh)
                 && java.util.Objects.equals(diUng, value.diUng);
     }
@@ -78,19 +65,19 @@ public final class ThongTinPhieuKham {
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31 * result + java.util.Objects.hashCode(maPhieuKham);
-        result = 31 * result + java.util.Objects.hashCode(maBenhNhan);
+        result = 31 * result + java.util.Objects.hashCode(phieuKham.getMaPhieuKham());
+        result = 31 * result + java.util.Objects.hashCode(phieuKham.getMaBenhNhan());
         result = 31 * result + java.util.Objects.hashCode(tenBenhNhan);
         result = 31 * result + java.util.Objects.hashCode(soDienThoai);
-        result = 31 * result + java.util.Objects.hashCode(maHoSo);
-        result = 31 * result + java.util.Objects.hashCode(maLichHen);
-        result = 31 * result + java.util.Objects.hashCode(thoiGianTiepNhan);
-        result = 31 * result + java.util.Objects.hashCode(maNhanVien);
+        result = 31 * result + java.util.Objects.hashCode(phieuKham.getMaHoSo());
+        result = 31 * result + java.util.Objects.hashCode(phieuKham.getMaLichHen());
+        result = 31 * result + java.util.Objects.hashCode(phieuKham.getThoiGianTiepNhan());
+        result = 31 * result + java.util.Objects.hashCode(phieuKham.getMaNhanVien());
         result = 31 * result + java.util.Objects.hashCode(tenBacSi);
-        result = 31 * result + java.util.Objects.hashCode(trieuChung);
-        result = 31 * result + java.util.Objects.hashCode(chanDoan);
-        result = 31 * result + java.util.Objects.hashCode(ketLuan);
-        result = 31 * result + java.util.Objects.hashCode(trangThai);
+        result = 31 * result + java.util.Objects.hashCode(phieuKham.getTrieuChung());
+        result = 31 * result + java.util.Objects.hashCode(phieuKham.getChanDoan());
+        result = 31 * result + java.util.Objects.hashCode(phieuKham.getKetLuan());
+        result = 31 * result + java.util.Objects.hashCode(phieuKham.getTrangThai());
         result = 31 * result + java.util.Objects.hashCode(tienSuBenh);
         result = 31 * result + java.util.Objects.hashCode(diUng);
         return result;
@@ -98,6 +85,8 @@ public final class ThongTinPhieuKham {
 
     @Override
     public String toString() {
-        return "PhieuKham[" + "maPhieuKham=" + maPhieuKham + ", " + "maBenhNhan=" + maBenhNhan + ", " + "tenBenhNhan=" + tenBenhNhan + ", " + "soDienThoai=" + soDienThoai + ", " + "maHoSo=" + maHoSo + ", " + "maLichHen=" + maLichHen + ", " + "thoiGianTiepNhan=" + thoiGianTiepNhan + ", " + "maNhanVien=" + maNhanVien + ", " + "tenBacSi=" + tenBacSi + ", " + "trieuChung=" + trieuChung + ", " + "chanDoan=" + chanDoan + ", " + "ketLuan=" + ketLuan + ", " + "trangThai=" + trangThai + ", " + "tienSuBenh=" + tienSuBenh + ", " + "diUng=" + diUng + "]";
+        return "PhieuKham[" + "maPhieuKham=" + phieuKham.getMaPhieuKham() + ", " + "maBenhNhan=" + phieuKham.getMaBenhNhan() + ", " + "tenBenhNhan=" + tenBenhNhan + ", " + "soDienThoai=" + soDienThoai + ", " + "maHoSo=" + phieuKham.getMaHoSo() + ", " + "maLichHen=" + phieuKham.getMaLichHen() + ", " + "thoiGianTiepNhan=" + phieuKham.getThoiGianTiepNhan() + ", " + "maNhanVien=" + phieuKham.getMaNhanVien() + ", " + "tenBacSi=" + tenBacSi + ", " + "trieuChung=" + phieuKham.getTrieuChung() + ", " + "chanDoan=" + phieuKham.getChanDoan() + ", " + "ketLuan=" + phieuKham.getKetLuan() + ", " + "trangThai=" + phieuKham.getTrangThai() + ", " + "tienSuBenh=" + tienSuBenh + ", " + "diUng=" + diUng + "]";
     }
+
+    public PhieuKham getPhieuKham() { return phieuKham; }
 }

@@ -47,11 +47,11 @@ public final class LoginFrame extends JFrame {
     private static final Color BORDER = new Color(205, 220, 232);
 
     private final JdbcAuthService auth;
-    private final JTextField txtUsername = new JTextField(22);
-    private final JPasswordField txtPassword = new JPasswordField(22);
+    private final JTextField txtTenDangNhap = new JTextField(22);
+    private final JPasswordField txtMatKhau = new JPasswordField(22);
     private final JButton btnLogin = new JButton("ĐĂNG NHẬP");
-    private final JLabel lblStatus = new JLabel("Đăng nhập bằng tài khoản được phòng khám cấp.");
-    private final JCheckBox chkShowPassword = new JCheckBox("Hiện mật khẩu");
+    private final JLabel lblTrangThai = new JLabel("Đăng nhập bằng tài khoản được phòng khám cấp.");
+    private final JCheckBox chkHienMatKhau = new JCheckBox("Hiện mật khẩu");
     private boolean working;
 
     public LoginFrame(JdbcAuthService auth) {
@@ -84,12 +84,12 @@ public final class LoginFrame extends JFrame {
 
         getRootPane().setDefaultButton(btnLogin);
         btnLogin.addActionListener(this::submit);
-        char originalEcho = txtPassword.getEchoChar();
-        chkShowPassword.addActionListener(event ->
-                txtPassword.setEchoChar(chkShowPassword.isSelected() ? (char) 0 : originalEcho));
+        char originalEcho = txtMatKhau.getEchoChar();
+        chkHienMatKhau.addActionListener(event ->
+                txtMatKhau.setEchoChar(chkHienMatKhau.isSelected() ? (char) 0 : originalEcho));
         addWindowListener(new WindowAdapter() {
             @Override public void windowOpened(WindowEvent event) {
-                txtUsername.requestFocusInWindow();
+                txtTenDangNhap.requestFocusInWindow();
             }
         });
     }
@@ -125,26 +125,26 @@ public final class LoginFrame extends JFrame {
         form.add(subtitle);
         form.add(Box.createVerticalStrut(26));
 
-        form.add(fieldLabel("Tên đăng nhập", txtUsername));
+        form.add(fieldLabel("Tên đăng nhập", txtTenDangNhap));
         form.add(Box.createVerticalStrut(9));
-        styleField(txtUsername);
-        txtUsername.getAccessibleContext().setAccessibleName("Tên đăng nhập");
-        form.add(txtUsername);
+        styleField(txtTenDangNhap);
+        txtTenDangNhap.getAccessibleContext().setAccessibleName("Tên đăng nhập");
+        form.add(txtTenDangNhap);
         form.add(Box.createVerticalStrut(18));
 
-        form.add(fieldLabel("Mật khẩu", txtPassword));
+        form.add(fieldLabel("Mật khẩu", txtMatKhau));
         form.add(Box.createVerticalStrut(9));
-        styleField(txtPassword);
-        txtPassword.getAccessibleContext().setAccessibleName("Mật khẩu");
-        form.add(txtPassword);
+        styleField(txtMatKhau);
+        txtMatKhau.getAccessibleContext().setAccessibleName("Mật khẩu");
+        form.add(txtMatKhau);
         form.add(Box.createVerticalStrut(6));
 
-        chkShowPassword.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        chkShowPassword.setForeground(MUTED);
-        chkShowPassword.setOpaque(false);
-        chkShowPassword.setFocusPainted(false);
-        chkShowPassword.setAlignmentX(LEFT_ALIGNMENT);
-        form.add(chkShowPassword);
+        chkHienMatKhau.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        chkHienMatKhau.setForeground(MUTED);
+        chkHienMatKhau.setOpaque(false);
+        chkHienMatKhau.setFocusPainted(false);
+        chkHienMatKhau.setAlignmentX(LEFT_ALIGNMENT);
+        form.add(chkHienMatKhau);
         form.add(Box.createVerticalStrut(18));
 
         btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 49));
@@ -157,14 +157,14 @@ public final class LoginFrame extends JFrame {
         form.add(btnLogin);
         form.add(Box.createVerticalStrut(17));
 
-        lblStatus.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        lblStatus.setForeground(MUTED);
-        lblStatus.setVerticalAlignment(SwingConstants.TOP);
-        lblStatus.setAlignmentX(LEFT_ALIGNMENT);
-        lblStatus.setMaximumSize(new Dimension(Integer.MAX_VALUE, 58));
-        lblStatus.setPreferredSize(new Dimension(392, 58));
-        lblStatus.getAccessibleContext().setAccessibleName("Trạng thái đăng nhập");
-        form.add(lblStatus);
+        lblTrangThai.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblTrangThai.setForeground(MUTED);
+        lblTrangThai.setVerticalAlignment(SwingConstants.TOP);
+        lblTrangThai.setAlignmentX(LEFT_ALIGNMENT);
+        lblTrangThai.setMaximumSize(new Dimension(Integer.MAX_VALUE, 58));
+        lblTrangThai.setPreferredSize(new Dimension(392, 58));
+        lblTrangThai.getAccessibleContext().setAccessibleName("Trạng thái đăng nhập");
+        form.add(lblTrangThai);
         form.add(Box.createVerticalStrut(20));
 
         JLabel footer = new JLabel("HỆ THỐNG QUẢN LÝ NHA KHOA  ·  NHÓM 8");
@@ -257,20 +257,20 @@ public final class LoginFrame extends JFrame {
 
     private void submit(ActionEvent ignored) {
         if (working) return;
-        String username = txtUsername.getText().trim();
-        char[] chars = txtPassword.getPassword();
-        txtPassword.setText("");
+        String username = txtTenDangNhap.getText().trim();
+        char[] chars = txtMatKhau.getPassword();
+        txtMatKhau.setText("");
         if (username.isEmpty() || chars.length == 0) {
             Arrays.fill(chars, '\0');
-            lblStatus.setText("Vui lòng nhập tên đăng nhập và mật khẩu.");
+            lblTrangThai.setText("Vui lòng nhập tên đăng nhập và mật khẩu.");
             return;
         }
         working = true;
         btnLogin.setEnabled(false);
-        txtUsername.setEnabled(false);
-        txtPassword.setEnabled(false);
-        chkShowPassword.setEnabled(false);
-        lblStatus.setText("Đang xác thực...");
+        txtTenDangNhap.setEnabled(false);
+        txtMatKhau.setEnabled(false);
+        chkHienMatKhau.setEnabled(false);
+        lblTrangThai.setText("Đang xác thực...");
 
         new SwingWorker<KetQuaDangNhap, Void>() {
             @Override protected KetQuaDangNhap doInBackground() throws Exception {
@@ -285,9 +285,9 @@ public final class LoginFrame extends JFrame {
                 // SwingWorker.done() runs on the Event Dispatch Thread.
                 working = false;
                 btnLogin.setEnabled(true);
-                txtUsername.setEnabled(true);
-                txtPassword.setEnabled(true);
-                chkShowPassword.setEnabled(true);
+                txtTenDangNhap.setEnabled(true);
+                txtMatKhau.setEnabled(true);
+                chkHienMatKhau.setEnabled(true);
                 try {
                     KetQuaDangNhap decision = get();
                     if (DesktopLoginGate.mayOpenMain(decision)) {
@@ -298,22 +298,22 @@ public final class LoginFrame extends JFrame {
                         winMain.setVisible(true);
                         dispose();
                     } else if (decision.authenticated() && decision.forcePasswordChange()) {
-                        lblStatus.setText("Tài khoản yêu cầu đổi mật khẩu.");
+                        lblTrangThai.setText("Tài khoản yêu cầu đổi mật khẩu.");
                         JOptionPane.showMessageDialog(LoginFrame.this,
                                 "Chức năng đổi mật khẩu chưa được triển khai. Không thể mở ứng dụng.",
                                 "Cần đổi mật khẩu", JOptionPane.WARNING_MESSAGE);
                     } else {
-                        lblStatus.setText("Tên đăng nhập hoặc mật khẩu không hợp lệ, hoặc tài khoản bị hạn chế.");
+                        lblTrangThai.setText("Tên đăng nhập hoặc mật khẩu không hợp lệ, hoặc tài khoản bị hạn chế.");
                     }
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    lblStatus.setText("Không thể hoàn tất đăng nhập.");
+                    lblTrangThai.setText("Không thể hoàn tất đăng nhập.");
                 } catch (ExecutionException | CancellationException ex) {
                     // Do not surface JDBC internals or credentials in UI / console.
 
-                    lblStatus.setText("Không thể kết nối hoặc xác thực. Kiểm tra cấu hình cơ sở dữ liệu.");
+                    lblTrangThai.setText("Không thể kết nối hoặc xác thực. Kiểm tra cấu hình cơ sở dữ liệu.");
                 }
-                SwingUtilities.invokeLater(() -> txtPassword.requestFocusInWindow());
+                SwingUtilities.invokeLater(() -> txtMatKhau.requestFocusInWindow());
             }
         }.execute();
     }

@@ -78,4 +78,10 @@ public class TaoHoaDonDao {
         }
     }
     private static void one(int count) throws SQLException {if(count!=1)throw new SQLException("Cần đúng một bản ghi.");}
+
+    public void capNhatTrangThaiMoi(Connection c,String id,String trangThai)throws SQLException {
+                try(PreparedStatement status=c.prepareStatement("UPDATE dbo.HoaDon SET trangThai=? WHERE maHoaDon=?")){
+                    status.setQueryTimeout(15);status.setString(1,trangThai);status.setString(2,id);if(status.executeUpdate()!=1)throw new SQLException("Missing created invoice");
+                }
+    }
 }

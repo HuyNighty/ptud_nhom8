@@ -1,7 +1,7 @@
 package com.quanlynhakhoa.dao.benhnhan;
 
-import com.quanlynhakhoa.entity.HoSoBenhAn;
-import com.quanlynhakhoa.entity.LuotKham;
+import com.quanlynhakhoa.model.benhnhan.ThongTinHoSoBenhAn;
+import com.quanlynhakhoa.model.benhnhan.LuotKhamBenhNhan;
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,7 +24,7 @@ public class HoSoBenhAnDao {
         this.cachMoKetNoi = java.util.Objects.requireNonNull(cachMoKetNoi, "cachMoKetNoi");
     }
 
-    public HoSoBenhAn timTheoBenhNhan(String maBenhNhan) throws SQLException {
+    public ThongTinHoSoBenhAn timTheoBenhNhan(String maBenhNhan) throws SQLException {
         String sql = "SELECT maHoSo, maBenhNhan, ngayLap, tienSuBenh, diUng "
                 + "FROM dbo.HoSoBenhAn WHERE maBenhNhan = ?";
 
@@ -33,7 +33,7 @@ public class HoSoBenhAnDao {
             cauLenh.setString(1, maBenhNhan);
             try (ResultSet ketQua = cauLenh.executeQuery()) {
                 if (ketQua.next()) {
-                    return new HoSoBenhAn(
+                    return new ThongTinHoSoBenhAn(
                             ketQua.getString(1),
                             ketQua.getString(2),
                             ketQua.getDate(3).toLocalDate(),
@@ -45,8 +45,8 @@ public class HoSoBenhAnDao {
         return null;
     }
 
-    public ArrayList<LuotKham> layDanhSachLuotKham(String maBenhNhan) throws SQLException {
-        ArrayList<LuotKham> danhSachLuotKham = new ArrayList<>();
+    public ArrayList<LuotKhamBenhNhan> layDanhSachLuotKham(String maBenhNhan) throws SQLException {
+        ArrayList<LuotKhamBenhNhan> danhSachLuotKham = new ArrayList<>();
         String sql = "SELECT TOP 200 p.maPhieuKham, p.thoiGianTiepNhan, n.hoTen, "
                 + "p.trieuChung, p.chanDoan, p.ketLuan, p.trangThai "
                 + "FROM dbo.PhieuKham AS p "
@@ -65,7 +65,7 @@ public class HoSoBenhAnDao {
                         thoiGianTiepNhan = thoiGianTrongDatabase.toLocalDateTime();
                     }
 
-                    LuotKham luotKham = new LuotKham(
+                    LuotKhamBenhNhan luotKham = new LuotKhamBenhNhan(
                             ketQua.getString(1),
                             thoiGianTiepNhan,
                             ketQua.getNString(3),

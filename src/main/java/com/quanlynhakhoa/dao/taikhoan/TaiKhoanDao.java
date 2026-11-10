@@ -1,6 +1,6 @@
 package com.quanlynhakhoa.dao.taikhoan;
 
-import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
+import com.quanlynhakhoa.entity.TaiKhoan;
 import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
 import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
@@ -29,7 +29,7 @@ public final class TaiKhoanDao {
      * The caller owns Connection; this DAO closes only statement and result set.
      * R3-A2 must add an explicit transaction and row lock before mutating login state.
      */
-    public Optional<ThongTinTaiKhoan> findByUsername(Connection connection, String username)
+    public Optional<TaiKhoan> findByUsername(Connection connection, String username)
             throws SQLException {
         if (connection == null) throw new IllegalArgumentException("connection required");
         if (username == null || username.isBlank()) return Optional.empty();
@@ -42,9 +42,9 @@ public final class TaiKhoanDao {
         }
     }
 
-    private static ThongTinTaiKhoan map(ResultSet rs) throws SQLException {
+    private static TaiKhoan map(ResultSet rs) throws SQLException {
         String lock = rs.getString("nguonKhoa");
-        return new ThongTinTaiKhoan(
+        return new TaiKhoan(
                 rs.getString("maTaiKhoan"),
                 rs.getString("maNhanVien"),
                 rs.getString("tenDangNhap"),
