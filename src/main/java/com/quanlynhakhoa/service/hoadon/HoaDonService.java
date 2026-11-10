@@ -10,7 +10,7 @@ import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.BanNhapHoaDon;
@@ -24,17 +24,17 @@ public final class HoaDonService {
     private final DesktopSession session;
     private final ConnectionProvider connections;
     private final HoaDonDao dao;
-    private TaoHoaDonService creation;
+    private TaoHoaDonService taoHoaDon;
     public HoaDonService(DesktopSession session, ConnectionProvider connections,
                          NguonTinhPhiLamSang source, TaoMaHoaDon ids) {
         this(session, connections);
-        creation = new TaoHoaDonService(session, connections, source, ids);
+        taoHoaDon = new TaoHoaDonService(session, connections, source, ids);
     }
-    public boolean creationConfigured() { return creation != null; }
+    public boolean creationConfigured() { return taoHoaDon != null; }
     private TaoHoaDonService creation() {
         authorization.require(session, Quyen.BILLING_MANAGE);
-        if (creation == null) throw new IllegalStateException("Chờ hợp đồng dữ liệu khám và bộ sinh mã được duyệt.");
-        return creation;
+        if (taoHoaDon == null) throw new IllegalStateException("Chờ hợp đồng dữ liệu khám và bộ sinh mã được duyệt.");
+        return taoHoaDon;
     }
     public List<LuaChonLapHoaDon> patientsForInvoice(String text) throws SQLException { return creation().patients(text); }
     public List<LuaChonLapHoaDon> visitsForInvoice(String patient) throws SQLException { return creation().visits(patient); }
@@ -81,7 +81,7 @@ public final class HoaDonService {
                 ThongTinHoaDon invoice = dao.get(connection, id.trim());
                 if (invoice == null) throw new IllegalArgumentException("Hóa đơn không tồn tại.");
                 List<DongChiTietHoaDon> lines = dao.lines(connection, id.trim());
-                List<ThongTinThanhToan> payments = dao.payments(connection, id.trim());
+                List<ThanhToan> payments = dao.payments(connection, id.trim());
                 var cancellationHistory = new HuyHoaDonDao().findForInvoice(connection, id.trim());
                 var prescriptions = dao.prescribedMedicines(connection, id.trim());
                 if (invoice.tongTien().compareTo(TinhTienHoaDon.total(lines)) != 0

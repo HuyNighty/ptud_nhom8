@@ -18,7 +18,7 @@ import com.quanlynhakhoa.model.hoadon.ChiTietYeuCauHuy;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.DuLieuChiTietHoaDon;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.LuaChonLapHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.model.hoadon.DongBanNhapHoaDon;
@@ -69,7 +69,7 @@ public final class BillingLayoutSelfTest {
     private static void navigate(MainFrame frame,Module module)throws Exception{var method=MainFrame.class.getDeclaredMethod("navigate",Module.class);method.setAccessible(true);method.invoke(frame,module);}
     private static FeaturePanelFactory factory(final Module module,final com.quanlynhakhoa.config.ConnectionProvider jdbc){return new FeaturePanelFactory(){public JPanel create(DesktopSession session){JPanel result=switch(module){case SERVICE_CATALOG -> new DanhMucDichVuPanel(session,jdbc);case BILLING -> new HoaDonPanel(session,jdbc);case DEBTS -> new CongNoPanel(session,jdbc);case PAYMENTS -> new ThanhToanPanel(session,jdbc);case INVOICE_CANCELLATIONS -> new HuyHoaDonPanel(session,jdbc);default -> throw new AssertionError(module);};pages.put(module,result);return result;}};}
     private static ThongTinHoaDon invoice(){return new ThongTinHoaDon("TESTHD01","TESTNV","TESTBN","[KIỂM THỬ] Nguyễn An","TESTPK",LocalDateTime.of(2026,10,31,9,15),TrangThaiHoaDon.THANH_TOAN_MOT_PHAN,new BigDecimal("1500000"),new BigDecimal("500000"),BigDecimal.ZERO);}
-    private static DuLieuChiTietHoaDon detail(){return new DuLieuChiTietHoaDon(invoice(),List.of(new DongChiTietHoaDon(1,"TESTHD01","TESTDV",null,null,1,new BigDecimal("1500000"),"[KIỂM THỬ] Điều trị răng")),List.of(new ThongTinThanhToan("TESTTT01","TESTHD01",LocalDateTime.of(2026,10,31,10,0),new BigDecimal("500000"),PhuongThucThanhToan.TIEN_MAT,null,new BigDecimal("500000"),TrangThaiThanhToan.THANH_CONG,"TESTNV",null,null,null)));}
+    private static DuLieuChiTietHoaDon detail(){return new DuLieuChiTietHoaDon(invoice(),List.of(new DongChiTietHoaDon(1,"TESTHD01","TESTDV",null,null,1,new BigDecimal("1500000"),"[KIỂM THỬ] Điều trị răng")),List.of(new ThanhToan("TESTTT01","TESTHD01",LocalDateTime.of(2026,10,31,10,0),new BigDecimal("500000"),PhuongThucThanhToan.TIEN_MAT,null,new BigDecimal("500000"),TrangThaiThanhToan.THANH_CONG,"TESTNV",null,null,null)));}
     private static void empty(Module module,JPanel panel){switch(module){case SERVICE_CATALOG -> ((DanhMucDichVuPanel)panel).showRows(List.of());case BILLING -> ((HoaDonPanel)panel).showRows(List.of());case DEBTS -> ((CongNoPanel)panel).showPatients(List.of());case PAYMENTS -> {var view=(ThanhToanPanel)panel;view.showChoices(List.of(),null);view.showForm(new ThanhToanForm());view.pickerEnabled(true);}case INVOICE_CANCELLATIONS -> ((HuyHoaDonPanel)panel).showRows(List.of());default -> throw new AssertionError(module);}}
     private static void seed(Module module,JPanel panel){
         switch(module){

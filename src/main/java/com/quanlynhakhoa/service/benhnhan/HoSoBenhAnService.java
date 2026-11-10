@@ -2,7 +2,7 @@ package com.quanlynhakhoa.service.benhnhan;
 
 import com.quanlynhakhoa.dao.benhnhan.BenhNhanDao;
 import com.quanlynhakhoa.dao.benhnhan.HoSoBenhAnDao;
-import com.quanlynhakhoa.entity.HoSoBenhAn;
+import com.quanlynhakhoa.model.benhnhan.ThongTinHoSoBenhAn;
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import com.quanlynhakhoa.security.AuthorizationService;
 import com.quanlynhakhoa.security.DesktopSession;
@@ -28,7 +28,7 @@ public class HoSoBenhAnService {
         return phanQuyen.can(phienDangNhap, quyen);
     }
 
-    public HoSoBenhAn moHoSo(String maBenhNhan) throws SQLException {
+    public ThongTinHoSoBenhAn moHoSo(String maBenhNhan) throws SQLException {
         phanQuyen.require(phienDangNhap, Quyen.MEDICAL_RECORD_READ);
         if (maBenhNhan == null || maBenhNhan.isBlank()) {
             throw new IllegalArgumentException("Chưa chọn bệnh nhân.");
@@ -36,9 +36,9 @@ public class HoSoBenhAnService {
 
         hoSoBenhAnDao.ghiNhatKyXem(phienDangNhap.accountId(), maBenhNhan);
 
-        HoSoBenhAn hoSoBenhAn = hoSoBenhAnDao.timTheoBenhNhan(maBenhNhan);
+        ThongTinHoSoBenhAn hoSoBenhAn = hoSoBenhAnDao.timTheoBenhNhan(maBenhNhan);
         if (hoSoBenhAn == null) {
-            hoSoBenhAn = new HoSoBenhAn(null, maBenhNhan, null, null, null);
+            hoSoBenhAn = new ThongTinHoSoBenhAn(null, maBenhNhan, null, null, null);
         }
         hoSoBenhAn.setDanhSachLuotKham(hoSoBenhAnDao.layDanhSachLuotKham(maBenhNhan));
         return hoSoBenhAn;

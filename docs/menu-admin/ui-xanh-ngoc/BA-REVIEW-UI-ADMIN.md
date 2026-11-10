@@ -2,7 +2,7 @@
 
 **Ngày:** 19/10/2026 · **Phạm vi:** ảnh `docs/menu-admin/ui-xanh-ngoc/01…21` · **Chế độ:** chỉ đọc, chưa sửa.
 **Căn cứ:** brief "N08 — ADMIN DESKTOP" (Q01–Q16, Role-only `AD/LT/BS/YT/QL/KHO`), `THIET_KE_DU_LIEU.md`, `KIEM_THU.md`.
-**Không truy cập được:** repository `HuyNighty/quan_ly_nha_khoa`, `BA-OPEN-QUESTIONS.md`, mã UI-M1 của Codex → các điểm liên quan ghi **NOT VERIFIED**.
+**Không truy cập được:** repository `HuyNighty/quan_ly_nha_khoa`, `BA-OPEN-QUESTIONS.md`, mã UI-M1 của tro-ly → các điểm liên quan ghi **NOT VERIFIED**.
 
 Mức độ: **BLOCKER** sai nghiệp vụ nghiêm trọng · **MAJOR** ảnh hưởng đáng kể / trái quy tắc brief · **MINOR** trình bày.
 
@@ -12,7 +12,7 @@ Mức độ: **BLOCKER** sai nghiệp vụ nghiêm trọng · **MAJOR** ảnh h�
 
 - Luồng chính **đúng hướng**: Lịch hẹn → Tiếp nhận → Phiếu khám → Kế hoạch → Tái khám; Phiếu khám → Hóa đơn → Duyệt hủy; Xuất kho → Tồn → Kiểm kê → Cấp cứu. Số liệu giữa các màn hình khớp nhau.
 - **Không có BLOCKER.**
-- Có **10 điểm MAJOR**. Phần lớn là UI đang thể hiện quy tắc mà brief nói **chưa được duyệt** (ngưỡng ngày, cách đếm, quyền). Đây là nguy cơ Codex code cứng quy tắc chưa chốt.
+- Có **10 điểm MAJOR**. Phần lớn là UI đang thể hiện quy tắc mà brief nói **chưa được duyệt** (ngưỡng ngày, cách đếm, quyền). Đây là nguy cơ tro-ly code cứng quy tắc chưa chốt.
 - Nhiều giá trị trong ảnh là **dữ liệu mẫu tự đặt**, không phải yêu cầu.
 
 ---
@@ -29,7 +29,7 @@ Mức độ: **BLOCKER** sai nghiệp vụ nghiêm trọng · **MAJOR** ảnh h�
 | M4 | 18 Cấp cứu, 15 Thuốc, 07 Tái khám | UI ghi cứng **"HSD còn hơn 30 ngày"**, **"chu kỳ 7 ngày"**, **"đến hạn trong 14 ngày"** như quy tắc đã chốt. | Q10, Q11, Q12: không mặc định 30 ngày nếu chưa duyệt | Hiện ngưỡng dạng "theo cấu hình (hiện tại: 30 ngày)" và đưa vào màn hình cấu hình. Không viết cứng vào nhãn. |
 | M5 | 08 Hóa đơn, 01 | Công nợ 3.600.000 đ **đang gồm 2 hóa đơn "Chờ duyệt hủy"** (HD000001, HD000004). | Q07 | Chốt: hóa đơn chờ hủy có tính công nợ không. Hiện tại tính. |
 | M6 | 08 Hóa đơn, 09 | Trạng thái **"Chờ duyệt hủy"** đặt chung cột với trạng thái thanh toán. Trong thiết kế dữ liệu, yêu cầu hủy là bảng riêng `YeuCauHuyHoaDon`, không phải trạng thái hóa đơn. | THIET_KE §2 | Giữ trạng thái thanh toán ở cột Trạng thái; thêm nhãn phụ "Đang chờ hủy". |
-| M7 | 02 Tiếp nhận | Quy tắc **"lịch Chờ xác nhận vẫn tiếp nhận được, chuyển thẳng sang Đã đến"** mới được duyệt trong buổi thiết kế UI, **chưa có trong BA Decision Register**. | Q16, Q14 | Đưa vào Q16 dạng ĐỀ XUẤT chờ PO / BA duyệt trước khi Codex code. |
+| M7 | 02 Tiếp nhận | Quy tắc **"lịch Chờ xác nhận vẫn tiếp nhận được, chuyển thẳng sang Đã đến"** mới được duyệt trong buổi thiết kế UI, **chưa có trong BA Decision Register**. | Q16, Q14 | Đưa vào Q16 dạng ĐỀ XUẤT chờ PO / BA duyệt trước khi tro-ly code. |
 | M8 | 20 Tài khoản | Tab **"Ma trận quyền"** và nút **"Đổi vai trò…"** gợi ý một hệ thống Permission/ACL có thể chỉnh. | Q13: Role-only, không phát sinh Permission/ACL | Đổi thành **"Bảng vai trò – chức năng" (chỉ xem)**. "Đổi vai trò…" chỉ chọn 1 trong 6 vai trò. |
 | M9 | 19 Nhà cung cấp | Nút **"Ngừng hợp tác…"**, các cột Mã số thuế, Địa chỉ và lọc "Đang hợp tác" **có thể chưa có trong schema** `NhaCungCap`. | Brief: không sửa schema chưa duyệt | NOT VERIFIED. Nếu bảng không có cột trạng thái thì bỏ nút và bộ lọc; chỉ hiện cột có thật. |
 | M10 | 05, 06, 04 | Admin thao tác lâm sàng (Kết luận…, Ghi kết quả…, Cập nhật tiền sử…) cần **chọn bác sĩ chịu trách nhiệm**. Ảnh chỉ thể hiện điều này ở Phiếu khám, chưa có ở hộp thoại Kế hoạch / Hồ sơ. | KIEM_THU ("Chọn bác sĩ chịu trách nhiệm"), Q13, Q15 | Ghi yêu cầu cho mọi hộp thoại lâm sàng: ô "BS chịu trách nhiệm *" bắt buộc khi người thao tác là AD. |
@@ -68,7 +68,7 @@ Mã BN000001–011; ngày sinh, địa chỉ; dị ứng Amoxicillin (Lan); ti�
 
 ---
 
-## 5. Câu hỏi cần PO / BA trả lời trước khi Codex code các màn hình này
+## 5. Câu hỏi cần PO / BA trả lời trước khi tro-ly code các màn hình này
 
 1. Q04: đổi nhãn "Bệnh nhân chờ khám" thành "Phiếu chờ khám"?
 2. Q03: badge menu đếm gì: chỉ việc chờ duyệt, hay cả việc khẩn?
@@ -79,4 +79,4 @@ Mã BN000001–011; ngày sinh, địa chỉ; dị ứng Amoxicillin (Lan); ti�
 7. Q13: bảng Vai trò – Chức năng cho 21 màn hình (xem / tạo / sửa / hủy / duyệt), đặc biệt quyền duyệt của AD ở Kiểm kê, Duyệt hủy, Bàn giao.
 8. Schema: `NhaCungCap` có cột trạng thái / mã số thuế / địa chỉ không? Tên 5 tiêu chí đánh giá là gì?
 
-**Chưa thực hiện trong bản này:** nghiệm thu mã UI-M1, Q01 kiến trúc, AUTH-R1, hợp đồng UI-M2, backlog, prompt Codex. Lý do: cần quyền truy cập repository và bằng chứng kiểm thử.
+**Chưa thực hiện trong bản này:** nghiệm thu mã UI-M1, Q01 kiến trúc, AUTH-R1, hợp đồng UI-M2, backlog, prompt tro-ly. Lý do: cần quyền truy cập repository và bằng chứng kiểm thử.

@@ -42,14 +42,14 @@ public final class NhatKyPanel extends JPanel implements RefreshableFeature {
 
     private final DesktopSession session;
     private final NhatKyService service;
-    private final JTextField from = new JTextField(10);
-    private final JTextField to = new JTextField(10);
-    private final JTextField keyword = new JTextField(20);
-    private final JComboBox<String> outcome = new JComboBox<>(new String[]{
+    private final JTextField tuNgay = new JTextField(10);
+    private final JTextField denNgay = new JTextField(10);
+    private final JTextField tuKhoa = new JTextField(20);
+    private final JComboBox<String> ketQua = new JComboBox<>(new String[]{
             "Tất cả kết quả", "Thành công", "Bị từ chối", "Thất bại"});
-    private final JButton searchButton = new JButton("Tìm kiếm");
-    private final JButton refreshButton = new JButton("Làm mới");
-    private final JLabel status = new JLabel("Chưa tải nhật ký");
+    private final JButton btnTimKiem = new JButton("Tìm kiếm");
+    private final JButton btnLamMoi = new JButton("Làm mới");
+    private final JLabel trangThai = new JLabel("Chưa tải nhật ký");
     private final AuditTableModel model = new AuditTableModel();
     private final JTable table = new JTable(model);
     private boolean loading;
@@ -83,14 +83,14 @@ public final class NhatKyPanel extends JPanel implements RefreshableFeature {
         controls.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(220, 231, 242)), new EmptyBorder(7, 10, 7, 10)));
         controls.add(new JLabel("Từ ngày (yyyy-MM-dd):"));
-        controls.add(com.quanlynhakhoa.view.hethong.DateInput.iso(from,"ngày bắt đầu"));
+        controls.add(com.quanlynhakhoa.view.hethong.DateInput.iso(tuNgay,"ngày bắt đầu"));
         controls.add(new JLabel("Đến ngày:"));
-        controls.add(com.quanlynhakhoa.view.hethong.DateInput.iso(to,"ngày kết thúc"));
+        controls.add(com.quanlynhakhoa.view.hethong.DateInput.iso(denNgay,"ngày kết thúc"));
         controls.add(new JLabel("Tìm:"));
-        controls.add(keyword);
-        controls.add(outcome);
-        controls.add(searchButton);
-        controls.add(refreshButton);
+        controls.add(tuKhoa);
+        controls.add(ketQua);
+        controls.add(btnTimKiem);
+        controls.add(btnLamMoi);
 
         table.setRowHeight(29);
         table.setFillsViewportHeight(true);
@@ -103,12 +103,12 @@ public final class NhatKyPanel extends JPanel implements RefreshableFeature {
         body.add(controls, BorderLayout.NORTH);
         body.add(scroll, BorderLayout.CENTER);
         add(body, BorderLayout.CENTER);
-        status.setForeground(new Color(95, 109, 128));
-        add(status, BorderLayout.SOUTH);
+        trangThai.setForeground(new Color(95, 109, 128));
+        add(trangThai, BorderLayout.SOUTH);
 
-        searchButton.addActionListener(event -> load());
-        refreshButton.addActionListener(event -> { keyword.setText(""); from.setText(""); to.setText(""); outcome.setSelectedIndex(0); load(); });
-        keyword.addActionListener(event -> load());
+        btnTimKiem.addActionListener(event -> load());
+        btnLamMoi.addActionListener(event -> { tuKhoa.setText(""); tuNgay.setText(""); denNgay.setText(""); ketQua.setSelectedIndex(0); load(); });
+        tuKhoa.addActionListener(event -> load());
         if (autoLoad) load();
     }
 
@@ -120,7 +120,7 @@ public final class NhatKyPanel extends JPanel implements RefreshableFeature {
     private void load() {
         if (!session.isActive()) {
             model.setRows(List.of());
-            status.setText("Phiên đăng nhập đã kết thúc.");
+            trangThai.setText("Phiên đăng nhập đã kết thúc.");
             updateControls(false);
             return;
         }
@@ -130,22 +130,22 @@ public final class NhatKyPanel extends JPanel implements RefreshableFeature {
         }
         final BoLocNhatKy filter;
         try {
-            LocalDate start = parse(from.getText());
-            LocalDate finish = parse(to.getText());
-            String selected = switch (outcome.getSelectedIndex()) {
+            LocalDate start = parse(tuNgay.getText());
+            LocalDate finish = parse(denNgay.getText());
+            String selected = switch (ketQua.getSelectedIndex()) {
                 case 1 -> "SUCCESS";
                 case 2 -> "DENIED";
                 case 3 -> "FAILED";
                 default -> null;
             };
-            filter = new BoLocNhatKy(start, finish, keyword.getText(), selected);
+            filter = new BoLocNhatKy(start, finish, tuKhoa.getText(), selected);
         } catch (IllegalArgumentException invalid) {
-            status.setText("Bộ lọc không hợp lệ. Dùng yyyy-MM-dd và tối đa 80 ký tự tìm kiếm.");
+            trangThai.setText("Bộ lọc không hợp lệ. Dùng yyyy-MM-dd và tối đa 80 ký tự tìm kiếm.");
             return;
         }
         loading = true;
         updateControls(true);
-        status.setText("Đang tải nhật ký...");
+        trangThai.setText("Đang tải nhật ký...");
         new SwingWorker<KetQuaNhatKy, Void>() {
             @Override protected KetQuaNhatKy doInBackground() throws Exception {
                 return service.search(filter);
@@ -158,19 +158,19 @@ public final class NhatKyPanel extends JPanel implements RefreshableFeature {
                     KetQuaNhatKy result = get();
                     if (!session.isActive()) {
                         model.setRows(List.of());
-                        status.setText("Phiên đăng nhập đã kết thúc.");
+                        trangThai.setText("Phiên đăng nhập đã kết thúc.");
                         return;
                     }
                     model.setRows(result.rows());
-                    status.setText("Đã tải " + result.rows().size() + " dòng"
+                    trangThai.setText("Đã tải " + result.rows().size() + " dòng"
                             + (result.truncated() ? " · còn dữ liệu, hãy thu hẹp bộ lọc" : ""));
                 } catch (InterruptedException interrupted) {
                     Thread.currentThread().interrupt();
                     model.setRows(List.of());
-                    status.setText("Đã gián đoạn tải nhật ký.");
+                    trangThai.setText("Đã gián đoạn tải nhật ký.");
                 } catch (ExecutionException | CancellationException failure) {
                     model.setRows(List.of());
-                    status.setText("Không thể tải nhật ký. Kiểm tra quyền AUDIT_READ, SQL SELECT và kết nối.");
+                    trangThai.setText("Không thể tải nhật ký. Kiểm tra quyền AUDIT_READ, SQL SELECT và kết nối.");
                 } finally {
                     if (reloadPending && session.isActive()) {
                         reloadPending = false;
@@ -187,28 +187,28 @@ public final class NhatKyPanel extends JPanel implements RefreshableFeature {
     }
 
     private void updateControls(boolean busy) {
-        from.setEnabled(!busy && session.isActive());
-        to.setEnabled(!busy && session.isActive());
-        keyword.setEnabled(!busy && session.isActive());
-        outcome.setEnabled(!busy && session.isActive());
-        searchButton.setEnabled(!busy && session.isActive());
-        refreshButton.setEnabled(!busy && session.isActive());
+        tuNgay.setEnabled(!busy && session.isActive());
+        denNgay.setEnabled(!busy && session.isActive());
+        tuKhoa.setEnabled(!busy && session.isActive());
+        ketQua.setEnabled(!busy && session.isActive());
+        btnTimKiem.setEnabled(!busy && session.isActive());
+        btnLamMoi.setEnabled(!busy && session.isActive());
     }
 
     private static final class AuditTableModel extends AbstractTableModel {
         private static final String[] COLUMNS = {
                 "Thời gian (VN)", "Mã nhật ký", "Tác nhân", "Tài khoản", "Chức năng",
                 "Hành động", "Kết quả", "Đối tượng", "Mã đối tượng"};
-        private List<BanGhiNhatKy> rows = List.of();
+        private List<BanGhiNhatKy> danhSach = List.of();
         void setRows(List<BanGhiNhatKy> values) {
-            rows = List.copyOf(values);
+            danhSach = List.copyOf(values);
             fireTableDataChanged();
         }
-        @Override public int getRowCount() { return rows.size(); }
+        @Override public int getRowCount() { return danhSach.size(); }
         @Override public int getColumnCount() { return COLUMNS.length; }
         @Override public String getColumnName(int column) { return COLUMNS[column]; }
         @Override public Object getValueAt(int row, int column) {
-            BanGhiNhatKy entry = rows.get(row);
+            BanGhiNhatKy entry = danhSach.get(row);
             return switch (column) {
                 case 0 -> DATE_TIME.format(entry.utcTime().atZone(ZoneOffset.UTC)
                         .withZoneSameInstant(VIETNAM));

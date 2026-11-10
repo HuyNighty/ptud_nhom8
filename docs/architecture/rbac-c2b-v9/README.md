@@ -1,6 +1,6 @@
 # C2B — V9 Dynamic RBAC schema foundation
 
-Source: 0940bc2da37d9b93b6963e3c67cfc7b5c51673c0 (R3 remote branch + completed model→entity package refactor), not origin/main ef171cef. Local branch codex/n08-rbac-c2b-v9-schema. No SQL Server connection or migration execution. No runtime activation, account schema changes, SQL grants, bootstrap wiring or PR changes.
+Source: 0940bc2da37d9b93b6963e3c67cfc7b5c51673c0 (R3 remote branch + completed model→entity package refactor), not origin/main ef171cef. Local branch refactor/n08-rbac-c2b-v9-schema. No SQL Server connection or migration execution. No runtime activation, account schema changes, SQL grants, bootstrap wiring or PR changes.
 
 ## Exact delta / C2A contract
 

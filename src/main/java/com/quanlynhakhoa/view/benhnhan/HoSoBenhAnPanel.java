@@ -2,8 +2,8 @@ package com.quanlynhakhoa.view.benhnhan;
 
 import com.quanlynhakhoa.controller.benhnhan.HoSoBenhAnController;
 import com.quanlynhakhoa.entity.BenhNhan;
-import com.quanlynhakhoa.entity.HoSoBenhAn;
-import com.quanlynhakhoa.entity.LuotKham;
+import com.quanlynhakhoa.model.benhnhan.ThongTinHoSoBenhAn;
+import com.quanlynhakhoa.model.benhnhan.LuotKhamBenhNhan;
 import com.quanlynhakhoa.service.benhnhan.BenhNhanService;
 import com.quanlynhakhoa.service.benhnhan.HoSoBenhAnService;
 import com.quanlynhakhoa.security.DesktopSession;
@@ -56,7 +56,7 @@ public class HoSoBenhAnPanel extends JPanel {
     private DefaultTableModel modelLuotKham;
     private JTable tblLuotKham;
     private JScrollPane scrLuotKham;
-    private ArrayList<LuotKham> danhSachLuotKham = new ArrayList<>();
+    private ArrayList<LuotKhamBenhNhan> danhSachLuotKham = new ArrayList<>();
 
     private JPanel pnlEast;
     private JLabel lblMaPhieu;
@@ -299,7 +299,7 @@ public class HoSoBenhAnPanel extends JPanel {
         hienHoSo(null, null);
     }
 
-    public void hienHoSo(BenhNhan benhNhan, HoSoBenhAn hoSoBenhAn) {
+    public void hienHoSo(BenhNhan benhNhan, ThongTinHoSoBenhAn hoSoBenhAn) {
         modelLuotKham.setRowCount(0);
         danhSachLuotKham = new ArrayList<>();
         hienChiTietLuotKham(null);
@@ -321,7 +321,7 @@ public class HoSoBenhAnPanel extends JPanel {
         txaDiUng.setText(hienKhongCoNeuTrong(hoSoBenhAn.getDiUng()));
 
         danhSachLuotKham = hoSoBenhAn.getDanhSachLuotKham();
-        for (LuotKham luotKham : danhSachLuotKham) {
+        for (LuotKhamBenhNhan luotKham : danhSachLuotKham) {
             modelLuotKham.addRow(new Object[]{
                     luotKham.getMaPhieuKham(),
                     dinhDangNgayKham(luotKham, ""),
@@ -332,7 +332,7 @@ public class HoSoBenhAnPanel extends JPanel {
         }
     }
 
-    public void hienChiTietLuotKham(LuotKham luotKham) {
+    public void hienChiTietLuotKham(LuotKhamBenhNhan luotKham) {
         if (luotKham == null) {
             lblMaPhieu.setText("—");
             lblNgayKham.setText("—");
@@ -369,7 +369,7 @@ public class HoSoBenhAnPanel extends JPanel {
         return danhSachBenhNhan.get(dongDangChon);
     }
 
-    public LuotKham layLuotKhamDangChon() {
+    public LuotKhamBenhNhan layLuotKhamDangChon() {
         int dongDangChon = tblLuotKham.getSelectedRow();
         if (dongDangChon < 0 || dongDangChon >= danhSachLuotKham.size()) {
             return null;
@@ -377,7 +377,7 @@ public class HoSoBenhAnPanel extends JPanel {
         return danhSachLuotKham.get(dongDangChon);
     }
 
-    private String dinhDangNgayKham(LuotKham luotKham, String thayThe) {
+    private String dinhDangNgayKham(LuotKhamBenhNhan luotKham, String thayThe) {
         if (luotKham.getThoiGianTiepNhan() == null) {
             return thayThe;
         }

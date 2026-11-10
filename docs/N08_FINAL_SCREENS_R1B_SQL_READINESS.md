@@ -4,7 +4,7 @@
 
 # N08-FINAL-SCREENS-R1-B — SQL readiness & final review
 
-Workspace: C:\Dev\N08\ptud_nhom8-final-screens-r1. Branch: codex/n08-final-screens-r1-shifts. HEAD/base: 1f5ada23035f15d2b6f59cfa2e1d441a52e496eb. Giữ toàn bộ thay đổi R1 chưa commit; bổ sung readiness trên cùng branch. Không commit/push/merge. Không chạy grant hoặc ghi dữ liệu SQL. Không sao chép credentials, không đổi RolePermissionPolicy/schema.
+Workspace: C:\Dev\N08\ptud_nhom8-final-screens-r1. Branch: refactor/n08-final-screens-r1-shifts. HEAD/base: 1f5ada23035f15d2b6f59cfa2e1d441a52e496eb. Giữ toàn bộ thay đổi R1 chưa commit; bổ sung readiness trên cùng branch. Không commit/push/merge. Không chạy grant hoặc ghi dữ liệu SQL. Không sao chép credentials, không đổi RolePermissionPolicy/schema.
 
 ## Kết luận review
 

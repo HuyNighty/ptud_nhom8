@@ -53,10 +53,10 @@ public final class CanLamSangPanel extends JPanel {
         @Override public boolean isCellEditable(int row, int column) { return false; }
     };
     private final JTable tblChiDinh = new JTable(tableModel);
-    private final List<ThongTinChiDinhCanLamSang> rows = new ArrayList<>();
+    private final List<ThongTinChiDinhCanLamSang> danhSach = new ArrayList<>();
     private final CanLamSangController controller;
-    private ThongTinPhieuKham current;
-    private String selectedDoctorId = "";
+    private ThongTinPhieuKham phieuKhamHienTai;
+    private String maBacSiDaChon = "";
     private boolean loading;
 
     public CanLamSangPanel(DesktopSession session) {
@@ -180,8 +180,8 @@ public final class CanLamSangPanel extends JPanel {
             return;
         }
         int modelRow = tblChiDinh.convertRowIndexToModel(selected);
-        if (modelRow < 0 || modelRow >= rows.size()) return;
-        ThongTinChiDinhCanLamSang order = rows.get(modelRow);
+        if (modelRow < 0 || modelRow >= danhSach.size()) return;
+        ThongTinChiDinhCanLamSang order = danhSach.get(modelRow);
         txaYeuCauChiTiet.setText(safe(order.yeuCau()));
         txaKetQua.setText(order.ketQua() == null ? "" : order.ketQua());
         boolean pending = "CHO_THUC_HIEN".equals(order.trangThai());
@@ -191,8 +191,8 @@ public final class CanLamSangPanel extends JPanel {
     }
 
     public void setContext(ThongTinPhieuKham phieu, String maBacSiPhuTrach) {
-        current = phieu;
-        selectedDoctorId = maBacSiPhuTrach == null ? "" : maBacSiPhuTrach.trim();
+        phieuKhamHienTai = phieu;
+        maBacSiDaChon = maBacSiPhuTrach == null ? "" : maBacSiPhuTrach.trim();
         if (phieu == null) {
             controller.invalidateLoads();
             loading = false;
@@ -210,13 +210,13 @@ public final class CanLamSangPanel extends JPanel {
 
     /** Nhận lựa chọn bác sĩ hiện tại từ màn hình Phiếu khám. Service vẫn xác minh với DB. */
     public void setMaBacSiPhuTrach(String maBacSiPhuTrach) {
-        selectedDoctorId = maBacSiPhuTrach == null ? "" : maBacSiPhuTrach.trim();
+        maBacSiDaChon = maBacSiPhuTrach == null ? "" : maBacSiPhuTrach.trim();
         updateControls();
     }
 
     private void clearData() {
         cmbDichVu.removeAllItems();
-        rows.clear();
+        danhSach.clear();
         tableModel.setRowCount(0);
         txaYeuCau.setText("");
         txaYeuCauChiTiet.setText("");
@@ -229,17 +229,17 @@ public final class CanLamSangPanel extends JPanel {
     public void hienDuLieu(DuLieuCanLamSang data) {
         cmbDichVu.removeAllItems();
         for (DichVuCanLamSangChon service : data.dichVu()) cmbDichVu.addItem(service);
-        rows.clear();
-        rows.addAll(data.chiDinh());
+        danhSach.clear();
+        danhSach.addAll(data.chiDinh());
         tableModel.setRowCount(0);
-        for (ThongTinChiDinhCanLamSang order : rows) {
+        for (ThongTinChiDinhCanLamSang order : danhSach) {
             LocalDateTime orderedAt = order.thoiGianChiDinh();
             tableModel.addRow(new Object[]{
                     order.maChiDinh(), order.tenDichVu(),
                     orderedAt == null ? "—" : DATE_TIME.format(orderedAt),
                     tenTrangThai(order.trangThai())});
         }
-        if (!rows.isEmpty()) tblChiDinh.setRowSelectionInterval(0, 0);
+        if (!danhSach.isEmpty()) tblChiDinh.setRowSelectionInterval(0, 0);
         else hienChiTietDangChon();
         updateControls();
     }
@@ -261,31 +261,31 @@ public final class CanLamSangPanel extends JPanel {
 
     private void updateControls() {
         boolean open = isOpenVisit();
-        boolean writable = canEdit() && open && current != null && !loading;
+        boolean writable = canEdit() && open && phieuKhamHienTai != null && !loading;
         cmbDichVu.setEnabled(writable && cmbDichVu.getItemCount() > 0);
         txaYeuCau.setEditable(writable);
         btnTaoChiDinh.setEnabled(writable && cmbDichVu.getItemCount() > 0);
         if (tblChiDinh.getSelectedRow() >= 0) hienChiTietDangChon();
         else btnLuuKetQua.setEnabled(false);
-        if (!open && current != null) {
+        if (!open && phieuKhamHienTai != null) {
             lblTrangThai.setText("Phiếu đã kết thúc; chỉ xem lịch sử chỉ định.");
         }
     }
 
     private boolean isOpenVisit() {
-        return current != null && ("CHO_KHAM".equals(current.trangThai())
-                || "DANG_KHAM".equals(current.trangThai()));
+        return phieuKhamHienTai != null && ("CHO_KHAM".equals(phieuKhamHienTai.trangThai())
+                || "DANG_KHAM".equals(phieuKhamHienTai.trangThai()));
     }
 
     private boolean canEdit() {
         if (!session.isActive()) return false;
         if (session.role() == VaiTroHeThong.DOCTOR) return true;
-        return session.role() == VaiTroHeThong.SYSTEM_ADMIN && current != null
-                && selectedDoctorId.equals(current.maNhanVien());
+        return session.role() == VaiTroHeThong.SYSTEM_ADMIN && phieuKhamHienTai != null
+                && maBacSiDaChon.equals(phieuKhamHienTai.maNhanVien());
     }
 
-    public String getMaPhieuKham() { return current == null ? "" : current.maPhieuKham(); }
-    public String getMaBacSiPhuTrach() { return selectedDoctorId; }
+    public String getMaPhieuKham() { return phieuKhamHienTai == null ? "" : phieuKhamHienTai.maPhieuKham(); }
+    public String getMaBacSiPhuTrach() { return maBacSiDaChon; }
     public String getMaDichVu() {
         DichVuCanLamSangChon selected = (DichVuCanLamSangChon) cmbDichVu.getSelectedItem();
         return selected == null ? "" : selected.maDichVu();
@@ -296,7 +296,7 @@ public final class CanLamSangPanel extends JPanel {
         int selected = tblChiDinh.getSelectedRow();
         if (selected < 0) return "";
         int modelRow = tblChiDinh.convertRowIndexToModel(selected);
-        return modelRow >= 0 && modelRow < rows.size() ? rows.get(modelRow).maChiDinh() : "";
+        return modelRow >= 0 && modelRow < danhSach.size() ? danhSach.get(modelRow).maChiDinh() : "";
     }
     public boolean xacNhan(String message) {
         return javax.swing.JOptionPane.showConfirmDialog(this, message, "Xác nhận",

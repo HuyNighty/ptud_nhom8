@@ -10,7 +10,7 @@ import java.util.Objects;
 public final class DieuHuongChinh {
     private final DesktopSession session;
     private final NavigationPolicy policy;
-    private Module selected = Module.HOME;
+    private Module mucDaChon = Module.HOME;
 
     public DieuHuongChinh(DesktopSession session) {
         this(session, new NavigationPolicy());
@@ -23,11 +23,11 @@ public final class DieuHuongChinh {
     }
 
     public List<Module> availableModules() { return policy.visibleModules(session); }
-    public Module selected() { return selected; }
+    public Module selected() { return mucDaChon; }
     public boolean isActive() { return session.isActive(); }
     public void select(Module module) {
         policy.requireOpen(session, module);
-        selected = module;
+        mucDaChon = module;
     }
     public void logout() { session.logout(); }
 }

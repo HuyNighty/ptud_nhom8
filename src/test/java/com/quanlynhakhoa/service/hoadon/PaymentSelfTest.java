@@ -10,7 +10,7 @@ import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.math.BigDecimal;
@@ -32,10 +32,10 @@ public final class PaymentSelfTest {
         @Override public String employee(Connection c,String account){check("TST_ACC".equals(account),"authenticated account used");return "NV1";}
     }
     private static class Dao extends ThanhToanDao {
-        Map<String,ThongTinThanhToan> existing=new HashMap<>();boolean failInsert,duplicateReference,pendingCancellation;int inserts;TrangThaiHoaDon nextStatus;
+        Map<String,ThanhToan> existing=new HashMap<>();boolean failInsert,duplicateReference,pendingCancellation;int inserts;TrangThaiHoaDon nextStatus;
         @Override public void requirePermissions(Connection c){ }
         @Override public void lockInvoice(Connection c,String id){check("H1".equals(id),"locks selected invoice");}
-        @Override public ThongTinThanhToan existing(Connection c,String id){return existing.get(id);}
+        @Override public ThanhToan existing(Connection c,String id){return existing.get(id);}
         @Override public void requireNoPendingCancellation(Connection c,String id){if(pendingCancellation)throw new IllegalArgumentException("pending cancellation");}
         @Override public void requireNewTransferReference(Connection c,String reference){if(duplicateReference)throw new IllegalArgumentException("duplicate reference");}
         @Override public void insert(Connection c,String invoice,String employee,PhanThanhToan part)throws SQLException {
@@ -57,7 +57,7 @@ public final class PaymentSelfTest {
         check(dao.nextStatus==TrangThaiHoaDon.THANH_TOAN_MOT_PHAN,"partial payment retains debt");
         check(jdbc.persisted.get(0).get(3).equals(m("100")),"single bank amount stored");
         check(jdbc.persisted.get(0).get(7).equals("NV1"),"cashier derived from account");
-        for(PhanThanhToan part:mixed.parts())dao.existing.put(part.id(),new ThongTinThanhToan(part.id(),"H1",LocalDateTime.now(),part.amount(),part.method(),part.reference(),part.customerTender(),TrangThaiThanhToan.THANH_CONG,"NV1",null,null,null));
+        for(PhanThanhToan part:mixed.parts())dao.existing.put(part.id(),new ThanhToan(part.id(),"H1",LocalDateTime.now(),part.amount(),part.method(),part.reference(),part.customerTender(),TrangThaiThanhToan.THANH_CONG,"NV1",null,null,null));
         int written=jdbc.updates;service.collect(mixed);check(jdbc.updates==written,"same confirmed request is idempotent");dao.existing.clear();
         invoices.current=invoice("300","100",TrangThaiHoaDon.THANH_TOAN_MOT_PHAN);service.collect(cash("P3","200"));
         check(dao.nextStatus==TrangThaiHoaDon.DA_THANH_TOAN,"full collection marks invoice paid");

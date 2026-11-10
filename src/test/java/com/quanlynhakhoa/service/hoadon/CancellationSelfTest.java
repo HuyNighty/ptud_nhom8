@@ -10,7 +10,7 @@ import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinYeuCauHuyHoaDon;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.DongChiTietHoaDon;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
@@ -25,7 +25,7 @@ public final class CancellationSelfTest {
         BigDecimal paid=BigDecimal.ZERO;TrangThaiHoaDon status=TrangThaiHoaDon.CHUA_THANH_TOAN;
         @Override public ThongTinHoaDon getForPayment(Connection c,String id){return new ThongTinHoaDon("H1","NV1","BN1","Synthetic",null,LocalDateTime.now(),status,new BigDecimal("300"),paid,BigDecimal.ZERO);}
         @Override public List<DongChiTietHoaDon> lines(Connection c,String id){return List.of(new DongChiTietHoaDon(1,"H1","DV1",null,null,1,new BigDecimal("300")));}
-        @Override public List<ThongTinThanhToan> payments(Connection c,String id){return paid.signum()==0?List.of():List.of(new ThongTinThanhToan("P1","H1",LocalDateTime.now(),paid,PhuongThucThanhToan.TIEN_MAT,null,paid,TrangThaiThanhToan.THANH_CONG,"NV1",null,null,null));}
+        @Override public List<ThanhToan> payments(Connection c,String id){return paid.signum()==0?List.of():List.of(new ThanhToan("P1","H1",LocalDateTime.now(),paid,PhuongThucThanhToan.TIEN_MAT,null,paid,TrangThaiThanhToan.THANH_CONG,"NV1",null,null,null));}
     }
     private static class Dao extends HuyHoaDonDao {
         boolean pending;TrangThaiYeuCauHuyHoaDon status=TrangThaiYeuCauHuyHoaDon.CHO_DUYET;String requester="TST_ACC";

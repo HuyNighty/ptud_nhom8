@@ -1,8 +1,8 @@
-package com.quanlynhakhoa.entity;
+package com.quanlynhakhoa.model.benhnhan;
 
 import java.time.LocalDateTime;
 
-public class LuotKham {
+public class LuotKhamBenhNhan {
     private String maPhieuKham;
     private LocalDateTime thoiGianTiepNhan;
     private String tenBacSi;
@@ -11,10 +11,10 @@ public class LuotKham {
     private String ketLuan;
     private String trangThai;
 
-    public LuotKham() {
+    public LuotKhamBenhNhan() {
     }
 
-    public LuotKham(String maPhieuKham, LocalDateTime thoiGianTiepNhan, String tenBacSi,
+    public LuotKhamBenhNhan(String maPhieuKham, LocalDateTime thoiGianTiepNhan, String tenBacSi,
                     String trieuChung, String chanDoan, String ketLuan, String trangThai) {
         this.maPhieuKham = maPhieuKham;
         this.thoiGianTiepNhan = thoiGianTiepNhan;
@@ -96,4 +96,5 @@ public class LuotKham {
         }
         return trangThai;
     }
+
 }

@@ -13,7 +13,7 @@ import com.quanlynhakhoa.enums.TrangThaiHoaDon;
 import com.quanlynhakhoa.enums.PhuongThucThanhToan;
 import com.quanlynhakhoa.model.hoadon.ThongTinHoaDon;
 import com.quanlynhakhoa.model.hoadon.YeuCauThanhToan;
-import com.quanlynhakhoa.model.hoadon.ThongTinThanhToan;
+import com.quanlynhakhoa.entity.ThanhToan;
 import com.quanlynhakhoa.model.hoadon.PhanThanhToan;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -26,12 +26,12 @@ public final class ThanhToanService {
         void complete(Connection c,YeuCauThanhToan request,String account)throws SQLException;
         default void acknowledge(YeuCauThanhToan request)throws SQLException { }
     }
-    private final Attempts attempts;
+    private final Attempts lanThanhToan;
     private final DesktopSession session;
     private final ConnectionProvider connections;
     private final ThanhToanDao dao;
-    private final HoaDonDao invoices;
-    private final TaoHoaDonDao accounts;
+    private final HoaDonDao hoaDon;
+    private final TaoHoaDonDao taiKhoan;
     private final AuthorizationService authorization=new AuthorizationService(new RolePermissionPolicy());
     public ThanhToanService(DesktopSession session,ConnectionProvider connections){this(session,connections,new ThanhToanDao(),new HoaDonDao(),new TaoHoaDonDao());}
     public ThanhToanService(DesktopSession session,ConnectionProvider connections,ThanhToanDao dao,HoaDonDao invoices,TaoHoaDonDao accounts) {
@@ -42,21 +42,21 @@ public final class ThanhToanService {
         });
     }
     public ThanhToanService(DesktopSession session,ConnectionProvider connections,ThanhToanDao dao,HoaDonDao invoices,TaoHoaDonDao accounts,Attempts attempts){
-        this.attempts=Objects.requireNonNull(attempts);
+        this.lanThanhToan=Objects.requireNonNull(attempts);
         this.session=Objects.requireNonNull(session);this.connections=Objects.requireNonNull(connections);
-        this.dao=Objects.requireNonNull(dao);this.invoices=Objects.requireNonNull(invoices);this.accounts=Objects.requireNonNull(accounts);
+        this.dao=Objects.requireNonNull(dao);this.hoaDon=Objects.requireNonNull(invoices);this.taiKhoan=Objects.requireNonNull(accounts);
     }
     public void collect(YeuCauThanhToan request)throws SQLException {
-        require();validate(request);attempts.reserve(request);boolean committed=false;
+        require();validate(request);lanThanhToan.reserve(request);boolean committed=false;
         try(Connection c=connections.open()) {
             require();if(!c.getAutoCommit())throw new SQLException("Expected fresh connection");
             c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);c.setAutoCommit(false);
             try {
                 dao.requirePermissions(c);dao.lockInvoice(c,request.invoiceId());
-                String employee=accounts.employee(c,session.accountId());
+                String employee=taiKhoan.employee(c,session.accountId());
                 int existing=0;
                 for(PhanThanhToan part:request.parts()) {
-                    ThongTinThanhToan prior=dao.existing(c,part.id());
+                    ThanhToan prior=dao.existing(c,part.id());
                     if(prior!=null){
                         if(!matches(prior,request.invoiceId(),employee,part))throw new IllegalArgumentException("Mã lần thu đã tồn tại với dữ liệu khác hoặc đã hủy.");
                         existing++;
@@ -64,9 +64,9 @@ public final class ThanhToanService {
                 }
                 if(existing>0){
                     if(existing!=request.parts().size())throw new IllegalArgumentException("Kết quả lần thu không đầy đủ, cần đối soát.");
-                    attempts.complete(c,request,session.accountId());authorization.requireCurrent(session,Quyen.BILLING_MANAGE,c);require();c.commit();committed=true;
+                    lanThanhToan.complete(c,request,session.accountId());authorization.requireCurrent(session,Quyen.BILLING_MANAGE,c);require();c.commit();committed=true;
                 } else {
-                    ThongTinHoaDon invoice=invoices.getForPayment(c,request.invoiceId());
+                    ThongTinHoaDon invoice=hoaDon.getForPayment(c,request.invoiceId());
                     if(invoice==null||invoice.trangThai()==TrangThaiHoaDon.DA_HUY)throw new IllegalArgumentException("Không được thu trên hóa đơn đã hủy/không tồn tại.");
                     if(invoice.conNo().signum()<=0||!invoice.canhBao().isEmpty())throw new IllegalArgumentException("Hóa đơn đã hết nợ hoặc dữ liệu cần đối soát.");
                     if(request.amount().compareTo(invoice.conNo())>0)throw new IllegalArgumentException("Số tiền thu vượt số còn nợ hiện tại.");
@@ -77,11 +77,11 @@ public final class ThanhToanService {
                     }
                     TrangThaiHoaDon status=request.amount().compareTo(invoice.conNo())==0?TrangThaiHoaDon.DA_THANH_TOAN:TrangThaiHoaDon.THANH_TOAN_MOT_PHAN;
                     dao.updateStatus(c,request.invoiceId(),status);dao.audit(c,session.accountId(),request.invoiceId());
-                    attempts.complete(c,request,session.accountId());authorization.requireCurrent(session,Quyen.BILLING_MANAGE,c);require();c.commit();committed=true;
+                    lanThanhToan.complete(c,request,session.accountId());authorization.requireCurrent(session,Quyen.BILLING_MANAGE,c);require();c.commit();committed=true;
                 }
             }catch(SQLException|RuntimeException e){try{c.rollback();}catch(SQLException rollback){e.addSuppressed(rollback);}throw e;}
         }catch(SQLException e){if(committed)throw new CommittedPaymentException(e);throw e;}
-        attempts.acknowledge(request);
+        lanThanhToan.acknowledge(request);
     }
     public boolean pendingCancellation(String invoiceId)throws SQLException {
         require();key(invoiceId);try(Connection c=connections.open()){require();boolean result=dao.hasPendingCancellation(c,invoiceId);require();return result;}
@@ -91,7 +91,7 @@ public final class ThanhToanService {
     }
     private void require(){authorization.require(session,Quyen.BILLING_MANAGE);}
     private static boolean equalMoney(BigDecimal a,BigDecimal b){return a==null?b==null:b!=null&&a.compareTo(b)==0;}
-    static boolean matches(ThongTinThanhToan prior,String invoice,String employee,PhanThanhToan part) {
+    static boolean matches(ThanhToan prior,String invoice,String employee,PhanThanhToan part) {
         return invoice.equals(prior.maHoaDon())&&employee.equals(prior.maNhanVien())&&prior.trangThai()==TrangThaiThanhToan.THANH_CONG
                 &&prior.phuongThuc()==part.method()&&equalMoney(prior.soTien(),part.amount())
                 &&Objects.equals(prior.maGiaoDich(),part.reference())&&equalMoney(prior.tienKhachDua(),part.customerTender());

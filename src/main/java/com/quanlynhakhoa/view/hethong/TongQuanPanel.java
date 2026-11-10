@@ -50,21 +50,21 @@ public final class TongQuanPanel extends JPanel implements com.quanlynhakhoa.con
 
     private final DesktopSession session;
     private final TongQuanService service;
-    private final JLabel[] lblValues = new JLabel[4];
-    private final JLabel[] lblDescriptions = new JLabel[4];
-    private final JLabel lblStatus = label("Chưa tải dữ liệu", 12, MUTED, false);
-    private final JButton btnRefresh = new JButton("Làm mới");
+    private final JLabel[] lblGiaTri = new JLabel[4];
+    private final JLabel[] lblMoTa = new JLabel[4];
+    private final JLabel lblTrangThai = label("Chưa tải dữ liệu", 12, MUTED, false);
+    private final JButton btnLamMoi = new JButton("Làm mới");
     private boolean loading;
     private java.util.function.BiConsumer<Module,String> navigation;
-    private final DefaultTableModel appointmentModel=tableModel("Giờ", "Bệnh nhân", "Bác sĩ", "Trạng thái");
-    private final DefaultTableModel alertModel=tableModel("Cảnh báo", "Mặt hàng / lô", "Chi tiết");
-    private final JTable appointmentTable=new JTable(appointmentModel), alertTable=new JTable(alertModel);
-    private final JPanel workList=new JPanel();
-    private List<LichHenTongQuan> appointmentRows=List.of();
-    private List<CanhBaoTonKho> alertRows=List.of();
-    private final TrendChart visitsChart=new TrendChart(false), moneyChart=new TrendChart(true);
-    private final JLabel appointmentStatus=label("Đang tải…",12,MUTED,false);
-    private final JLabel stockStatus=label("Đang tải…",12,MUTED,false);
+    private final DefaultTableModel modelLichHen=tableModel("Giờ", "Bệnh nhân", "Bác sĩ", "Trạng thái");
+    private final DefaultTableModel modelCanhBao=tableModel("Cảnh báo", "Mặt hàng / lô", "Chi tiết");
+    private final JTable tblLichHen=new JTable(modelLichHen), tblCanhBao=new JTable(modelCanhBao);
+    private final JPanel danhSachCongViec=new JPanel();
+    private List<LichHenTongQuan> danhSachLichHen=List.of();
+    private List<CanhBaoTonKho> danhSachCanhBao=List.of();
+    private final TrendChart bieuDoLuotKham=new TrendChart(false), bieuDoTien=new TrendChart(true);
+    private final JLabel lblTrangThaiLichHen=label("Đang tải…",12,MUTED,false);
+    private final JLabel trangThaiTonKho=label("Đang tải…",12,MUTED,false);
 
     public void setNavigation(java.util.function.BiConsumer<Module,String> navigation) { this.navigation=navigation; }
     private void open(Module module,String context) {
@@ -102,18 +102,18 @@ public final class TongQuanPanel extends JPanel implements com.quanlynhakhoa.con
         middle.add(workCard());
         addSection(pnlBody,middle,265);
         JPanel charts=new JPanel(new GridLayout(1,0,14,0));charts.setOpaque(false);
-        if(service.can(Quyen.MEDICAL_RECORD_READ))charts.add(chartCard("Lượt khám 7 ngày",visitsChart));
-        if(service.can(Quyen.REVENUE_REPORT_READ))charts.add(chartCard("Tiền đã thu 7 ngày · VND",moneyChart));
+        if(service.can(Quyen.MEDICAL_RECORD_READ))charts.add(chartCard("Lượt khám 7 ngày",bieuDoLuotKham));
+        if(service.can(Quyen.REVENUE_REPORT_READ))charts.add(chartCard("Tiền đã thu 7 ngày · VND",bieuDoTien));
         if(charts.getComponentCount()>0)addSection(pnlBody,charts,220);
         if(service.can(Quyen.INVENTORY_READ))addSection(pnlBody,stockCard(),250);
         pnlBody.add(footer());
         add(pnlBody, BorderLayout.CENTER);
-        btnRefresh.addActionListener(event -> refresh());
+        btnLamMoi.addActionListener(event -> refresh());
         if (configured) {
             refresh();
         } else {
-            btnRefresh.setEnabled(false);
-            lblStatus.setText("Chưa thiết lập kết nối dữ liệu.");
+            btnLamMoi.setEnabled(false);
+            lblTrangThai.setText("Chưa thiết lập kết nối dữ liệu.");
         }
     }
 
@@ -149,11 +149,11 @@ public final class TongQuanPanel extends JPanel implements com.quanlynhakhoa.con
         pnlPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER), new EmptyBorder(17, 17, 17, 17)));
         pnlPanel.add(label(title, 13, MUTED, true), BorderLayout.NORTH);
-        lblValues[index] = label("—", 26, NAVY, true);
-        pnlPanel.add(lblValues[index], BorderLayout.CENTER);
-        lblDescriptions[index] = label("Chưa tải", 11, MUTED, false);
-        lblDescriptions[index].setToolTipText(description);
-        pnlPanel.add(lblDescriptions[index], BorderLayout.SOUTH);
+        lblGiaTri[index] = label("—", 26, NAVY, true);
+        pnlPanel.add(lblGiaTri[index], BorderLayout.CENTER);
+        lblMoTa[index] = label("Chưa tải", 11, MUTED, false);
+        lblMoTa[index].setToolTipText(description);
+        pnlPanel.add(lblMoTa[index], BorderLayout.SOUTH);
         return pnlPanel;
     }
 
@@ -161,19 +161,19 @@ public final class TongQuanPanel extends JPanel implements com.quanlynhakhoa.con
         JPanel pnlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
         pnlPanel.setOpaque(false);
         pnlPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        pnlPanel.add(btnRefresh);
-        pnlPanel.add(lblStatus);
+        pnlPanel.add(btnLamMoi);
+        pnlPanel.add(lblTrangThai);
         return pnlPanel;
     }
 
     private void refresh() {
         if (loading || !session.isActive()) return;
         loading = true;
-        btnRefresh.setEnabled(false);
-        lblStatus.setText("Đang tải dữ liệu...");
-        for (int i = 0; i < lblValues.length; i++) {
-            lblValues[i].setText("—");
-            lblDescriptions[i].setText("Đang tải");
+        btnLamMoi.setEnabled(false);
+        lblTrangThai.setText("Đang tải dữ liệu...");
+        for (int i = 0; i < lblGiaTri.length; i++) {
+            lblGiaTri[i].setText("—");
+            lblMoTa[i].setText("Đang tải");
         }
         new SwingWorker<DuLieuTongQuan, Void>() {
             @Override protected DuLieuTongQuan doInBackground() throws Exception {
@@ -183,7 +183,7 @@ public final class TongQuanPanel extends JPanel implements com.quanlynhakhoa.con
             @Override protected void done() {
                 if (!session.isActive()) return;
                 loading = false;
-                btnRefresh.setEnabled(true);
+                btnLamMoi.setEnabled(true);
                 try {
                     DuLieuTongQuan overview = get();
                     TomTatTongQuan summary = overview.summary();
@@ -192,8 +192,8 @@ public final class TongQuanPanel extends JPanel implements com.quanlynhakhoa.con
                     showLong(1, summary.appointments());
                     showLong(2, summary.inProgressExams());
                     showMoney(summary.collected());
-                    lblStatus.setText(overview.warnings().isEmpty()?"Cập nhật " + java.time.LocalTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("HH:mm")) + " · " + DATE.format(summary.date()):"Một phần dữ liệu chưa tải được. Bấm Làm mới để thử lại.");
-                    lblStatus.setToolTipText(String.join(" · ",overview.warnings()));
+                    lblTrangThai.setText(overview.warnings().isEmpty()?"Cập nhật " + java.time.LocalTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("HH:mm")) + " · " + DATE.format(summary.date()):"Một phần dữ liệu chưa tải được. Bấm Làm mới để thử lại.");
+                    lblTrangThai.setToolTipText(String.join(" · ",overview.warnings()));
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                     showLoadError();
@@ -206,31 +206,31 @@ public final class TongQuanPanel extends JPanel implements com.quanlynhakhoa.con
 
     private void showLong(int index, Long number) {
         if (number == null) {
-            lblValues[index].setText("—");
-            lblDescriptions[index].setText("Không có quyền xem");
+            lblGiaTri[index].setText("—");
+            lblMoTa[index].setText("Không có quyền xem");
         } else {
-            lblValues[index].setText(NumberFormat.getIntegerInstance(VIETNAMESE).format(number));
-            lblDescriptions[index].setText("");
+            lblGiaTri[index].setText(NumberFormat.getIntegerInstance(VIETNAMESE).format(number));
+            lblMoTa[index].setText("");
         }
     }
 
     private void showMoney(BigDecimal amount) {
         if (amount == null) {
-            lblValues[3].setText("—");
-            lblDescriptions[3].setText("Không có quyền xem");
+            lblGiaTri[3].setText("—");
+            lblMoTa[3].setText("Không có quyền xem");
         } else {
-            lblValues[3].setText(NumberFormat.getIntegerInstance(VIETNAMESE).format(amount));
-            lblDescriptions[3].setText("VND");
+            lblGiaTri[3].setText(NumberFormat.getIntegerInstance(VIETNAMESE).format(amount));
+            lblMoTa[3].setText("VND");
         }
     }
 
     private void showLoadError() {
-        lblStatus.setText("Không thể tải số liệu. Kiểm tra kết nối và thử lại.");
-        for (JLabel lblDescription : lblDescriptions) lblDescription.setText("Không thể cập nhật");
-        appointmentRows=List.of();alertRows=List.of();appointmentModel.setRowCount(0);alertModel.setRowCount(0);
-        appointmentStatus.setText("Chưa tải được lịch hẹn.");stockStatus.setText("Chưa tải được cảnh báo kho.");
-        workList.removeAll();workList.add(label("Chưa tải được công việc. Bấm Làm mới để thử lại.",12,MUTED,false));workList.revalidate();workList.repaint();
-        visitsChart.rows=List.of();moneyChart.rows=List.of();visitsChart.repaint();moneyChart.repaint();
+        lblTrangThai.setText("Không thể tải số liệu. Kiểm tra kết nối và thử lại.");
+        for (JLabel lblDescription : lblMoTa) lblDescription.setText("Không thể cập nhật");
+        danhSachLichHen=List.of();danhSachCanhBao=List.of();modelLichHen.setRowCount(0);modelCanhBao.setRowCount(0);
+        lblTrangThaiLichHen.setText("Chưa tải được lịch hẹn.");trangThaiTonKho.setText("Chưa tải được cảnh báo kho.");
+        danhSachCongViec.removeAll();danhSachCongViec.add(label("Chưa tải được công việc. Bấm Làm mới để thử lại.",12,MUTED,false));danhSachCongViec.revalidate();danhSachCongViec.repaint();
+        bieuDoLuotKham.danhSach=List.of();bieuDoTien.danhSach=List.of();bieuDoLuotKham.repaint();bieuDoTien.repaint();
     }
 
     private static DefaultTableModel tableModel(String... columns) {
@@ -279,69 +279,69 @@ public final class TongQuanPanel extends JPanel implements com.quanlynhakhoa.con
     }
     private JPanel appointmentsCard() {
         JPanel panel=section("Lịch hẹn hôm nay","");
-        appointmentTable.setToolTipText("Tối đa 8 lịch chưa tiếp nhận, sắp theo giờ hẹn.");
-        panel.add(tableScroll(appointmentTable));
+        tblLichHen.setToolTipText("Tối đa 8 lịch chưa tiếp nhận, sắp theo giờ hẹn.");
+        panel.add(tableScroll(tblLichHen));
         JButton button=new JButton("Mở lịch hẹn");button.addActionListener(e->openAppointment());
-        appointmentTable.addMouseListener(new java.awt.event.MouseAdapter(){@Override public void mouseClicked(java.awt.event.MouseEvent e){if(e.getClickCount()==2)openAppointment();}});
-        JPanel bottom=new JPanel(new BorderLayout(8,0));bottom.setOpaque(false);bottom.add(appointmentStatus);bottom.add(button,BorderLayout.EAST);panel.add(bottom,BorderLayout.SOUTH);return panel;
+        tblLichHen.addMouseListener(new java.awt.event.MouseAdapter(){@Override public void mouseClicked(java.awt.event.MouseEvent e){if(e.getClickCount()==2)openAppointment();}});
+        JPanel bottom=new JPanel(new BorderLayout(8,0));bottom.setOpaque(false);bottom.add(lblTrangThaiLichHen);bottom.add(button,BorderLayout.EAST);panel.add(bottom,BorderLayout.SOUTH);return panel;
     }
     private void openAppointment() {
-        int row=appointmentTable.getSelectedRow();
-        String id=row<0?"":appointmentRows.get(appointmentTable.convertRowIndexToModel(row)).id();
+        int row=tblLichHen.getSelectedRow();
+        String id=row<0?"":danhSachLichHen.get(tblLichHen.convertRowIndexToModel(row)).id();
         open(Module.APPOINTMENTS,id);
     }
     private JPanel workCard() {
         JPanel panel=section("Việc cần xử lý","");
-        workList.setOpaque(false);workList.setLayout(new BoxLayout(workList,BoxLayout.Y_AXIS));
-        workList.add(label("Đang tải công việc…",12,MUTED,false));
-        panel.add(workList);return panel;
+        danhSachCongViec.setOpaque(false);danhSachCongViec.setLayout(new BoxLayout(danhSachCongViec,BoxLayout.Y_AXIS));
+        danhSachCongViec.add(label("Đang tải công việc…",12,MUTED,false));
+        panel.add(danhSachCongViec);return panel;
     }
     private JPanel stockCard() {
         JPanel panel=section("Cảnh báo kho","Hạn dùng: 30 ngày");
-        alertTable.setToolTipText("Tồn còn hạn dưới định mức; lô hết hạn hoặc hết hạn trong 30 ngày. Tối đa 8 dòng mỗi nhóm.");
-        panel.add(tableScroll(alertTable));JButton button=new JButton("Kiểm tra kho");button.addActionListener(e->{
-            int row=alertTable.getSelectedRow();String context=row<0?"lots":alertRows.get(alertTable.convertRowIndexToModel(row)).context();open(Module.INVENTORY,context);
-        });JPanel bottom=new JPanel(new BorderLayout(8,0));bottom.setOpaque(false);bottom.add(stockStatus);bottom.add(button,BorderLayout.EAST);panel.add(bottom,BorderLayout.SOUTH);return panel;
+        tblCanhBao.setToolTipText("Tồn còn hạn dưới định mức; lô hết hạn hoặc hết hạn trong 30 ngày. Tối đa 8 dòng mỗi nhóm.");
+        panel.add(tableScroll(tblCanhBao));JButton button=new JButton("Kiểm tra kho");button.addActionListener(e->{
+            int row=tblCanhBao.getSelectedRow();String context=row<0?"lots":danhSachCanhBao.get(tblCanhBao.convertRowIndexToModel(row)).context();open(Module.INVENTORY,context);
+        });JPanel bottom=new JPanel(new BorderLayout(8,0));bottom.setOpaque(false);bottom.add(trangThaiTonKho);bottom.add(button,BorderLayout.EAST);panel.add(bottom,BorderLayout.SOUTH);return panel;
     }
     private JPanel chartCard(String title,TrendChart chart) {
         JPanel panel=section(title,"");panel.add(chart);return panel;
     }
     private void showOverview(DuLieuTongQuan data) {
-        appointmentRows=data.appointments();appointmentModel.setRowCount(0);
-        for(LichHenTongQuan row:appointmentRows)appointmentModel.addRow(new Object[]{row.time().format(DateTimeFormatter.ofPattern("HH:mm")),row.patient(),row.doctor(),"DA_XAC_NHAN".equals(row.status())?"Đã xác nhận":"Chờ xác nhận"});
-        appointmentStatus.setText(data.warnings().contains("Chưa tải được lịch hẹn")?"Chưa tải được lịch hẹn.":appointmentRows.isEmpty()?"Không có lịch đang chờ hôm nay.":appointmentRows.size()+" lịch đang hiển thị.");
-        workList.removeAll();
+        danhSachLichHen=data.appointments();modelLichHen.setRowCount(0);
+        for(LichHenTongQuan row:danhSachLichHen)modelLichHen.addRow(new Object[]{row.time().format(DateTimeFormatter.ofPattern("HH:mm")),row.patient(),row.doctor(),"DA_XAC_NHAN".equals(row.status())?"Đã xác nhận":"Chờ xác nhận"});
+        lblTrangThaiLichHen.setText(data.warnings().contains("Chưa tải được lịch hẹn")?"Chưa tải được lịch hẹn.":danhSachLichHen.isEmpty()?"Không có lịch đang chờ hôm nay.":danhSachLichHen.size()+" lịch đang hiển thị.");
+        danhSachCongViec.removeAll();
         for(CongViecTongQuan item:data.work()){
             JButton button=new JButton(item.count()+"  ·  "+item.label()+"  →");button.setHorizontalAlignment(SwingConstants.LEFT);
             button.setAlignmentX(Component.LEFT_ALIGNMENT);button.setMaximumSize(new Dimension(Integer.MAX_VALUE,40));button.addActionListener(e->open(item.module(),item.context()));
-            workList.add(button);workList.add(Box.createVerticalStrut(8));
+            danhSachCongViec.add(button);danhSachCongViec.add(Box.createVerticalStrut(8));
         }
-        if(data.work().isEmpty())workList.add(label(data.warnings().isEmpty()?"Không có việc chờ xử lý.":"Chưa tải được công việc.",12,MUTED,false));
-        workList.revalidate();workList.repaint();AppTheme.applyButtons(workList);
-        alertRows=data.alerts();alertModel.setRowCount(0);for(CanhBaoTonKho alert:alertRows)alertModel.addRow(new Object[]{alert.kind(),alert.item(),alert.detail()});
-        stockStatus.setText(data.warnings().contains("Chưa tải được cảnh báo kho")?"Chưa tải được cảnh báo kho.":alertRows.isEmpty()?"Không có cảnh báo.":alertRows.size()+" cảnh báo đang hiển thị.");
-        visitsChart.rows=data.days();moneyChart.rows=data.days();visitsChart.repaint();moneyChart.repaint();
+        if(data.work().isEmpty())danhSachCongViec.add(label(data.warnings().isEmpty()?"Không có việc chờ xử lý.":"Chưa tải được công việc.",12,MUTED,false));
+        danhSachCongViec.revalidate();danhSachCongViec.repaint();AppTheme.applyButtons(danhSachCongViec);
+        danhSachCanhBao=data.alerts();modelCanhBao.setRowCount(0);for(CanhBaoTonKho alert:danhSachCanhBao)modelCanhBao.addRow(new Object[]{alert.kind(),alert.item(),alert.detail()});
+        trangThaiTonKho.setText(data.warnings().contains("Chưa tải được cảnh báo kho")?"Chưa tải được cảnh báo kho.":danhSachCanhBao.isEmpty()?"Không có cảnh báo.":danhSachCanhBao.size()+" cảnh báo đang hiển thị.");
+        bieuDoLuotKham.danhSach=data.days();bieuDoTien.danhSach=data.days();bieuDoLuotKham.repaint();bieuDoTien.repaint();
     }
     private static final class TrendChart extends JPanel {
-        private final boolean money;private List<SoLieuNgay> rows=List.of();
-        TrendChart(boolean money){this.money=money;setOpaque(false);}
+        private final boolean coSoTien;private List<SoLieuNgay> danhSach=List.of();
+        TrendChart(boolean money){this.coSoTien=money;setOpaque(false);}
         @Override protected void paintComponent(Graphics graphics) {
             super.paintComponent(graphics);Graphics2D g=(Graphics2D)graphics.create();
             try{
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-                if(rows.isEmpty()||(money?rows.get(0).collected()==null:rows.get(0).visits()==null)){
+                if(danhSach.isEmpty()||(coSoTien?danhSach.get(0).collected()==null:danhSach.get(0).visits()==null)){
                     g.setColor(MUTED);g.drawString("Chưa có dữ liệu để vẽ biểu đồ.",12,40);return;
                 }
                 int bottom=getHeight()-28,top=25,width=getWidth()-20;double max=0,min=0;
-                for(SoLieuNgay row:rows){double value=money?row.collected().doubleValue():row.visits();max=Math.max(max,value);min=Math.min(min,value);}
+                for(SoLieuNgay row:danhSach){double value=coSoTien?row.collected().doubleValue():row.visits();max=Math.max(max,value);min=Math.min(min,value);}
                 double range=max-min;if(range==0)range=1;int baseline=top+(int)((bottom-top)*max/range);
-                double step=width/(double)rows.size();g.setFont(new Font("SansSerif",Font.PLAIN,11));
+                double step=width/(double)danhSach.size();g.setFont(new Font("SansSerif",Font.PLAIN,11));
                 g.setColor(BORDER);g.drawLine(10,baseline,getWidth()-10,baseline);
-                for(int i=0;i<rows.size();i++){
-                    SoLieuNgay row=rows.get(i);double value=money?row.collected().doubleValue():row.visits();
+                for(int i=0;i<danhSach.size();i++){
+                    SoLieuNgay row=danhSach.get(i);double value=coSoTien?row.collected().doubleValue():row.visits();
                     int y=top+(int)((bottom-top)*(max-value)/range),height=Math.abs(baseline-y),bar=(int)Math.min(40,step*.55),x=(int)(10+step*(i+.5));
-                    g.setColor(money?new Color(38,132,119):NAVY);g.fillRoundRect(x-bar/2,Math.min(baseline,y),bar,Math.max(height,1),5,5);
-                    String text=money?compactMoney(row.collected()):Long.toString(row.visits());
+                    g.setColor(coSoTien?new Color(38,132,119):NAVY);g.fillRoundRect(x-bar/2,Math.min(baseline,y),bar,Math.max(height,1),5,5);
+                    String text=coSoTien?compactMoney(row.collected()):Long.toString(row.visits());
                     g.setColor(NAVY);g.drawString(text,x-g.getFontMetrics().stringWidth(text)/2,value<0?y+14:y-6);
                     String date=row.date().format(DateTimeFormatter.ofPattern("dd/MM"));g.setColor(MUTED);g.drawString(date,x-g.getFontMetrics().stringWidth(date)/2,bottom+18);
                 }

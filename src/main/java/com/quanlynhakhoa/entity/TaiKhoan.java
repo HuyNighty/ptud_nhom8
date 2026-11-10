@@ -1,4 +1,4 @@
-package com.quanlynhakhoa.model.taikhoan;
+package com.quanlynhakhoa.entity;
 
 import com.quanlynhakhoa.enums.NguonKhoaTaiKhoan;
 import com.quanlynhakhoa.enums.TrangThaiTaiKhoan;
@@ -6,7 +6,7 @@ import com.quanlynhakhoa.enums.VaiTroHeThong;
 import java.time.LocalDateTime;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
-public final class ThongTinTaiKhoan {
+public final class TaiKhoan {
     private final String ma;
     private final String maNhanVien;
     private final String tenDangNhap;
@@ -28,7 +28,7 @@ public final class ThongTinTaiKhoan {
     private final LocalDateTime thoiGianVoHieuHoa;
     private final String lyDoVoHieuHoa;
 
-    public ThongTinTaiKhoan(String ma, String maNhanVien, String tenDangNhap, String tenHienThi, String matKhauHash, VaiTroHeThong vaiTro, TrangThaiTaiKhoan trangThai, int soLanDangNhapSai, LocalDateTime thoiGianSaiDauTien, LocalDateTime thoiGianKhoa, LocalDateTime khoaDenLuc, NguonKhoaTaiKhoan nguonKhoa, String lyDoKhoa, boolean batBuocDoiMatKhau, LocalDateTime thoiGianCapNhatMatKhau, LocalDateTime thoiGianDangNhapCuoi, LocalDateTime thoiGianTao, LocalDateTime thoiGianCapNhat, LocalDateTime thoiGianVoHieuHoa, String lyDoVoHieuHoa) {
+    public TaiKhoan(String ma, String maNhanVien, String tenDangNhap, String tenHienThi, String matKhauHash, VaiTroHeThong vaiTro, TrangThaiTaiKhoan trangThai, int soLanDangNhapSai, LocalDateTime thoiGianSaiDauTien, LocalDateTime thoiGianKhoa, LocalDateTime khoaDenLuc, NguonKhoaTaiKhoan nguonKhoa, String lyDoKhoa, boolean batBuocDoiMatKhau, LocalDateTime thoiGianCapNhatMatKhau, LocalDateTime thoiGianDangNhapCuoi, LocalDateTime thoiGianTao, LocalDateTime thoiGianCapNhat, LocalDateTime thoiGianVoHieuHoa, String lyDoVoHieuHoa) {
         this.ma = ma;
         this.maNhanVien = maNhanVien;
         this.tenDangNhap = tenDangNhap;
@@ -82,7 +82,7 @@ public final class ThongTinTaiKhoan {
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
-        if (!(other instanceof ThongTinTaiKhoan value)) return false;
+        if (!(other instanceof TaiKhoan value)) return false;
         return java.util.Objects.equals(ma, value.ma)
                 && java.util.Objects.equals(maNhanVien, value.maNhanVien)
                 && java.util.Objects.equals(tenDangNhap, value.tenDangNhap)
@@ -131,4 +131,25 @@ public final class ThongTinTaiKhoan {
         return result;
     }
 
+
+    public String getMa() { return ma; }
+    public String getMaNhanVien() { return maNhanVien; }
+    public String getTenDangNhap() { return tenDangNhap; }
+    public String getTenHienThi() { return tenHienThi; }
+    public String getMatKhauHash() { return matKhauHash; }
+    public VaiTroHeThong getVaiTro() { return vaiTro; }
+    public TrangThaiTaiKhoan getTrangThai() { return trangThai; }
+    public int getSoLanDangNhapSai() { return soLanDangNhapSai; }
+    public LocalDateTime getThoiGianSaiDauTien() { return thoiGianSaiDauTien; }
+    public LocalDateTime getThoiGianKhoa() { return thoiGianKhoa; }
+    public LocalDateTime getKhoaDenLuc() { return khoaDenLuc; }
+    public NguonKhoaTaiKhoan getNguonKhoa() { return nguonKhoa; }
+    public String getLyDoKhoa() { return lyDoKhoa; }
+    public boolean getBatBuocDoiMatKhau() { return batBuocDoiMatKhau; }
+    public LocalDateTime getThoiGianCapNhatMatKhau() { return thoiGianCapNhatMatKhau; }
+    public LocalDateTime getThoiGianDangNhapCuoi() { return thoiGianDangNhapCuoi; }
+    public LocalDateTime getThoiGianTao() { return thoiGianTao; }
+    public LocalDateTime getThoiGianCapNhat() { return thoiGianCapNhat; }
+    public LocalDateTime getThoiGianVoHieuHoa() { return thoiGianVoHieuHoa; }
+    public String getLyDoVoHieuHoa() { return lyDoVoHieuHoa; }
 }
