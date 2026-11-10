@@ -2,6 +2,8 @@ package com.quanlynhakhoa.dao.dieutri;
 
 import com.quanlynhakhoa.config.phattrien.TeamDevConnection;
 import java.sql.Connection;
+import com.quanlynhakhoa.entity.KeHoachDieuTri;
+import com.quanlynhakhoa.entity.ChiTietDieuTri;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -49,12 +51,14 @@ public final class KeHoachDieuTriDao {
             try(ResultSet rows=guard.executeQuery()){if(rows.next())throw new IllegalArgumentException("Lượt khám đã chốt hóa đơn. Tạo lượt khám mới để bổ sung điều trị.");}
         }
         try(PreparedStatement stmt=con.prepareStatement("INSERT INTO dbo.KeHoachDieuTri(maKeHoach,maHoSo,maPhieuKham,ngayLap,mucTieu,trangThai,maNhanVien) VALUES (?,?,?,?,?,'DANG_THUC_HIEN',?)")){
-            stmt.setString(1,planId);
-            stmt.setString(2,chartId);
-            stmt.setString(3,visitId);
-            stmt.setDate(4,Date.valueOf(date));
-            stmt.setNString(5,goal);
-            stmt.setString(6,employee);
+            KeHoachDieuTri keHoach = new KeHoachDieuTri(planId, chartId, visitId, date, goal,
+                    "DANG_THUC_HIEN", employee, null);
+            stmt.setString(1,keHoach.getMaKeHoach());
+            stmt.setString(2,keHoach.getMaHoSo());
+            stmt.setString(3,keHoach.getMaPhieuKham());
+            stmt.setDate(4,Date.valueOf(keHoach.getNgayLap()));
+            stmt.setNString(5,keHoach.getMucTieu());
+            stmt.setString(6,keHoach.getMaNhanVien());
             stmt.executeUpdate();
         }
         HoTroSqlKeHoachDieuTri.ghiNhatKy(con,accountId,"Tạo kế hoạch điều trị","KeHoachDieuTri",planId);
@@ -64,13 +68,15 @@ public final class KeHoachDieuTriDao {
                 +"SELECT ?,?,?,?,'CHUA_THUC_HIEN',? WHERE EXISTS(SELECT 1 FROM dbo.KeHoachDieuTri WHERE maKeHoach=? AND trangThai='DANG_THUC_HIEN') "
                 +"AND EXISTS(SELECT 1 FROM dbo.DichVu WHERE maDichVu=? AND dangApDung=1)";
         try(PreparedStatement stmt=con.prepareStatement(sql)){
-            stmt.setString(1,planId);
-            stmt.setString(2,serviceId);
-            stmt.setNString(3,tooth);
-            stmt.setDate(4,Date.valueOf(planned));
-            stmt.setNString(5,note);
-            stmt.setString(6,planId);
-            stmt.setString(7,serviceId);
+            ChiTietDieuTri chiTiet = new ChiTietDieuTri(0, planId, serviceId, tooth, planned,
+                    null, null, "CHUA_THUC_HIEN", null, note);
+            stmt.setString(1,chiTiet.getMaKeHoach());
+            stmt.setString(2,chiTiet.getMaDichVu());
+            stmt.setNString(3,chiTiet.getViTriRang());
+            stmt.setDate(4,Date.valueOf(chiTiet.getNgayDuKien()));
+            stmt.setNString(5,chiTiet.getGhiChu());
+            stmt.setString(6,chiTiet.getMaKeHoach());
+            stmt.setString(7,chiTiet.getMaDichVu());
             if(stmt.executeUpdate()!=1)throw new IllegalArgumentException("Kế hoạch không ở trạng thái đang thực hiện hoặc dịch vụ không còn áp dụng.");
         }
         HoTroSqlKeHoachDieuTri.ghiNhatKy(con,accountId,"Thêm bước điều trị","ChiTietDieuTri",planId);
