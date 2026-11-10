@@ -4,7 +4,7 @@
 
 # N08-FINAL-SCREENS-R1-C — Final Integration Hardening
 
-Workspace: C:\Dev\N08\ptud_nhom8-final-screens-r1. Branch: codex/n08-final-screens-r1-shifts. HEAD: 1f5ada23035f15d2b6f59cfa2e1d441a52e496eb. Giữ toàn bộ R1/R1-B. Chưa commit/push/merge hoặc tạo PR. Không mở kết nối SQL, không chạy Check live, không chạy Apply/grant hay ghi dữ liệu SQL Server. Không sao chép credentials.
+Workspace: C:\Dev\N08\ptud_nhom8-final-screens-r1. Branch: refactor/n08-final-screens-r1-shifts. HEAD: 1f5ada23035f15d2b6f59cfa2e1d441a52e496eb. Giữ toàn bộ R1/R1-B. Chưa commit/push/merge hoặc tạo PR. Không mở kết nối SQL, không chạy Check live, không chạy Apply/grant hay ghi dữ liệu SQL Server. Không sao chép credentials.
 
 ## SQL Authentication compatibility
 

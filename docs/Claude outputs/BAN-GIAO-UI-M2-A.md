@@ -2,7 +2,7 @@
 
 **Ngày:** 19/10/2026
 **Repo:** `HuyNighty/quan_ly_nha_khoa`, nhánh `main`, HEAD `4d25dbf88be6415a8fb77facf64b5d4ea9e1f704` (sạch trước khi làm)
-**Căn cứ:** 01-BA-DECISIONS-V1, 02-ROLE-MATRIX-V1, 03-DASHBOARD-API-CONTRACT-V1, 04-CODEX-PROMPT-UI-M2-A, 05-BA-REVIEW-DISPOSITION-V1.1, 06-CODEX-PROMPT-UI-M2-A-ADDENDUM
+**Căn cứ:** 01-BA-DECISIONS-V1, 02-ROLE-MATRIX-V1, 03-DASHBOARD-API-CONTRACT-V1, 04-TRO-LY-PROMPT-UI-M2-A, 05-BA-REVIEW-DISPOSITION-V1.1, 06-TRO-LY-PROMPT-UI-M2-A-ADDENDUM
 **Kết luận ngắn:** Tầng đọc Dashboard đã xong, có 31 kiểm thử chạy PASS bằng bộ chạy tạm trên JDK 25. **REST LIVE vẫn BỊ CHẶN** vì checkout chưa có AUTH-R1. **Chưa chạy được Maven** vì môi trường bị chặn Maven Central (ENV_BLOCKED). Không commit, push hay merge.
 
 ---
