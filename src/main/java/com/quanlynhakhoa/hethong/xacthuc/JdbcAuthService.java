@@ -2,8 +2,8 @@ package com.quanlynhakhoa.hethong.xacthuc;
 
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.security.KeHoachDangNhap;
-import com.quanlynhakhoa.quantri.taikhoan.dao.AccountDao;
-import com.quanlynhakhoa.quantri.nhanvien.dao.EmployeeDao;
+import com.quanlynhakhoa.dao.taikhoan.TaiKhoanDao;
+import com.quanlynhakhoa.dao.nhanvien.NhanVienDao;
 import com.quanlynhakhoa.model.taikhoan.ThongTinTaiKhoan;
 import com.quanlynhakhoa.model.nhanvien.ThongTinNhanVien;
 import java.sql.Connection;
@@ -49,8 +49,8 @@ public final class JdbcAuthService {
             """;
 
     private final ConnectionSource connectionSource;
-    private final AccountDao accounts;
-    private final EmployeeDao employees;
+    private final TaiKhoanDao accounts;
+    private final NhanVienDao employees;
     private final LoginPolicy policy;
     private final Clock clock;
 
@@ -58,8 +58,8 @@ public final class JdbcAuthService {
         this.connectionSource = Objects.requireNonNull(connectionSource, "connectionSource");
         this.policy = Objects.requireNonNull(policy, "policy");
         this.clock = Objects.requireNonNull(clock, "clock");
-        this.accounts = new AccountDao();
-        this.employees = new EmployeeDao();
+        this.accounts = new TaiKhoanDao();
+        this.employees = new NhanVienDao();
     }
 
     /**

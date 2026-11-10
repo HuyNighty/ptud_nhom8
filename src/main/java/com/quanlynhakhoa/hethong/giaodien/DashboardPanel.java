@@ -35,9 +35,9 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
 import java.awt.*;
-import com.quanlynhakhoa.hethong.dieuhuong.Module;
+import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.hethong.tongquan.DashboardService.*;
 
 
@@ -99,14 +99,14 @@ public final class DashboardPanel extends JPanel implements com.quanlynhakhoa.he
         pnlBody.add(shortcuts());
         pnlBody.add(Box.createVerticalStrut(14));
         JPanel middle=new JPanel(new GridLayout(1,0,14,0));middle.setOpaque(false);
-        if(service.can(Permission.APPOINTMENT_READ))middle.add(appointmentsCard());
+        if(service.can(Quyen.APPOINTMENT_READ))middle.add(appointmentsCard());
         middle.add(workCard());
         addSection(pnlBody,middle,265);
         JPanel charts=new JPanel(new GridLayout(1,0,14,0));charts.setOpaque(false);
-        if(service.can(Permission.MEDICAL_RECORD_READ))charts.add(chartCard("Lượt khám 7 ngày",visitsChart));
-        if(service.can(Permission.REVENUE_REPORT_READ))charts.add(chartCard("Tiền đã thu 7 ngày · VND",moneyChart));
+        if(service.can(Quyen.MEDICAL_RECORD_READ))charts.add(chartCard("Lượt khám 7 ngày",visitsChart));
+        if(service.can(Quyen.REVENUE_REPORT_READ))charts.add(chartCard("Tiền đã thu 7 ngày · VND",moneyChart));
         if(charts.getComponentCount()>0)addSection(pnlBody,charts,220);
-        if(service.can(Permission.INVENTORY_READ))addSection(pnlBody,stockCard(),250);
+        if(service.can(Quyen.INVENTORY_READ))addSection(pnlBody,stockCard(),250);
         pnlBody.add(footer());
         add(pnlBody, BorderLayout.CENTER);
         btnRefresh.addActionListener(event -> refresh());
@@ -256,20 +256,20 @@ public final class DashboardPanel extends JPanel implements com.quanlynhakhoa.he
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(label("Thao tác nhanh",12,NAVY,true),BorderLayout.NORTH);
         JPanel buttons=new JPanel(new GridLayout(0,4,8,8));buttons.setOpaque(false);
-        shortcut(buttons,"Lịch hẹn",Module.APPOINTMENTS,Permission.APPOINTMENT_MANAGE);
-        shortcut(buttons,"Tiếp nhận",Module.RECEPTION,Permission.PATIENT_CHECK_IN);
-        shortcut(buttons,"Hóa đơn",Module.BILLING,Permission.BILLING_MANAGE);
-        shortcut(buttons,"Phiếu khám",Module.EXAMINATIONS,Permission.MEDICAL_RECORD_READ);
-        shortcut(buttons,"Yêu cầu cấp phát",Module.SUPPLY_REQUESTS,Permission.SUPPLY_REQUEST);
-        shortcut(buttons,"Quản lý kho",Module.INVENTORY,Permission.INVENTORY_MANAGE);
-        shortcut(buttons,"Báo cáo",Module.REVENUE_REPORTS,Permission.REVENUE_REPORT_READ);
-        shortcut(buttons,"Lịch của tôi",Module.MY_SCHEDULE,Permission.SCHEDULE_SELF_READ);
+        shortcut(buttons,"Lịch hẹn",Module.APPOINTMENTS,Quyen.APPOINTMENT_MANAGE);
+        shortcut(buttons,"Tiếp nhận",Module.RECEPTION,Quyen.PATIENT_CHECK_IN);
+        shortcut(buttons,"Hóa đơn",Module.BILLING,Quyen.BILLING_MANAGE);
+        shortcut(buttons,"Phiếu khám",Module.EXAMINATIONS,Quyen.MEDICAL_RECORD_READ);
+        shortcut(buttons,"Yêu cầu cấp phát",Module.SUPPLY_REQUESTS,Quyen.SUPPLY_REQUEST);
+        shortcut(buttons,"Quản lý kho",Module.INVENTORY,Quyen.INVENTORY_MANAGE);
+        shortcut(buttons,"Báo cáo",Module.REVENUE_REPORTS,Quyen.REVENUE_REPORT_READ);
+        shortcut(buttons,"Lịch của tôi",Module.MY_SCHEDULE,Quyen.SCHEDULE_SELF_READ);
         panel.add(buttons);
         int height=((buttons.getComponentCount()+3)/4)*42+24;
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE,height));panel.setPreferredSize(new Dimension(900,height));
         return panel;
     }
-    private void shortcut(JPanel panel,String caption,Module module,Permission permission) {
+    private void shortcut(JPanel panel,String caption,Module module,Quyen permission) {
         if(!service.can(permission))return;
         JButton button=new JButton(caption);button.addActionListener(e->open(module,""));panel.add(button);
     }

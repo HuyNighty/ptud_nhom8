@@ -1,16 +1,16 @@
 package com.quanlynhakhoa.model.vaitro;
 
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.phanquyen.Permission;
+import com.quanlynhakhoa.enums.Quyen;
 import java.util.Set;
 
 /** Snapshot bất biến, giữ API accessor và value semantics của record gốc. */
 public final class TongQuanVaiTro {
     private final VaiTroHeThong role;
-    private final Set<Permission> permissions;
+    private final Set<Quyen> permissions;
     private final int accountCount;
 
-    public TongQuanVaiTro(VaiTroHeThong role, Set<Permission> permissions, int accountCount) {
+    public TongQuanVaiTro(VaiTroHeThong role, Set<Quyen> permissions, int accountCount) {
         if (role == null || permissions == null || accountCount < 0) {
         throw new IllegalArgumentException("Invalid role overview");
         }
@@ -21,7 +21,7 @@ public final class TongQuanVaiTro {
     }
 
     public VaiTroHeThong role() { return role; }
-    public Set<Permission> permissions() { return permissions; }
+    public Set<Quyen> permissions() { return permissions; }
     public int accountCount() { return accountCount; }
 
 

@@ -1,8 +1,9 @@
 package com.quanlynhakhoa.hethong.phanquyen;
 
+import com.quanlynhakhoa.enums.Quyen;
 import com.quanlynhakhoa.security.KetQuaDangNhap;
 import com.quanlynhakhoa.enums.VaiTroHeThong;
-import com.quanlynhakhoa.hethong.dieuhuong.Module;
+import com.quanlynhakhoa.enums.Module;
 import com.quanlynhakhoa.hethong.dieuhuong.NavigationPolicy;
 import java.util.Set;
 import java.util.List;
@@ -31,28 +32,28 @@ public final class R4RoleSessionSelfTest {
         AuthorizationService service = new AuthorizationService(roles);
         NavigationPolicy nav = new NavigationPolicy(service);
         check(VaiTroHeThong.values().length == 6, "Unexpected new role requires policy review");
-        check(Permission.values().length == 26, "Unexpected new permission requires policy review");
+        check(Quyen.values().length == 26, "Unexpected new permission requires policy review");
         check(Module.values().length == 23, "Unexpected module requires policy review");
 
-        Set<Permission> receptionist = Set.of(
-                Permission.PATIENT_READ, Permission.PATIENT_CREATE, Permission.PATIENT_UPDATE,
-                Permission.PATIENT_CHECK_IN, Permission.APPOINTMENT_READ, Permission.APPOINTMENT_MANAGE,
-                Permission.BILLING_READ, Permission.BILLING_MANAGE, Permission.INVOICE_CANCEL_REQUEST,
-                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
-        Set<Permission> doctor = Set.of(
-                Permission.PATIENT_READ, Permission.MEDICAL_RECORD_READ, Permission.MEDICAL_RECORD_UPDATE,
-                Permission.REEXAM_SCHEDULE, Permission.SUPPLY_REQUEST, Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
-        Set<Permission> nurse = Set.of(
-                Permission.SUPPLY_REQUEST, Permission.EMERGENCY_KIT_CHECK, Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
-        Set<Permission> manager = Set.of(
-                Permission.REVENUE_REPORT_READ, Permission.BILLING_READ, Permission.WORKFORCE_READ, Permission.WORKFORCE_MANAGE,
-                Permission.ACCOUNT_MANAGE, Permission.ROLE_MANAGE, Permission.AUDIT_READ,
-                Permission.SERVICE_CATALOG_MANAGE, Permission.INVOICE_CANCEL_APPROVE,
-                Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
-        Set<Permission> inventory = Set.of(
-                Permission.INVENTORY_READ, Permission.INVENTORY_MANAGE, Permission.SCHEDULE_SELF_READ, Permission.SHIFT_HANDOVER_MANAGE);
+        Set<Quyen> receptionist = Set.of(
+                Quyen.PATIENT_READ, Quyen.PATIENT_CREATE, Quyen.PATIENT_UPDATE,
+                Quyen.PATIENT_CHECK_IN, Quyen.APPOINTMENT_READ, Quyen.APPOINTMENT_MANAGE,
+                Quyen.BILLING_READ, Quyen.BILLING_MANAGE, Quyen.INVOICE_CANCEL_REQUEST,
+                Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE);
+        Set<Quyen> doctor = Set.of(
+                Quyen.PATIENT_READ, Quyen.MEDICAL_RECORD_READ, Quyen.MEDICAL_RECORD_UPDATE,
+                Quyen.REEXAM_SCHEDULE, Quyen.SUPPLY_REQUEST, Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE);
+        Set<Quyen> nurse = Set.of(
+                Quyen.SUPPLY_REQUEST, Quyen.EMERGENCY_KIT_CHECK, Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE);
+        Set<Quyen> manager = Set.of(
+                Quyen.REVENUE_REPORT_READ, Quyen.BILLING_READ, Quyen.WORKFORCE_READ, Quyen.WORKFORCE_MANAGE,
+                Quyen.ACCOUNT_MANAGE, Quyen.ROLE_MANAGE, Quyen.AUDIT_READ,
+                Quyen.SERVICE_CATALOG_MANAGE, Quyen.INVOICE_CANCEL_APPROVE,
+                Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE);
+        Set<Quyen> inventory = Set.of(
+                Quyen.INVENTORY_READ, Quyen.INVENTORY_MANAGE, Quyen.SCHEDULE_SELF_READ, Quyen.SHIFT_HANDOVER_MANAGE);
         for (VaiTroHeThong role : VaiTroHeThong.values()) {
-            for (Permission permission : Permission.values()) {
+            for (Quyen permission : Quyen.values()) {
                 boolean expected = switch (role) {
                     case RECEPTIONIST -> receptionist.contains(permission);
                     case DOCTOR -> doctor.contains(permission);
@@ -65,9 +66,9 @@ public final class R4RoleSessionSelfTest {
                         "Grant mismatch: " + role + "/" + permission);
             }
         }
-        check(!roles.isAllowed(null, Permission.PATIENT_READ), "Null role denied");
+        check(!roles.isAllowed(null, Quyen.PATIENT_READ), "Null role denied");
         check(!roles.isAllowed(VaiTroHeThong.SYSTEM_ADMIN, null), "Null permission denied");
-        check(roles.permissionsFor(VaiTroHeThong.SYSTEM_ADMIN).size() == Permission.values().length,
+        check(roles.permissionsFor(VaiTroHeThong.SYSTEM_ADMIN).size() == Quyen.values().length,
                 "All admin permissions");
         check(roles.permissionsFor(VaiTroHeThong.RECEPTIONIST).equals(receptionist), "Reception permissions");
         check(roles.permissionsFor(VaiTroHeThong.DOCTOR).equals(doctor), "Doctor permissions");
@@ -104,7 +105,7 @@ public final class R4RoleSessionSelfTest {
                 if (expected) nav.requireOpen(session, module);
                 else denied(() -> nav.requireOpen(session, module));
             }
-            for (Permission permission : Permission.values()) {
+            for (Quyen permission : Quyen.values()) {
                 check(service.can(session, permission) == roles.isAllowed(role, permission),
                         "Service permission mismatch: " + role + "/" + permission);
             }
@@ -112,18 +113,18 @@ public final class R4RoleSessionSelfTest {
             check(!session.isActive(), "Logout closes session");
             check(nav.visibleModules(session).isEmpty(), "No navigation after logout");
             check(!nav.canOpen(session, Module.HOME), "Home denied after logout");
-            check(!service.can(session, Permission.PATIENT_READ), "Service denied after logout");
+            check(!service.can(session, Quyen.PATIENT_READ), "Service denied after logout");
             denied(() -> nav.requireOpen(session, Module.HOME));
-            denied(() -> service.require(session, Permission.PATIENT_READ));
+            denied(() -> service.require(session, Quyen.PATIENT_READ));
             session.logout();
             check(!session.isActive(), "Logout idempotent");
         }
         check(nav.visibleModules(null).isEmpty(), "No unauthenticated navigation");
         check(!nav.canOpen(null, Module.HOME), "Unauthenticated home denied");
         check(!nav.canOpen(session(VaiTroHeThong.SYSTEM_ADMIN), null), "Null module denied");
-        check(!service.can(null, Permission.PATIENT_READ), "Null session denied");
+        check(!service.can(null, Quyen.PATIENT_READ), "Null session denied");
         check(!service.can(session(VaiTroHeThong.RECEPTIONIST), null), "Null permission denied");
-        denied(() -> service.require(null, Permission.PATIENT_READ));
+        denied(() -> service.require(null, Quyen.PATIENT_READ));
 
         check(nav.visibleModules(session(VaiTroHeThong.RECEPTIONIST)).equals(
                 List.of(Module.HOME, Module.PATIENTS, Module.APPOINTMENTS, Module.BILLING,

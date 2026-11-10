@@ -1,0 +1,68 @@
+package com.quanlynhakhoa.dao.nhanvien;
+
+import com.quanlynhakhoa.model.nhanvien.KetQuaDanhSachNhanVien;
+import com.quanlynhakhoa.model.nhanvien.DongDanhSachNhanVien;
+import com.quanlynhakhoa.enums.TrangThaiNhanVien;
+import com.quanlynhakhoa.enums.VaiTroHeThong;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+/** SELECT-only data access. No employee/account writes or password fields. */
+public final class DanhSachNhanVienDao {
+    private static final int PAGE_LIMIT = 200;
+    private static final String SEARCH_SQL = """
+            SELECT TOP (201)
+                   n.maNhanVien, n.hoTen, n.chucDanh, n.trangThai, n.ngayVaoLam,
+                   a.maTaiKhoan, a.vaiTro
+            FROM dbo.NhanVien AS n
+            LEFT JOIN dbo.TaiKhoan AS a ON a.maNhanVien = n.maNhanVien
+            WHERE (? = N''
+                   OR CHARINDEX(?, n.hoTen) > 0
+                   OR CHARINDEX(?, n.maNhanVien) > 0)
+              AND (? IS NULL OR n.trangThai = ?)
+            ORDER BY n.maNhanVien
+            """;
+
+
+
+    public KetQuaDanhSachNhanVien search(Connection connection, String keyword, TrangThaiNhanVien status) throws SQLException {
+        Objects.requireNonNull(connection, "connection");
+        Objects.requireNonNull(keyword, "keyword");
+        try (PreparedStatement statement = connection.prepareStatement(SEARCH_SQL)) {
+            statement.setQueryTimeout(12);
+            statement.setNString(1, keyword);
+            statement.setNString(2, keyword);
+            statement.setNString(3, keyword);
+            String statusName = status == null ? null : status.name();
+            statement.setString(4, statusName);
+            statement.setString(5, statusName);
+            List<DongDanhSachNhanVien> rows = new ArrayList<>();
+            boolean truncated = false;
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) {
+                    if (rows.size() == PAGE_LIMIT) {
+                        truncated = true;
+                        break;
+                    }
+                    Date joined = result.getDate("ngayVaoLam");
+                    String accountRole = result.getString("vaiTro");
+                    rows.add(new DongDanhSachNhanVien(
+                            result.getString("maNhanVien"),
+                            result.getNString("hoTen"),
+                            result.getString("chucDanh"),
+                            TrangThaiNhanVien.valueOf(result.getString("trangThai")),
+                            joined == null ? null : joined.toLocalDate(),
+                            result.getString("maTaiKhoan"),
+                            accountRole == null ? null : VaiTroHeThong.valueOf(accountRole)));
+                }
+            }
+            return new KetQuaDanhSachNhanVien(rows, truncated);
+        }
+    }
+}
